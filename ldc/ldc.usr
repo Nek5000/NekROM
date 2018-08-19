@@ -57,7 +57,7 @@ c-----------------------------------------------------------------------
 
       if (mod(istep,max(iostep,1)).eq.0) then
          call opsub3(ud,vd,vz,vx,vy,vz,vxlag,vylag,vzlag)
-         call opnorm(dl2,rk,rk(1,2),vz,'L2 ')
+         call opnorm(dl2,ud,vd,vz,'L2 ')
          if (nio.eq.0) write (6,123) istep,time,dl2
       endif
 
