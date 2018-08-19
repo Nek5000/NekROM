@@ -20,10 +20,8 @@ c-----------------------------------------------------------------------
       integer e,f,eg
 c     e = gllel(eg)
 
-
 c     Note: this is an acceleration term, NOT a force!
 c     Thus, ffx will subsequently be multiplied by rho(x,t).
-
 
       ffx = 0.0
       ffy = 0.0
