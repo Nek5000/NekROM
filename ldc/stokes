@@ -8,11 +8,11 @@ tmp=`mktemp`
 rea='ldc16.rea'
 cp $rea $tmp
 
-iftran=" F      IFTRAN"
-ifnav="11*F    IFNAV & IFADVC (convection in P.S. fields)"
+iftran=" F         IFTRAN"
+ifnav=" F, 10*F   IFNAV & IFADVC (convection in P.S. fields)"
 
-sed -i.bu "131s/.*/${iftran}/g" $rea
-sed -i.bu "132s/.*/${ifnav}/g" $rea
+perl -i -pe "s/.*/${iftran}/ if $.==131" $rea
+perl -i -pe "s/.*/${ifnav}/ if $.==132" $rea
 
 rm nek5000
 ./mn ldc
