@@ -126,19 +126,19 @@
    1.00000       1.00000       1.00000       1.00000       1.00000
    1.00000       1.00000       1.00000       1.00000
  13   LOGICAL SWITCHES FOLLOW
- T      IFFLOW
- F      IFHEAT
- T      IFTRAN
- T,  10*F  IFNAV & IFADVC (convection in P.S. fields)
- 2*F,  10*T  IFTMSH (IF mesh for this field is T mesh)
- F      IFAXIS
- F      IFSTRS
- F      IFSPLIT
- F      IFMGRID
- F      IFMODEL
- F      IFKEPS
- F      IFMVBD
- F      IFCHAR
+ T         IFFLOW
+ F         IFHEAT
+ T         IFTRAN
+ T, 10*F   IFNAV & IFADVC (convection in P.S. fields)
+ 2*F, 10*T IFTMSH (IF mesh for this field is T mesh)
+ F         IFAXIS
+ F         IFSTRS
+ F         IFSPLIT
+ F         IFMGRID
+ F         IFMODEL
+ F         IFKEPS
+ F         IFMVBD
+ F         IFCHAR
    3.33333       3.33333     -0.833333      -1.16667     XFAC,YFAC,XZERO,YZERO
   *** MESH DATA ***
          256  2         256           NEL,NDIM,NELV
