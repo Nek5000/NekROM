@@ -1,0 +1,183 @@
+c-----------------------------------------------------------------------
+      subroutine uservp (ix,iy,iz,eg)
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+      integer e,f,eg
+c     e = gllel(eg)
+
+      udiff =0.
+      utrans=0.
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine userf  (ix,iy,iz,eg)
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+      integer e,f,eg
+c     e = gllel(eg)
+
+
+c     Note: this is an acceleration term, NOT a force!
+c     Thus, ffx will subsequently be multiplied by rho(x,t).
+
+
+      ffx = 0.0
+      ffy = 0.0
+      ffz = 0.0
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine userq  (ix,iy,iz,eg)
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+      integer e,f,eg
+c     e = gllel(eg)
+
+      qvol   = 0.0
+      source = 0.0
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine userchk
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real ud(lt),vd(lt)
+
+      if (mod(istep,max(iostep,1)).eq.0) then
+         call opsub3(ud,vd,vz,vx,vy,vz,vxlag,vylag,vzlag)
+         call opnorm(dl2,rk,rk(1,2),vz,'L2 ')
+         if (nio.eq.0) write (6,123) istep,time,dl2
+      endif
+
+ 123  format('dl2',i8,1p2e12.4)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine userbc (ix,iy,iz,iside,ieg)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+      ux=0.0
+      uy=0.0
+      uz=0.0
+      temp=0.0
+
+      eps = 1.e-5
+      y0 = 1.
+
+      if (y.gt.(y0-eps)) ux = (1.-x*x)**2
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine useric (ix,iy,iz,ieg)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+      common /ldcpar/ dxmin
+
+      ux=0.0
+      uy=0.0
+      uz=0.0
+      temp=0.0
+
+      eps = 1.e-5
+      y0 = 1.
+
+      if (y.gt.(y0-eps)) ux = (1.-x*x)**2
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine usrdat
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      integer e
+
+      common /ldcpar/ dxmin
+      real tmp(1)
+
+      eps = 1.e-4
+
+      xmin = glmin(xc,nelt*2**ldim)
+      xmax = glmax(xc,nelt*2**ldim)
+
+      ymin = glmin(yc,nelt*2**ldim)
+      ymax = glmax(yc,nelt*2**ldim)
+
+      xave = xmax - xmin
+
+      sx = 1 / (xmax-xmin)
+      sy = 1 / (ymay-ymin)
+
+      nelx = nint(sqrt(real(nelgt)))
+
+      do e=1,nelt
+      do i=1,2**ldim
+         xc(i,e) = 2.*nint(nelx * xc(i,e)) / real(nelx)-1.
+         yc(i,e) = 2.*nint(nelx * yc(i,e)) / real(nelx)-1.
+      enddo
+      enddo
+
+      g = .8
+      if (param(49).gt.0.1) g = param(49)
+
+      if (nio.eq.0) write (6,*) 'geometric factor = ',g
+
+      dxmin = 1.
+      
+      do e=1,nelt
+      do i=1,2**ldim
+         x = xc(i,e)
+         y = yc(i,e)
+         m = nint(nelx*.5)
+         nx = abs(nint(x*m))
+         ny = abs(nint(y*m))
+         xc(i,e) = sign(1.,x) * (1-g**nx)/(1-g**m) * .5 + .5
+         yc(i,e) = sign(1.,y) * (1-g**ny)/(1-g**m) * .5 + .5
+         x = xc(i,e)
+
+         if (x.gt.eps.and.x.lt.dxmin) dxmin = x
+      enddo
+      enddo
+
+      tmp(1) = dxmin
+
+      dxmin = glmin(tmp,1)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine usrdat2
+      include 'SIZE'
+      include 'TOTAL'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine usrdat3
+      include 'SIZE'
+      include 'TOTAL'
+
+      return
+      end
+c-----------------------------------------------------------------------
