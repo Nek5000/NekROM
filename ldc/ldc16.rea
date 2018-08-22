@@ -13,7 +13,7 @@
    0.00000         QVOL
    0.00000         FINTIME
   500000            NSTEPS
-   -1.25e-4         DT
+   -5.00e-4         DT
    0.00000         IOCOMM
    0.00000         IOTIME
    4000              IOSTEP
