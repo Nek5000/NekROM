@@ -51,7 +51,7 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /stokes/ rgx(lt) rgy(lt)
+      common /stokes/ rgx(lt), rgy(lt)
 
       real ud(lt),vd(lt),dp(lt)
 
