@@ -243,7 +243,7 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real c(n,n,n),
+      real c(n,n,n)
       real ztx(lt,n), zty(lt,n), ztz(lt,n)
       real cux(lt), cuy(lt), cuz(lt)
 
