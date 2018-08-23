@@ -250,15 +250,15 @@ c-----------------------------------------------------------------------
       m = lx1*ly1*lz1*nelv
 
       do k=1,n
-      do j=1,n
-         call setcnv(ztx(1,k),zty(1,k),ztz(1,k),
-     $               ztx(1,j),ztz(1,j),ztz(1,j))
-         call ccu(cux,cuy,cuz)
-         do i=1,n
-            c(i,j,k) = op_glsc2_wt(ztx(1,i),zty(1,i),ztz(1,i),
-     $                             cux,cuy,cuz,bm1)
+         call setcnv_c(ztx(1,k),zty(1,k),ztz(1,k))
+         do j=1,n
+            call setcnv_u(ztx(1,j),zty(1,j),ztz(1,j))
+            call ccu(cux,cuy,cuz)
+            do i=1,n
+               c(i,j,k) = op_glsc2_wt(ztx(1,i),zty(1,i),ztz(1,i),
+     $                                cux,cuy,cuz,bm1)
+            enddo
          enddo
-      enddo
       enddo
 
       return
