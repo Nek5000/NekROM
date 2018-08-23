@@ -236,7 +236,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine construct_c(c,ztx,zty,ztz,n) ! n = number of modes
+      subroutine makec(c,ztx,zty,ztz,n) ! n = number of modes
 
       include 'SIZE'
       include 'TOTAL'
