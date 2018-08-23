@@ -352,3 +352,40 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine get_A_B(ub,vb,wb,A,B)
+      include 'SIZE'
+      include 'TOTAL'
+
+      parameter (lt=lx1*ly1*lz1*lelt,ms=104)
+      parameter (nb=20)  ! Number of basis vectors
+
+      real ub(lt,nb),vb(lt,nb),wb(lt,nb)
+      real A(nb,nb),B(nb,nb)
+
+      real usave(lt),vsave(lt),wsave(lt)
+      real h1(lt),h2(lt)
+
+      do j=1,nb
+         do i=1,nb
+            B(i,j) = op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),
+     $                           ub(1,j),vb(i,j),wb(i,j),bm1)
+         enddo
+      enddo
+
+      n= lx1*ly1*lz1*nelt
+      call rone(h1,nb)
+      call rzero(h2,nb)
+
+      do j=1,nb                  ! Form the A matrix for basis function
+         call axhelm(usave,ub(1,j),h1,h2,1,1)
+         call axhelm(vsave,vb(1,j),h1,h2,1,1)
+         if (ldim.eq.3) call axhelm(wsave,wb(1,j),h1,h2,1,1)
+         do i=1,nb
+            A(i,j) = glsc2(ub(1,i),usave,n)+glsc2(vb(1,i),vsave,n)
+            if (ldim.eq.3) A(i,j) = A(i,j)+glsc2(wb(1,i),wsave,n)
+         enddo
+      enddo
+
+
+      return
+      end
