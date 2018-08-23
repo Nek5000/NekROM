@@ -163,8 +163,8 @@ c-----------------------------------------------------------------------
          m = nint(nelx*.5)
          nx = abs(nint(x*m))
          ny = abs(nint(y*m))
-         xc(i,e) = sign(1.,x) * (1-g**nx)/(1-g**m) * .5 + .5
-         yc(i,e) = sign(1.,y) * (1-g**ny)/(1-g**m) * .5 + .5
+         xc(i,e) = 2*(sign(1.,x) * (1-g**nx)/(1-g**m) * .5 + .5)-1.
+         yc(i,e) = 2*(sign(1.,y) * (1-g**ny)/(1-g**m) * .5 + .5)-1.
          x = xc(i,e)
 
          if (x.gt.eps.and.x.lt.dxmin) dxmin = x
