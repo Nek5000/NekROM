@@ -194,6 +194,8 @@ c-----------------------------------------------------------------------
 
       ONE = 1.
       ZERO= 0.
+
+      ! ub, vb, wb, are the modes
       call dgemm( 'N','N',n,nb,ms,ONE,usave,lt,evec,ms,ZERO,ub,lt)
       call dgemm( 'N','N',n,nb,ms,ONE,vsave,lt,evec,ms,ZERO,vb,lt)
       if (ldim.eq.3)
