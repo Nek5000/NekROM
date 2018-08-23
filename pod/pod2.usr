@@ -236,6 +236,35 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine construct_c(c,ztx,zty,ztz,n) ! n = number of modes
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real c(n,n,n),
+      real ztx(lt,n), zty(lt,n), ztz(lt,n)
+      real cux(lt), cuy(lt), cuz(lt)
+
+      m = lx1*ly1*lz1*nelv
+
+      do k=1,n
+      do j=1,n
+         ! construct xi_k . grad xi_j
+         call setcnv(ztx(1,k),zty(1,k),ztz(1,k),
+     $               ztx(1,j),ztz(1,j),ztz(1,j))
+         call ccu(cux,cuy,cuz)
+         do i=1,n
+            c(i,j,k) = op_glsc2_wt(ztx(1,i),zty(1,i),ztz(1,i),
+     $                             cux,cuy,cuz,bm1)
+         enddo
+      enddo
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine setcnv(cx,cy,cz,ux,uy,uz)
 
       include 'SIZE'
