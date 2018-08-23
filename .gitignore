@@ -6,3 +6,9 @@ obj
 .nek5000
 *.map
 *.f
+*log*
+.state
+compiler.out
+*.py
+mn
+makenek
