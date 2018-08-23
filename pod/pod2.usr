@@ -352,12 +352,11 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine get_A_B(ub,vb,wb,A,B)
+      subroutine get_A_B(ub,vb,wb,A,B,nb)
       include 'SIZE'
       include 'TOTAL'
 
       parameter (lt=lx1*ly1*lz1*lelt,ms=104)
-      parameter (nb=20)  ! Number of basis vectors
 
       real ub(lt,nb),vb(lt,nb),wb(lt,nb)
       real A(nb,nb),B(nb,nb)
