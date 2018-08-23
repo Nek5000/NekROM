@@ -207,6 +207,8 @@ c-----------------------------------------------------------------------
          call outmatl(ub(1,i),vb(1,i),wb(1,i),i)
       enddo
 
+      call dumpmats(ub,vb,wb,nb)
+
       call exitti('quit in my_pod2$',ns)
 
       return
@@ -388,3 +390,48 @@ c-----------------------------------------------------------------------
 
       return
       end
+c-----------------------------------------------------------------------
+      subroutine dumpmats(ub,vb,wb,nb)
+
+      include 'SIZE'
+
+      real a(nb,nb), b(nb,nb), c(nb,nb,nb)
+
+      call get_a_b(ub,vb,wb,a,b,nb)
+      call makec(c,ub,vb,wb,nb)
+
+      open (unit=50,file='amat')
+
+      do j=1,nb
+      do i=1,nb
+         write (50,*) a(i,j)
+      enddo
+      enddo
+
+      close (unit=50)
+
+      open (unit=50,file='bmat')
+
+      do j=1,nb
+      do i=1,nb
+         write (50,*) b(i,j)
+      enddo
+      enddo
+
+      close (unit=50)
+
+      open (unit=50,file='cmat')
+
+      do k=1,nb
+      do j=1,nb
+      do i=1,nb
+         write (50,*) c(i,j,k)
+      enddo
+      enddo
+      enddo
+
+      close (unit=50)
+
+      return
+      end
+c-----------------------------------------------------------------------
