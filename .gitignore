@@ -1,0 +1,8 @@
+*0.f*
+*.fld*
+nek5000
+makefile
+obj
+.nek5000
+*.map
+*.f
