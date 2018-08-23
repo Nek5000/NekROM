@@ -251,7 +251,6 @@ c-----------------------------------------------------------------------
 
       do k=1,n
       do j=1,n
-         ! construct xi_k . grad xi_j
          call setcnv(ztx(1,k),zty(1,k),ztz(1,k),
      $               ztx(1,j),ztz(1,j),ztz(1,j))
          call ccu(cux,cuy,cuz)
