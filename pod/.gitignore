@@ -4,3 +4,5 @@ file.list
 *.dat
 *mat
 tmp.*
+ic
+vec
