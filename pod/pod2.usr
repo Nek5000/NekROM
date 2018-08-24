@@ -300,6 +300,32 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine makec2(c,cx,cy,cz,sx,sy,sz,n)
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real c(n,n)
+      real cx(lt,n), cy(lt,n), cz(lt,n)
+      real sx(lt), sy(lt), sz(lt)
+      real cux(lt), cuy(lt), cuz(lt)
+
+      call setcnv_u(sx,sy,sz)
+
+      do j=1,n
+         call setcnv_c(cx(1,j),cy(1,j),cz(1,j))
+         call ccu(cux,cuy,cuz)
+         do i=1,n
+            c(i,j) = op_glsc2_wt(ux(1,i),uy(1,i),uz(1,i),
+     $                           cux,cuy,cuz,bm1)
+         enddo
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine setcnv(cx,cy,cz,ux,uy,uz)
 
       include 'SIZE'
