@@ -575,7 +575,12 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine dumpvecs(ub,vb,wb,nb)
 
-      parameter (lt=lx1*ly1*lz1*nelv)
+      include 'SIZE'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real ub(lt,nb), vb(lt,nb), wb(lt,nb)
+      real a(lt), c(lt)
 
       call makea2(a,ub,vb,wb,nb)
       call makec3(c,ub,vb,wb,nb)
