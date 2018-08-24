@@ -208,15 +208,9 @@ c-----------------------------------------------------------------------
          call outmatl(ub(1,i),vb(1,i),wb(1,i),i)
       enddo
 
-      call makeic(u0r,u0,u0(1,2),u0(1,3),ub,vb,wb,nb)
-
-      call testic(u0r,ub,vb,wb,nb)
-
+      call dumptens(ub,vb,wb,nb)
       call dumpmats(ub,vb,wb,nb)
-      call dumpvec(u0r,nb)
-
-      call makeic(u0r,ub(1,2),vb(1,2),wb(1,2),ub,vb,wb,nb)
-      call testic(u0r,ub,vb,wb,nb)
+      call dumpvecs(ub,vb,wb,nb)
 
       write (6,*) 'quit in my_pod2$',ns
       call exitt0
