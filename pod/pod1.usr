@@ -172,6 +172,7 @@ c-----------------------------------------------------------------------
 
       call rone (h1,n)
       call rzero(h2,n)
+
       do j=1,ns                    ! Form the Gramian, U=U_K^T A U_K
          call axhelm(uw,usave(1,j),h1,h2,1,1)
          call axhelm(vw,vsave(1,j),h1,h2,1,1)
