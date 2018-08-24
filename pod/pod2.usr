@@ -558,14 +558,25 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine dumpvec(u0r,nb)
+      subroutine dumpvecs(ub,vb,wb,nb)
 
-      real u0r(nb)
+      parameter (lt=lx1*ly1*lz1*nelv)
 
-      open (unit=50,file='ic')
+      call makea2(a,ub,vb,wb,nb)
+      call makec3(c,ub,vb,wb,nb)
+
+      open (unit=50,file='avec')
 
       do i=1,nb
-         write (50,*) u0r(i)
+         write (50,*) a(i)
+      enddo
+
+      close (unit=50)
+
+      open (unit=50,file='cvec')
+
+      do i=1,nb
+         write (50,*) c(i)
       enddo
 
       close (unit=50)
