@@ -377,8 +377,8 @@ c-----------------------------------------------------------------------
       enddo
 
       n= lx1*ly1*lz1*nelt
-      call rone(h1,nb)
-      call rzero(h2,nb)
+      call rone(h1,n)
+      call rzero(h2,n)
 
       do j=1,nb                  ! Form the A matrix for basis function
          call axhelm(usave,ub(1,j),h1,h2,1,1)
