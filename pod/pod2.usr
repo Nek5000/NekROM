@@ -274,33 +274,31 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-c     subroutine makec1(c,ztx,zty,ztz,n) ! n = number of modes
+      subroutine makec1(c,sx,sy,sz,ux,uy,uz,n)
 
-c     include 'SIZE'
-c     include 'TOTAL'
+      include 'SIZE'
+      include 'TOTAL'
 
-c     parameter (lt=lx1*ly1*lz1*lelt)
+      parameter (lt=lx1*ly1*lz1*lelt)
 
-c     real c(n,n)
-c     real ztx(lt,n), zty(lt,n), ztz(lt,n)
-c     real cux(lt), cuy(lt), cuz(lt)
+      real c(n,n)
+      real ux(lt,n), uy(lt,n), uz(lt,n)
+      real sx(lt), sy(lt), sz(lt)
+      real cux(lt), cuy(lt), cuz(lt)
 
-c     m = lx1*ly1*lz1*nelv
+      call setcnv_c(sx,sy,sz)
 
-c     do k=1,n
-c        call setcnv_c(ztx(1,k),zty(1,k),ztz(1,k))
-c        do j=1,n
-c           call setcnv_u(ztx(1,j),zty(1,j),ztz(1,j))
-c           call ccu(cux,cuy,cuz)
-c           do i=1,n
-c              c(i,j,k) = op_glsc2_wt(ztx(1,i),zty(1,i),ztz(1,i),
-c    $                                cux,cuy,cuz,bm1)
-c           enddo
-c        enddo
-c     enddo
+      do j=1,n
+         call setcnv_u(ux(1,j),uy(1,j),uz(1,j))
+         call ccu(cux,cuy,cuz)
+         do i=1,n
+            c(i,j) = op_glsc2_wt(ux(1,i),uy(1,i),uz(1,i),
+     $                           cux,cuy,cuz,bm1)
+         enddo
+      enddo
 
-c     return
-c     end
+      return
+      end
 c-----------------------------------------------------------------------
       subroutine setcnv(cx,cy,cz,ux,uy,uz)
 
