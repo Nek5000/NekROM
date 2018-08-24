@@ -579,17 +579,17 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine dumpvecs(ub,vb,wb,nb)
+      subroutine dumpvecs(ub,vb,wb,u0,nb)
 
       include 'SIZE'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real ub(lt,nb), vb(lt,nb), wb(lt,nb)
+      real ub(lt,nb), vb(lt,nb), wb(lt,nb), u0(lt,3)
       real a(lt), c(lt)
 
       call makea2(a,ub,vb,wb,nb)
-      call makec3(c,ub,vb,wb,nb)
+      call makec3(c,ub,vb,wb,u0,u0(1,2),u0(1,3),nb)
 
       open (unit=50,file='avec')
 
