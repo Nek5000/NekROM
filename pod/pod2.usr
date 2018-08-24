@@ -522,15 +522,19 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine dumpmats(ub,vb,wb,nb)
+      subroutine dumpmats(ub,vb,wb,u0,nb)
 
       include 'SIZE'
 
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real ub(lt,nb), vb(lt,nb), wb(lt,nb)
+      real u0(lt,3)
       real a(nb,nb), b(nb,nb), c1(nb,nb), c2(nb,nb)
 
       call get_a_b(ub,vb,wb,a,b,nb)
-      call makec1(c1,ub,vb,wb,nb)
-      call makec2(c2,ub,vb,wb,nb)
+      call makec1(c1,u0,u0(1,2),u0(1,3),ub,vb,wb,nb)
+      call makec2(c2,ub,vb,wb,u0,u0(1,2),u0(1,3),nb)
 
       open (unit=50,file='amat')
 
