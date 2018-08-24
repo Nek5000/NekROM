@@ -45,7 +45,9 @@ for istep = 1:nsteps
         t = t + reshape(c0(:,i,:),[n,n]) * u(i);
     end
 
-    rhs = - t * u + b * u / dt - c1 * u - c2 * u - a1 - c3;
+    rhs = b * u / dt - a1 / re;
+%   rhs = rhs - t * u - c1 * u - c2 * u % advection contributions
+%   rhs = rhs - c3; % not in Patera 2017
     u = helm \ rhs;
     if (mod(istep,iostep) == 0)
         fname = strcat(num2str(istep/iostep),'.out')
