@@ -209,8 +209,8 @@ c-----------------------------------------------------------------------
       enddo
 
       call dumptens(ub,vb,wb,nb)
-      call dumpmats(ub,vb,wb,nb)
-      call dumpvecs(ub,vb,wb,nb)
+      call dumpmats(ub,vb,wb,u0,nb)
+      call dumpvecs(ub,vb,wb,u0,nb)
 
       write (6,*) 'quit in my_pod2$',ns
       call exitt0
