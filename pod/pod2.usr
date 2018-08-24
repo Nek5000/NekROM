@@ -210,7 +210,13 @@ c-----------------------------------------------------------------------
 
       call makeic(u0r,u0,u0(1,2),u0(1,3),ub,vb,wb,nb)
 
+      call testic(u0r,ub,vb,wb,nb)
+
       call dumpmats(ub,vb,wb,nb)
+      call dumpvec(u0r,nb)
+
+      call makeic(u0r,ub(1,2),vb(1,2),wb(1,2),ub,vb,wb,nb)
+      call testic(u0r,ub,vb,wb,nb)
 
       write (6,*) 'quit in my_pod2$',ns
       call exitt0
@@ -269,6 +275,34 @@ c-----------------------------------------------------------------------
 
       return
       end
+c-----------------------------------------------------------------------
+c     subroutine makec1(c,ztx,zty,ztz,n) ! n = number of modes
+
+c     include 'SIZE'
+c     include 'TOTAL'
+
+c     parameter (lt=lx1*ly1*lz1*lelt)
+
+c     real c(n,n)
+c     real ztx(lt,n), zty(lt,n), ztz(lt,n)
+c     real cux(lt), cuy(lt), cuz(lt)
+
+c     m = lx1*ly1*lz1*nelv
+
+c     do k=1,n
+c        call setcnv_c(ztx(1,k),zty(1,k),ztz(1,k))
+c        do j=1,n
+c           call setcnv_u(ztx(1,j),zty(1,j),ztz(1,j))
+c           call ccu(cux,cuy,cuz)
+c           do i=1,n
+c              c(i,j,k) = op_glsc2_wt(ztx(1,i),zty(1,i),ztz(1,i),
+c    $                                cux,cuy,cuz,bm1)
+c           enddo
+c        enddo
+c     enddo
+
+c     return
+c     end
 c-----------------------------------------------------------------------
       subroutine setcnv(cx,cy,cz,ux,uy,uz)
 
@@ -439,6 +473,21 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine dumpvec(u0r,nb)
+
+      real u0r(nb)
+
+      open (unit=50,file='ic')
+
+      do i=1,nb
+         write (50,*) u0r(i)
+      enddo
+
+      close (unit=50)
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine makeic(u0r,u0,v0,w0,ub,vb,wb,nb)
 
       include 'SIZE'
@@ -453,7 +502,64 @@ c-----------------------------------------------------------------------
          u0r(i) = op_glsc2_wt(u0,v0,w0,ub(1,i),vb(1,i),wb(1,i),vmult)
      $          / op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),
      $                        ub(1,i),vb(1,i),wb(1,i),vmult)
+         call h1norm(u0r(i),u0,v0,w0,ub(1,i),vb(1,i),wb(1,i),vmult)
+         call h1norm(tmp,ub(1,i),vb(1,i),wb(1,i),
+     $                   ub(1,i),vb(1,i),wb(1,i),vmult)
+         u0r(i) = u0r(i) / tmp
+c        if (nio.eq.0) write (6,*) i, u0r(i)
       enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine testic(u0r,ub,vb,wb,nb)
+
+      include 'SIZE'
+      include 'SOLN'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real u0r(nb), ub(lt,nb), vb(lt,nb), wb(lt,nb)
+      real u0(lt,3)
+
+      n = lx1*ly1*lz1*nelv
+
+      call opzero(u0,u0(1,2),u0(1,3))
+
+      do i=1,nb
+         call
+     $   opadds(u0,u0(1,2),u0(1,3),ub(1,i),vb(1,i),wb(1,i),u0r(i),n,2)
+         write (6,*) i,u0r(i)
+      enddo
+
+      call outpost(u0,u0(1,2),u0(1,3),pr,t,'ttt')
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine h1norm(h1nrm,u1x,u1y,u1z,u2x,u2y,u2z)
+
+      include 'SIZE'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real u1x(lt), u1y(lt), u1z(lt)
+      real u2x(lt), u2y(lt), u2z(lt), h1(lt), h2(lt)
+      real uw(lt), vw(lt), ww(lt)
+
+      n = lx1*ly1*lz1*nelv
+
+      call rone(h1,n)
+      call rzero(h2,n)
+
+      call axhelm(uw,u1x,h1,h2,1,1)
+      call axhelm(vw,u1y,h1,h2,1,1)
+      if (ldim.eq.3) call axhelm(ww,u1z,h1,h2,1,1)
+
+      h1nrm = glsc2(u2x,uw,n)+glsc2(u2y,vw,n)
+      if (ldim.eq.3) h1nrm = h1nrm+glsc2(u2z,ww,n)
+
+c     if (nio.eq.0) write(6,*) h1nrm,' h1norm'
 
       return
       end
