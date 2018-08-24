@@ -4,5 +4,13 @@ file.list
 *.dat
 *mat
 tmp.*
-ic
-vec
+
+cten
+amat
+bmat
+c1mat
+c2mat
+avec
+cvec
+
+*.out
