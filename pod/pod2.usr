@@ -458,7 +458,6 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       real ub(lt,nb),vb(lt,nb),wb(lt,nb)
-      real ux(lt), uy(lt) uz(lt)
       real a(nb)
 
       real ux(lt),uy(lt),uz(lt)
