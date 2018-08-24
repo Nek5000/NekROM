@@ -27,8 +27,8 @@ dt = 1e-5;
 nsteps = 2e5;
 iostep = 1e4;
 
-nsteps = 2000;
-iostep = 100;
+%nsteps = 2000;
+%iostep = 100;
 
 re = 1e3;
 beta0 = 1;
