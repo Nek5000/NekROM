@@ -46,11 +46,12 @@ for istep = 1:nsteps
     end
 
     rhs = - t * u + b * u / dt - c1 * u - c2 * u - a1 - c3;
-    u = helm \ rhs
+    u = helm \ rhs;
     if (mod(istep,iostep) == 0)
         fname = strcat(num2str(istep/iostep),'.out')
         fid = fopen(fname,'w');
         fprintf(fid,'%d\n',u);
         fclose(fid);
+        u
     end
 end
