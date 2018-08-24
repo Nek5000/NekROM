@@ -505,6 +505,8 @@ c-----------------------------------------------------------------------
 
       real c(nb,nb,nb)
 
+      call makec0(c,ub,vb,wb,nb)
+
       open (unit=50,file='cten')
 
       do k=1,nb
