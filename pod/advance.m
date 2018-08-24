@@ -24,9 +24,9 @@ a1 = dlmread('avec');
 c3 = dlmread('cvec');
 
 dt = 1e-5;
-re = 1000;
-nsteps = 200000;
-iostep = 10000;
+re = 1e3;
+nsteps = 2e5;
+iostep = 1e4;
 
 beta0 = 1;
 
