@@ -505,6 +505,27 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine dumptens(ub,vb,wb,nb)
+
+      include 'SIZE'
+
+      real c(nb,nb,nb)
+
+      open (unit=50,file='cten')
+
+      do k=1,nb
+      do j=1,nb
+      do i=1,nb
+         write (50,*) c(i,j,k)
+      enddo
+      enddo
+      enddo
+
+      close (unit=50)
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine dumpmats(ub,vb,wb,nb)
 
       include 'SIZE'
