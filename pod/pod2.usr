@@ -241,7 +241,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine makec(c,ztx,zty,ztz,n) ! n = number of modes
+      subroutine makec0(c,ztx,zty,ztz,n) ! n = number of modes
 
       include 'SIZE'
       include 'TOTAL'
@@ -401,7 +401,7 @@ c-----------------------------------------------------------------------
       real a(nb,nb), b(nb,nb), c(nb,nb,nb)
 
       call get_a_b(ub,vb,wb,a,b,nb)
-      call makec(c,ub,vb,wb,nb)
+      call makec0(c,ub,vb,wb,nb)
 
       open (unit=50,file='amat')
 
