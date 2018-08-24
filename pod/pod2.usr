@@ -447,6 +447,37 @@ c-----------------------------------------------------------------------
          enddo
       enddo
 
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine makea2(a,ub,vb,wb,nb)
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real ub(lt,nb),vb(lt,nb),wb(lt,nb)
+      real ux(lt), uy(lt) uz(lt)
+      real a(nb)
+
+      real ux(lt),uy(lt),uz(lt)
+      real h1(lt),h2(lt)
+
+      n = lx1*ly1*lz1*nelt
+
+      call rone(h1,n)
+      call rzero(h2,n)
+
+      do i=1,nb                  ! Form the A matrix for basis function
+         call axhelm(ux,ub(1,j),h1,h2,1,1)
+         call axhelm(uy,vb(1,j),h1,h2,1,1)
+         a(i) = glsc2(ub(1,i),ux,n)+glsc2(vb(1,i),uy,n)
+         if (ldim.eq.3) then
+            call axhelm(uz,wb(1,j),h1,h2,1,1)
+            a(i) = a(i)+glsc2(wb(1,i),uz,n)
+         endif
+      enddo
 
       return
       end
