@@ -469,7 +469,7 @@ c-----------------------------------------------------------------------
       call rone(h1,n)
       call rzero(h2,n)
 
-      do i=1,nb                  ! Form the A matrix for basis function
+      do i=1,nb
          call axhelm(ux,ub(1,j),h1,h2,1,1)
          call axhelm(uy,vb(1,j),h1,h2,1,1)
          a(i) = glsc2(ub(1,i),ux,n)+glsc2(vb(1,i),uy,n)
