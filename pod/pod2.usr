@@ -441,6 +441,7 @@ c-----------------------------------------------------------------------
       subroutine makeic(u0r,u0,v0,w0,ub,vb,wb,nb)
 
       include 'SIZE'
+      include 'SOLN'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
