@@ -178,7 +178,7 @@ c-----------------------------------------------------------------------
       real u0r(ms)
 
       real evec(ms,nb)
-      real ub(lt,nb),vb(lt,nb),wb(lt,nb)
+      real ub(lt,0:nb),vb(lt,0:nb),wb(lt,0:nb)
       real a(nb)
 
       character(len=10) fname
@@ -187,6 +187,7 @@ c-----------------------------------------------------------------------
       ns = ms
 
       call opcopy   (u0(1,1),u0(1,2),u0(1,3),vx,vy,vz)
+      call opcopy   (ub(1,0),vb(1,0),wb(1,0),vx,vy,vz)
       call get_saved_fields(usave,vsave,wsave,ns,u0)
 
       nvecs = nb
@@ -201,27 +202,21 @@ c-----------------------------------------------------------------------
       ZERO= 0.
 
       ! ub, vb, wb, are the modes
-      call dgemm( 'N','N',n,nb,ms,ONE,usave,lt,evec,ms,ZERO,ub,lt)
-      call dgemm( 'N','N',n,nb,ms,ONE,vsave,lt,evec,ms,ZERO,vb,lt)
+      call dgemm( 'N','N',n,nb,ms,ONE,usave,lt,evec,ms,ZERO,ub(1,1),lt)
+      call dgemm( 'N','N',n,nb,ms,ONE,vsave,lt,evec,ms,ZERO,vb(1,1),lt)
       if (ldim.eq.3)
-     $ call dgemm( 'N','N',n,nb,ms,ONE,wsave,lt,evec,ms,ZERO,wb,lt)
+     $call dgemm( 'N','N',n,nb,ms,ONE,wsave,lt,evec,ms,ZERO,wb(1,1),lt)
 
-      call outpost(u0(1,1),u0(1,2),u0(1,3),pr,t,'   ')
-      do i=1,nb
+      do i=0,nb
          call outpost(ub(1,i),vb(1,i),wb(1,i),pr,t,'   ')
          call outmatl(ub(1,i),vb(1,i),wb(1,i),i)
       enddo
 
-      call dumptens(ub,vb,wb,nb)
-      call dumpmats(ub,vb,wb,u0,nb)
-      call dumpvecs(ub,vb,wb,u0,nb)
+      call dumptens (c  ,ub,vb,wb,nb)
+      call dumpmats (a,b,ub,vb,wb,nb)
 
       do i=1,20 ! read output from rom solver and dump out fields
-         if (i.lt.10) then
-            write (fname,10) i
-         else
-            write (fname,20) i
-         endif
+         write (fname,10) i
          write (6,*) fname
          open (unit=50,file=fname)
          do j=1,nb
@@ -232,11 +227,10 @@ c-----------------------------------------------------------------------
          do j=1,nb
             call opadds(vx,vy,vz,ub(1,j),vb(1,j),wb(1,j),a(j),n,2)
          enddo
-         call opadd2(vx,vy,vz,u0,u0(1,2),u0(1,3))
-         call outpost(vx,vy,vz,pr,t,'rom')
+         call opadd2  (vx,vy,vz,u0,u0(1,2),u0(1,3))
+         call outpost (vx,vy,vz,pr,t,'rom')
       enddo
-   10 format (i1,'.out')
-   20 format (i2,'.out')
+   10 format (i3.3,'.out')
 
       write (6,*) 'quit in my_pod2$',ns
       call exitt0
@@ -280,111 +274,20 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       real c(n,n,n)
-      real ub(lt,n), vb(lt,n), wb(lt,n)
+      real ub(lt,0:n), vb(lt,0:n), wb(lt,0:n)
       real cux(lt), cuy(lt), cuz(lt)
 
-      do k=1,n
+      do k=0,n
          call setcnv_c(ub(1,k),vb(1,k),wb(1,k))
-         do j=1,n
+         do j=0,n
             call setcnv_u(ub(1,j),vb(1,j),wb(1,j))
             call ccu(cux,cuy,cuz)
-            do i=1,n
+            do i=0,n
                c(i,j,k) = op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),
      $                                cux,cuy,cuz,bm1)
             enddo
          enddo
       enddo
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine makec1(c,sx,sy,sz,ub,vb,wb,n)
-
-      include 'SIZE'
-      include 'TOTAL'
-
-      parameter (lt=lx1*ly1*lz1*lelt)
-
-      real c(n,n)
-      real ub(lt,n), vb(lt,n), wb(lt,n)
-      real sx(lt), sy(lt), sz(lt)
-      real cux(lt), cuy(lt), cuz(lt)
-
-      call setcnv_c(sx,sy,sz)
-
-      do j=1,n
-         call setcnv_u(ub(1,j),vb(1,j),wb(1,j))
-         call ccu(cux,cuy,cuz)
-         do i=1,n
-            c(i,j) = op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),
-     $                           cux,cuy,cuz,bm1)
-         enddo
-      enddo
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine makec2(c,ub,vb,wb,sx,sy,sz,n)
-
-      include 'SIZE'
-      include 'TOTAL'
-
-      parameter (lt=lx1*ly1*lz1*lelt)
-
-      real c(n,n)
-      real ub(lt,n), vb(lt,n), wb(lt,n)
-      real sx(lt), sy(lt), sz(lt)
-      real cux(lt), cuy(lt), cuz(lt)
-
-      call setcnv_u(sx,sy,sz)
-
-      do j=1,n
-         call setcnv_c(ub(1,j),vb(1,j),wb(1,j))
-         call ccu(cux,cuy,cuz)
-         do i=1,n
-            c(i,j) = op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),
-     $                           cux,cuy,cuz,bm1)
-         enddo
-      enddo
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine makec3(c,ub,vb,wb,sx,sy,sz,n)
-
-      include 'SIZE'
-      include 'TOTAL'
-
-      parameter (lt=lx1*ly1*lz1*lelt)
-
-      real c(n)
-      real ub(lt,n), vb(lt,n), wb(lt,n)
-      real sx(lt), sy(lt), sz(lt)
-      real cux(lt), cuy(lt), cuz(lt)
-
-      call setcnv_u(sx,sy,sz)
-      call setcnv_c(sx,sy,sz)
-      call ccu(cux,cuy,cuz)
-
-      do i=1,n
-         c(i) = op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),
-     $                      cux,cuy,cuz,bm1)
-      enddo
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine setcnv(cx,cy,cz,ux,uy,uz)
-
-      include 'SIZE'
-
-      parameter (lt=lx1*ly1*lz1*lelt)
-
-      real cx(lt), cy(lt), cz(lt)
-      real ux(lt), uy(lt), uz(lt)
-
-      call setcnv_c(cx,cy,cz)
-      call setcnv_u(ux,uy,uz)
 
       return
       end
@@ -462,34 +365,34 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine get_A_B(ub,vb,wb,A,B,nb)
+      subroutine get_A_B(a,b,ub,vb,wb,nb)
       include 'SIZE'
       include 'TOTAL'
 
       parameter (lt=lx1*ly1*lz1*lelt,ms=104)
 
-      real ub(lt,nb),vb(lt,nb),wb(lt,nb)
-      real A(nb,nb),B(nb,nb)
+      real ub(lt,0:nb),vb(lt,0:nb),wb(lt,0:nb)
+      real A(0:nb,0:nb),B(0:nb,0:nb)
 
-      real usave(lt),vsave(lt),wsave(lt)
-      real h1(lt),h2(lt)
+      common /scrvh/ h1(lt),h2(lt)
+      common /scrns/ usave(lt),vsave(lt),wsave(lt)
 
-      do j=1,nb
-         do i=1,nb
-            B(i,j) = op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),
-     $                           ub(1,j),vb(1,j),wb(1,j),bm1)
-         enddo
+      do j=0,nb
+      do i=0,nb
+         B(i,j) = op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),
+     $                        ub(1,j),vb(1,j),wb(1,j),bm1)
+      enddo
       enddo
 
       n= lx1*ly1*lz1*nelt
-      call rone(h1,n)
+      call rone (h1,n)
       call rzero(h2,n)
 
-      do j=1,nb                  ! Form the A matrix for basis function
+      do j=0,nb                  ! Form the A matrix for basis function
          call axhelm(usave,ub(1,j),h1,h2,1,1)
          call axhelm(vsave,vb(1,j),h1,h2,1,1)
          if (ldim.eq.3) call axhelm(wsave,wb(1,j),h1,h2,1,1)
-         do i=1,nb
+         do i=0,nb
             A(i,j) = glsc2(ub(1,i),usave,n)+glsc2(vb(1,i),vsave,n)
             if (ldim.eq.3) A(i,j) = A(i,j)+glsc2(wb(1,i),wsave,n)
          enddo
@@ -498,50 +401,20 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine makea2(a,ub,vb,wb,nb)
-
-      include 'SIZE'
-      include 'TOTAL'
-
-      parameter (lt=lx1*ly1*lz1*lelt)
-
-      real ub(lt,nb),vb(lt,nb),wb(lt,nb)
-      real a(nb)
-
-      real ux(lt),uy(lt),uz(lt)
-      real h1(lt),h2(lt)
-
-      n = lx1*ly1*lz1*nelt
-
-      call rone(h1,n)
-      call rzero(h2,n)
-
-      do i=1,nb
-         call axhelm(ux,ub(1,j),h1,h2,1,1)
-         call axhelm(uy,vb(1,j),h1,h2,1,1)
-         a(i) = glsc2(ub(1,i),ux,n)+glsc2(vb(1,i),uy,n)
-         if (ldim.eq.3) then
-            call axhelm(uz,wb(1,j),h1,h2,1,1)
-            a(i) = a(i)+glsc2(wb(1,i),uz,n)
-         endif
-      enddo
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine dumptens(ub,vb,wb,nb)
+      subroutine dumptens(c,ub,vb,wb,nb)
 
       include 'SIZE'
 
+      real ub(lt,0:nb),vb(lt,0:nb),wb(lt,0:nb)
       real c(nb,nb,nb)
 
       call makec0(c,ub,vb,wb,nb)
 
       open (unit=50,file='cten')
 
-      do k=1,nb
-      do j=1,nb
-      do i=1,nb
+      do k=0,nb
+      do j=0,nb
+      do i=0,nb
          write (50,*) c(i,j,k)
       enddo
       enddo
@@ -552,24 +425,21 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine dumpmats(ub,vb,wb,u0,nb)
+      subroutine dumpmats(a,b,ub,vb,wb,nb)
 
       include 'SIZE'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real ub(lt,nb), vb(lt,nb), wb(lt,nb)
-      real u0(lt,3)
-      real a(nb,nb), b(nb,nb), c1(nb,nb), c2(nb,nb)
+      real ub(lt,0:nb), vb(lt,0:nb), wb(lt,0:nb)
+      real a(0:nb,0:nb), b(0:nb,0:nb)
 
-      call get_a_b(ub,vb,wb,a,b,nb)
-      call makec1(c1,u0,u0(1,2),u0(1,3),ub,vb,wb,nb)
-      call makec2(c2,ub,vb,wb,u0,u0(1,2),u0(1,3),nb)
+      call get_a_b(a,b,ub,vb,wb,nb)
 
       open (unit=50,file='amat')
 
-      do j=1,nb
-      do i=1,nb
+      do j=0,nb
+      do i=0,nb
          write (50,*) a(i,j)
       enddo
       enddo
@@ -578,140 +448,13 @@ c-----------------------------------------------------------------------
 
       open (unit=50,file='bmat')
 
-      do j=1,nb
-      do i=1,nb
+      do j=0,nb
+      do i=0,nb
          write (50,*) b(i,j)
       enddo
       enddo
 
       close (unit=50)
-
-      open (unit=50,file='c1mat')
-
-      do j=1,nb
-      do i=1,nb
-         write (50,*) c1(i,j)
-      enddo
-      enddo
-
-      close (unit=50)
-
-      open (unit=50,file='c2mat')
-
-      do j=1,nb
-      do i=1,nb
-         write (50,*) c2(i,j)
-      enddo
-      enddo
-
-      close (unit=50)
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine dumpvecs(ub,vb,wb,u0,nb)
-
-      include 'SIZE'
-
-      parameter (lt=lx1*ly1*lz1*lelt)
-
-      real ub(lt,nb), vb(lt,nb), wb(lt,nb), u0(lt,3)
-      real a(lt), c(lt)
-
-      call makea2(a,ub,vb,wb,nb)
-      call makec3(c,ub,vb,wb,u0,u0(1,2),u0(1,3),nb)
-
-      open (unit=50,file='avec')
-
-      do i=1,nb
-         write (50,*) a(i)
-      enddo
-
-      close (unit=50)
-
-      open (unit=50,file='cvec')
-
-      do i=1,nb
-         write (50,*) c(i)
-      enddo
-
-      close (unit=50)
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine makeic(u0r,u0,v0,w0,ub,vb,wb,nb)
-
-      include 'SIZE'
-      include 'SOLN'
-
-      parameter (lt=lx1*ly1*lz1*lelt)
-
-      real u0r(nb)
-      real u0(lt), v0(lt), w0(lt), ub(lt,nb), vb(lt,nb), wb(lt,nb)
-
-      do i=1,nb
-         u0r(i) = op_glsc2_wt(u0,v0,w0,ub(1,i),vb(1,i),wb(1,i),vmult)
-     $          / op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),
-     $                        ub(1,i),vb(1,i),wb(1,i),vmult)
-         call h1norm(u0r(i),u0,v0,w0,ub(1,i),vb(1,i),wb(1,i),vmult)
-         call h1norm(tmp,ub(1,i),vb(1,i),wb(1,i),
-     $                   ub(1,i),vb(1,i),wb(1,i),vmult)
-         u0r(i) = u0r(i) / tmp
-c        if (nio.eq.0) write (6,*) i, u0r(i)
-      enddo
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine testic(u0r,ub,vb,wb,nb)
-
-      include 'SIZE'
-      include 'SOLN'
-
-      parameter (lt=lx1*ly1*lz1*lelt)
-
-      real u0r(nb), ub(lt,nb), vb(lt,nb), wb(lt,nb)
-      real u0(lt,3)
-
-      n = lx1*ly1*lz1*nelv
-
-      call opzero(u0,u0(1,2),u0(1,3))
-
-      do i=1,nb
-         call
-     $   opadds(u0,u0(1,2),u0(1,3),ub(1,i),vb(1,i),wb(1,i),u0r(i),n,2)
-         write (6,*) i,u0r(i)
-      enddo
-
-      call outpost(u0,u0(1,2),u0(1,3),pr,t,'ttt')
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine h1norm(h1nrm,u1x,u1y,u1z,u2x,u2y,u2z)
-
-      include 'SIZE'
-
-      parameter (lt=lx1*ly1*lz1*lelt)
-
-      real u1x(lt), u1y(lt), u1z(lt)
-      real u2x(lt), u2y(lt), u2z(lt), h1(lt), h2(lt)
-      real uw(lt), vw(lt), ww(lt)
-
-      n = lx1*ly1*lz1*nelv
-
-      call rone(h1,n)
-      call rzero(h2,n)
-
-      call axhelm(uw,u1x,h1,h2,1,1)
-      call axhelm(vw,u1y,h1,h2,1,1)
-      if (ldim.eq.3) call axhelm(ww,u1z,h1,h2,1,1)
-
-      h1nrm = glsc2(u2x,uw,n)+glsc2(u2y,vw,n)
-      if (ldim.eq.3) h1nrm = h1nrm+glsc2(u2z,ww,n)
-
-c     if (nio.eq.0) write(6,*) h1nrm,' h1norm'
 
       return
       end
