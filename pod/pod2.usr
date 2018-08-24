@@ -248,7 +248,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine makec0(c,ztx,zty,ztz,n) ! n = number of modes
+      subroutine makec0(c,ztx,zty,ztz,n)
 
       include 'SIZE'
       include 'TOTAL'
@@ -258,8 +258,6 @@ c-----------------------------------------------------------------------
       real c(n,n,n)
       real ztx(lt,n), zty(lt,n), ztz(lt,n)
       real cux(lt), cuy(lt), cuz(lt)
-
-      m = lx1*ly1*lz1*nelv
 
       do k=1,n
          call setcnv_c(ztx(1,k),zty(1,k),ztz(1,k))
