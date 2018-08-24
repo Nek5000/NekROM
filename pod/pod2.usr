@@ -212,7 +212,8 @@ c-----------------------------------------------------------------------
 
       call dumpmats(ub,vb,wb,nb)
 
-      call exitti('quit in my_pod2$',ns)
+      write (6,*) 'quit in my_pod2$',ns
+      call exitt0
 
       return
       end
