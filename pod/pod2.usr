@@ -509,10 +509,11 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'
 
-      real a(nb,nb), b(nb,nb), c(nb,nb,nb)
+      real a(nb,nb), b(nb,nb), c1(nb,nb), c2(nb,nb)
 
       call get_a_b(ub,vb,wb,a,b,nb)
-      call makec0(c,ub,vb,wb,nb)
+      call makec1(c1,ub,vb,wb,nb)
+      call makec2(c2,ub,vb,wb,nb)
 
       open (unit=50,file='amat')
 
@@ -534,13 +535,21 @@ c-----------------------------------------------------------------------
 
       close (unit=50)
 
-      open (unit=50,file='cmat')
+      open (unit=50,file='c1mat')
 
-      do k=1,nb
       do j=1,nb
       do i=1,nb
-         write (50,*) c(i,j,k)
+         write (50,*) c1(i,j)
       enddo
+      enddo
+
+      close (unit=50)
+
+      open (unit=50,file='c2mat')
+
+      do j=1,nb
+      do i=1,nb
+         write (50,*) c2(i,j)
       enddo
       enddo
 
