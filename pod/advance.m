@@ -49,7 +49,6 @@ for istep = 1:4
     end
 
     rhs = b0(2:n,1:n) * u(:,istep) / dt - a1 / re;
-%   rhs = rhs - c1 * u - c2 * u; % advection contributions
     rhs = rhs - t * u(:,istep); % advection contributions
     rhs = rhs - a0(2:n,1:n) * e0 / re - b0(2:n,1:n) * e0 / dt;
     tmp = helm \ rhs;
