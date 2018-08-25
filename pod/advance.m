@@ -14,13 +14,14 @@ b0 = reshape(t,n,n);
 
 nb = n - 1
 
-a = diag(a0(1:nb,1:nb))
-a1 = a0(1,1:nb)
-b = b0(1:nb,1:nb)
-c = c0(1:nb,1:nb,1:nb)
-c1 = c0(1:nb,1,1:nb)
-c2 = c0(1:nb,1:nb,1)
-c3 = c0(1,1,1:nb)
+a = diag(a0(2:n,2:n)) % left-handed side A
+b = b0(2:n,2:n) % left-handed side B
+
+%c = c0(1:nb,1:nb,1:nb)
+a1 = reshape(a0(1,2:n),[nb,1])
+c1 = reshape(c0(2:n,1,1:n),[nb,n])
+c2 = reshape(c0(2:n,1:n,1),[nb,n])
+c3 = reshape(c0(1,1,2:n),[nb,1])
 
 dt = 1e-5;
 nsteps = 2e5;
@@ -33,25 +34,30 @@ re = 1e3;
 beta0 = 1;
 
 u0 = zeros(n,1);
+e0 = [1;zeros(nb,1)]
 
-u = u0
+u(1:n,1:(nsteps/iostep)) = 0
+u(1,1:(nsteps/iostep)) = 1
 
 % do BDF1 to get u1, u2, u3
-for istep = 1:3
+for istep = 1:4
     helm = (b * beta0 / dt + a / re);
 
-    t = zeros(n,1);
+    t = zeros(nb,n);
     for i = 1:n
-        t = t + reshape(c(:,i,:),[n,n]) * u(i);
+        t = t + reshape(c0(2:n,:,i),[nb,n]) * u(i,istep);
     end
 
-    rhs = b * u / dt - a1 / re;
-    rhs = rhs - t * u - c1 * u - c2 * u; % advection contributions
+    rhs = b0(2:n,1:n) * u(:,istep) / dt - a1 / re;
+    rhs = rhs - t * u(:,istep)- c1 * u(:,istep) - c2 * u(:,istep); % advection contributions
 %   rhs = rhs - c1 * u - c2 * u; % advection contributions
     rhs = rhs - c3; % not in Patera 2017
-%    u = helm \ rhs;
+    rhs = rhs - a0(2:n,1:n) * e0 / re - b0(2:n,1:n) * e0 / dt;
+    tmp = helm \ rhs;
+    u(2:n,istep) = tmp;
 end
-    U = [u0,u1,u2,u3]
+
+%    U = [u0,u1,u2,u3]
 %    if (mod(istep,iostep) == 0)
 %        fname = strcat(num2str(istep/iostep),'.out')
 %        fid = fopen(fname,'w');
