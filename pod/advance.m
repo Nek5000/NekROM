@@ -10,9 +10,13 @@ a0 = reshape(t,n,n);
 
 t = dlmread('bmat');
 n = sqrt(length(t));
-b = reshape(t,n,n);
+b0 = reshape(t,n,n);
 
 nb = n - 1
+
+a = diag(a0(1:nb,1:nb))
+b = b0(1:nb,1:nb)
+c = c0(1:nb,1:nb,1:nb)
 
 dt = 1e-5;
 nsteps = 2e5;
