@@ -12,6 +12,7 @@ t = dlmread('bmat');
 n = sqrt(length(t));
 b = reshape(t,n,n);
 
+nb = n - 1
 
 dt = 1e-5;
 nsteps = 2e5;
