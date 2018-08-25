@@ -181,6 +181,8 @@ c-----------------------------------------------------------------------
       real ub(lt,0:nb),vb(lt,0:nb),wb(lt,0:nb)
       real a(nb)
 
+      real c(0:nb,0:nb,0:nb)
+
       character(len=10) fname
 
       n  = lx1*ly1*lz1*nelt
