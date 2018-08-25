@@ -217,6 +217,8 @@ c-----------------------------------------------------------------------
       call dumptens (c  ,ub,vb,wb,nb)
       call dumpmats (a,b,ub,vb,wb,nb)
 
+      call exitt0
+
       do i=1,20 ! read output from rom solver and dump out fields
          write (fname,10) i
          write (6,*) fname
