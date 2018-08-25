@@ -14,9 +14,9 @@ b0 = reshape(t,n,n);
 
 nb = n - 1
 
-a = diag(a0(2:n,2:n)) % left-handed side A
-b = b0(2:n,2:n) % left-handed side B
 aa = a0(2:n,2:n);
+a = diag(a0(2:n,2:n)); % left-handed side A
+b = b0(2:n,2:n); % left-handed side B
 
 %c = c0(1:nb,1:nb,1:nb)
 a1 = reshape(a0(1,2:n),[nb,1]);
