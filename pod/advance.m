@@ -99,7 +99,7 @@ for istep = 4:(nsteps/iostep)
     if (mod(istep,iostep) == 0)
         fname = strcat(num2str(istep/iostep),'.out')
         fid = fopen(fname,'w');
-        fprintf(fid,'%d\n',u(1:n,istep));
+        fprintf(fid,'%03d\n',u(1:n,istep));
         fclose(fid);
         u(1:n,istep)
     end
