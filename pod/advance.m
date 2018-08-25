@@ -12,16 +12,6 @@ t = dlmread('bmat');
 n = sqrt(length(t));
 b = reshape(t,n,n);
 
-t = dlmread('c1mat');
-n = sqrt(length(t));
-c1 = reshape(t,n,n);
-
-t = dlmread('c2mat');
-n = sqrt(length(t));
-c2 = reshape(t,n,n);
-
-a1 = dlmread('avec');
-c3 = dlmread('cvec');
 
 dt = 1e-5;
 nsteps = 2e5;
