@@ -39,6 +39,7 @@ e0 = [1;zeros(nb,1)];
 u = zeros(n,3);
 convec = zeros(nb,3);
 u(1,1:3) = 1;
+u(:,1) = u0;
 
 % BDFk/EXTk coefficients (k=1:3)
 
