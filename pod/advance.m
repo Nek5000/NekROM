@@ -65,7 +65,7 @@ for istep = 1:(nsteps/iostep)
     end
     convec(:,2) = convec(:,1);
     convec(:,3) = convec(:,2);
-    convec(:,count) = t * u(:,1);
+    convec(:,1) = t * u(:,1);
 
     rhs = b0(2:n,2:n) * u(2:n,:) * beta(count,2:4)' / dt;
 
