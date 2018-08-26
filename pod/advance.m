@@ -83,5 +83,6 @@ for istep = 1:nstep
         fid = fopen(fname,'w');
         fprintf(fid,'%d\n',u(2:n,1));
         fclose(fid);
+        u(:,1)
     end
 end
