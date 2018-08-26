@@ -77,9 +77,9 @@ for istep = 1:(nsteps/iostep)
     u(:,1) = tmp;
 
     if (mod(istep,iostep) == 0)
-        m = (istep/iostep)
-        str = num2str(m,'%03.f')
-        fname = strcat(str,'.out')
+        m = (istep/iostep);
+        str = num2str(m,'%03.f');
+        fname = strcat(str,'.out');
         fid = fopen(fname,'w');
         fprintf(fid,'%d\n',u(2:n,1));
         fclose(fid);
