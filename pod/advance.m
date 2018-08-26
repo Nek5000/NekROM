@@ -54,9 +54,9 @@ alpha(1,:) = [1,0,0];
 alpha(2,:) = [2,-1,0];
 alpha(3,:) = [3,-3,1];
 
-% do BDF3 
 for istep = 1:(nsteps/iostep)
     count = min(istep,3) ;
+% time step
     helm = (b * beta(count,1) / dt + a / re);
 
     t = zeros(nb,n);
