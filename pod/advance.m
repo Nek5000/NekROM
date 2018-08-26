@@ -40,7 +40,7 @@ u = zeros(n,3);
 convec = zeros(nb,3);
 u(1,1:3) = 1;
 
-% BDF3/EXT3 coefficients
+% BDFk/EXTk coefficients (k=1:3)
 
 beta = zeros(3,4);
 alpha = zeros(3,3);
