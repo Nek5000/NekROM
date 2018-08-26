@@ -18,7 +18,6 @@ a = a0(2:n,2:n); % left-handed side A
 b = b0(2:n,2:n); % left-handed side B
 
 a1 = reshape(a0(1,2:n),[nb,1]);
-%c = c0(1:nb,1:nb,1:nb)
 %c1 = reshape(c0(2:n,1,1:n),[nb,n]);
 %c2 = reshape(c0(2:n,1:n,1),[nb,n]);
 %c3 = reshape(c0(1,1,2:n),[nb,1]);
