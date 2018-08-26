@@ -12,10 +12,10 @@ t = dlmread('bmat');
 n = sqrt(length(t));
 b0 = reshape(t,n,n);
 
-nb = n - 1
+nb = n - 1;
 
-a = diag(a0(2:n,2:n)) % left-handed side A
-b = b0(2:n,2:n) % left-handed side B
+a = diag(a0(2:n,2:n)); % left-handed side A
+b = b0(2:n,2:n); % left-handed side B
 
 a1 = reshape(a0(1,2:n),[nb,1]);
 %c = c0(1:nb,1:nb,1:nb)
@@ -35,11 +35,11 @@ iostep = 1;
 re = 1e3;
 
 u0 = zeros(n,1);
-e0 = [1;zeros(nb,1)]
+e0 = [1;zeros(nb,1)];
 
-u = zeros(n,3)
-convec = zeros(nb,3)
-u(1,1:3) = 1
+u = zeros(n,3);
+convec = zeros(nb,3);
+u(1,1:3) = 1;
 
 % BDF3/EXT3 coefficients
 
@@ -56,24 +56,24 @@ alpha(3,:) = [3,-3,1];
 
 % do BDF3 
 for istep = 1:(nsteps/iostep)
-    count = min(istep,3) 
-        helm = (b * beta(count,1) / dt + a / re);
-   
-        t = zeros(nb,n);
-        for i = 1:n
-            t = t + reshape(c0(2:n,:,i),[nb,n]) * u(i,1);
-        end
-        convec(:,2) = convec(:,1)
-        convec(:,3) = convec(:,2) 
-        convec(:,count) = t * u(:,1);
-        
-        rhs = b0(2:n,2:n) * u(2:n,:) * beta(count,2:4)' / dt;
+    count = min(istep,3) ;
+    helm = (b * beta(count,1) / dt + a / re);
 
-%        rhs = rhs - convec * alpha(count,:)'; % advection contributions
-        rhs = rhs - a0(2:n,1:n) * e0 / re; 
-        tmp = helm \ rhs;
-        u(:,2) = u(:,1)
-        u(:,3) = u(:,2) 
+    t = zeros(nb,n);
+    for i = 1:n
+        t = t + reshape(c0(2:n,:,i),[nb,n]) * u(i,1);
+    end
+    convec(:,2) = convec(:,1);
+    convec(:,3) = convec(:,2);
+    convec(:,count) = t * u(:,1);
+
+    rhs = b0(2:n,2:n) * u(2:n,:) * beta(count,2:4)' / dt;
+
+%   rhs = rhs - convec * alpha(count,:)'; % advection contributions
+    rhs = rhs - a0(2:n,1:n) * e0 / re; 
+    tmp = helm \ rhs;
+    u(:,2) = u(:,1)
+    u(:,3) = u(:,2) 
 
     if (mod(istep,iostep) == 0)
         m = (istep/iostep)
@@ -83,5 +83,4 @@ for istep = 1:(nsteps/iostep)
         fprintf(fid,'%d\n',u(2:n,1));
         fclose(fid);
     end
-
 end
