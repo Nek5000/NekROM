@@ -34,7 +34,7 @@ iostep = 1;
 
 re = 1e3;
 
-u0 = zeros(n,1);
+u0 = dlmread('ic');
 e0 = [1;zeros(nb,1)];
 
 u = zeros(n,3);
