@@ -63,8 +63,8 @@ for istep = 1:(nsteps/iostep)
     for i = 1:n
         t = t + reshape(c0(2:n,:,i),[nb,n]) * u(i,1);
     end
-    convec(:,2) = convec(:,1);
     convec(:,3) = convec(:,2);
+    convec(:,2) = convec(:,1);
     convec(:,1) = t * u(:,1);
 
     rhs = b0(2:n,2:n) * u(2:n,:) * beta(count,2:4)' / dt;
@@ -72,8 +72,8 @@ for istep = 1:(nsteps/iostep)
 %   rhs = rhs - convec * alpha(count,:)'; % advection contributions
     rhs = rhs - a0(2:n,1:n) * e0 / re; 
     tmp = helm \ rhs;
-    u(:,2) = u(:,1)
-    u(:,3) = u(:,2) 
+    u(:,3) = u(:,2);
+    u(:,2) = u(:,1);
 
     if (mod(istep,iostep) == 0)
         m = (istep/iostep)
