@@ -22,16 +22,11 @@ a1 = reshape(a0(1,2:n),[nb,1]);
 %c2 = reshape(c0(2:n,1:n,1),[nb,n]);
 %c3 = reshape(c0(1,1,2:n),[nb,1]);
 
-dt = 1e-5;
-nsteps = 10;
-iostep = 1;
-%nsteps = 2e5;
-%iostep = 1e4;
+dt = 1e-4;
+re = 1e1;
 
-%nsteps = 2000;
-%iostep = 100;
-
-re = 1e3;
+nstep = 5e4;
+iostep = 5e2;
 
 u0 = dlmread('ic');
 e0 = [1;zeros(nb,1)];
