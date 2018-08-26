@@ -54,9 +54,9 @@ alpha(1,:) = [1,0,0];
 alpha(2,:) = [2,-1,0];
 alpha(3,:) = [3,-3,1];
 
-for istep = 1:(nsteps/iostep)
-    count = min(istep,3) ;
 % time step
+for istep = 1:nstep
+    count = min(istep,3);
     helm = (b * beta(count,1) / dt + a / re);
 
     t = zeros(nb,n);
