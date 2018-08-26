@@ -74,7 +74,7 @@ for istep = 1:nstep
     tmp = helm \ rhs;
     u(:,3) = u(:,2);
     u(:,2) = u(:,1);
-    u(:,1) = tmp;
+    u(2:n,1) = tmp;
 
     if (mod(istep,iostep) == 0)
         m = (istep/iostep);
