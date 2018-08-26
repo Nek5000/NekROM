@@ -33,74 +33,55 @@ iostep = 1;
 %iostep = 100;
 
 re = 1e3;
-beta0 = 1;
 
 u0 = zeros(n,1);
 e0 = [1;zeros(nb,1)]
 
-u(1:n,1:(nsteps/iostep)) = 0
-u(1,1:(nsteps/iostep)) = 1
-
-% do BDF1 to get u1, u2, u3
-for istep = 1:3
-    helm = (b * beta0 / dt + a / re);
-
-    t = zeros(nb,n);
-    for i = 1:n
-        t = t + reshape(c0(2:n,:,i),[nb,n]) * u(i,istep);
-    end
-
-    rhs = b0(2:n,1:n) * u(:,istep) / dt - a1 / re;
-    rhs = rhs - t * u(:,istep); % advection contributions
-    rhs = rhs - a0(2:n,1:n) * e0 / re - b0(2:n,1:n) * e0 / dt;
-    tmp = helm \ rhs;
-    u(2:n,istep+1) = tmp;
-
-    if (mod(istep,iostep) == 0)
-        fname = strcat(num2str(istep/iostep),'.out')
-        fid = fopen(fname,'w');
-        fprintf(fid,'%d\n',u(1:n,istep));
-        fclose(fid);
-        u(1:n,istep)
-    end
-
-end
+u = zeros(n,3)
+convec = zeros(nb,3)
+u(1,1:3) = 1
 
 % BDF3/EXT3 coefficients
-beta = [11/6,-3,3/2,-1/3]
-alpha = [3,-3,1]
+
+beta = zeros(3,4);
+alpha = zeros(3,3);
+
+beta(1,:) = [1,-1,0,0];
+beta(2,:) = [3/2,-2,1/2,0];
+beta(3,:) = [11/6,-3,3/2,-1/3]
+
+alpha(1,:) = [1,0,0];
+alpha(2,:) = [2,-1,0];
+alpha(3,:) = [3,-3,1];
 
 % do BDF3 
-for istep = 4:(nsteps/iostep)
-    helm = (b * beta(4) / dt + a / re);
+for istep = 1:(nsteps/iostep)
+    count = min(istep,3) 
+        helm = (b * beta(count,1) / dt + a / re);
+   
+        t = zeros(nb,n);
+        for i = 1:n
+            t = t + reshape(c0(2:n,:,i),[nb,n]) * u(i,1);
+        end
+        convec(:,2) = convec(:,1)
+        convec(:,3) = convec(:,2) 
+        convec(:,count) = t * u(:,1);
+        
+        rhs = b0(2:n,2:n) * u(2:n,:) * beta(count,2:4)' / dt;
 
-    t1 = zeros(nb,n);
-    t2 = zeros(nb,n);
-    t3 = zeros(nb,n);
-    for i = 1:n
-        t3 = t3 + reshape(c0(2:n,:,i),[nb,n]) * u(i,istep-3);
-        t2 = t2 + reshape(c0(2:n,:,i),[nb,n]) * u(i,istep-2);
-        t1 = t1 + reshape(c0(2:n,:,i),[nb,n]) * u(i,istep-1);
-    end
-
-
-    rhs = -beta(1) * b0(2:n,1:n) * u(:,istep-3) / dt ;
-    rhs = rhs - beta(2) * b0(2:n,1:n) * u(:,istep-2) / dt ;
-    rhs = rhs - beta(3) * b0(2:n,1:n) * u(:,istep-1) / dt ;
-    rhs = rhs - a1 / re;
-
-    rhs = rhs - alpha(1) * t3 * u(:,istep-3); % advection contributions
-    rhs = rhs - alpha(2) * t2 * u(:,istep-2); % advection contributions
-    rhs = rhs - alpha(3) * t1 * u(:,istep-1); % advection contributions
-    rhs = rhs - a0(2:n,1:n) * e0 / re - beta(4) * b0(2:n,1:n) * e0 / dt;
-    tmp = helm \ rhs;
-    u(2:n,istep) = tmp;
+%        rhs = rhs - convec * alpha(count,:)'; % advection contributions
+        rhs = rhs - a0(2:n,1:n) * e0 / re; 
+        tmp = helm \ rhs;
+        u(:,2) = u(:,1)
+        u(:,3) = u(:,2) 
 
     if (mod(istep,iostep) == 0)
-        fname = strcat(num2str(istep/iostep),'.out')
+        m = (istep/iostep)
+        str = num2str(m,'%03.f')
+        fname = strcat(str,'.out')
         fid = fopen(fname,'w');
-        fprintf(fid,'%03d\n',u(1:n,istep));
+        fprintf(fid,'%d\n',u(2:n,1));
         fclose(fid);
-        u(1:n,istep)
     end
+
 end
