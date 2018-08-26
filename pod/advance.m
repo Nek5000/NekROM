@@ -67,7 +67,7 @@ for istep = 1:nstep
     convec(:,2) = convec(:,1);
     convec(:,1) = t * u(:,1);
 
-    rhs = b0(2:n,2:n) * u(2:n,:) * beta(count,2:4)' / dt;
+    rhs = -b * u(2:n,:) * beta(count,2:4)' / dt;
 
 %   rhs = rhs - convec * alpha(count,:)'; % advection contributions
     rhs = rhs - a0(2:n,1:n) * e0 / re; 
