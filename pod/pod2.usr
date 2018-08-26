@@ -221,9 +221,7 @@ c-----------------------------------------------------------------------
       call gfldr('chan20.f01540')
       call dumpic(a,ub,vb,wb,nb)
 
-      call exitt0
-
-      do i=1,20 ! read output from rom solver and dump out fields
+      do i=1,999 ! read output from rom solver and dump out fields
          write (fname,10) i
          write (6,*) fname
          open (unit=50,file=fname)
