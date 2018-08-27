@@ -3,7 +3,7 @@
   2  DIMENSIONAL RUN
  118  PARAMETERS FOLLOW
    1.00000         DENSITY
-  -100           VISCOS
+  -10000           VISCOS
    0.00000         BETAG
    0.00000         GTHETA
    0.00000         PGRADX
@@ -12,11 +12,11 @@
    1.00000         CONDUCT
    0.00000         QVOL
    0.00000         FINTIME
-  500000            NSTEPS
-   -5.00e-4         DT
+  50000            NSTEPS
+   -2.50e-3         DT
    0.00000         IOCOMM
    0.00000         IOTIME
-   4000              IOSTEP
+   500              IOSTEP
    0.00000         EQTYPE
    1.00000         AXIS
   0.500000E-01     GRID
@@ -1939,7 +1939,8 @@
  v  256  3   0.00000       0.00000       0.00000       0.00000       0.00000    
  E  256  4   255.000       2.00000       0.00000       0.00000       0.00000    
   ***** NO THERMAL BOUNDARY CONDITIONS *****
- 0  PRESOLVE/RESTART OPTIONS  *****
+ 1  PRESOLVE/RESTART OPTIONS  *****
+r0.f00001
  7          INITIAL CONDITIONS *****
 C Default
 C Default
@@ -1962,7 +1963,7 @@ C
  UV P     H      5    5    1    1
   ***** OUTPUT FIELD SPECIFICATION *****
  6  SPECIFICATIONS FOLLOW
- F       COORDINATES
+ T       COORDINATES
  T       VELOCITY
  T       PRESSURE
  F       TEMPERATURE
