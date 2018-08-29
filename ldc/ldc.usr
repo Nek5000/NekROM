@@ -52,8 +52,24 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       common /stokes/ rgx(lt), rgy(lt)
+      common /scrk1/ t1(lt)
 
       real ud(lt),vd(lt),dp(lt)
+
+      if (nio.eq.0) write (6,*) 'step=',istep
+      if (istep.eq.0) call outpost(vx,vy,vz,pr,t,'   ')
+      if (istep.eq.1.and.iftran) then
+         call outpost(vx,vy,vz,pr,t,'   ')
+         call exitt0
+      endif
+
+      if (istep.eq.2) then
+         call opdiv(t1,vx,vy,vz)
+         call outpost(vx,vy,vz,t1,t,'sto')
+         call incomprn(vx,vy,vz,t1)
+         call opdiv(t1,vx,vy,vz)
+         call outpost(vx,vy,vz,t1,t,'sto')
+      endif
 
       if (mod(istep,max(iostep,1)).eq.0) then ! output the difference
          call opsub3(ud,vd,vz,vx,vy,vz,vxlag,vylag,vzlag)

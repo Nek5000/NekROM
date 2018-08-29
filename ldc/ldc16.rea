@@ -129,7 +129,7 @@
  T         IFFLOW
  F         IFHEAT
  T         IFTRAN
- T, 10*F   IFNAV & IFADVC (convection in P.S. fields)
+ F, 10*F   IFNAV & IFADVC (convection in P.S. fields)
  2*F, 10*T IFTMSH (IF mesh for this field is T mesh)
  F         IFAXIS
  F         IFSTRS
@@ -1940,7 +1940,7 @@
  E  256  4   255.000       2.00000       0.00000       0.00000       0.00000    
   ***** NO THERMAL BOUNDARY CONDITIONS *****
  1  PRESOLVE/RESTART OPTIONS  *****
-r0.f00001
+presolve
  7          INITIAL CONDITIONS *****
 C Default
 C Default
