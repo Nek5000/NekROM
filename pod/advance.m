@@ -18,15 +18,18 @@ a = a0(2:n,2:n); % left-handed side A
 b = b0(2:n,2:n); % left-handed side B
 
 a1 = reshape(a0(1,2:n),[nb,1]);
-%c1 = reshape(c0(2:n,1,1:n),[nb,n]);
-%c2 = reshape(c0(2:n,1:n,1),[nb,n]);
-%c3 = reshape(c0(1,1,2:n),[nb,1]);
+c1 = reshape(c0(2:n,1,2:n),[nb,nb]);
+c2 = reshape(c0(2:n,2:n,1),[nb,nb]);
+c3 = reshape(c0(2:n,1,1),[nb,1]);
 
 dt = 1e-4;
-re = 1e1;
+re = 1;
 
-nstep = 5e4;
-iostep = 5e2;
+nstep = 1e3;
+iostep = 1e1;
+
+%nstep = 10;
+%iostep = 1;
 
 u0 = dlmread('ic');
 e0 = [1;zeros(nb,1)];
@@ -55,9 +58,11 @@ for istep = 1:nstep
     helm = (b * beta(count,1) / dt + a / re);
 
     t = zeros(nb,n);
+
     for i = 1:n
         t = t + reshape(c0(2:n,:,i),[nb,n]) * u(i,1);
     end
+
     convec(:,3) = convec(:,2);
     convec(:,2) = convec(:,1);
     convec(:,1) = t * u(:,1);
