@@ -1,0 +1,666 @@
+c-----------------------------------------------------------------------
+      subroutine uservp (ix,iy,iz,eg)
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+      integer e,eg
+
+      udiff =0.
+      utrans=0.
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine userf  (ix,iy,iz,eg)
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+      integer e,eg
+
+      ffx = 0.0
+      ffy = 0.0
+      ffz = 0.0
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine userq  (ix,iy,iz,eg)
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+      integer e,eg
+
+      qvol   = 0.0
+      source = 0.0
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine useric (ix,iy,iz,ieg)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+      common /ldcpar/ dxmin
+
+      ux=0.0
+      uy=0.0
+      uz=0.0
+      temp=0.0
+
+      eps = 1.e-5
+      y0 = 1.
+
+      if (y.gt.(y0-eps)) ux = (1.-x*x)**2
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine usrdat
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      integer e
+
+      common /ldcpar/ dxmin
+      real tmp(1)
+
+      eps = 1.e-4
+
+      xmin = glmin(xc,nelt*2**ldim)
+      xmax = glmax(xc,nelt*2**ldim)
+
+      ymin = glmin(yc,nelt*2**ldim)
+      ymax = glmax(yc,nelt*2**ldim)
+
+      xave = xmax - xmin
+
+      sx = 1 / (xmax-xmin)
+      sy = 1 / (ymay-ymin)
+
+      nelx = nint(sqrt(real(nelgt)))
+
+      do e=1,nelt
+      do i=1,2**ldim
+         xc(i,e) = 2.*nint(nelx * xc(i,e)) / real(nelx)-1.
+         yc(i,e) = 2.*nint(nelx * yc(i,e)) / real(nelx)-1.
+      enddo
+      enddo
+
+      g = .8
+      if (param(49).gt.0.1) g = param(49)
+
+      if (nio.eq.0) write (6,*) 'geometric factor = ',g
+
+      dxmin = 1.
+
+      do e=1,nelt
+      do i=1,2**ldim
+         x = xc(i,e)
+         y = yc(i,e)
+         m = nint(nelx*.5)
+         nx = abs(nint(x*m))
+         ny = abs(nint(y*m))
+         xc(i,e) = 2*(sign(1.,x) * (1-g**nx)/(1-g**m) * .5 + .5)-1.
+         yc(i,e) = 2*(sign(1.,y) * (1-g**ny)/(1-g**m) * .5 + .5)-1.
+         x = xc(i,e)
+
+         if (x.gt.eps.and.x.lt.dxmin) dxmin = x
+      enddo
+      enddo
+
+      tmp(1) = dxmin
+
+      dxmin = glmin(tmp,1)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine usrdat2
+      include 'SIZE'
+      include 'TOTAL'
+
+      return
+      end
+c----------------------------------------------------------------------
+      subroutine usrdat3
+      return
+      end
+c----------------------------------------------------------------------
+      subroutine userbc (ix,iy,iz,iside,eg)
+c     NOTE ::: This is not guaranteed to be called by every process
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+      integer e,eg
+
+      e = gllel(eg)
+
+      ux=0.0
+      uy=0.0
+      uz=0.0
+      temp=0.0
+
+      eps = 1.e-5
+      y0 = 1.
+
+      if (y.gt.(y0-eps)) ux = (1.-x*x)**2
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine userchk
+
+      include 'SIZE'  
+      include 'TOTAL' 
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      common /myoutflow/ d(lx1,ly1,lz1,lelt),m1(lx1*ly1*lz1,lelt)
+      common /kento/ uo(lt),vo(lt),wo(lt)
+
+      call chkptol
+
+      if (istep.eq.0) call opcopy(uo,vo,wo,vx,vy,vz)
+      if (istep.ne.0) call opcopy(vx,vy,vz,uo,vo,wo)
+      if (istep.eq.1) call my_pod2
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine opadd3 (a1,a2,a3,b1,b2,b3,c1,c2,c3)
+      include 'SIZE'
+      real a1(1),a2(1),a3(1),b1(1),b2(1),b3(1)
+      real c1(1),c2(1),c3(1)
+      ntot1=lx1*ly1*lz1*nelv
+      call add2(a1,b1,c1,ntot1)
+      call add2(a2,b2,c2,ntot1)
+      if (ldim.eq.3) call add2(a3,b3,c3,ntot1)
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine get_saved_fields(usave,vsave,wsave,nsave,u0)
+
+c     This routine reads files specificed in file.list
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'ZPER'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      real usave(lt,nsave),vsave(lt,nsave),wsave(lt,nsave)
+      real u0(lt,3) ! Initial condtion
+
+
+      ierr = 0
+      if (nid.eq.0) open(77,file='file.list',status='old',err=199)
+      ierr = iglmax(ierr,1)
+      if (ierr.gt.0) goto 199
+      n = lx1*ly1*lz1*nelt
+      n2= lx2*ly2*lz2*nelt
+
+      icount = 0
+      do ipass=1,nsave
+
+         call blank(initc,127)
+         initc(1) = 'done '
+         if (nid.eq.0) read(77,127,end=998) initc(1)
+  998    call bcast(initc,127)
+  127    format(a127)
+
+         if (indx1(initc,'done ',5).eq.0) then ! We're not done
+            nfiles = 1
+            call restart(nfiles)  ! Note -- time is reset.
+
+!           Usave = U_snapshot - U_stokes:
+
+            call opsub3 (usave(1,ipass),vsave(1,ipass),wsave(1,ipass)
+     $                  ,vx,vy,vz,u0(1,1),u0(1,2),u0(1,3))
+
+            icount = icount+1
+         else
+            goto 999
+         endif
+
+      enddo
+
+  999 continue  ! clean up averages
+      if (nid.eq.0) close(77)
+
+      nsave = icount ! Actual number of files read
+
+      return
+
+  199 continue ! exception handle for file not found
+      ierr = 1
+      if (nid.eq.0) ierr = iglmax(ierr,1)
+      call exitti('Auto averager did not find list file.$',ierr)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine my_pod2
+      include 'SIZE'  
+      include 'TOTAL' 
+
+      parameter (lt=lx1*ly1*lz1*lelt,ms=100)
+      parameter (nb=10)  ! Number of basis vectors
+
+      real usave(lt,ms),vsave(lt,ms),wsave(lt,ms)
+      real uu(ms,ms)
+      real uw(lt),vw(lt),ww(lt),h1(lt),h2(lt)
+      real u0(lt,3)
+      real u0r(ms)
+
+      real evec(ms,nb)
+      real ub(lt,0:nb),vb(lt,0:nb),wb(lt,0:nb)
+      real coef(nb)
+
+      real a(0:nb,0:nb)
+      real b(0:nb,0:nb)
+      real c(0:nb,0:nb,0:nb)
+
+      common /scrns/ t1(lt)
+
+      character(len=10) fname
+
+      n  = lx1*ly1*lz1*nelt
+      ns = ms
+
+      call opdiv    (t1,vx,vy,vz)
+      call outpost  (vx,vy,vz,t1,t,'tt2')
+      call incomprn (vx,vy,vz,t1)
+      call opdiv    (t1,vx,vy,vz)
+      call outpost  (vx,vy,vz,t1,t,'tt2')
+      call opcopy   (u0(1,1),u0(1,2),u0(1,3),vx,vy,vz)
+      call opcopy   (ub(1,0),vb(1,0),wb(1,0),vx,vy,vz)
+      call get_saved_fields(usave,vsave,wsave,ns,u0)
+
+      nvecs = nb
+      if (nid.eq.0) then
+         open (unit=12,file='evectors.dat')
+         read(12,*) (evec(k,1),k=1,ns*nvecs)
+      endif
+      len = wdsize*ns*nvecs ! broadcast array of length len bytes
+      call bcast (evec,len)
+
+      ONE = 1.
+      ZERO= 0.
+
+      ! ub, vb, wb, are the modes
+      call dgemm( 'N','N',n,nb,ms,ONE,usave,lt,evec,ms,ZERO,ub(1,1),lt)
+      call dgemm( 'N','N',n,nb,ms,ONE,vsave,lt,evec,ms,ZERO,vb(1,1),lt)
+      if (ldim.eq.3)
+     $call dgemm( 'N','N',n,nb,ms,ONE,wsave,lt,evec,ms,ZERO,wb(1,1),lt)
+
+      do i=0,nb
+         call outpost(ub(1,i),vb(1,i),wb(1,i),pr,t,'   ')
+         call outmatl(ub(1,i),vb(1,i),wb(1,i),i)
+      enddo
+
+      call dumptens (c  ,ub,vb,wb,nb)
+      call dumpmats (a,b,ub,vb,wb,nb)
+      call gfldr('ldc160.f00100')
+      call dumpic(a,ub,vb,wb,nb)
+
+      do i=1,999 ! read output from rom solver and dump out fields
+         write (fname,10) i
+         write (6,*) fname
+         open (unit=50,file=fname)
+         do j=1,nb
+            read (50,*,err=30) coef(j)
+         enddo
+         close (unit=50)
+         call opzero(vx,vy,vz)
+         do j=1,nb
+            call opadds(vx,vy,vz,ub(1,j),vb(1,j),wb(1,j),coef(j),n,2)
+         enddo
+         call opadd2  (vx,vy,vz,u0,u0(1,2),u0(1,3))
+         call outpost (vx,vy,vz,pr,t,'rom')
+      enddo
+   10 format (i3.3,'.out')
+
+      write (6,*) 'quit in my_pod2$',ns
+      call exitt0
+
+   30 continue
+      write (6,*) 'failed in my_pod2$',ns
+      call exitt
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine outmatl(u,v,w,k)
+      include 'SIZE'  
+      include 'TOTAL' 
+
+      parameter (lt=lx1*ly1*lz1*lelt,ms=104)
+      real u(lt),v(lt),w(lt)
+      character*7 fname
+
+      if (np.gt.1) call exitti('outmatl works for P=1 only!$',np)
+
+      write(fname,22) k
+   22 format('out.',i3.3)
+      open(unit=33,file=fname)
+
+      n = lx1*ly1*lz1*nelt
+      do i=1,n
+         write(33,33) xm1(i,1,1,1),ym1(i,1,1,1),u(i),v(i)
+   33    format(1p4e16.7)
+      enddo
+      close(33)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine makec0(c,ub,vb,wb,n)
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real c(0:n,0:n,0:n)
+      real ub(lt,0:n), vb(lt,0:n), wb(lt,0:n)
+      real cux(lt), cuy(lt), cuz(lt)
+      common /scrns/ t1(lt)
+
+      call opdiv(pr,ub(1,0),vb(1,0),wb(1,0))
+
+      call outpost(ub(1,0),vb(1,0),wb(1,0),pr,t,'div')
+
+      call rone(t1,lx1*ly1*lz1*nelv)
+
+      do k=0,n
+         call setcnv_c(ub(1,k),vb(1,k),wb(1,k))
+         do j=0,n
+            call setcnv_u(ub(1,j),vb(1,j),wb(1,j))
+            call ccu(cux,cuy,cuz)
+            do i=0,n
+               c(i,j,k) = op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),
+c    $                                cux,cuy,cuz,t1)
+     $                                cux,cuy,cuz,bm1)
+            enddo
+         enddo
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine setcnv_c(cx,cy,cz)
+
+      include 'SIZE'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      parameter (ltd=lxd*lyd*lzd*lelt)
+
+      common /convect/ c1v(ltd), c2v(ltd), c3v(ltd),
+     $                 u1v(ltd), u2v(ltd), u3v(ltd)
+
+      real cx(lt), cy(lt), cz(lt)
+
+      call set_convect_new(c1v,c2v,c3v,cx,cy,cz)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine setcnv_u(ux,uy,uz)
+
+      include 'SIZE'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      parameter (ltd=lxd*lyd*lzd*lelt)
+
+      common /convect/ c1v(ltd), c2v(ltd), c3v(ltd),
+     $                 u1v(ltd), u2v(ltd), u3v(ltd)
+
+      real ux(lt), uy(lt), uz(lt)
+
+      call intp_rstd_all(u1v,ux,nelv)
+      call intp_rstd_all(u2v,uy,nelv)
+      if (ldim.eq.3) call intp_rstd_all(u3v,uz,nelv)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine ccu(cu1,cu2,cu3) ! compute C(c) * u set by setcnv
+
+      include 'SIZE'
+
+      parameter(lt=lx1*ly1*lz1*lelt)
+      parameter(ltd=lxd*lyd*lzd*lelt)
+
+      real cu1(lt), cu2(lt), cu3(lt)
+
+      common /convect/ c1v(ltd), c2v(ltd), c3v(ltd),
+     $                 u1v(ltd), u2v(ltd), u3v(ltd)
+
+      call convect_new(cu1,u1v,.true.,c1v,c2v,c3v,.true.)
+      call convect_new(cu2,u2v,.true.,c1v,c2v,c3v,.true.)
+      if (ldim.eq.3)
+     $ call convect_new(cu3,u3v,.true.,c1v,c2v,c3v,.true.)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine intp_rstd_all(uf,u,nel)
+
+      include 'SIZE'
+      include 'INPUT'
+
+      parameter (lxyz1=lx1*ly1*lz1)
+      parameter (lxyzd=lxd*lyd*lzd)
+
+      real uf(lxyzd,lelt), u(lxyz1,lelt)
+
+      do i=1,nel
+         call intp_rstd(uf(1,i),u(1,i),lx1,lxd,if3d,0) ! 0 --> forward
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine get_A_B(a,b,ub,vb,wb,nb)
+      include 'SIZE'
+      include 'TOTAL'
+
+      parameter (lt=lx1*ly1*lz1*lelt,ms=104)
+
+      real ub(lt,0:nb),vb(lt,0:nb),wb(lt,0:nb)
+      real A(0:nb,0:nb),B(0:nb,0:nb)
+
+      common /scrvh/ h1(lt),h2(lt)
+      common /scrns/ usave(lt),vsave(lt),wsave(lt)
+
+      do j=0,nb
+      do i=0,nb
+         B(i,j) = op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),
+     $                        ub(1,j),vb(1,j),wb(1,j),bm1)
+      enddo
+      enddo
+
+      n= lx1*ly1*lz1*nelt
+      call rone (h1,n)
+      call rzero(h2,n)
+
+      do j=0,nb                  ! Form the A matrix for basis function
+         call axhelm(usave,ub(1,j),h1,h2,1,1)
+         call axhelm(vsave,vb(1,j),h1,h2,1,1)
+         if (ldim.eq.3) call axhelm(wsave,wb(1,j),h1,h2,1,1)
+         do i=0,nb
+            A(i,j) = glsc2(ub(1,i),usave,n)+glsc2(vb(1,i),vsave,n)
+            if (ldim.eq.3) A(i,j) = A(i,j)+glsc2(wb(1,i),wsave,n)
+         enddo
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine dumptens(c,ub,vb,wb,nb)
+
+      include 'SIZE'
+
+      real ub(lt,0:nb),vb(lt,0:nb),wb(lt,0:nb)
+      real c(0:nb,0:nb,0:nb)
+
+      call makec0(c,ub,vb,wb,nb)
+
+      open (unit=50,file='cten')
+
+      do k=0,nb
+      do j=0,nb
+      do i=0,nb
+         write (50,*) c(i,j,k)
+      enddo
+      enddo
+      enddo
+
+      close (unit=50)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine dumpmats(a,b,ub,vb,wb,nb)
+
+      include 'SIZE'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real ub(lt,0:nb), vb(lt,0:nb), wb(lt,0:nb)
+      real a(0:nb,0:nb), b(0:nb,0:nb)
+
+      call get_a_b(a,b,ub,vb,wb,nb)
+
+      open (unit=50,file='amat')
+
+      do j=0,nb
+      do i=0,nb
+         write (50,*) a(i,j)
+      enddo
+      enddo
+
+      close (unit=50)
+
+      open (unit=50,file='bmat')
+
+      do j=0,nb
+      do i=0,nb
+         write (50,*) b(i,j)
+      enddo
+      enddo
+
+      close (unit=50)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine dumpic(a,ub,vb,wb,nb)
+
+      include 'SIZE'
+      include 'SOLN'
+      include 'MASS'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /scrk1/ t1(lt),t2(lt),t3(lt)
+
+      real ub(lt,0:nb), vb(lt,0:nb), wb(lt,0:nb)
+      real a(0:nb)
+
+      write (6,*) 'inside dumpic'
+
+      call opcopy(t1,t2,t3,vx,vy,vz)
+
+      a(0) = 1.
+
+      call outpost(t1,t2,t3,pr,t,'sss')
+      call opsub2(t1,t2,t3,ub(1,0),vb(1,0),wb(1,0))
+      call outpost(t1,t2,t3,pr,t,'sss')
+
+      do i=1,nb
+         t4 = op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),t1,t2,t3,bm1)
+         t5 = op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),
+     $                    ub(1,i),vb(1,i),wb(1,i),bm1)
+c        call h1prod(t4,ub(1,i),vb(1,i),wb(1,i),t1,t2,t3)
+c        call h1prod(t5,ub(1,i),vb(1,i),wb(1,i),ub(1,i),vb(1,i),wb(1,i))
+         a(i) = t4 / t5
+         write (6,*) 'find coef: ',i,t4,t5,a(i)
+      enddo
+
+      open (unit=50,file='ic')
+
+      write (6,*) nb
+
+      do i=0,nb
+         write (50,*) a(i)
+      enddo
+
+      close (unit=50)
+
+      call testic(a,ub,vb,wb,nb)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine testic(a,ub,vb,wb,nb)
+
+      include 'SIZE'
+      include 'SOLN'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /scrk1/ t1(lt),t2(lt),t3(lt)
+      common /scrk2/ t4(lt),t5(lt),t6(lt)
+
+      real ub(lt,0:nb), vb(lt,0:nb), wb(lt,0:nb)
+      real a(0:nb)
+
+      write (6,*) 'inside dumpic'
+
+      n = lx1*ly1*lz1*nelt
+
+      call opzero(t1,t2,t3)
+
+      call outpost(vx,vy,vz,pr,t,'ini')
+
+      do i=0,nb
+         write (6,*) i,a(i),n,' i,a(i),n'
+         call opadds(t1,t2,t3,ub(1,i),vb(1,i),wb(1,i),a(i),n,2)
+         call outpost(t1,t2,t3,pr,t,'ini')
+      enddo
+
+      call opsub2(t1,t2,t3,vx,vy,vz)
+      call outpost(t1,t2,t3,pr,t,'ini')
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine h1prod(prod,u1,v1,w1,u2,v2,w2)
+
+      include 'SIZE'
+
+      parameter(lt=lx1*ly1*lz1*lelt)
+
+      common /scrk1/ t1(lt), t2(lt), t3(lt)
+      common /scrk2/ h1(lt), h2(lt)
+
+      real u1(lt), v1(lt), w1(lt)
+      real u2(lt), v2(lt), w2(lt)
+
+      n = lx1*ly1*lz1*nelt
+
+      call rone(h1,n)
+      call rzero(h2,n)
+
+      call axhelm(t1,u1,h1,h2,1,1)
+      call axhelm(t2,v1,h1,h2,1,1)
+
+      prod = glsc2(t1,u2,n) + glsc2(t2,v2,n)
+
+      if (ldim.eq.3) then
+         call axhelm(t3,w1,h1,h2,1,1)
+         prod = prod + glsc2(t3,w2,n)
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
