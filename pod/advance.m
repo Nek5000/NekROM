@@ -18,8 +18,8 @@ a = a0(2:n,2:n); % left-handed side A
 b = b0(2:n,2:n); % left-handed side B
 
 a1 = reshape(a0(1,2:n),[nb,1]);
-c1 = reshape(c0(2:n,1,2:n),[nb,nb]);
-c2 = reshape(c0(2:n,2:n,1),[nb,nb]);
+c1 = reshape(c0(2:n,2:n,1),nb,nb);
+c2 = reshape(c0(2:n,2:n,1),nb,nb);
 c3 = reshape(c0(2:n,1,1),[nb,1]);
 
 dt = 1e-4;
