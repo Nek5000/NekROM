@@ -69,7 +69,7 @@ for istep = 1:nstep
 
     rhs = -b * u(2:n,:) * beta(count,2:4)' / dt;
 
-%   rhs = rhs - convec * alpha(count,:)'; % advection contributions
+    rhs = rhs - convec * alpha(count,:)'; % advection contributions
     rhs = rhs - a0(2:n,1:n) * e0 / re; 
     tmp = helm \ rhs;
     u(:,3) = u(:,2);
