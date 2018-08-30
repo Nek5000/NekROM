@@ -60,7 +60,7 @@ for istep = 1:nstep
     t = zeros(nb,n);
 
     for i = 1:n
-        t = t + reshape(c0(2:n,:,i),[nb,n]) * u(i,1);
+        t = t + reshape(c0(2:n,i,:),[nb,n]) * u(i,1);
     end
 
     convec(:,3) = convec(:,2);
