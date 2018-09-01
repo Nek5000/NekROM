@@ -184,6 +184,7 @@ c-----------------------------------------------------------------------
       real a(0:nb,0:nb)
       real b(0:nb,0:nb)
       real c(0:nb,0:nb,0:nb)
+      real ic(0:nb)
 
       common /scrns/ t1(lt)
 
@@ -231,7 +232,7 @@ c     call outpost  (vx,vy,vz,t1,t,'tt2')
 c     call dumpc(c)
       call dumpmats (a,b,ub,vb,wb,nb)
       call gfldr('chan20.f01540')
-      call dumpic(a,ub,vb,wb,nb)
+      call dumpic(ic,ub,vb,wb,nb)
 
       do i=1,999 ! read output from rom solver and dump out fields
          write (fname,10) i
