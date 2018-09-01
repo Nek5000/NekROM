@@ -273,21 +273,83 @@ c-----------------------------------------------------------------------
       real c0(0:nb,0:nb,0:nb)
       real a0(0:nb,0:nb), b0(0:nb,0:nb)
       real ic(0:nb)
-      real a(1:nb),b(1:nb)  ! left-handed side A and B
-
+      real a(1:nb,1:nb),b(1:nb,1:nb)  ! left-handed side A and B
+      real helm(1:nb,1:nb)
+      real u(0:nb,1:3) 
+      real coef(0:nb)
+      
       real ad_dt
       real ad_re
-      real ad_nstep, ad_iostep
+      integer ad_nstep, ad_iostep, ad_step
+
+      real ad_alpha(1:3,1:3), ad_beta(1:3,1:4)
+
+      u = 0.
+      u(0,1:3) = 1.
+      call copy(u(:,1),ic,nb+1)
+
+c      write(6,*)'check u'
+c      do j=1,3
+c      do i=0,nb
+c         write(6,*)u(i,j)
+c      enddo
+c      enddo
+
+      a(1:nb,1:nb) = a0(1:nb,1:nb)
+      b(1:nb,1:nb) = b0(1:nb,1:nb)
+
 
       ad_dt = 1e-4
       ad_re = 1e4
 
-      ad_nstep =1e5
+      ad_nstep =2  !1e5
       ad_iostep = 1e3
 
+      ! BDFk/EXTk coefficients ( will change to BD inside Nek)
+      call compute_BDF_coef(ad_alpha,ad_beta) 
+
+      do ad_step = 1,ad_nstep
+         count = min0(ad_step,3)
+c         write(6,*)'count',count
+         helm(1:nb,1:nb) = (b(1:nb,1:nb) * ad_beta(count,1))/ad_dt
+     $                   + a(1:nb,1:nb)/ad_re
+c         write(6,*)'here'
+c         do j=1,nb
+c         do i=1,nb
+c            write(6,*)i,j,helm(i,j),b(i,j),a(i,j)
+c         enddo
+c         enddo
+      enddo
 
       return
       end
+c-----------------------------------------------------------------------
+      subroutine compute_BDF_coef(ad_alpha,ad_beta) 
+
+      real ad_alpha(1:3,1:3), ad_beta(1:3,1:4)
+
+      ad_alpha = 0
+      ad_beta = 0
+
+      ad_beta(1,1) = 1.
+      ad_beta(1,2) = -1.
+      ad_beta(2,1) = 1.5
+      ad_beta(2,2) = -2
+      ad_beta(2,3) = 0.5
+      ad_beta(3,1) = 11./6
+      ad_beta(3,2) = -3
+      ad_beta(3,3) = 1.5
+      ad_beta(3,4) = -1./3.
+
+      ad_alpha(1,1)=1
+      ad_alpha(2,1)=2
+      ad_alpha(2,2)=-1
+      ad_alpha(3,1)=3
+      ad_alpha(3,2)=-3
+      ad_alpha(3,3)=1
+
+      return
+      end 
 c-----------------------------------------------------------------------
       subroutine outmatl(u,v,w,k)
       include 'SIZE'  
