@@ -234,8 +234,6 @@ c     call dumpc(c)
       call gfldr('chan20.f01540')
       call dumpic(ic,ub,vb,wb,nb)
 
-      call advance(coef,a,b,c,ic,nb)
-
       do i=1,999 ! read output from rom solver and dump out fields
          write (fname,10) i
          write (6,*) fname
@@ -259,32 +257,6 @@ c     call dumpc(c)
    30 continue
       write (6,*) 'failed in my_pod2$',ns
       call exitt
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine advance(coef,a0,b0,c0,ic,nb)
-
-      include 'SIZE'
-      include 'TOTAL'
-
-      parameter (lt=lx1*ly1*lz1*lelt)
-
-      real c0(0:nb,0:nb,0:nb)
-      real a0(0:nb,0:nb), b0(0:nb,0:nb)
-      real ic(0:nb)
-      real a(1:nb),b(1:nb)  ! left-handed side A and B
-
-      real ad_dt
-      real ad_re
-      real ad_nstep, ad_iostep
-
-      ad_dt = 1e-4
-      ad_re = 1e4
-
-      ad_nstep =1e5
-      ad_iostep = 1e3
-
 
       return
       end
