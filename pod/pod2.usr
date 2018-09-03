@@ -301,9 +301,11 @@ c     Working arrays for LU
 
       n  = lx1*ly1*lz1*nelt
 
-      u = 0.
-      u(0,1:3) = 1.
-      call copy(u(:,1),ic,nb+1)
+      call rzero(u,(nb+1)*3)
+      u(0,1) = 1.
+      u(0,2) = 1.
+      u(0,3) = 1.
+      call copy(u,ic,nb+1)
 
       ad_nsteps = 1e5
       ad_iostep = 1e3
@@ -367,8 +369,8 @@ c-----------------------------------------------------------------------
 
       real ad_alpha(3,3), ad_beta(4,3)
 
-      ad_alpha = 0
-      ad_beta = 0
+      call rzero(ad_alpha,3*3)
+      call rzero(ad_beta,3*4)
 
       ad_beta(1,1) = 1.
       ad_beta(2,1) = -1.
