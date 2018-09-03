@@ -14,3 +14,5 @@ mn
 makenek
 SESSION.NAME
 *.nek5000
+*.out
+out.*
