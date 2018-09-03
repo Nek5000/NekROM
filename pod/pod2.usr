@@ -289,7 +289,7 @@ c     Matrices and vectors for advance
       real coef(1:nb)
       
       real ad_dt, ad_re
-      real ad_alpha(1:3,1:3), ad_beta(1:3,1:4)
+      real ad_alpha(3,3), ad_beta(4,3)
 
       integer ad_nsteps, ad_iostep, ad_step
 
@@ -318,15 +318,15 @@ c     Working arrays for LU
       do ad_step = 1,ad_nsteps
          count = min0(ad_step,3)
 
-         helm(1:nb,1:nb) = (b(1:nb,1:nb) * ad_beta(count,1)) / ad_dt
+         helm(1:nb,1:nb) = (b(1:nb,1:nb) * ad_beta(1,count)) / ad_dt
      $                   + a(1:nb,1:nb) / ad_re
 
          ONE = 1.
          ZERO= 0.
 
-         tmp(1:nb) = u(1:nb,1) * ad_beta(count,2) 
-     $             + u(1:nb,2) * ad_beta(count,3)
-     $             + u(1:nb,3) * ad_beta(count,4)
+         tmp(1:nb) = u(1:nb,1) * ad_beta(2,count) 
+     $             + u(1:nb,2) * ad_beta(3,count)
+     $             + u(1:nb,3) * ad_beta(4,count)
 
          call dgemv( 'N',nb,nb,ONE,b,nb,tmp,1,ZERO,rhs,1)
 
@@ -365,26 +365,30 @@ c     Working arrays for LU
 c-----------------------------------------------------------------------
       subroutine compute_BDF_coef(ad_alpha,ad_beta) 
 
-      real ad_alpha(1:3,1:3), ad_beta(1:3,1:4)
+      real ad_alpha(3,3), ad_beta(4,3)
 
       ad_alpha = 0
       ad_beta = 0
 
       ad_beta(1,1) = 1.
-      ad_beta(1,2) = -1.
-      ad_beta(2,1) = 1.5
+      ad_beta(2,1) = -1.
+
+      ad_beta(1,2) = 1.5
       ad_beta(2,2) = -2
-      ad_beta(2,3) = 0.5
-      ad_beta(3,1) = 11./6
-      ad_beta(3,2) = -3
+      ad_beta(3,2) = 0.5
+
+      ad_beta(1,3) = 11./6
+      ad_beta(2,3) = -3
       ad_beta(3,3) = 1.5
-      ad_beta(3,4) = -1./3.
+      ad_beta(4,3) = -1./3.
 
       ad_alpha(1,1)=1
-      ad_alpha(2,1)=2
+
+      ad_alpha(1,2)=2
       ad_alpha(2,2)=-1
-      ad_alpha(3,1)=3
-      ad_alpha(3,2)=-3
+
+      ad_alpha(1,3)=3
+      ad_alpha(2,3)=-3
       ad_alpha(3,3)=1
 
       return
