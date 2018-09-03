@@ -1,3 +1,4 @@
+nek5000.*
 out.*
 fort.*
 file.list
@@ -12,5 +13,6 @@ c1mat
 c2mat
 avec
 cvec
+ic
 
 *.out
