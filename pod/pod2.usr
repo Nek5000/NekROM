@@ -345,8 +345,6 @@ c     Working arrays for LU
          call copy(conv(1,3),conv(1,2),nb)
          call copy(conv(1,2),conv(1,1),nb)
 
-         call rzero(conv,nb)
-
          call mxm(c,nb*(nb+1),u,nb+1,tmat,1)
          call mxm(tmat,nb,u,nb+1,conv,1)
 
