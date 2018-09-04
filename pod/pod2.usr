@@ -186,9 +186,6 @@ c      real coef(nb)
       real c(0:nb,0:nb,0:nb)
       real ic(0:nb)
 
-
-      common /scrns/ t1(lt)
-
       character(len=10) fname
 
       n  = lx1*ly1*lz1*nelt
