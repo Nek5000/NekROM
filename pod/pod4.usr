@@ -88,7 +88,7 @@ c-----------------------------------------------------------------------
       include 'TOTAL' 
       common /myoutflow/ d(lx1,ly1,lz1,lelt),m1(lx1*ly1*lz1,lelt)
 
-      call my_pod2
+      call my_pod4
 
       return
       end
@@ -164,7 +164,7 @@ c     This routine reads files specificed in file.list
       return
       end
 c-----------------------------------------------------------------------
-      subroutine my_pod2
+      subroutine my_pod4
       include 'SIZE'  
       include 'TOTAL' 
 
@@ -224,16 +224,15 @@ c      real coef(nb)
          call outmatl(ub(1,i),vb(1,i),wb(1,i),i)
       enddo
 
-      call dumptens (c  ,ub,vb,wb,nb)
-      call dumpmats (a,b,ub,vb,wb,nb)
       call gfldr('chan20.f01540')
-      call dumpic(ic,ub,vb,wb,nb)
 
-      write (6,*) 'quit in my_pod2$',ns
+      call advance(a,b,c,ic,ub,vb,wb,u0,nb)
+
+      write (6,*) 'quit in my_pod4$',ns
       call exitt0
 
    30 continue
-      write (6,*) 'failed in my_pod2$',ns
+      write (6,*) 'failed in my_pod4$',ns
       call exitt
 
       return

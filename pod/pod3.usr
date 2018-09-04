@@ -88,7 +88,7 @@ c-----------------------------------------------------------------------
       include 'TOTAL' 
       common /myoutflow/ d(lx1,ly1,lz1,lelt),m1(lx1*ly1*lz1,lelt)
 
-      call my_pod2
+      call my_pod3
 
       return
       end
@@ -164,7 +164,7 @@ c     This routine reads files specificed in file.list
       return
       end
 c-----------------------------------------------------------------------
-      subroutine my_pod2
+      subroutine my_pod3
       include 'SIZE'  
       include 'TOTAL' 
 
@@ -224,16 +224,28 @@ c      real coef(nb)
          call outmatl(ub(1,i),vb(1,i),wb(1,i),i)
       enddo
 
-      call dumptens (c  ,ub,vb,wb,nb)
-      call dumpmats (a,b,ub,vb,wb,nb)
-      call gfldr('chan20.f01540')
-      call dumpic(ic,ub,vb,wb,nb)
+      do i=1,999 ! read output from rom solver and dump out fields
+         write (fname,10) i
+         write (6,*) fname
+         open (unit=50,file=fname)
+         do j=1,nb
+            read (50,*,err=30) coef(j)
+         enddo
+         close (unit=50)
+         call opzero(vx,vy,vz)
+         do j=1,nb
+            call opadds(vx,vy,vz,ub(1,j),vb(1,j),wb(1,j),coef(j),n,2)
+         enddo
+         call opadd2  (vx,vy,vz,u0(1,1),u0(1,2),u0(1,3))
+         call outpost (vx,vy,vz,pr,t,'rom')
+      enddo
+   10 format (i3.3,'.out')
 
-      write (6,*) 'quit in my_pod2$',ns
+      write (6,*) 'quit in my_pod3$',ns
       call exitt0
 
    30 continue
-      write (6,*) 'failed in my_pod2$',ns
+      write (6,*) 'failed in my_pod3$',ns
       call exitt
 
       return
