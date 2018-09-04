@@ -165,11 +165,12 @@ c     This routine reads files specificed in file.list
       end
 c-----------------------------------------------------------------------
       subroutine my_pod2
+
       include 'SIZE'  
       include 'TOTAL' 
+      include 'POD'
 
-      parameter (lt=lx1*ly1*lz1*lelt,ms=104)
-      parameter (nb=20)  ! Number of basis vectors
+      parameter (lt=lx1*ly1*lz1*lelt)
 
       real usave(lt,ms),vsave(lt,ms),wsave(lt,ms)
       real uu(ms,ms)

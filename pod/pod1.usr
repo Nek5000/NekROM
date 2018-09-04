@@ -156,8 +156,9 @@ c-----------------------------------------------------------------------
       subroutine my_pod
       include 'SIZE'  
       include 'TOTAL' 
+      include 'POD'
 
-      parameter (lt=lx1*ly1*lz1*lelt,ms=104)
+      parameter (lt=lx1*ly1*lz1*lelt)
       real usave(lt,ms),vsave(lt,ms),wsave(lt,ms)
       real uu(ms,ms)
       real uw(lt),vw(lt),ww(lt),h1(lt),h2(lt)
