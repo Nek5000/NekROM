@@ -332,11 +332,9 @@ c     Working arrays for LU
          ONE = 1.
          ZERO= 0.
 
-         call cmult2(tmp,u(1,1),ad_beta(2,count),nb)
-         call add2s2(tmp,u(1,2),ad_beta(3,count),nb)
-         call add2s2(tmp,u(1,3),ad_beta(4,count),nb)
+         call mxm(u,nb+1,ad_beta(2,count),3,tmp,1)
 
-         call dgemv( 'N',nb,nb,ONE,b,nb,tmp,1,ZERO,rhs,1)
+         call dgemv( 'N',nb,nb,ONE,b,nb,tmp(1),1,ZERO,rhs,1)
 
          call cmult(rhs,-1/ad_dt,nb)
          call add2s2(rhs,a0(1,0),-1/ad_re,nb)
