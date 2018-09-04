@@ -352,7 +352,7 @@ c     Working arrays for LU
 
          call mxm(conv,nb,ad_alpha(1,count),3,tmp,1)
 
-c        call sub2(rhs,tmp,nb)
+         call sub2(rhs,tmp,nb)
 
          call LU    (helm,nb,nb,IR,ICC)
          call SOLVE (rhs,helm,1,nb,nb,IR,ICC)
