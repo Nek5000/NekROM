@@ -283,7 +283,7 @@ c     Matrix without Stokes solution
 
 c     Matrices and vectors for advance
       real helm(1:nb,1:nb), rhs(1:nb)
-      real tmp(1:nb)
+      real tmp(nb),tmat(nb,nb+1)
       real u(0:nb,1:3) 
       real conv(nb,3)
       real coef(1:nb)
