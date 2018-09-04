@@ -279,7 +279,7 @@ c     Matrix include Stokes solution and initial condition
       real ic(0:nb)
 
 c     Matrix without Stokes solution
-      real a(1:nb,1:nb),b(1:nb,1:nb)  ! left-handed side A and B
+      real a(nb,nb),b(nb,nb),c(nb,0:nb,0:nb) ! left-handed side A and B
 
 c     Matrices and vectors for advance
       real helm(1:nb,1:nb), rhs(1:nb)
