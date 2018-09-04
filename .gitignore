@@ -16,3 +16,4 @@ SESSION.NAME
 *.nek5000
 *.out
 out.*
+*.mp4
