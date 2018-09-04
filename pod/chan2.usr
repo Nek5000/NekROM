@@ -124,7 +124,7 @@ c-----------------------------------------------------------------------
 
       call col3(bsurf,bm1,fmask,n)
       tsurf = glsc2(t,bsurf,n) / glsum(bsurf,n)
-      tave = glsc2(t,bm1,n) / glsum(bm1,n)
+      tave = glsc2(t,bm1,n) / volvm1
 
       h = 2. ! height of the channel
       q = 1. ! flux on the surface
