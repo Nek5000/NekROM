@@ -348,7 +348,7 @@ c     Working arrays for LU
          call rzero(conv,nb)
 
          call mxm(c,nb*(nb+1),u,nb+1,tmat,1)
-         call mxm(tmat,nb,u,nb+1,tmp,1)
+         call mxm(tmat,nb,u,nb+1,conv,1)
 
          call mxm(conv,nb,ad_alpha(1,count),3,tmp,1)
 
