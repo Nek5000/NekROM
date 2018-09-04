@@ -17,3 +17,5 @@ SESSION.NAME
 *.out
 out.*
 *.mp4
+*.tar.gz
+*.tgz
