@@ -296,8 +296,13 @@ c     Matrices and vectors for advance
 c     Working arrays for LU 
       integer IR(nb),ICC(nb)
 
-      a(1:nb,1:nb) = a0(1:nb,1:nb)
-      b(1:nb,1:nb) = b0(1:nb,1:nb)
+      do i=1,nb
+         call copy(a(1,i),a0(1,i),nb)
+         call copy(b(1,i),b0(1,i),nb)
+         do j=1,nb
+            call copy(c(1,j,i),c0(1,j,i),nb)
+         enddo
+      enddo
 
       n  = lx1*ly1*lz1*nelt
 
