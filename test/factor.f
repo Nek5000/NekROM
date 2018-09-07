@@ -114,3 +114,28 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine clocal(c,cc,u,i0,i1,j0,j1,k0,k1,nb)
+
+      real c(nb),cc(1),u(nb+1)
+
+      common /scrk1/ work(100)
+
+c     call rzero(c,nb)
+
+      l=0
+
+      do k=k0,k1
+      do j=j0,j1
+         ajk=a(j)*a(k)
+         do i=i0,i1
+            l=l+1
+            c(i)=c(i)+cc(l)*ajk
+         enddo
+      enddo
+      enddo
+
+      call gop(c,work,'+  ',nb)
+
+      return
+      end
+c-----------------------------------------------------------------------
