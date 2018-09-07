@@ -80,3 +80,18 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine setblocks(blocks,nparts,nb)
+
+      real blocks(nparts)
+
+      min = nb / nparts
+      mb = nb - min * nparts
+
+      do i=1,nparts
+         blocks(i) = min
+         if (i.lt.mb) blocks(i) = blocks(i) + 1
+      enddo
+        
+      return
+      end
+c-----------------------------------------------------------------------
