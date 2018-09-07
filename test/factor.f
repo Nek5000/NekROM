@@ -3,11 +3,23 @@ c-----------------------------------------------------------------------
 
       parameter (n=2400)
 
-      integer factors(n), parts(3)
+      integer factors(n), parts(3), blocks(n)
+
+      nb = 300
+
+      call izero(blocks,n)
 
       call factor(factors,n)
-
       call partition3(parts,factors)
+
+      do i=1,3
+         write (6,*) i,'th partition:'
+         write (6,*) parts(i), 'parts'
+         call setblocks(blocks,parts(i),nb)
+         do j=1,parts(i)
+            write (6,*) blocks(j)
+         enddo
+      enddo
 
       iflag = -1
       i = 1
@@ -26,9 +38,7 @@ c-----------------------------------------------------------------------
 
       n=m
 
-      do i=1,n
-         factors(i) = 0
-      enddo
+      call izero(factors,n)
 
       j=1
       i=2
@@ -82,7 +92,7 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine setblocks(blocks,nparts,nb)
 
-      real blocks(nparts)
+      integer blocks(nparts)
 
       min = nb / nparts
       mb = nb - min * nparts
@@ -92,6 +102,17 @@ c-----------------------------------------------------------------------
          if (i.lt.mb) blocks(i) = blocks(i) + 1
       enddo
         
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine izero(a,n)
+
+      integer a(n)
+
+      do i=1,n
+         a(i) = 0
+      enddo
+
       return
       end
 c-----------------------------------------------------------------------
