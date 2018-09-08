@@ -303,6 +303,7 @@ c     Working arrays for LU
 
       n  = lx1*ly1*lz1*nelt
 
+      time=time+ad_dt
 
       count = min0(ad_step,3)
 
