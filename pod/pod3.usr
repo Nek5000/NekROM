@@ -177,9 +177,9 @@ c-----------------------------------------------------------------------
       real uw(lt),vw(lt),ww(lt),h1(lt),h2(lt)
       real u0(lt,3)
       real u0r(ms)
+      real coef(0:nb)
 
       real evec(ms,nb)
-      real ub(lt,0:nb),vb(lt,0:nb),wb(lt,0:nb)
 
       character(len=10) fname
 
@@ -243,14 +243,14 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine outmatl(u,v,w,k)
+      subroutine outmatl(uu,v,w,k)
 
       include 'SIZE'  
       include 'TOTAL' 
       include 'POD'
 
       parameter (lt=lx1*ly1*lz1*lelt)
-      real u(lt),v(lt),w(lt)
+      real uu(lt),v(lt),w(lt)
       character*7 fname
 
       if (np.gt.1) call exitti('outmatl works for P=1 only!$',np)
@@ -261,7 +261,7 @@ c-----------------------------------------------------------------------
 
       n = lx1*ly1*lz1*nelt
       do i=1,n
-         write(33,33) xm1(i,1,1,1),ym1(i,1,1,1),u(i),v(i)
+         write(33,33) xm1(i,1,1,1),ym1(i,1,1,1),uu(i),v(i)
    33    format(1p4e16.7)
       enddo
       close(33)
