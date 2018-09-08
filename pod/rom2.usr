@@ -248,7 +248,6 @@ c-----------------------------------------------------------------------
 c     Matrices and vectors for advance
       real helm(1:nb,1:nb), rhs(1:nb)
       real tmp(0:nb),tmat(nb,nb+1)
-      real conv(nb,3)
       real coef(1:nb)
 
 c     Working arrays for LU 
@@ -295,7 +294,6 @@ c-----------------------------------------------------------------------
 c     Matrices and vectors for advance
       real helm(1:nb,1:nb), rhs(1:nb)
       real tmp(0:nb),tmat(nb,nb+1)
-      real conv(nb,3)
       real coef(1:nb)
 
 c     Working arrays for LU 
