@@ -253,6 +253,8 @@ c     Matrices and vectors for advance
 c     Working arrays for LU 
       integer IR(nb),ICC(nb)
 
+      time = 0.
+
       do i=1,nb
          call copy(a(1,i),a0(1,i),nb)
          call copy(b(1,i),b0(1,i),nb)
