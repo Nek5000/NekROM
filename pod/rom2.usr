@@ -277,7 +277,7 @@ c     Working arrays for LU
       ad_iostep = 1e4
 
       ad_dt = 1e-5
-      ad_re = 1e2
+      ad_re = 1e3
 
       ! BDFk/EXTk coefficients ( will change to BD inside Nek)
       call compute_BDF_coef(ad_alpha,ad_beta) 
