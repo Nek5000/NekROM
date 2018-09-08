@@ -319,12 +319,6 @@ c     Working arrays for LU
       u(0,3) = 1.
       call copy(u,ic,nb+1)
 
-      ad_nsteps = 1e6
-      ad_iostep = 1e4
-
-      ad_dt = 1e-5
-      ad_re = 1e2
-
       ! BDFk/EXTk coefficients ( will change to BD inside Nek)
       call compute_BDF_coef(ad_alpha,ad_beta) 
 
