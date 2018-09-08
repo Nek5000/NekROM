@@ -95,7 +95,6 @@ c-----------------------------------------------------------------------
 
       do ad_step=1,ad_nsteps
          call rom_step
-         call outpost(vx,vy,vz,pr,t,'rom')
       enddo
 
       call exitt0
