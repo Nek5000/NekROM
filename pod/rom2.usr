@@ -84,11 +84,20 @@ c     NOTE ::: This is not guaranteed to be called by every process
       end
 c-----------------------------------------------------------------------
       subroutine userchk
+
       include 'SIZE'  
       include 'TOTAL' 
+      include 'POD'
+
       common /myoutflow/ d(lx1,ly1,lz1,lelt),m1(lx1*ly1*lz1,lelt)
 
       call my_pod4
+
+      do ad_step=1,ad_nsteps
+         call rom_step
+      enddo
+
+      call exitt0
 
       return
       end
@@ -179,12 +188,6 @@ c-----------------------------------------------------------------------
       real u0r(ms)
 
       real evec(ms,nb)
-      real ub(lt,0:nb),vb(lt,0:nb),wb(lt,0:nb)
-
-      real a(0:nb,0:nb)
-      real b(0:nb,0:nb)
-      real c(0:nb,0:nb,0:nb)
-      real ic(0:nb)
 
       character(len=10) fname
 
@@ -223,14 +226,13 @@ c-----------------------------------------------------------------------
 
       call gfldr('chan20.f01540')
 
-      call makec0(c,ub,vb,wb)
-      call get_a_b(a,b,ub,vb,wb)
-      call makeic(ic,ub,vb,wb)
+      call makec
+      call get_a_b
+      call makeic
 
-      call advance(a,b,c,ic,ub,vb,wb,u0,nb)
+      call rom_setup
 
-      write (6,*) 'quit in my_pod4$',ns
-      call exitt0
+      write (6,*) 'end in my_pod4$',ns
 
    30 continue
       write (6,*) 'failed in my_pod4$',ns
@@ -239,7 +241,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine advance(a0,b0,c0,ic,ub,vb,wb,u0)
+      subroutine rom_setup
 
       include 'SIZE'
       include 'TOTAL'
@@ -247,27 +249,58 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real ub(lt,0:nb),vb(lt,0:nb),wb(lt,0:nb)
-      real u0(lt,3)
+c     Matrices and vectors for advance
+      real helm(1:nb,1:nb), rhs(1:nb)
+      real tmp(0:nb),tmat(nb,nb+1)
+      real conv(nb,3)
+      real coef(1:nb)
 
-c     Matrix include Stokes solution and initial condition
-      real a0(0:nb,0:nb), b0(0:nb,0:nb), c0(0:nb,0:nb,0:nb)
-      real ic(0:nb)
+c     Working arrays for LU 
+      integer IR(nb),ICC(nb)
 
-c     Matrix without Stokes solution
-      real a(nb,nb),b(nb,nb),c(nb,0:nb,0:nb) ! left-handed side A and B
+      do i=1,nb
+         call copy(a(1,i),a0(1,i),nb)
+         call copy(b(1,i),b0(1,i),nb)
+      enddo
+
+      do i=0,nb
+      do j=0,nb
+         call copy(c(1,j,i),c0(1,j,i),nb)
+      enddo
+      enddo
+
+      n  = lx1*ly1*lz1*nelt
+
+      call rzero(u,(nb+1)*3)
+      u(0,2) = 1.
+      u(0,3) = 1.
+      call copy(u,ic,nb+1)
+
+      ad_nsteps = 1e6
+      ad_iostep = 1e4
+
+      ad_dt = 1e-5
+      ad_re = 1e2
+
+      ! BDFk/EXTk coefficients ( will change to BD inside Nek)
+      call compute_BDF_coef(ad_alpha,ad_beta) 
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine rom_step
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'POD'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
 
 c     Matrices and vectors for advance
       real helm(1:nb,1:nb), rhs(1:nb)
       real tmp(0:nb),tmat(nb,nb+1)
-      real u(0:nb,1:3) 
       real conv(nb,3)
       real coef(1:nb)
-
-      real ad_dt, ad_re
-      real ad_alpha(3,3), ad_beta(4,3)
-
-      integer ad_nsteps, ad_iostep, ad_step
 
 c     Working arrays for LU 
       integer IR(nb),ICC(nb)
@@ -346,7 +379,7 @@ c     Working arrays for LU
             do j=1,nb
                call opadds(vx,vy,vz,ub(1,j),vb(1,j),wb(1,j),coef(j),n,2)
             enddo
-            call opadd2  (vx,vy,vz,u0(1,1),u0(1,2),u0(1,3))
+            call opadd2  (vx,vy,vz,ub,vb,wb)
             call outpost (vx,vy,vz,pr,t,'rom')
          endif
       enddo
@@ -385,14 +418,14 @@ c-----------------------------------------------------------------------
       return
       end 
 c-----------------------------------------------------------------------
-      subroutine outmatl(u,v,w,k)
+      subroutine outmatl(uu,v,w,k)
 
       include 'SIZE'  
       include 'TOTAL' 
       include 'POD'
 
       parameter (lt=lx1*ly1*lz1*lelt)
-      real u(lt),v(lt),w(lt)
+      real uu(lt),v(lt),w(lt)
       character*7 fname
 
       if (np.gt.1) call exitti('outmatl works for P=1 only!$',np)
@@ -403,7 +436,7 @@ c-----------------------------------------------------------------------
 
       n = lx1*ly1*lz1*nelt
       do i=1,n
-         write(33,33) xm1(i,1,1,1),ym1(i,1,1,1),u(i),v(i)
+         write(33,33) xm1(i,1,1,1),ym1(i,1,1,1),uu(i),v(i)
    33    format(1p4e16.7)
       enddo
       close(33)
@@ -411,7 +444,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine makec0(c,ub,vb,wb)
+      subroutine makec
 
       include 'SIZE'
       include 'TOTAL'
@@ -419,8 +452,6 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real c(0:nb,0:nb,0:nb)
-      real ub(lt,0:nb), vb(lt,0:nb), wb(lt,0:nb)
       real cux(lt), cuy(lt), cuz(lt)
 
       common /scrk1/ t1(lt), binv(lt)
@@ -434,7 +465,7 @@ c-----------------------------------------------------------------------
             call setcnv_u(ub(1,j),vb(1,j),wb(1,j))
             call ccu(cux,cuy,cuz)
             do i=0,nb
-               c(i,j,k) = op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),
+               c0(i,j,k) = op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),
      $                                cux,cuy,cuz,binv)
             enddo
          enddo
@@ -516,7 +547,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine get_A_B(a,b,ub,vb,wb)
+      subroutine get_A_B
 
       include 'SIZE'
       include 'TOTAL'
@@ -524,16 +555,13 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real ub(lt,0:nb),vb(lt,0:nb),wb(lt,0:nb)
-      real A(0:nb,0:nb),B(0:nb,0:nb)
-
       common /scrvh/ h1(lt),h2(lt)
       common /scrns/ usave(lt),vsave(lt),wsave(lt)
 
       do j=0,nb
       do i=0,nb
-         B(i,j) = op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),
-     $                        ub(1,j),vb(1,j),wb(1,j),bm1)
+         b0(i,j) = op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),
+     $                         ub(1,j),vb(1,j),wb(1,j),bm1)
       enddo
       enddo
 
@@ -546,8 +574,8 @@ c-----------------------------------------------------------------------
          call axhelm(vsave,vb(1,j),h1,h2,1,1)
          if (ldim.eq.3) call axhelm(wsave,wb(1,j),h1,h2,1,1)
          do i=0,nb
-            A(i,j) = glsc2(ub(1,i),usave,n)+glsc2(vb(1,i),vsave,n)
-            if (ldim.eq.3) A(i,j) = A(i,j)+glsc2(wb(1,i),wsave,n)
+            a0(i,j) = glsc2(ub(1,i),usave,n)+glsc2(vb(1,i),vsave,n)
+            if (ldim.eq.3) a0(i,j) = a0(i,j)+glsc2(wb(1,i),wsave,n)
          enddo
       enddo
 
@@ -584,7 +612,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine makeic(a,ub,vb,wb)
+      subroutine makeic
 
       include 'SIZE'
       include 'SOLN'
@@ -595,14 +623,11 @@ c-----------------------------------------------------------------------
 
       common /scrk1/ t1(lt),t2(lt),t3(lt)
 
-      real ub(lt,0:nb), vb(lt,0:nb), wb(lt,0:nb)
-      real a(0:nb)
-
       write (6,*) 'inside makeic'
 
       call opcopy(t1,t2,t3,vx,vy,vz)
 
-      a(0) = 1.
+      ic(0) = 1.
 
       call opsub2(t1,t2,t3,ub(1,0),vb(1,0),wb(1,0))
 
@@ -612,8 +637,8 @@ c-----------------------------------------------------------------------
      $                    ub(1,i),vb(1,i),wb(1,i),bm1)
 c        call h1prod(t4,ub(1,i),vb(1,i),wb(1,i),t1,t2,t3)
 c        call h1prod(t5,ub(1,i),vb(1,i),wb(1,i),ub(1,i),vb(1,i),wb(1,i))
-         a(i) = t4 / t5
-         write (6,*) 'find coef: ',i,t4,t5,a(i)
+         ic(i) = t4 / t5
+         write (6,*) 'find coef: ',i,t4,t5,ic(i)
       enddo
 
       return
