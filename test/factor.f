@@ -5,7 +5,7 @@ c-----------------------------------------------------------------------
 
       integer factors(n), parts(3), blocks(n)
 
-      nb = 300
+      nb = 400
 
       call izero(blocks,n)
 
