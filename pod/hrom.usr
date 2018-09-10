@@ -89,11 +89,15 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'  
       include 'TOTAL' 
+      include 'POD'
 
       if (istep.eq.0) then
          call my_pod4
       else
-         call rom_step
+         do ad_step=1,ad_nsteps
+            call rom_step
+         enddo
+         call exitt0
       endif
 
       return
@@ -231,7 +235,7 @@ c-----------------------------------------------------------------------
 
       call rom_setup
 
-      write (6,*) 'end in my_pod4$',ns
+      ifflow = .false.
 
       return
       end
@@ -271,7 +275,7 @@ c     Working arrays for LU
       u(0,2) = 1.
       u(0,3) = 1.
       u(0,1) = 1.
-c     call copy(u,ic,nb+1)
+      call copy(u,ic,nb+1)
 
 c     do j=1,3
 c     do i=0,nb
@@ -282,7 +286,7 @@ c     enddo
 c     call exitt0
 
       ad_nsteps = nsteps
-      ad_iostep = 1000
+      ad_iostep = iostep
 
       ad_dt = dt
       ad_re = 1/param(2)
@@ -323,7 +327,6 @@ c     Working arrays for LU
 
       call dgemv( 'N',nb,nb,ONE,b,nb,tmp(1),1,ZERO,rhs,1)
 
-
       call cmult(rhs,-1/ad_dt,nb)
       call add2s2(rhs,a0(1,0),-1/ad_re,nb)
 
@@ -348,16 +351,22 @@ c     enddo
       call copy(u(1,1),rhs,nb)
       call copy(coef,rhs,nb)
 
-c     call opzero(vx,vy,vz)
-      do j=0,nb
-c        call opadds(vx,vy,vz,ub(1,j),vb(1,j),wb(1,j),coef(j),n,2)
+      call opcopy(vx,vy,vz,ub,vb,wb)
+
+      do j=1,nb
+         call opadds(vx,vy,vz,ub(1,j),vb(1,j),wb(1,j),coef(j),n,2)
       enddo
 
-c     write(6,*) 'rom_step:',istep
+      if (mod(ad_step,ad_iostep).eq.0) then
+         call outpost(vx,vy,vz,pr,t,'rom')
+         write (6,*) 'rom outpost', ad_step,ad_iostep
+      endif
 
-c     do j=1,nb
-c        write(6,*)j,coef(j)
-c     enddo
+      write(6,*) 'rom_step:',ad_step
+
+      do j=1,nb
+         write(6,*),coef(j)
+      enddo
 
       return
       end
