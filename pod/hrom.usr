@@ -93,9 +93,11 @@ c-----------------------------------------------------------------------
 
       if (istep.eq.0) then
          call my_pod4
+         call set_fmask
       else
 c        do ad_step=1,ad_nsteps
-            call rom_step
+         call rom_step
+         call calc_nuss
 c        enddo
 c        call exitt0
       endif
@@ -627,6 +629,58 @@ c        call h1prod(t5,ub(1,i),vb(1,i),wb(1,i),ub(1,i),vb(1,i),wb(1,i))
 
       do i=1,nb
          ic(1) = 0.
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine calc_nuss
+
+      include 'SIZE'
+      include 'SOLN'
+      include 'MASS'
+      include 'INPUT'
+
+      common /nusselt/ fmask(lx1,ly1,lz1,lelt), nuss
+
+      real nuss, bsurf(lx1,ly1,lz1,lelt)
+
+      n = lx1*ly1*lz1*nelv
+
+      call col3(bsurf,bm1,fmask,n)
+      tsurf = glsc2(t,bsurf,n) / glsum(bsurf,n)
+      tave = glsc2(t,bm1,n) / volvm1
+
+      h = 2. ! height of the channel
+      q = 1. ! flux on the surface
+      nuss = q * h / (param(8)*(tsurf-tave))
+      if (nio.eq.0) write (6,*) tsurf,tave,nuss,' fluxes'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine set_fmask
+
+      include 'SIZE'
+      include 'INPUT'
+
+      common /nusselt/ fmask(lx1,ly1,lz1,lelt)
+
+      integer e,f
+
+      call rzero(fmask,lx1*ly1*lz1*nelv)
+
+      do e=1,nelt
+      do f=1,ldim*2
+         if (cbc(f,e,2).eq.'f  ') then
+            call facind(kx1,kx2,ky1,ky2,kz1,kz2,lx1,ly1,lz1,f)
+            do j=ky1,ky2
+            do i=kx1,kx2
+               fmask(i,j,1,e) = 1.
+            enddo
+            enddo
+         endif
+      enddo
       enddo
 
       return
