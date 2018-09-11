@@ -94,10 +94,10 @@ c-----------------------------------------------------------------------
       if (istep.eq.0) then
          call my_pod4
       else
-         do ad_step=1,ad_nsteps
+c        do ad_step=1,ad_nsteps
             call rom_step
-         enddo
-         call exitt0
+c        enddo
+c        call exitt0
       endif
 
       return
@@ -357,16 +357,16 @@ c     enddo
          call opadds(vx,vy,vz,ub(1,j),vb(1,j),wb(1,j),coef(j),n,2)
       enddo
 
-      if (mod(ad_step,ad_iostep).eq.0) then
-         call outpost(vx,vy,vz,pr,t,'rom')
-         write (6,*) 'rom outpost', ad_step,ad_iostep
-      endif
+c     if (mod(ad_step,ad_iostep).eq.0) then
+c        call outpost(vx,vy,vz,pr,t,'rom')
+c        write (6,*) 'rom outpost', ad_step,ad_iostep
+c     endif
 
-      write(6,*) 'rom_step:',ad_step
+c     write(6,*) 'rom_step:',ad_step
 
-      do j=1,nb
-         write(6,*),coef(j)
-      enddo
+c     do j=1,nb
+c        write(6,*),coef(j)
+c     enddo
 
       return
       end
