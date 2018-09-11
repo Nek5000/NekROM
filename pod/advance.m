@@ -23,11 +23,10 @@ c2 = reshape(c0(2:n,2:n,1),nb,nb);
 c3 = reshape(c0(2:n,1,1),[nb,1]);
 
 dt = 1e-4;
-re = 1e4;
+re = 1e3;
 
 nstep = 1e5;
 iostep = 1e3;
-
 
 u0 = dlmread('ic');
 e0 = [1;zeros(nb,1)];
