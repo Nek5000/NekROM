@@ -654,7 +654,8 @@ c-----------------------------------------------------------------------
       h = 2. ! height of the channel
       q = 1. ! flux on the surface
       nuss = q * h / (param(8)*(tsurf-tave))
-      if (nio.eq.0) write (6,*) tsurf,tave,nuss,' fluxes'
+      if (nio.eq.0) write (6,1) time,tsurf,tave,nuss
+    1 format(1p4e12.5,' fluxes')
 
       return
       end
