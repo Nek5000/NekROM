@@ -640,6 +640,7 @@ c-----------------------------------------------------------------------
       include 'SOLN'
       include 'MASS'
       include 'INPUT'
+      include 'TSTEP'
 
       common /nusselt/ fmask(lx1,ly1,lz1,lelt), nuss
 
