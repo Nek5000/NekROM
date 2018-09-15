@@ -229,13 +229,6 @@ c-----------------------------------------------------------------------
          call copy(evec(1,l),eigv(1,ms-l+1),ms)
       enddo
 
-c      if (nid.eq.0) then
-c         open (unit=12,file='evectors.dat')
-c         read(12,*) (evec(k,1),k=1,ns*nvecs)
-c      endif
-c      len = wdsize*ns*nvecs ! broadcast array of length len bytes
-c      call bcast (evec,len)
-
       ONE = 1.
       ZERO= 0.
 
