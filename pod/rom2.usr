@@ -206,6 +206,19 @@ c-----------------------------------------------------------------------
       call rzero(h2,n)
       call rzero(Identity,ms*ms)
 
+      do j=1,ns                    ! Form the Gramian, U=U_K^T A U_K
+         call axhelm(uw,usave(1,j),h1,h2,1,1)
+         call axhelm(vw,vsave(1,j),h1,h2,1,1)
+         if (ldim.eq.3) call axhelm(ww,wsave(1,j),h1,h2,1,1)
+         do i=1,ns
+            uu(i,j) = glsc2(usave(1,i),uw,n)+glsc2(vsave(1,i),vw,n)
+            if (ldim.eq.3) uu(i,j) = uu(i,j)+glsc2(wsave(1,i),ww,n)
+            if (nid.eq.0) write(88,*) uu(i,j)
+         enddo
+         write(6,*) j,uu(1,j),' uu'
+      enddo
+
+
       nvecs = nb
       write(6,*)'number of mode:',nb
 
