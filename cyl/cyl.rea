@@ -12,11 +12,11 @@
   -100.000     p008 CONDUCT
    0.00000     p009
    0.00000     p010 FINTIME
-   10000.0     p011 NSTEPS
+  50000.0     p011 NSTEPS
  -2.000000E-03 p012 DT
    0.00000     p013 IOCOMM
    0.00000     p014 IOTIME
-    100.00     p015 IOSTEP
+    500.00     p015 IOSTEP
    0.00000     p016 PSSOLVER: 0=default
    0.00000     p017
   0.500000E-01 p018 GRID < 0 --> # cells on screen
@@ -28947,7 +28947,8 @@
  P   32003   50.0000       1.00000       0.00000       0.00000       0.00000    
  E   32004   3199.00       2.00000       0.00000       0.00000       0.00000    
   ***** NO THERMAL BOUNDARY CONDITIONS *****
-           0  PRESOLVE/RESTART OPTIONS  *****
+           1  PRESOLVE/RESTART OPTIONS  *****
+sto0.f00001
            7          INITIAL CONDITIONS *****
 C Default
 C Default
