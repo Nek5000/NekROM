@@ -214,13 +214,21 @@ c-----------------------------------------------------------------------
             uu(i,j) = glsc2(usave(1,i),uw,n)+glsc2(vsave(1,i),vw,n)
             if (ldim.eq.3) uu(i,j) = uu(i,j)+glsc2(wsave(1,i),ww,n)
             if (nid.eq.0) write(88,*) uu(i,j)
+            if (i == j) Identity(i,j) = 1
          enddo
          write(6,*) j,uu(1,j),' uu'
       enddo
 
+      call generalev(uu,Identity,eig,ms,w)
+      call copy(eigv,uu,ms*ms)
+      eig = eig(ms:1:-1)
 
       nvecs = nb
       write(6,*)'number of mode:',nb
+
+      do l = 1,nvecs
+         call copy(evec(1,l),eigv(1,ms-l+1),ms)
+      enddo
 
 c      if (nid.eq.0) then
 c         open (unit=12,file='evectors.dat')
