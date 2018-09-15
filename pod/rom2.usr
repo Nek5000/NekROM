@@ -182,7 +182,7 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       real usave(lt,ms),vsave(lt,ms),wsave(lt,ms)
-      real uu(ms,ms)
+      real uu(ms,ms),Identity(ms,ms),eig(ms),eigv(ms,ms),w(ms,ms)
       real uw(lt),vw(lt),ww(lt),h1(lt),h2(lt)
       real u0(lt,3)
       real u0r(ms)
@@ -202,13 +202,19 @@ c-----------------------------------------------------------------------
 
       call get_saved_fields(usave,vsave,wsave,ns,u0)
 
+      call rone (h1,n)
+      call rzero(h2,n)
+      call rzero(Identity,ms*ms)
+
       nvecs = nb
-      if (nid.eq.0) then
-         open (unit=12,file='evectors.dat')
-         read(12,*) (evec(k,1),k=1,ns*nvecs)
-      endif
-      len = wdsize*ns*nvecs ! broadcast array of length len bytes
-      call bcast (evec,len)
+      write(6,*)'number of mode:',nb
+
+c      if (nid.eq.0) then
+c         open (unit=12,file='evectors.dat')
+c         read(12,*) (evec(k,1),k=1,ns*nvecs)
+c      endif
+c      len = wdsize*ns*nvecs ! broadcast array of length len bytes
+c      call bcast (evec,len)
 
       ONE = 1.
       ZERO= 0.
@@ -277,7 +283,7 @@ c     Working arrays for LU
       ad_iostep = 1e4
 
       ad_dt = 1e-5
-      ad_re = 1e1
+      ad_re = 1e3
 
       ! BDFk/EXTk coefficients ( will change to BD inside Nek)
       call compute_BDF_coef(ad_alpha,ad_beta) 
