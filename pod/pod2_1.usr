@@ -232,7 +232,7 @@ c-----------------------------------------------------------------------
 c            if (nid.eq.0) write(88,*) uu(i,j)
          enddo
          tmp1(j) = minval(uu(:,j))
-         tmp2(j) = maxval(uu(:,i))
+         tmp2(j) = maxval(uu(:,j))
          delta(j) = tmp2(j)-tmp1(j)
          sample_min(j) = tmp1(j) - ep * delta(j)
          sample_max(j) = tmp2(j) + ep * delta(j)
