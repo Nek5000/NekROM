@@ -4,30 +4,22 @@ c-----------------------------------------------------------------------
       parameter (n=2400)
 
       integer factors(n), parts(3), blocks(n)
+      integer mps(n),mqs(n),mrs(n)
 
       nb = 400
 
       call izero(blocks,n)
 
+      call izero(mps,n)
+      call izero(mqs,n)
+      call izero(mrs,n)
+
       call factor(factors,n)
-c     call factor3(parts,factors)
-      m=nint(rand(1)*2048)
-      m=2
-      write (6,*) 'n=',m
+
+      m=nint(rand(1)*948)
+
       call factor3(mp,mq,mr,m)
-      stop
-
-      do i=1,3
-         write (6,*) i,'th partition:'
-         write (6,*) parts(i), 'parts'
-         call setblocks(blocks,parts(i),nb)
-         do j=1,parts(i)
-            write (6,*) blocks(j)
-         enddo
-      enddo
-
-      iflag = -1
-      i = 1
+      call setparts(mps,mqs,mrs,mp,mq,mr,nb)
 
       end
 c-----------------------------------------------------------------------
@@ -101,6 +93,33 @@ c-----------------------------------------------------------------------
       mr=n/mq
 
       write (6,*) 'mp,mq,mr,mp*mq*mr',mp,mq,mr,mp*mq*mr
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine setparts(mps,mqs,mrs,mp,mq,mr,nb)
+
+      integer mps(mp),mqs(mq),mrs(mr)
+
+      mb=nb+1
+
+      do i=0,mp-1
+         mps(i+1)=nb/mp+max(mod(nb,mp)-i,0)/max(mod(nb,mp)-i,1)
+         mps(i+1)=mps(i+1)+mps(max(i,1))*max(i,0)/max(i,1)
+         write (6,*) 'mp',i+1,mps(i+1)
+      enddo
+
+      do i=0,mq-1
+         mqs(i+1)=mb/mq+max(mod(mb,mq)-i,0)/max(mod(mb,mq)-i,1)
+         mqs(i+1)=mqs(i+1)+mqs(max(i,1))*max(i,0)/max(i,1)
+         write (6,*) 'mq',i+1,mqs(i+1)
+      enddo
+
+      do i=0,mr-1
+         mrs(i+1)=mb/mr+max(mod(mb,mr)-i,0)/max(mod(mb,mr)-i,1)
+         mrs(i+1)=mrs(i+1)+mrs(max(i,1))*max(i,0)/max(i,1)
+         write (6,*) 'mr',i+1,mrs(i+1)
+      enddo
 
       return
       end
