@@ -10,7 +10,12 @@ c-----------------------------------------------------------------------
       call izero(blocks,n)
 
       call factor(factors,n)
-      call partition3(parts,factors)
+c     call factor3(parts,factors)
+      m=nint(rand(1)*2048)
+      m=2
+      write (6,*) 'n=',m
+      call factor3(mp,mq,mr,m)
+      stop
 
       do i=1,3
          write (6,*) i,'th partition:'
@@ -23,12 +28,6 @@ c-----------------------------------------------------------------------
 
       iflag = -1
       i = 1
-
-c     do while (iflag.ne.0)
-c        iflag = factors(i)
-c        write (6,*) iflag
-c        i=i+1
-c     enddo
 
       end
 c-----------------------------------------------------------------------
@@ -66,24 +65,42 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine partition3(parts,facs)
+      subroutine factor3(mp,mq,mr,m)
 
-      integer parts(3), facs(1), n
+      integer dmin,d
 
-      parts(1) = 1
-      parts(2) = 1
-      parts(3) = 1
+      n=m
+      l=nint(real(n)**(1/3))
 
-      n=1
-      i=0
+      dmin=n
+      imin=-1
 
-      do while (facs(i+1).ne.0)
-         m=mod(i,3)+1
-         parts(m) = parts(m) * facs(i+1)
-         i=i+1
+      do i=1,n
+          d=abs(n-i**3)
+          if (d.lt.dmin.and.mod(n,i).eq.0) then
+              dmin=d
+              imin=i
+          endif
       enddo
 
-      write (6,*) parts(1),parts(2),parts(3)
+      mp=imin
+      n=n/mp
+
+      dmin=n
+      imin=-1
+
+      do i=1,n
+          d=abs(n-i*i)
+          if (d.lt.dmin.and.mod(n,i).eq.0) then
+              dmin=d
+              imin=i
+          endif
+      enddo
+
+      mq=imin
+      mr=n/mq
+
+      write (6,*) 'mp,mq,mr,mp*mq*mr',mp,mq,mr,mp*mq*mr
 
       return
       end
@@ -116,9 +133,10 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine clocal(c,cc,u,i0,i1,j0,j1,k0,k1,nb)
 
-      real c(nb),cc(1),u(nb+1)
+      real c(nb),cc(1),u(nb+1),a(1)
 
       common /scrk1/ work(100)
+
 
 c     call rzero(c,nb)
 
@@ -134,7 +152,7 @@ c     call rzero(c,nb)
       enddo
       enddo
 
-      call gop(c,work,'+  ',nb)
+c     call gop(c,work,'+  ',nb)
 
       return
       end

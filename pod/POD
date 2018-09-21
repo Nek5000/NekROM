@@ -1,7 +1,7 @@
 c     parameters and common blocks for POD
 
       parameter (nb=20)  ! number of basis vectors
-      parameter (ms=104) ! number of snapshots
+      parameter (ms=500) ! number of snapshots
 
       common /rombasis/ ub(lx1*ly1*lz1*lelt,0:nb),
      $                  vb(lx1*ly1*lz1*lelt,0:nb),

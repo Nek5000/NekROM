@@ -14,7 +14,7 @@ i=1:n;
 semilogy(i,D,'ro-')
 
 
-N=20;
+N=80;
 D(1:N)'
 V=V(:,1:N); V=reshape(V,n*N,1);
 
@@ -22,7 +22,3 @@ V=V(:,1:N); V=reshape(V,n*N,1);
 fid = fopen('evectors.dat','w');
 fprintf(fid,'%22.13e\n',V);
 fclose(fid);
- 
-
-
-
