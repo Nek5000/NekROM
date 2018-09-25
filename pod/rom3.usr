@@ -983,10 +983,11 @@ c-----------------------------------------------------------------------
       subroutine readc0(c0,n)
 
       include 'SIZE'
+      include 'PARALLEL'
 
       real c0(n)
 
-      if (nid.eq.0) then
+      if (nid.eq.(np-1)) then
          open (unit=12,file='cten')
          read (12,*) (c0(k),k=1,n)
          close (unit=12)
