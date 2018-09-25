@@ -200,14 +200,24 @@ c-----------------------------------------------------------------------
       call readab(a0,b0,(nb+1)**2)
       call readic(ic,nb+1)
 
+      if (nio.eq.0) then
+         do j=0,nb
+         do i=0,nb
+            write (6,*) 'b0',i,j,b0(i,j)
+         enddo
+         enddo
+      else
+         call sleep(1)
+         do j=0,nb
+         do i=0,nb
+            write (6,*) 'b0',i,j,b0(i,j)
+         enddo
+         enddo
+      endif
+
       call makecloc
 
       call rom_setup
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine
 
       return
       end
@@ -972,6 +982,8 @@ c     write (6,*) 'k0,k1',k0,k1
 c-----------------------------------------------------------------------
       subroutine readc0(c0,n)
 
+      include 'SIZE'
+
       real c0(n)
 
       if (nid.eq.0) then
@@ -985,30 +997,30 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine readab(a0,b0,n)
 
+      include 'SIZE'
+
       real a0(n),b0(n)
 
-      if (nid.eq.0) then
-         open (unit=12,file='amat')
-         read (12,*) (a0(k),k=1,n)
-         close (unit=12)
+      open (unit=12,file='amat')
+      read (12,*) (a0(k),k=1,n)
+      close (unit=12)
 
-         open (unit=12,file='bmat')
-         read (12,*) (b0(k),k=1,n)
-         close (unit=12)
-      endif
+      open (unit=12,file='bmat')
+      read (12,*) (b0(k),k=1,n)
+      close (unit=12)
 
       return
       end
 c-----------------------------------------------------------------------
       subroutine readic(ic,n)
 
+      include 'SIZE'
+
       real ic(n)
 
-      if (nid.eq.0) then
-         open (unit=12,file='ic')
-         read (12,*) (ic(k),k=1,n)
-         close (unit=12)
-      endif
+      open (unit=12,file='ic')
+      read (12,*) (ic(k),k=1,n)
+      close (unit=12)
 
       return
       end
