@@ -1057,13 +1057,23 @@ c-----------------------------------------------------------------------
 
       real a0(n),b0(n)
 
-      open (unit=12,file='amat')
-      read (12,*) (a0(k),k=1,n)
-      close (unit=12)
+      common /scrk5/ w(lx1*ly1*lz1*lelt)
 
-      open (unit=12,file='bmat')
-      read (12,*) (b0(k),k=1,n)
-      close (unit=12)
+      call rzero(a0,n)
+      call rzero(b0,n)
+
+      if (nid.eq.0) then
+         open (unit=12,file='amat')
+         read (12,*) (a0(k),k=1,n)
+         close (unit=12)
+
+         open (unit=12,file='bmat')
+         read (12,*) (b0(k),k=1,n)
+         close (unit=12)
+      endif
+
+      call gop(a0,w,'+  ',n)
+      call gop(b0,w,'+  ',n)
 
       return
       end
