@@ -221,12 +221,13 @@ c-----------------------------------------------------------------------
 
       call readeig(evec)
 
-      if (nid.eq.(np-1)) then
-         do i=1,nb
-            write (6,*) i,',',evec(1,i)
-         enddo
-      endif
-      call exitt0
+c     if (nid.eq.(np-1)) then
+c        do i=1,nb
+c           write (6,*) i,',',evec(1,i)
+c        enddo
+c     endif
+c     call exitt0
+
       call get_saved_fields(usave,vsave,wsave,ns,u0)
 
       ONE = 1.
