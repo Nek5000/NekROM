@@ -246,22 +246,7 @@ c-----------------------------------------------------------------------
       call readab(a0,b0,(nb+1)**2)
       call readic(ic,nb+1)
 
-      if (nio.eq.0) then
-         do j=0,nb
-         do i=0,nb
-            write (6,*) 'b0',i,j,b0(i,j)
-         enddo
-         enddo
-      else
-         call sleep(1)
-         do j=0,nb
-         do i=0,nb
-            write (6,*) 'b0',i,j,b0(i,j)
-         enddo
-         enddo
-      endif
-
-      call makecloc
+      if (np.gt.1) call makecloc
 
       call rom_setup
 
@@ -388,8 +373,11 @@ c     Working arrays for LU
       u(0,3) = 1.
       call copy(u,ic,nb+1)
 
-      ad_nsteps = 1e6
-      ad_iostep = 1e4
+      ad_nsteps=nsteps
+      ad_iostep=iostep
+
+c     ad_nsteps = 1e6
+c     ad_iostep = 1e4
 
 c     ad_nsteps=100
 c     ad_iostep=ad_nsteps
@@ -399,6 +387,12 @@ c     ad_iostep=ad_nsteps
 
       ! BDFk/EXTk coefficients ( will change to BD inside Nek)
       call compute_BDF_coef(ad_alpha,ad_beta)
+
+      if (nio.eq.0) write(6,*)'ad_step:',ad_step,ad_iostep,npp
+
+      do j=1,nb
+         if (nio.eq.0) write(6,*) j,u(j,1)
+      enddo
 
       return
       end
@@ -454,7 +448,7 @@ c     Working arrays for LU
       endif
 
       do i=1,nb
-         if (nio.eq.0) write (6,*) nid,tmp(i)
+c        if (nio.eq.0) write (6,*) nid,tmp(i)
       enddo
 
       call sub2(rhs,tmp,nb)
@@ -473,10 +467,16 @@ c     if (npp.ne.1) call gop(rhs,work,'+  ',nb)
       if (mod(ad_step,ad_iostep)==0) then
 
 !        This output is to make sure the ceof matches with matlab code
-         if (nio.eq.0) write(6,*)'ad_step:',ad_step,ad_iostep,npp
+
+         call sleep(nid)
+
+         write(6,*)'ad_step:',ad_step,ad_iostep,npp,nid
+
          do j=1,nb
-            if (nio.eq.0) write(6,*) j,coef(j)
+            write(6,*) j,u(j,1)
          enddo
+
+         call sleep(np-1-nid)
 
          call opzero(vx,vy,vz)
          do j=1,nb
@@ -972,9 +972,11 @@ c-----------------------------------------------------------------------
 
       real cu(nb)
 
+      common /scrk4/ work(lx1*ly1*lz1*lelt)
+
       l=1
 
-      call rzero(cu,nb+1)
+      call rzero(cu,nb)
 
 c     if (nio.eq.0) write (6,*) i0,i1,j0,j1,k0,k1
 
@@ -990,6 +992,8 @@ c              stop
             enddo
          enddo
       enddo
+
+      call gop(cu,work,'+  ',nb)
 
       return
       end
@@ -1068,6 +1072,28 @@ c-----------------------------------------------------------------------
       open (unit=12,file='ic')
       read (12,*) (ic(k),k=1,n)
       close (unit=12)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine readeig(evec)
+
+      include 'SIZE'
+      include 'POD'
+
+      common /scrk5/ w(lx1*ly1*lz1*lelt)
+
+      real evec(ms,nb)
+
+      call rzero(evec,ms*nb)
+
+      if (nid.eq.0) then
+         open (unit=12,file='evectors.dat')
+         read (12,*) (evec(k,1),k=1,ms*nb)
+         close (unit=12)
+      endif
+
+      call gop(evec,w,'+  ',ms*nb)
 
       return
       end
