@@ -19,3 +19,13 @@ out.*
 *.tar.gz
 *.tgz
 *.tif*
+cyl
+ldc
+*.f
+rom40
+pod2
+notes.txt
+chan2.plt01
+pod/baf-snaps
+docs
+test
