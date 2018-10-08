@@ -185,11 +185,57 @@ c-----------------------------------------------------------------------
       real usave(lt,ms),vsave(lt,ms),wsave(lt,ms)
       real u0(lt,3)
 
+      real uu(ms,ms),Identity(ms,ms),eig(ms),eigv(ms,ms),w(ms,ms)
+      real uw(lt),vw(lt),ww(lt),h1(lt),h2(lt)
+      real u0r(ms)
+
+      real evec(ms,nb)
+
+      character(len=10) fname
+
       n  = lx1*ly1*lz1*nelt
       ns = ms
 
       call rzero(vz,n)
       call rzero(wb,n)
+
+      call opcopy   (u0(1,1),u0(1,2),u0(1,3),vx,vy,vz)
+      call opcopy   (ub(1,0),vb(1,0),wb(1,0),vx,vy,vz)
+
+      call get_saved_fields(usave,vsave,wsave,ns,u0)
+
+      call rone (h1,n)
+      call rzero(h2,n)
+      call rzero(Identity,ms*ms)
+
+      do j=1,ns                    ! Form the Gramian, U=U_K^T A U_K
+         call axhelm(uw,usave(1,j),h1,h2,1,1)
+         call axhelm(vw,vsave(1,j),h1,h2,1,1)
+         if (ldim.eq.3) call axhelm(ww,wsave(1,j),h1,h2,1,1)
+         Identity(j,j) = 1.
+         do i=1,ns
+            uu(i,j) = glsc2(usave(1,i),uw,n)+glsc2(vsave(1,i),vw,n)
+            if (ldim.eq.3) uu(i,j) = uu(i,j)+glsc2(wsave(1,i),ww,n)
+         enddo
+      enddo
+
+      call readeig(evec)
+
+      if (nid.eq.(np-1)) then
+         do i=1,nb
+            write (6,*) i,',',evec(1,i)
+         enddo
+      endif
+      call exitt0
+
+      ONE = 1.
+      ZERO= 0.
+
+      ! ub, vb, wb, are the modes
+      call dgemm( 'N','N',n,nb,ms,ONE,usave,lt,evec,ms,ZERO,ub(1,1),lt)
+      call dgemm( 'N','N',n,nb,ms,ONE,vsave,lt,evec,ms,ZERO,vb(1,1),lt)
+      if (ldim.eq.3)
+     $call dgemm( 'N','N',n,nb,ms,ONE,wsave,lt,evec,ms,ZERO,wb(1,1),lt)
 
       call opcopy(u0(1,1),u0(1,2),u0(1,3),vx,vy,vz)
       call opcopy(ub(1,0),vb(1,0),wb(1,0),vx,vy,vz)
