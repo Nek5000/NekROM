@@ -613,7 +613,7 @@ c-----------------------------------------------------------------------
 
       ntot=nb*(nb+1)*(nb+1)
 
-      nblock=nb*(nb+1)*(nb+1)/npp
+      nblock=nb*(nb+1)*(nb+1)/npp+1
 
       call fgslib_crystal_setup(crh,nekcomm,np)
 
