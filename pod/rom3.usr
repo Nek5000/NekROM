@@ -226,7 +226,6 @@ c        do i=1,nb
 c           write (6,*) i,',',evec(1,i)
 c        enddo
 c     endif
-c     call exitt0
 
       call get_saved_fields(usave,vsave,wsave,ns,u0)
 
@@ -245,13 +244,22 @@ c     call exitt0
       do i=0,nb
          call outpost(ub(1,i),vb(1,i),wb(1,i),pr,t,'bas')
       enddo
-c     call exitt0
 
       call readc0(c0,(nb+1)**3)
+
+      do k=0,nb
+      do j=0,nb
+      do i=0,nb
+         write (6,*) 'c0',i,j,k,c0(i,j,k)
+      enddo
+      enddo
+      enddo
+
       call readab(a0,b0,(nb+1)**2)
       call readic(ic,nb+1)
 
       if (np.gt.1) call makecloc
+
 
       call rom_setup
 
