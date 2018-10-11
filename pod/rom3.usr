@@ -247,10 +247,13 @@ c     endif
 
       call readc0(c0,(nb+1)**3)
 
+      l=1
       do k=0,nb
       do j=0,nb
-      do i=0,nb
+      do i=1,nb
+         c0(i,j,k)=real(l)
          write (6,*) 'c0',i,j,k,c0(i,j,k)
+         l=l+1
       enddo
       enddo
       enddo
@@ -601,7 +604,7 @@ c-----------------------------------------------------------------------
       include 'POD'
 
       parameter (lt=lx1*ly1*lz1*lelt)
-      parameter (m=2)
+      parameter (m=5)
 
       real cux(lt), cuy(lt), cuz(lt)
       integer mps(lt),mqs(lt),mrs(lt)
@@ -657,13 +660,18 @@ c-----------------------------------------------------------------------
          l=l+1
          vi(1,l)=mod(ip+nid+1,npp)
          vi(2,l)=ijk2pid(i,j,k,mps,mqs,mrs,mp,mq,ms)
+
+         vi(3,l)=i
+         vi(4,l)=j
+         vi(5,l)=k
+
          if (nio.eq.0) write (6,*) 'ijk2pid',i,j,k,vi(2,l)
          vr(  l)=c0(i,j,k)
          if (l.eq.nblock.or.(k.eq.nb.and.j.eq.nb.and.i.eq.nb)) then
             call fgslib_crystal_tuple_transfer
      $         (crh,l,lt,vi,m,vl,0,vr,1,kp)
             if (nid.eq.ip) then
-               call copy(clocal,vr,lt)
+               call copy(ctmp,vr,lt)
                call icopy(ui,vi,lt*m)
                inums=l
             endif
@@ -679,44 +687,42 @@ c-----------------------------------------------------------------------
       write (6,*) '1 nid,npp',nid,npp,inums
 
       do i=1,inums
-         write (6,*) nid,clocal(i),ui(2,i)
+         write (6,*) nid,ctmp(i),ui(2,i)
       enddo
 
-      call sleep(npp-nid)
+      call sleep(npp-nid-1)
 
       kp=2
 
       call fgslib_crystal_tuple_transfer
-     $   (crh,inums,lt,ui,m,vl,0,clocal,1,kp)
+     $   (crh,inums,lt,ui,m,vl,0,ctmp,1,kp)
 
       call sleep(nid)
 
       write (6,*) '2 nid,npp',nid,npp,inums
 
       do i=1,inums
-         write (6,*) nid,clocal(i),ui(2,i)
+         write (6,*) nid,ctmp(i),ui(2,i),ui(3,i),ui(4,i),ui(5,i)
+      enddo
+
+      call sleep(npp-nid-1)
+
+      call fgslib_crystal_free(crh)
+
+      do i=1,inums
+         call ijk2l(l,ui(3,i),ui(4,i),ui(5,i))
+         clocal(l) = ctmp(i)
+      enddo
+
+      call sleep(nid)
+
+      do i=1,inums
+         write (6,*) nid,clocal(i)
       enddo
 
       call sleep(npp-nid)
 
-
-c     call fgslib_crystal_ituple_transfer(crh,vi,m,n,lt,kp)
-
-c   - moves each column ituple(:,i), 1 <= i <= n,
-c     to proc ituple(kp,i)
-c   - sets n to the number of columns received,
-c     which may be larger than max (indicating loss of n-max columns)
-c   - also sets ituple(kp,i) to the source proc of column ituple(:,i)
-
-c   - moves each column vi(:,i),vl(:,i),vr(:,i) 1 <= i <= n,
-c     to proc vi(kp,i)
-c   - sets n to the number of columns received,
-c     which may be larger than max (indicating loss of n-max columns)
-c   - also sets vi(kp,i) to the source proc of columns vi(:,i),vl(:,i),vr(:,i)
-
-c     write (6,*) 'gs_res',nid,vi(1,1),vr(1),vi(2,1)
-
-      call fgslib_crystal_free(crh)
+      call exitt0
 
       return
       end
@@ -1015,8 +1021,6 @@ c     if (nio.eq.0) write (6,*) i0,i1,j0,j1,k0,k1
             ujk=u(j,1)*uk
             do i=i0,i1
                cu(i)=cu(i)+clocal(l)*ujk
-c              write (6,*) i,cu(i),clocal(l),ujk
-c              stop
                l=l+1
             enddo
          enddo
@@ -1147,19 +1151,17 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine 
-
+      subroutine ijk2l(l,i,j,k)
+      
       include 'SIZE'
       include 'POD'
 
-      do k=k0,k1
-         uk=u(k,1)
-         do j=j0,j1
-            ujk=u(j,1)*uk
-            do i=i0,i1
-               cu(i)=cu(i)+clocal(l)*ujk
-               l=l+1
-            enddo
-         enddo
-      enddo
+      il=i-i0
+      jl=j-j0
+      kl=k-k0
+
+      l=il+jl*(i1-i0+1)+kl*(i1-i0+1)*(j1-j0+1)+1
+
+      return
+      end
 c-----------------------------------------------------------------------
