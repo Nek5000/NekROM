@@ -477,7 +477,8 @@ c     if (npp.ne.1) call gop(rhs,work,'+  ',nb)
       call copy(u(1,1),rhs,nb)
       call copy(coef,rhs,nb)
 
-      if (mod(ad_step,ad_iostep)==0) then
+c     if (mod(ad_step,ad_iostep)==0) then
+      if (ad_step.eq.ad_nsteps.or.ad_step.eq.1.or.ad_step.eq.2) then
 
 !        This output is to make sure the ceof matches with matlab code
 
@@ -610,9 +611,6 @@ c-----------------------------------------------------------------------
       common /romi/ crh
       common /nekmpi/ nidd,npp,nekcomm,nekgroup,nekreal
 
-      call invers2(binv,bm1,lx1*ly1*lz1*nelv)
-      call rone(binv,lx1*ly1*lz1*nelv)
-
       ntot=nb*(nb+1)*(nb+1)
 
       nblock=nb*(nb+1)*(nb+1)/npp
@@ -627,9 +625,23 @@ c-----------------------------------------------------------------------
       call izero(mrs,lt)
 
       call factor3(mp,mq,mr,npp)
-      call setpart3(mps,mqs,mrs,mp,mq,mr,nb)
+      if (nio.eq.0) write (6,*) 'factor3',mp,mq,mr,npp
 
-      call setrange(mps,mqs,mrs,mp,mq,mr)
+      call setpart3(mps,mqs,mrs,mp,mq,mr,nb)
+      if (nio.eq.0) then
+         write (6,*) 'setpart3'
+         do i=1,mp
+            write (6,*) 'mps',mps(i)
+         enddo
+         do i=1,mq
+            write (6,*) 'mqs',mqs(i)
+         enddo
+         do i=1,mr
+            write (6,*) 'mrs',mrs(i)
+         enddo
+      endif
+
+      call setrange(mps,mqs,mrs,mp,mq,mr) ! set index range i0,i1,j0,j1,k0,k1
 
       kp=1
       n=1
@@ -642,7 +654,7 @@ c-----------------------------------------------------------------------
          l=l+1
          vi(1,l)=mod(ip+nid+1,npp)
          vi(2,l)=ijk2pid(i,j,k,mps,mqs,mrs,mp,mq,ms)
-c        if (nio.eq.0) write (6,*) 'ijk2pid',i,j,k,vi(2,l)
+         if (nio.eq.0) write (6,*) 'ijk2pid',i,j,k,vi(2,l)
          vr(  l)=c0(i,j,k)
          if (l.eq.nblock.or.(k.eq.nb.and.j.eq.nb.and.i.eq.nb)) then
             call fgslib_crystal_tuple_transfer
@@ -663,7 +675,7 @@ c        if (nio.eq.0) write (6,*) 'ijk2pid',i,j,k,vi(2,l)
 
       write (6,*) '1 nid,npp',nid,npp,inums
 
-      do i=1,20
+      do i=1,inums
          write (6,*) nid,clocal(i),ui(2,i)
       enddo
 
@@ -678,11 +690,12 @@ c        if (nio.eq.0) write (6,*) 'ijk2pid',i,j,k,vi(2,l)
 
       write (6,*) '2 nid,npp',nid,npp,inums
 
-      do i=1,20
+      do i=1,inums
          write (6,*) nid,clocal(i),ui(2,i)
       enddo
 
       call sleep(npp-nid)
+
 
 c     call fgslib_crystal_ituple_transfer(crh,vi,m,n,lt,kp)
 
@@ -972,7 +985,7 @@ c-----------------------------------------------------------------------
 
       call ijk2pqr(ip,iq,ir,i,j,k,mps,mqs,mrs)
       ijk2pid=(ip-1)+mp*(iq-1)+mp*mq*(ir-1)
-      if (nio.eq.0) write (6,*) 'ijk2pid',i,j,k,ip,iq,ir,ijk2pid
+c     if (nio.eq.0) write (6,*) 'ijk2pid',i,j,k,ip,iq,ir,ijk2pid
 
       return
       end
@@ -1005,6 +1018,16 @@ c              stop
             enddo
          enddo
       enddo
+
+      if (ad_step.eq.1.or.ad_step.eq.2.or.ad_step.eq.ad_nsteps) then
+      call sleep(nid)
+
+      do i=1,nb
+         write (6,*) '1 evalc',cu(i)
+      enddo
+
+      call sleep(np-nid-1)
+      endif
 
       call gop(cu,work,'+  ',nb)
 
