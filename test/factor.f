@@ -23,40 +23,6 @@ c-----------------------------------------------------------------------
 
       end
 c-----------------------------------------------------------------------
-      subroutine factor(factors,m)
-
-      integer factors(m)
-
-      n=m
-
-      call izero(factors,n)
-
-      j=1
-      i=2
-
-    1 continue
-
-      do while (n.ne.1)
-         if (n.eq.(n/i)*i) then
-            factors(j)=i
-            n = n / i
-            write (6,*) 'i,n',i,n
-            if (n.eq.1) then
-               goto 2
-            else
-               j=j+1
-            endif
-         else
-            i=i+1
-         endif
-         goto 1
-      enddo
-
-    2 continue
-
-      return
-      end
-c-----------------------------------------------------------------------
       subroutine factor3(mp,mq,mr,m)
 
       integer dmin,d
@@ -97,45 +63,26 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine setparts(mps,mqs,mrs,mp,mq,mr,nb)
+      subroutine setpart(mps,mp,n)
 
-      integer mps(mp),mqs(mq),mrs(mr)
+      integer mps(mp)
 
-      mb=nb+1
-
-      do i=0,mp-1
-         mps(i+1)=nb/mp+max(mod(nb,mp)-i,0)/max(mod(nb,mp)-i,1)
+      do i=0,n-1
+         mps(i+1)=n/mp+max(mod(n,mp)-i,0)/max(mod(n,mp)-i,1)
          mps(i+1)=mps(i+1)+mps(max(i,1))*max(i,0)/max(i,1)
-         write (6,*) 'mp',i+1,mps(i+1)
-      enddo
-
-      do i=0,mq-1
-         mqs(i+1)=mb/mq+max(mod(mb,mq)-i,0)/max(mod(mb,mq)-i,1)
-         mqs(i+1)=mqs(i+1)+mqs(max(i,1))*max(i,0)/max(i,1)
-         write (6,*) 'mq',i+1,mqs(i+1)
-      enddo
-
-      do i=0,mr-1
-         mrs(i+1)=mb/mr+max(mod(mb,mr)-i,0)/max(mod(mb,mr)-i,1)
-         mrs(i+1)=mrs(i+1)+mrs(max(i,1))*max(i,0)/max(i,1)
-         write (6,*) 'mr',i+1,mrs(i+1)
       enddo
 
       return
       end
 c-----------------------------------------------------------------------
-      subroutine setblocks(blocks,nparts,nb)
+      subroutine setpart3(mps,mqs,mrs,mp,mq,mr,nb)
 
-      integer blocks(nparts)
+      integer mps(mp),mqs(mq),mrs(mr)
 
-      min = nb / nparts
-      mb = nb - min * nparts
+      call setpart(mps,mp,nb)
+      call setpart(mqs,mq,nb+1)
+      call setpart(mrs,mr,nb+1)
 
-      do i=1,nparts
-         blocks(i) = min
-         if (i.lt.mb) blocks(i) = blocks(i) + 1
-      enddo
-        
       return
       end
 c-----------------------------------------------------------------------
@@ -156,7 +103,6 @@ c-----------------------------------------------------------------------
 
       common /scrk1/ work(100)
 
-
 c     call rzero(c,nb)
 
       l=0
@@ -172,6 +118,44 @@ c     call rzero(c,nb)
       enddo
 
 c     call gop(c,work,'+  ',nb)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      function i2p(i,mps)
+
+      real mps(1)
+
+      i2p=0
+
+      ic=1
+
+      do while (i.le.mps(ic))
+         i2p=mps(ic)
+         ic=ic
+      enddo
+      
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine ijk2pqr(ip,iq,ir,i,j,k,mps,mqs,mrs)
+
+      real mps(1),mqs(1),mrs(1)
+
+      ip=i2p(i,mps)
+      iq=i2p(j,mqs)
+      ir=i2p(k,mrs)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      function ijk2proc(i,j,k,mps,mqs,mrs)
+
+      real mps(1),mqs(1),mrs(1)
+
+      call ijk2pqr(ip,iq,ir,i,j,k,mps,mqs,mrs)
+
+      ipqr2id=(ip-1)+mp*(iq-1)+mp*mq*(ir-1)
 
       return
       end
