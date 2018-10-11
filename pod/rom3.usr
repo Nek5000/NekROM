@@ -455,14 +455,17 @@ c     Working arrays for LU
       if (npp.eq.1) then
          call mxm(c,nb*(nb+1),u,nb+1,tmat,1)
          call mxm(tmat,nb,u,nb+1,conv,1)
-         call mxm(conv,nb,ad_alpha(1,count),3,tmp,1)
       else
-         call evalc(tmp)
+         call evalc(conv)
       endif
 
-      do i=1,nb
-c        if (nio.eq.0) write (6,*) nid,tmp(i)
+      call mxm(conv,nb,ad_alpha(1,count),3,tmp,1)
+
+      if (ad_step.eq.1.or.ad_step.eq.2.or.ad_step.eq.ad_nsteps) then
+      do i=0,nb-1
+         if (nio.eq.0) write (6,*) '2 evalc',tmp(i)
       enddo
+      endif
 
       call sub2(rhs,tmp,nb)
 
