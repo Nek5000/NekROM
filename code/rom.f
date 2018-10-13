@@ -246,10 +246,23 @@ c     endif
       enddo
 
       call readc0(c0,(nb+1)**3)
+
+      l=1
+      do k=0,nb
+      do j=0,nb
+      do i=1,nb
+         c0(i,j,k)=real(l)
+         write (6,*) 'c0',i,j,k,c0(i,j,k)
+         l=l+1
+      enddo
+      enddo
+      enddo
+
       call readab(a0,b0,(nb+1)**2)
       call readic(ic,nb+1)
 
       if (np.gt.1) call makecloc
+
 
       call rom_setup
 
@@ -354,6 +367,7 @@ c     Matrices and vectors for advance
       real coef(1:nb)
 
 c     Working arrays for LU
+      integer IR(nb),ICC(nb)
 
       time = 0.
 
@@ -415,6 +429,7 @@ c     Matrices and vectors for advance
       common /scrk3/ work(lt)
 
 c     Working arrays for LU
+      integer IR(nb),ICC(nb)
 
       common /nekmpi/ nidd,npp,nekcomm,nekgroup,nekreal
 
@@ -424,10 +439,8 @@ c     Working arrays for LU
 
       count = min0(ad_step,3)
 
-      if (ad_step.le.3) then
-         call cmult2(flu,b,ad_beta(1,count)/ad_dt,nb*nb)
-         call add2s2(flu,a,1/ad_re,nb*nb)
-      endif
+      call cmult2(helm,b,ad_beta(1,count)/ad_dt,nb*nb)
+      call add2s2(helm,a,1/ad_re,nb*nb)
 
       ONE = 1.
       ZERO= 0.
@@ -459,9 +472,8 @@ c     Working arrays for LU
 
       call sub2(rhs,tmp,nb)
 
-      if (ad_step.le.3) call lu(flu,nb,nb,irr,icc)
-
-      call solve(rhs,flu,1,nb,nb,irr,icc)
+      call LU    (helm,nb,nb,IR,ICC)
+      call SOLVE (rhs,helm,1,nb,nb,IR,ICC)
 
       call copy(u(1,3),u(1,2),nb)
       call copy(u(1,2),u(1,1),nb)
@@ -709,6 +721,8 @@ c-----------------------------------------------------------------------
       enddo
 
       call sleep(npp-nid)
+
+      call exitt0
 
       return
       end
