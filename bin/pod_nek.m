@@ -14,7 +14,7 @@ i=1:n;
 semilogy(i,D,'ro-')
 
 
-N=2;
+N=20;
 D(1:N)'
 V=V(:,1:N); V=reshape(V,n*N,1);
 
