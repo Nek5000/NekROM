@@ -1,108 +1,4 @@
 c-----------------------------------------------------------------------
-      subroutine uservp (ix,iy,iz,eg)
-      include 'SIZE'
-      include 'TOTAL'
-      include 'NEKUSE'
-      integer e,eg
-
-      udiff =0.
-      utrans=0.
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine userf  (ix,iy,iz,eg)
-      include 'SIZE'
-      include 'TOTAL'
-      include 'NEKUSE'
-      integer e,eg
-
-      ffx = 0.0
-      ffy = 0.0
-      ffz = 0.0
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine userq  (ix,iy,iz,eg)
-      include 'SIZE'
-      include 'TOTAL'
-      include 'NEKUSE'
-      integer e,eg
-
-      qvol   = 0.0
-      source = 0.0
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine useric (ix,iy,iz,eg)
-      include 'SIZE'
-      include 'TOTAL'
-      include 'NEKUSE'
-
-      ux=1-y*y
-      uy   = 0
-      uz   = 0
-      temp = 0
-      pa   = 0
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine usrdat
-      include 'SIZE'
-      include 'TOTAL'
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine usrdat2
-      include 'SIZE'
-      include 'TOTAL'
-
-      return
-      end
-c----------------------------------------------------------------------
-      subroutine usrdat3
-      return
-      end
-c----------------------------------------------------------------------
-      subroutine userbc (ix,iy,iz,iside,eg)
-c     NOTE ::: This is not guaranteed to be called by every process
-      include 'SIZE'
-      include 'TOTAL'
-      include 'NEKUSE'
-      integer e,eg
-
-      e = gllel(eg)
-
-      ux=1-y*y
-      uy=0.0
-      uz=0.0
-      temp=0.0
-      pa  =0.0
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine userchk
-
-      include 'SIZE'
-      include 'TOTAL'
-      include 'POD'
-
-      common /myoutflow/ d(lx1,ly1,lz1,lelt),m1(lx1*ly1*lz1,lelt)
-
-c     call genops
-      call readops
-
-      do ad_step=1,ad_nsteps
-         call rom_step
-      enddo
-
-      call exitt0
-
-      return
-      end
-c-----------------------------------------------------------------------
       subroutine opadd3 (a1,a2,a3,b1,b2,b3,c1,c2,c3)
       include 'SIZE'
       real a1(1),a2(1),a3(1),b1(1),b2(1),b3(1)
@@ -221,12 +117,6 @@ c-----------------------------------------------------------------------
 
       call readeig(evec)
 
-c     if (nid.eq.(np-1)) then
-c        do i=1,nb
-c           write (6,*) i,',',evec(1,i)
-c        enddo
-c     endif
-
       call get_saved_fields(usave,vsave,wsave,ns,u0)
 
       ONE = 1.
@@ -246,23 +136,10 @@ c     endif
       enddo
 
       call readc0(c0,(nb+1)**3)
-
-      l=1
-      do k=0,nb
-      do j=0,nb
-      do i=1,nb
-         c0(i,j,k)=real(l)
-         write (6,*) 'c0',i,j,k,c0(i,j,k)
-         l=l+1
-      enddo
-      enddo
-      enddo
-
       call readab(a0,b0,(nb+1)**2)
       call readic(ic,nb+1)
 
       if (np.gt.1) call makecloc
-
 
       call rom_setup
 
@@ -367,7 +244,6 @@ c     Matrices and vectors for advance
       real coef(1:nb)
 
 c     Working arrays for LU
-      integer IR(nb),ICC(nb)
 
       time = 0.
 
@@ -392,14 +268,8 @@ c     Working arrays for LU
       ad_nsteps=nsteps
       ad_iostep=iostep
 
-c     ad_nsteps = 1e6
-c     ad_iostep = 1e4
-
-c     ad_nsteps=100
-c     ad_iostep=ad_nsteps
-
-      ad_dt = 1e-5
-      ad_re = 1e3
+      ad_dt = dt
+      ad_re = 1/param(2)
 
       ! BDFk/EXTk coefficients ( will change to BD inside Nek)
       call compute_BDF_coef(ad_alpha,ad_beta)
@@ -429,7 +299,6 @@ c     Matrices and vectors for advance
       common /scrk3/ work(lt)
 
 c     Working arrays for LU
-      integer IR(nb),ICC(nb)
 
       common /nekmpi/ nidd,npp,nekcomm,nekgroup,nekreal
 
@@ -439,8 +308,10 @@ c     Working arrays for LU
 
       count = min0(ad_step,3)
 
-      call cmult2(helm,b,ad_beta(1,count)/ad_dt,nb*nb)
-      call add2s2(helm,a,1/ad_re,nb*nb)
+      if (ad_step.le.3) then
+         call cmult2(flu,b,ad_beta(1,count)/ad_dt,nb*nb)
+         call add2s2(flu,a,1/ad_re,nb*nb)
+      endif
 
       ONE = 1.
       ZERO= 0.
@@ -472,8 +343,9 @@ c     Working arrays for LU
 
       call sub2(rhs,tmp,nb)
 
-      call LU    (helm,nb,nb,IR,ICC)
-      call SOLVE (rhs,helm,1,nb,nb,IR,ICC)
+      if (ad_step.le.3) call lu(flu,nb,nb,irr,icc)
+
+      call solve(rhs,flu,1,nb,nb,irr,icc)
 
       call copy(u(1,3),u(1,2),nb)
       call copy(u(1,2),u(1,1),nb)
@@ -722,8 +594,6 @@ c-----------------------------------------------------------------------
 
       call sleep(npp-nid)
 
-      call exitt0
-
       return
       end
 c-----------------------------------------------------------------------
@@ -966,11 +836,8 @@ c-----------------------------------------------------------------------
 
       i2p=0
 
-c     write (6,*) 'in i2p',i
-
       do while (mps(i2p+1).ne.0)
          i2p=i2p+1
-c        write (6,*) 'mps',i2p+1,mps(i2p+1)
          if (i.le.mps(i2p)) return
       enddo
 
@@ -994,7 +861,6 @@ c-----------------------------------------------------------------------
 
       call ijk2pqr(ip,iq,ir,i,j,k,mps,mqs,mrs)
       ijk2pid=(ip-1)+mp*(iq-1)+mp*mq*(ir-1)
-c     if (nio.eq.0) write (6,*) 'ijk2pid',i,j,k,ip,iq,ir,ijk2pid
 
       return
       end
@@ -1012,8 +878,6 @@ c-----------------------------------------------------------------------
       l=1
 
       call rzero(cu,nb)
-
-c     if (nio.eq.0) write (6,*) i0,i1,j0,j1,k0,k1
 
       do k=k0,k1
          uk=u(k,1)
@@ -1053,22 +917,14 @@ c-----------------------------------------------------------------------
       iq=mod(nid/mp,mq)
       ir=   (nid/mp)/mq
 
-c     write (6,*) 'ip,iq,ir',ip,iq,ir
-
       i0=mps(max(ip,1))*max(ip,0)/max(ip,1)+1
       i1=mps(ip+1)
-
-c     write (6,*) 'i0,i1',i0,i1
 
       j0=mqs(max(iq,1))*max(iq,0)/max(iq,1)
       j1=mqs(iq+1)-1
 
-c     write (6,*) 'j0,j1',j0,j1
-
       k0=mrs(max(ir,1))*max(ir,0)/max(ir,1)
       k1=mrs(ir+1)-1
-
-c     write (6,*) 'k0,k1',k0,k1
 
       return
       end
