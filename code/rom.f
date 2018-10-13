@@ -1,15 +1,4 @@
 c-----------------------------------------------------------------------
-      subroutine opadd3 (a1,a2,a3,b1,b2,b3,c1,c2,c3)
-      include 'SIZE'
-      real a1(1),a2(1),a3(1),b1(1),b2(1),b3(1)
-      real c1(1),c2(1),c3(1)
-      ntot1=lx1*ly1*lz1*nelv
-      call add2(a1,b1,c1,ntot1)
-      call add2(a2,b2,c2,ntot1)
-      if (ldim.eq.3) call add2(a3,b3,c3,ntot1)
-      return
-      end
-c-----------------------------------------------------------------------
       subroutine get_saved_fields(usave,vsave,wsave,nsave,u0)
 
 c     This routine reads files specificed in file.list
@@ -767,6 +756,124 @@ c        call h1prod(t5,ub(1,i),vb(1,i),wb(1,i),ub(1,i),vb(1,i),wb(1,i))
       return
       end
 c-----------------------------------------------------------------------
+      subroutine evalc(cu)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'POD'
+
+      real cu(nb)
+
+      common /scrk4/ work(lx1*ly1*lz1*lelt)
+
+      l=1
+
+      call rzero(cu,nb)
+
+      do k=k0,k1
+         uk=u(k,1)
+         do j=j0,j1
+            ujk=u(j,1)*uk
+            do i=i0,i1
+               cu(i)=cu(i)+clocal(l)*ujk
+               l=l+1
+            enddo
+         enddo
+      enddo
+
+      if (ad_step.eq.1.or.ad_step.eq.2.or.ad_step.eq.ad_nsteps) then
+      call sleep(nid)
+
+      do i=1,nb
+         write (6,*) '1 evalc',cu(i)
+      enddo
+
+      call sleep(np-nid-1)
+      endif
+
+      call gop(cu,work,'+  ',nb)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine readc0(c0,n)
+
+      include 'SIZE'
+      include 'PARALLEL'
+
+      real c0(n)
+
+      if (nid.eq.(np-1)) then
+         open (unit=12,file='cten')
+         read (12,*) (c0(k),k=1,n)
+         close (unit=12)
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine readab(a0,b0,n)
+
+      include 'SIZE'
+
+      real a0(n),b0(n)
+
+      common /scrk5/ w(lx1*ly1*lz1*lelt)
+
+      call rzero(a0,n)
+      call rzero(b0,n)
+
+      if (nid.eq.0) then
+         open (unit=12,file='amat')
+         read (12,*) (a0(k),k=1,n)
+         close (unit=12)
+
+         open (unit=12,file='bmat')
+         read (12,*) (b0(k),k=1,n)
+         close (unit=12)
+      endif
+
+      call gop(a0,w,'+  ',n)
+      call gop(b0,w,'+  ',n)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine readic(ic,n)
+
+      include 'SIZE'
+
+      real ic(n)
+
+      open (unit=12,file='ic')
+      read (12,*) (ic(k),k=1,n)
+      close (unit=12)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine readeig(evec)
+
+      include 'SIZE'
+      include 'POD'
+
+      common /scrk5/ w(lx1*ly1*lz1*lelt)
+
+      real evec(ms,nb)
+
+      call rzero(evec,ms*nb)
+
+      if (nid.eq.0) then
+         open (unit=12,file='evectors.dat')
+         read (12,*) (evec(k,1),k=1,ms*nb)
+         close (unit=12)
+      endif
+
+      call gop(evec,w,'+  ',ms*nb)
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine factor3(mq,mp,mr,m)
 
       integer dmin,d
@@ -865,46 +972,6 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine evalc(cu)
-
-      include 'SIZE'
-      include 'TOTAL'
-      include 'POD'
-
-      real cu(nb)
-
-      common /scrk4/ work(lx1*ly1*lz1*lelt)
-
-      l=1
-
-      call rzero(cu,nb)
-
-      do k=k0,k1
-         uk=u(k,1)
-         do j=j0,j1
-            ujk=u(j,1)*uk
-            do i=i0,i1
-               cu(i)=cu(i)+clocal(l)*ujk
-               l=l+1
-            enddo
-         enddo
-      enddo
-
-      if (ad_step.eq.1.or.ad_step.eq.2.or.ad_step.eq.ad_nsteps) then
-      call sleep(nid)
-
-      do i=1,nb
-         write (6,*) '1 evalc',cu(i)
-      enddo
-
-      call sleep(np-nid-1)
-      endif
-
-      call gop(cu,work,'+  ',nb)
-
-      return
-      end
-c-----------------------------------------------------------------------
       subroutine setrange(mps,mqs,mrs,mp,mq,mr)
 
       include 'SIZE'
@@ -929,84 +996,6 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine readc0(c0,n)
-
-      include 'SIZE'
-      include 'PARALLEL'
-
-      real c0(n)
-
-      if (nid.eq.(np-1)) then
-         open (unit=12,file='cten')
-         read (12,*) (c0(k),k=1,n)
-         close (unit=12)
-      endif
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine readab(a0,b0,n)
-
-      include 'SIZE'
-
-      real a0(n),b0(n)
-
-      common /scrk5/ w(lx1*ly1*lz1*lelt)
-
-      call rzero(a0,n)
-      call rzero(b0,n)
-
-      if (nid.eq.0) then
-         open (unit=12,file='amat')
-         read (12,*) (a0(k),k=1,n)
-         close (unit=12)
-
-         open (unit=12,file='bmat')
-         read (12,*) (b0(k),k=1,n)
-         close (unit=12)
-      endif
-
-      call gop(a0,w,'+  ',n)
-      call gop(b0,w,'+  ',n)
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine readic(ic,n)
-
-      include 'SIZE'
-
-      real ic(n)
-
-      open (unit=12,file='ic')
-      read (12,*) (ic(k),k=1,n)
-      close (unit=12)
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine readeig(evec)
-
-      include 'SIZE'
-      include 'POD'
-
-      common /scrk5/ w(lx1*ly1*lz1*lelt)
-
-      real evec(ms,nb)
-
-      call rzero(evec,ms*nb)
-
-      if (nid.eq.0) then
-         open (unit=12,file='evectors.dat')
-         read (12,*) (evec(k,1),k=1,ms*nb)
-         close (unit=12)
-      endif
-
-      call gop(evec,w,'+  ',ms*nb)
-
-      return
-      end
-c-----------------------------------------------------------------------
       subroutine ijk2l(l,i,j,k)
       
       include 'SIZE'
@@ -1018,6 +1007,17 @@ c-----------------------------------------------------------------------
 
       l=il+jl*(i1-i0+1)+kl*(i1-i0+1)*(j1-j0+1)+1
 
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine opadd3 (a1,a2,a3,b1,b2,b3,c1,c2,c3)
+      include 'SIZE'
+      real a1(1),a2(1),a3(1),b1(1),b2(1),b3(1)
+      real c1(1),c2(1),c3(1)
+      ntot1=lx1*ly1*lz1*nelv
+      call add2(a1,b1,c1,ntot1)
+      call add2(a2,b2,c2,ntot1)
+      if (ldim.eq.3) call add2(a3,b3,c3,ntot1)
       return
       end
 c-----------------------------------------------------------------------
