@@ -3,7 +3,7 @@ language: fortran
 sudo: required
 
 env:
-  - FC=gfortran CC=gcc
+  - FC=gfortran CC=gcc MPI=0
 
 before_install: 
   - export ROOT_DIR=`pwd`
