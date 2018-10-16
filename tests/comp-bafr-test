@@ -1,8 +1,9 @@
 #!/bin/bash
 
 cd cases/baf
+git clean -dfx .
+
 cp "$SOURCE_ROOT/bin/makenek" .
 $ROOT_DIR/bin/linkc
-rm compiler.out
 ./makenek bafr
 grep 'Compilation successful!' compiler.out
