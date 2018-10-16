@@ -14,7 +14,6 @@ before_install:
 
   # Set up Nek5000
   - git clone https://github.com/Nek5000/Nek5000
-  - (cd Nek5000; git co 469daf94; git co -b v17)
   - export SOURCE_ROOT=$ROOT_DIR/Nek5000
 
 script: 
