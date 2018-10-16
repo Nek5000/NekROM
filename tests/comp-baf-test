@@ -2,5 +2,6 @@
 
 cd cases/baf
 cp "$SOURCE_ROOT/bin/makenek" .
+rm compiler.out
 ./makenek baf
 grep 'Compilation successful!' compiler.out
