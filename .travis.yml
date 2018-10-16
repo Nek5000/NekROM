@@ -3,7 +3,7 @@ language: fortran
 sudo: required
 
 env:
-  - FC=gfortran CC=gcc MPI=0
+  - FC=mpif77 CC=mpicc
 
 before_install: 
   - export ROOT_DIR=`pwd`
@@ -18,4 +18,4 @@ before_install:
 
 script: 
   - $ROOT_DIR/tests/comp-baf-test
-  - FC=mpif77 CC=mpicc MPI=1 $ROOT_DIR/tests/comp-bafr-test
+  - $ROOT_DIR/tests/comp-bafr-test
