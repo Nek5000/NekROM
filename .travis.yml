@@ -18,4 +18,4 @@ before_install:
 
 script: 
   - $ROOT_DIR/tests/comp-baf-test
-  - $ROOT_DIR/tests/comp-bafr-test
+  - FC=mpif77 CC=mpicc MPI=1 $ROOT_DIR/tests/comp-bafr-test
