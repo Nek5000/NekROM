@@ -1,5 +1,7 @@
 # Model Order Reduction (MOR)
 
+[![Build Status](https://travis-ci.com/kent0/MOR.svg?token=nDCiae81x8NojggcMEcA&branch=master)](https://travis-ci.com/kent0/MOR)
+
 Download pod2 folder from:
 
 https://uofi.app.box.com/s/42r27y4kn3zkrfq82p3d3xin72f6p8oh
