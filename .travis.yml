@@ -1,0 +1,29 @@
+language: fortran
+
+sudo: required
+
+env:
+  - FC=gfortran CC=gcc
+
+before_install: 
+  - export ROOT_DIR=`pwd`
+
+  # Install MPICH
+  - sudo apt-get update -qq
+  - sudo apt-get install -y libmpich-dev mpich
+
+  # Set up Python virtualenv
+  - virtualenv -p python2.7 $ROOT_DIR/python2-env
+  - source $ROOT_DIR/python2-env/bin/activate
+  - export PYTHONPATH="$ROOT_DIR/tests:$PYTHONPATH"
+
+  # Set up Nek5000
+  - git clone https://github.com/Nek5000/Nek5000
+  - export SOURCE_ROOT=$ROOT_DIR/Nek5000
+
+install:
+  - pip install --upgrade pip
+  - pip install pytest
+
+script: 
+  - $ROOT_DIR/tests/test1
