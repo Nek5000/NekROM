@@ -1,0 +1,10 @@
+#!/bin/bash -x
+
+cwd="$(pwd -P)"
+base="$(cd .. ; dirname $(pwd -P))"
+
+rm rom.f
+rm aux.f
+
+ln -s {${base}/code,${cwd}}/rom.f
+ln -s {${base}/code,${cwd}}/aux.f
