@@ -1,0 +1,7 @@
+#!/bin/bash
+
+cd cases/baf
+cp "$SOURCE_ROOT/bin/makenek" .
+../../bink/linkc
+./makenek bafr
+grep 'Compilation successful!' compiler.out

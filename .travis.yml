@@ -18,4 +18,5 @@ before_install:
   - export SOURCE_ROOT=$ROOT_DIR/Nek5000
 
 script: 
-  - $ROOT_DIR/tests/test1
+  - $ROOT_DIR/tests/comp-baf-test
+  - $ROOT_DIR/tests/comp-bafr-test
