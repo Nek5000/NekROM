@@ -1,3 +1,6 @@
 #!/bin/bash
 
-echo 'This is a test...'
+cd cases/baf
+cp "$SOURCE_ROOT/bin/makenek" .
+./makenek baf
+grep 'Compilation successful!' compiler.out
