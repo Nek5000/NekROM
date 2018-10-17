@@ -205,8 +205,6 @@ c-----------------------------------------------------------------------
 c        call outmatl(ub(1,i),vb(1,i),wb(1,i),i)
       enddo
 
-      call gfldr('chan20.f01540')
-
       call makec
       call makecloc
       call get_a_b
