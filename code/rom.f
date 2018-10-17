@@ -201,7 +201,7 @@ c-----------------------------------------------------------------------
      $call dgemm( 'N','N',n,nb,ms,ONE,wsave,lt,evec,ms,ZERO,wb(1,1),lt)
 
       do i=0,nb
-         call outpost(ub(1,i),vb(1,i),wb(1,i),pr,t,'   ')
+         call outpost(ub(1,i),vb(1,i),wb(1,i),pr,t,'bas')
 c        call outmatl(ub(1,i),vb(1,i),wb(1,i),i)
       enddo
 
