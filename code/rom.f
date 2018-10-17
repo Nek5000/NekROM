@@ -348,9 +348,9 @@ c     if (npp.ne.1) call gop(rhs,work,'+  ',nb)
 
          write(6,*)'ad_step:',ad_step,ad_iostep,npp,nid
 
-c        do j=1,nb
-c           write(6,*) j,u(j,1)
-c        enddo
+         do j=1,nb
+            write(6,*) j,u(j,1)
+         enddo
 
          call sleep(np-1-nid)
 
