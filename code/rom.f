@@ -348,9 +348,9 @@ c     if (npp.ne.1) call gop(rhs,work,'+  ',nb)
 
          write(6,*)'ad_step:',ad_step,ad_iostep,npp,nid
 
-         do j=1,nb
-            write(6,*) j,u(j,1)
-         enddo
+c        do j=1,nb
+c           write(6,*) j,u(j,1)
+c        enddo
 
          call sleep(np-1-nid)
 
@@ -490,18 +490,18 @@ c-----------------------------------------------------------------------
       if (nio.eq.0) write (6,*) 'factor3',mp,mq,mr,npp
 
       call setpart3(mps,mqs,mrs,mp,mq,mr,nb)
-      if (nio.eq.0) then
-         write (6,*) 'setpart3'
-         do i=1,mp
-            write (6,*) 'mps',mps(i)
-         enddo
-         do i=1,mq
-            write (6,*) 'mqs',mqs(i)
-         enddo
-         do i=1,mr
-            write (6,*) 'mrs',mrs(i)
-         enddo
-      endif
+c     if (nio.eq.0) then
+c        write (6,*) 'setpart3'
+c        do i=1,mp
+c           write (6,*) 'mps',mps(i)
+c        enddo
+c        do i=1,mq
+c           write (6,*) 'mqs',mqs(i)
+c        enddo
+c        do i=1,mr
+c           write (6,*) 'mrs',mrs(i)
+c        enddo
+c     endif
 
       call setrange(mps,mqs,mrs,mp,mq,mr) ! set index range i0,i1,j0,j1,k0,k1
 
