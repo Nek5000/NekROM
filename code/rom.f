@@ -698,7 +698,7 @@ c-----------------------------------------------------------------------
 
       parameter(lt=lx1*ly1*lz1*lelt)
 
-      common /scrk1/ t1(lt), t2(lt), t3(lt)
+      common /scrk1/ au(lt), av(lt), aw(lt)
       common /scrk2/ h1(lt), h2(lt)
 
       real u1(lt), v1(lt), w1(lt)
@@ -709,14 +709,16 @@ c-----------------------------------------------------------------------
       call rone(h1,n)
       call rzero(h2,n)
 
-      call axhelm(t1,u1,h1,h2,1,1)
-      call axhelm(t2,v1,h1,h2,1,1)
+      call axhelm(au,u1,h1,h2,1,1)
+      call axhelm(av,v1,h1,h2,1,1)
 
-      prod = glsc2(t1,u2,n) + glsc2(t2,v2,n)
+      p1=glsc2(au,u2,n)
+      p2=glsc2(av,v2,n)
+      prod=p1+p2
 
       if (ldim.eq.3) then
-         call axhelm(t3,w1,h1,h2,1,1)
-         prod = prod + glsc2(t3,w2,n)
+         call axhelm(aw,w1,h1,h2,1,1)
+         prod = prod + glsc2(aw,w2,n)
       endif
 
       return
