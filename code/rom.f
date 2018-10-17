@@ -731,25 +731,52 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /scrk1/ t1(lt),t2(lt),t3(lt)
+      common /scrk1/ t1(lt),t2(lt),t3(lt),t4(lt),t5(lt),t6(lt)
+      common /scrk2/ h1(lt),h2(lt)
 
       if (nio.eq.0) write (6,*) 'inside makeic'
 
       call opcopy(t1,t2,t3,vx,vy,vz)
 
+      n=lx1*ly1*lz1*nelt
+
+      call rone(h1,n)
+      call rzero(h2,n)
+
       ic(0) = 1.
 
-      call opsub2(t1,t2,t3,ub(1,0),vb(1,0),wb(1,0))
+      call opsub3(t1,t2,t3,vx,vy,vz,ub(1,0),vb(1,0),wb(1,0))
 
       do i=1,nb
-         t4 = op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),t1,t2,t3,bm1)
-         t5 = op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),
-     $                    ub(1,i),vb(1,i),wb(1,i),bm1)
-         call h1prod(t4,ub(1,i),vb(1,i),wb(1,i),t1,t2,t3)
-         call h1prod(t5,ub(1,i),vb(1,i),wb(1,i),ub(1,i),vb(1,i),wb(1,i))
-         ic(i) = t4 / t5
-         if (nio.eq.0) write (6,*) 'find coef: ',i,t4,t5,ic(i)
+         call axhelm(t4,ub(1,i),h1,h2,1,1)
+         call axhelm(t5,vb(1,i),h1,h2,1,1)
+         if (ldim.eq.3) call axhelm(t6,wb(1,i),h1,h2,1,1)
+
+         uu = glsc2(t4,ub(1,i),n)+glsc2(t5,vb(1,i),n)
+         vv = glsc2(t4,t1,n)+glsc2(t5,t2,n)
+         if (ldim.eq.3) uu = uu + glsc2(t6,wb(1,i),n)
+         if (ldim.eq.3) vv = vv + glsc2(t6,t3,n)
+
+         ic(i) = vv/uu
+         if (nio.eq.0) write (6,1) i,vv,uu,ic(i)
       enddo
+
+      call opzero(vxlag,vylag,vzlag)
+
+      ii=3
+
+      do i=0,nb
+         call opadds(
+     $      vxlag,vylag,vzlag,ub(1,i),vb(1,i),wb(1,i),ic(i),n,2)
+      enddo
+
+      call outpost(ub(1,0),vb(1,0),wb(1,0),pr,t,'ric')
+      call outpost(vx,vy,vz,pr,t,'ric')
+      call outpost(vxlag,vylag,vzlag,pr,t,'ric')
+
+    1 format('ic: ',i3,1p3e16.7)
+
+      call exitt0
 
       return
       end
