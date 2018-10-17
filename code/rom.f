@@ -320,11 +320,11 @@ c     Working arrays for LU
 
       call mxm(conv,nb,ad_alpha(1,count),3,tmp,1)
 
-      if (ad_step.eq.1.or.ad_step.eq.2.or.ad_step.eq.ad_nsteps) then
-      do i=0,nb-1
-         if (nio.eq.0) write (6,*) '2 evalc',tmp(i)
-      enddo
-      endif
+c     if (ad_step.eq.1.or.ad_step.eq.2.or.ad_step.eq.ad_nsteps) then
+c     do i=0,nb-1
+c        if (nio.eq.0) write (6,*) '2 evalc',tmp(i)
+c     enddo
+c     endif
 
       call sub2(rhs,tmp,nb)
 
@@ -521,7 +521,7 @@ c-----------------------------------------------------------------------
          vi(4,l)=j
          vi(5,l)=k
 
-         if (nio.eq.0) write (6,*) 'ijk2pid',i,j,k,vi(2,l)
+c        if (nio.eq.0) write (6,*) 'ijk2pid',i,j,k,vi(2,l)
          vr(  l)=c0(i,j,k)
          if (l.eq.nblock.or.(k.eq.nb.and.j.eq.nb.and.i.eq.nb)) then
             call fgslib_crystal_tuple_transfer
@@ -540,11 +540,11 @@ c-----------------------------------------------------------------------
 
       call sleep(nid)
 
-      write (6,*) '1 nid,npp',nid,npp,inums
+c     write (6,*) '1 nid,npp',nid,npp,inums
 
-      do i=1,inums
-         write (6,*) nid,ctmp(i),ui(2,i)
-      enddo
+c     do i=1,inums
+c        write (6,*) nid,ctmp(i),ui(2,i)
+c     enddo
 
       call sleep(npp-nid-1)
 
@@ -555,7 +555,7 @@ c-----------------------------------------------------------------------
 
       call sleep(nid)
 
-      write (6,*) '2 nid,npp',nid,npp,inums
+c     write (6,*) '2 nid,npp',nid,npp,inums
 
       do i=1,inums
          write (6,*) nid,ctmp(i),ui(2,i),ui(3,i),ui(4,i),ui(5,i)
@@ -572,9 +572,9 @@ c-----------------------------------------------------------------------
 
       call sleep(nid)
 
-      do i=1,inums
-         write (6,*) nid,clocal(i)
-      enddo
+c     do i=1,inums
+c        write (6,*) nid,clocal(i)
+c     enddo
 
       call sleep(npp-nid)
 
@@ -781,9 +781,9 @@ c-----------------------------------------------------------------------
       if (ad_step.eq.1.or.ad_step.eq.2.or.ad_step.eq.ad_nsteps) then
       call sleep(nid)
 
-      do i=1,nb
-         write (6,*) '1 evalc',cu(i)
-      enddo
+c     do i=1,nb
+c        write (6,*) '1 evalc',cu(i)
+c     enddo
 
       call sleep(np-nid-1)
       endif
