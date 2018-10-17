@@ -1,0 +1,18 @@
+#!/bin/bash
+
+cd cases/baf
+git clean -dfx .
+
+cp "$SOURCE_ROOT/bin/makenek" .
+$ROOT_DIR/bin/linkc
+./makenek bafr
+grep 'Compilation successful!' compiler.out
+comp_code="$?"
+
+$SOURCE_ROOT/bin/nekl bafr
+
+t=$(grep ic_test baf.log.1)
+ic_code=$(awk '{print $1}' $t)
+
+grep 'run successful: dying ...' logfile
+success_code="$?"

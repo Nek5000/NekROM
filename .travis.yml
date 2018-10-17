@@ -19,3 +19,4 @@ before_install:
 script: 
   - $ROOT_DIR/tests/comp-baf-test
   - $ROOT_DIR/tests/comp-bafr-test
+  - $ROOT_DIR/tests/bafr-test
