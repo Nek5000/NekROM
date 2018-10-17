@@ -737,9 +737,16 @@ c-----------------------------------------------------------------------
      $      vxlag,vylag,vzlag,ub(1,i),vb(1,i),wb(1,i),ic(i),n,2)
       enddo
 
-      call outpost(ub(1,0),vb(1,0),wb(1,0),pr,t,'ric')
       call outpost(vx,vy,vz,pr,t,'ric')
       call outpost(vxlag,vylag,vzlag,pr,t,'ric')
+      call opsub3(t1,t2,t3,vx,vy,vz,vxlag,vylag,vzlag)
+      call outpost(t1,t2,t3,pr,t,'ric')
+      el2 = op_glsc2_wt(t1,t2,t3,t1,t2,t3,bm1)
+     $    / op_glsc2_wt(vx,vy,vz,vx,vy,vz,bm1)
+
+      itest=0
+      if (abs(el2-3.9525554652664913E-002).lt.1e-4) itest=1
+      write (6,*) itest,el2,'ic_test'
 
     1 format('ic: ',i3,1p3e16.7)
 
