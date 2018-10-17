@@ -4,6 +4,5 @@ cd cases/baf
 git clean -dfx .
 
 cp "$SOURCE_ROOT/bin/makenek" .
-rm compiler.out
 ./makenek baf &> /dev/null
 grep 'Compilation successful!' compiler.out
