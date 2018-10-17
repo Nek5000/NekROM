@@ -690,38 +690,6 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine h1prod(prod,u1,v1,w1,u2,v2,w2)
-
-      include 'SIZE'
-
-      parameter(lt=lx1*ly1*lz1*lelt)
-
-      common /scrk1/ au(lt), av(lt), aw(lt)
-      common /scrk2/ h1(lt), h2(lt)
-
-      real u1(lt), v1(lt), w1(lt)
-      real u2(lt), v2(lt), w2(lt)
-
-      n = lx1*ly1*lz1*nelt
-
-      call rone(h1,n)
-      call rzero(h2,n)
-
-      call axhelm(au,u1,h1,h2,1,1)
-      call axhelm(av,v1,h1,h2,1,1)
-
-      p1=glsc2(au,u2,n)
-      p2=glsc2(av,v2,n)
-      prod=p1+p2
-
-      if (ldim.eq.3) then
-         call axhelm(aw,w1,h1,h2,1,1)
-         prod = prod + glsc2(aw,w2,n)
-      endif
-
-      return
-      end
-c-----------------------------------------------------------------------
       subroutine makeic
 
       include 'SIZE'
