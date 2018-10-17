@@ -1,4 +1,4 @@
-#!/bin/bash
+#!/bin/bash -x
 
 mkdir $ROOT_DIR/data
 cd $ROOT_DIR/data
@@ -23,7 +23,9 @@ Z
 
 $SOURCE_ROOT/bin/nek baf
 
-t=$(grep ic_test baf.log.1)
+ls
+
+t=$(grep 'ic_test' baf.log.1)
 ic_code=$(awk '{print $1}' $t)
 
 grep 'run successful: dying ...' baf.log.1
