@@ -5,7 +5,7 @@ git clean -dfx .
 
 cp "$SOURCE_ROOT/bin/makenek" .
 $ROOT_DIR/bin/linkc
-./makenek bafr
+./makenek bafr &> /dev/null
 grep 'Compilation successful!' compiler.out
 comp_code="$?"
 
