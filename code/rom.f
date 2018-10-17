@@ -340,8 +340,7 @@ c     if (npp.ne.1) call gop(rhs,work,'+  ',nb)
       call copy(u(1,1),rhs,nb)
       call copy(coef,rhs,nb)
 
-c     if (mod(ad_step,ad_iostep)==0) then
-      if (ad_step.eq.ad_nsteps.or.ad_step.eq.1.or.ad_step.eq.2) then
+      if (mod(ad_step,ad_iostep).eq.0) then
 
 !        This output is to make sure the ceof matches with matlab code
 
