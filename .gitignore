@@ -21,7 +21,6 @@ out.*
 *.tif*
 cyl
 ldc
-*.f
 rom40
 pod2
 notes.txt
