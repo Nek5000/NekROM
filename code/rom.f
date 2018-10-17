@@ -445,7 +445,7 @@ c-----------------------------------------------------------------------
             do i=0,nb
                c0(i,j,k) = op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),
      $                                cux,cuy,cuz,binv)
-               if (nid.eq.0) write (6,*) 'c0',i,j,k,c0(i,j,k)
+c              if (nid.eq.0) write (6,*) 'c0',i,j,k,c0(i,j,k)
             enddo
          enddo
       enddo
