@@ -745,8 +745,8 @@ c-----------------------------------------------------------------------
          t4 = op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),t1,t2,t3,bm1)
          t5 = op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),
      $                    ub(1,i),vb(1,i),wb(1,i),bm1)
-c        call h1prod(t4,ub(1,i),vb(1,i),wb(1,i),t1,t2,t3)
-c        call h1prod(t5,ub(1,i),vb(1,i),wb(1,i),ub(1,i),vb(1,i),wb(1,i))
+         call h1prod(t4,ub(1,i),vb(1,i),wb(1,i),t1,t2,t3)
+         call h1prod(t5,ub(1,i),vb(1,i),wb(1,i),ub(1,i),vb(1,i),wb(1,i))
          ic(i) = t4 / t5
          if (nio.eq.0) write (6,*) 'find coef: ',i,t4,t5,ic(i)
       enddo
