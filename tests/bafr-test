@@ -9,10 +9,10 @@ $ROOT_DIR/bin/linkc
 grep 'Compilation successful!' compiler.out
 comp_code="$?"
 
-$SOURCE_ROOT/bin/nekl bafr
+$SOURCE_ROOT/bin/nek baf
 
 t=$(grep ic_test baf.log.1)
 ic_code=$(awk '{print $1}' $t)
 
-grep 'run successful: dying ...' logfile
+grep 'run successful: dying ...' baf.log.1
 success_code="$?"
