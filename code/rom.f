@@ -174,8 +174,8 @@ c-----------------------------------------------------------------------
          do i=1,ns
             uu(i,j) = glsc2(usave(1,i),uw,n)+glsc2(vsave(1,i),vw,n)
             if (ldim.eq.3) uu(i,j) = uu(i,j)+glsc2(wsave(1,i),ww,n)
-            if (i == j) Identity(i,j) = 1
          enddo
+         identity(j,j) = 1
          if (nio.eq.0) write(6,*) j,uu(1,j),' uu'
       enddo
 
