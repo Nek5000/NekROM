@@ -6,14 +6,14 @@ env:
   - FC=mpif77 CC=mpicc
 
 before_install: 
-  - export ROOT_DIR=`pwd`
+  - export ROOT_DIR=$(pwd -P)
 
   # Install MPICH
   - sudo apt-get update -qq
   - sudo apt-get install -y libmpich-dev mpich
 
   # Set up Nek5000
-  - git clone https://github.com/Nek5000/Nek5000
+  - git clone --single-branch -b presolve-fix https://github.com/kent0/Nek5000
   - export SOURCE_ROOT=$ROOT_DIR/Nek5000
   - cd Nek5000/tools; ./maketools genmap
 
