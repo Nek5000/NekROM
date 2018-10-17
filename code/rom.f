@@ -201,7 +201,6 @@ c-----------------------------------------------------------------------
 
       do i=0,nb
          call outpost(ub(1,i),vb(1,i),wb(1,i),pr,t,'bas')
-c        call outmatl(ub(1,i),vb(1,i),wb(1,i),i)
       enddo
 
       call makec
