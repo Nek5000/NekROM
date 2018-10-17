@@ -9,6 +9,11 @@ $ROOT_DIR/bin/linkc
 grep 'Compilation successful!' compiler.out
 comp_code="$?"
 
+$SOURCE_ROOT/bin/genmap << Z
+baf
+.01
+Z
+
 $SOURCE_ROOT/bin/nek baf
 
 t=$(grep ic_test baf.log.1)
