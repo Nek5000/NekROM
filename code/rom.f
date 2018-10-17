@@ -557,9 +557,9 @@ c     enddo
 
 c     write (6,*) '2 nid,npp',nid,npp,inums
 
-      do i=1,inums
-         write (6,*) nid,ctmp(i),ui(2,i),ui(3,i),ui(4,i),ui(5,i)
-      enddo
+c     do i=1,inums
+c        write (6,*) nid,ctmp(i),ui(2,i),ui(3,i),ui(4,i),ui(5,i)
+c     enddo
 
       call sleep(npp-nid-1)
 
