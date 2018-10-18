@@ -570,21 +570,7 @@ c-----------------------------------------------------------------------
       ic(0) = 1.
 
       call opsub3(t1,t2,t3,vx,vy,vz,ub(1,0),vb(1,0),wb(1,0))
-
-      do i=1,nb
-         call axhelm(t4,ub(1,i),h1,h2,1,1)
-         call axhelm(t5,vb(1,i),h1,h2,1,1)
-         if (ldim.eq.3) call axhelm(t6,wb(1,i),h1,h2,1,1)
-
-         uu = glsc2(t4,ub(1,i),n)+glsc2(t5,vb(1,i),n)
-         vv = glsc2(t4,t1,n)+glsc2(t5,t2,n)
-         if (ldim.eq.3) uu = uu + glsc2(t6,wb(1,i),n)
-         if (ldim.eq.3) vv = vv + glsc2(t6,t3,n)
-
-         ic(i) = vv/uu
-         if (nio.eq.0) write (6,1) i,vv,uu,ic(i)
-      enddo
-
+      call h10proj(ic(1),t1,t2,t3)
       call opzero(vxlag,vylag,vzlag)
 
       ii=3

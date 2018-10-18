@@ -134,3 +134,47 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine h10proj(coef,t1,t2,t3)
+
+      include 'SIZE'
+      include 'SOLN'
+      include 'MASS'
+      include 'POD'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real t1(lt),t2(lt),t3(lt)
+
+      common /scrk3/ t4(lt),t5(lt),t6(lt)
+      common /scrk4/ h1(lt),h2(lt)
+
+      real coef(nb)
+
+      if (nio.eq.0) write (6,*) 'inside h10proj'
+
+      n=lx1*ly1*lz1*nelt
+
+      call rone(h1,n)
+      call rzero(h2,n)
+
+      do i=1,nb
+         call axhelm(t4,ub(1,i),h1,h2,1,1)
+         call axhelm(t5,vb(1,i),h1,h2,1,1)
+
+         uu = glsc2(t4,ub(1,i),n)+glsc2(t5,vb(1,i),n)
+         vv = glsc2(t4,t1,n)+glsc2(t5,t2,n)
+
+         if (ldim.eq.3) then
+            call axhelm(t6,wb(1,i),h1,h2,1,1)
+            uu = uu + glsc2(t6,wb(1,i),n)
+            vv = vv + glsc2(t6,t3,n)
+         endif
+
+         coef(i) = vv/uu
+      enddo
+
+      if (nio.eq.0) write (6,*) 'exiting h10proj'
+
+      return
+      end
+c-----------------------------------------------------------------------
