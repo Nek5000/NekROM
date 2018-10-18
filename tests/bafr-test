@@ -29,7 +29,7 @@ mpiexec -np 1 ./nek5000 | tee logfile
 ls -latr
 
 t=$(grep 'ic_test' logfile)
-ic_code=$(awk '{print $1}' $t)
+ic_code=$(awk '{print $1}' "$t")
 echo "ic_code=$ic_code"
 
 grep 'run successful: dying ...' logfile
