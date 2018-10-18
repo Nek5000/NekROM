@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 
 mkdir $ROOT_DIR/data
 cd $ROOT_DIR/data
@@ -15,6 +15,7 @@ $ROOT_DIR/bin/linkc
 ./makenek bafr &> /dev/null
 grep 'Compilation successful!' compiler.out
 comp_code="$?"
+echo "comp_code=$comp_code"
 
 $SOURCE_ROOT/bin/genmap << Z
 baf
@@ -25,12 +26,10 @@ $SOURCE_ROOT/bin/nekmpi baf 1
 
 t=$(grep 'ic_test' baf.log.1)
 ic_code=$(awk '{print $1}' $t)
+echo "ic_code=$ic_code"
 
 grep 'run successful: dying ...' baf.log.1
 success_code="$?"
-
-comp_code=1
-ic_code=2
-success_code=4
+echo "success_code=$success_code"
 
 exit $((comp_code+ic_code+success_code))
