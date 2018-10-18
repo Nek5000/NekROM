@@ -28,3 +28,9 @@ ic_code=$(awk '{print $1}' $t)
 
 grep 'run successful: dying ...' baf.log.1
 success_code="$?"
+
+comp_code=1
+ic_code=2
+success_code=4
+
+exit $((comp_code+ic_code+success_code))
