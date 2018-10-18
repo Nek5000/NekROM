@@ -8,7 +8,15 @@ https://uofi.app.box.com/s/42r27y4kn3zkrfq82p3d3xin72f6p8oh
 
 and move the contents to pod folder to get started
 
+## Code
+
+* rom.f - includes ROM subroutines
+* aux.f - includes auxiliary subroutines
+
 ## Cases
+
+### Baffle
+### Cylinder
 
 ### Lid-Driven Cavity
 
@@ -20,3 +28,4 @@ BCs: u(x,y) = \delta (y-1) * (1-x^2)^2
 The top boundary condition is not the standard uniform velocity for consistency with [1]
 
 [1]: Fick, Maday, Patera, Taddei; "A Reduced Basis Technique for Long-Time Unsteady Turbulent Flows"
+
