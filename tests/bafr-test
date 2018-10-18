@@ -21,9 +21,7 @@ baf
 .01
 Z
 
-$SOURCE_ROOT/bin/nek baf
-
-ls
+$SOURCE_ROOT/bin/nekmpi baf 1
 
 t=$(grep 'ic_test' baf.log.1)
 ic_code=$(awk '{print $1}' $t)
