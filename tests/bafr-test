@@ -22,15 +22,17 @@ baf
 .01
 Z
 
-$SOURCE_ROOT/bin/nekmpi baf 1
+echo baf       >  SESSION.NAME
+echo `pwd`'/' >>  SESSION.NAME
+mpiexec -np 1 ./nek5000 | tee logfile
 
 ls -latr
 
-t=$(grep 'ic_test' baf.log.1)
+t=$(grep 'ic_test' logfile)
 ic_code=$(awk '{print $1}' $t)
 echo "ic_code=$ic_code"
 
-grep 'run successful: dying ...' baf.log.1
+grep 'run successful: dying ...' logfile
 success_code="$?"
 echo "success_code=$success_code"
 
