@@ -168,3 +168,29 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine outmatl(uu,v,w,k)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'POD'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      real uu(lt),v(lt),w(lt)
+      character*7 fname
+
+      if (np.gt.1) call exitti('outmatl works for P=1 only!$',np)
+
+      write(fname,22) k
+   22 format('out.',i3.3)
+      open(unit=33,file=fname)
+
+      n = lx1*ly1*lz1*nelt
+      do i=1,n
+         write(33,33) xm1(i,1,1,1),ym1(i,1,1,1),uu(i),v(i)
+   33    format(1p4e16.7)
+      enddo
+      close(33)
+
+      return
+      end
+c-----------------------------------------------------------------------

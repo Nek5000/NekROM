@@ -97,6 +97,7 @@ c-----------------------------------------------------------------------
       call opcopy(ub(1,0),vb(1,0),wb(1,0),vx,vy,vz)
       call gfldr('../../data/baf/chan20.f01000')
       call genops
+      call rom_setup
 
       do ad_step=1,ad_nsteps
          call rom_step
