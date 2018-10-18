@@ -3,8 +3,10 @@
 cwd="$(pwd -P)"
 base="$(cd .. ; dirname $(pwd -P))"
 
-rm rom.f
-rm aux.f
+rm rom.f &> /dev/null
+rm pod.f &> /dev/null
+rm aux.f &> /dev/null
 
 ln -s {${base}/code,${cwd}}/rom.f
+ln -s {${base}/code,${cwd}}/pod.f
 ln -s {${base}/code,${cwd}}/aux.f
