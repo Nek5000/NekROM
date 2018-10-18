@@ -1,4 +1,4 @@
-#!/bin/bash -x
+#!/bin/bash
 
 mkdir $ROOT_DIR/data
 cd $ROOT_DIR/data
@@ -25,8 +25,6 @@ Z
 echo baf       >  SESSION.NAME
 echo `pwd`'/' >>  SESSION.NAME
 mpiexec -np 1 ./nek5000 | tee logfile
-
-ls -latr
 
 ic_code=$(grep 'ic_test' logfile | awk '{print $1}')
 echo "ic_code=$ic_code"
