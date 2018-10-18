@@ -744,8 +744,8 @@ c-----------------------------------------------------------------------
       el2 = op_glsc2_wt(t1,t2,t3,t1,t2,t3,bm1)
      $    / op_glsc2_wt(vx,vy,vz,vx,vy,vz,bm1)
 
-      itest=0
-      if (abs(el2-3.9525554652664913E-002).lt.1e-4) itest=1
+      itest=1
+      if (abs(el2-3.9525554652664913E-002).lt.1e-4) itest=0
       write (6,*) itest,el2,'ic_test'
 
     1 format('ic: ',i3,1p3e16.7)
