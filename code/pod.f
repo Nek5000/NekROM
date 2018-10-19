@@ -221,9 +221,7 @@ c-----------------------------------------------------------------------
       real usave(lt,ms),vsave(lt,ms),wsave(lt,ms)
       real uw(lt),vw(lt),ww(lt),h1(lt),h2(lt)
       real u0(lt,3)
-
-      real uu(ms,ms),Identity(ms,ms),eig(ms),eigv(ms,ms),w(ms,ms)
-      real u0r(ms)
+      real uu(ms,ms)
 
       if (nio.eq.0) write (6,*) 'inside gengramh10'
 
@@ -231,7 +229,6 @@ c-----------------------------------------------------------------------
       ns = ms
 
       call opcopy(u0(1,1),u0(1,2),u0(1,3),ub(1,0),vb(1,0),wb(1,0))
-
       call get_saved_fields(usave,vsave,wsave,ns,u0)
 
       call rone (h1,n)
