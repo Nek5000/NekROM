@@ -21,7 +21,7 @@ c     parameters and common blocks for MOR
       integer ad_nsteps, ad_iostep, ad_step
       common /moripar/ ad_nsteps, ad_iostep, ad_step
 
-      common /morivars/ i0,j0,k0,i1,j1,k1
+      common /morivars/ i0,j0,k0,i1,j1,k1,ns
 
       logical ifl2
 
