@@ -8,14 +8,14 @@ ls $ROOT_DIR/data/baf | sed 's/^/..\/..\/data\/baf\//g' > file.list
 cp "$SOURCE_ROOT/bin/makenek" .
 $ROOT_DIR/bin/linkc
 ./makenek bafr &> /dev/null
-grep 'Compilation successful!' compiler.out
+grep 'Compilation successful!' compiler.out &> /dev/null
 comp_code="$?"
 echo "comp_code=$comp_code"
 
-$SOURCE_ROOT/bin/genmap << Z
+$SOURCE_ROOT/bin/genmap > /dev/null << Z
 baf
 .01
-Z > /dev/null
+Z
 
 echo baf       >  SESSION.NAME
 echo `pwd`'/' >>  SESSION.NAME
