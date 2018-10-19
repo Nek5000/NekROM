@@ -113,6 +113,7 @@ c     Matrices and vectors for advance
 
 c     Working arrays for LU
 
+      if (nid.eq.0) write (6,*) 'inside rom_setup'
       time = 0.
 
       do i=1,nb
@@ -128,11 +129,6 @@ c     Working arrays for LU
 
       n  = lx1*ly1*lz1*nelt
 
-      call rzero(u,(nb+1)*3)
-      u(0,2) = 1.
-      u(0,3) = 1.
-      call copy(u,ic,nb+1)
-
       ad_nsteps=nsteps
       ad_iostep=iostep
 
@@ -147,6 +143,8 @@ c     Working arrays for LU
       do j=1,nb
          if (nio.eq.0) write(6,*) j,u(j,1)
       enddo
+
+      if (nid.eq.0) write (6,*) 'exiting rom_setup'
 
       return
       end
@@ -567,17 +565,17 @@ c-----------------------------------------------------------------------
       call rone(h1,n)
       call rzero(h2,n)
 
-      ic(0) = 1.
+      u(0,1) = 1.
 
       call opsub3(t1,t2,t3,vx,vy,vz,ub(1,0),vb(1,0),wb(1,0))
-      call h10proj(ic(1),t1,t2,t3)
+      call h10proj(u(1,1),t1,t2,t3)
       call opzero(vxlag,vylag,vzlag)
 
       ii=3
 
       do i=0,nb
          call opadds(
-     $      vxlag,vylag,vzlag,ub(1,i),vb(1,i),wb(1,i),ic(i),n,2)
+     $      vxlag,vylag,vzlag,ub(1,i),vb(1,i),wb(1,i),u(i,1),n,2)
       enddo
 
       call outpost(vx,vy,vz,pr,t,'ric')
