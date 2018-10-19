@@ -129,7 +129,7 @@ c-----------------------------------------------------------------------
 
       ip=mod(nid,mp)
       iq=mod(nid/mp,mq)
-      ir=   (nid/mp)/mq
+      irr=   (nid/mp)/mq
 
       i0=mps(max(ip,1))*max(ip,0)/max(ip,1)+1
       i1=mps(ip+1)
@@ -137,8 +137,8 @@ c-----------------------------------------------------------------------
       j0=mqs(max(iq,1))*max(iq,0)/max(iq,1)
       j1=mqs(iq+1)-1
 
-      k0=mrs(max(ir,1))*max(ir,0)/max(ir,1)
-      k1=mrs(ir+1)-1
+      k0=mrs(max(irr,1))*max(irr,0)/max(irr,1)
+      k1=mrs(irr+1)-1
 
       return
       end
