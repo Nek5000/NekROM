@@ -230,9 +230,6 @@ c-----------------------------------------------------------------------
       n  = lx1*ly1*lz1*nelt
       ns = ms
 
-      call rzero(vz,n)
-      call rzero(wb,n)
-
       call opcopy(u0(1,1),u0(1,2),u0(1,3),ub(1,0),vb(1,0),wb(1,0))
 
       call get_saved_fields(usave,vsave,wsave,ns,u0)
