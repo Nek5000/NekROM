@@ -87,7 +87,6 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'inside genops'
 
-      call genmodes
       call get_a_b
       call makec
       call makecloc
