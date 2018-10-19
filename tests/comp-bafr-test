@@ -1,9 +1,9 @@
 #!/bin/bash
 
 cd $ROOT_DIR/cases/baf
-git clean -dfx .
+git clean -dfx . &> /dev/null
 
 cp "$SOURCE_ROOT/bin/makenek" .
 $ROOT_DIR/bin/linkc
 ./makenek bafr &> /dev/null
-grep 'Compilation successful!' compiler.out
+grep 'Compilation successful!' compiler.out &> /dev/null

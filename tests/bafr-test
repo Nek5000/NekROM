@@ -15,16 +15,16 @@ echo "comp_code=$comp_code"
 $SOURCE_ROOT/bin/genmap << Z
 baf
 .01
-Z
+Z > /dev/null
 
 echo baf       >  SESSION.NAME
 echo `pwd`'/' >>  SESSION.NAME
-mpiexec -np 1 ./nek5000 | tee logfile
+mpiexec -np 1 ./nek5000 > logfile
 
 ic_code=$(grep 'ic_test' logfile | awk '{print $1}')
 echo "ic_code=$ic_code"
 
-grep 'run successful: dying ...' logfile
+grep 'run successful: dying ...' logfile &> /dev/null
 success_code="$?"
 echo "success_code=$success_code"
 
