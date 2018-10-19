@@ -68,7 +68,7 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       real usave(lt,ms),vsave(lt,ms),wsave(lt,ms)
-      real uu(ms,ms),Identity(ms,ms),eig(ms),eigv(ms,ms),w(ms,ms)
+      real uu(ms,ms),identity(ms,ms),eig(ms),eigv(ms,ms),w(ms,ms)
       real uw(lt),vw(lt),ww(lt),h1(lt),h2(lt)
       real u0(lt,3)
       real u0r(ms)
@@ -85,39 +85,21 @@ c-----------------------------------------------------------------------
       call rzero(vz,n)
       call rzero(wb,n)
 
-      call opcopy(u0(1,1),u0(1,2),u0(1,3),ub(1,0),vb(1,0),wb(1,0))
+      call gengramh10(uu)
 
-      call get_saved_fields(usave,vsave,wsave,ns,u0)
+      call rzero(identity,ms*ms)
 
-      call rone (h1,n)
-      call rzero(h2,n)
-      call rzero(Identity,ms*ms)
-
-      do j=1,ns                    ! Form the Gramian, U=U_K^T A U_K
-         call axhelm(uw,usave(1,j),h1,h2,1,1)
-         call axhelm(vw,vsave(1,j),h1,h2,1,1)
-         if (ldim.eq.3) call axhelm(ww,wsave(1,j),h1,h2,1,1)
-         do i=1,ns
-            uu(i,j) = glsc2(usave(1,i),uw,n)+glsc2(vsave(1,i),vw,n)
-            if (ldim.eq.3) uu(i,j) = uu(i,j)+glsc2(wsave(1,i),ww,n)
-         enddo
+      do j=1,ns
          identity(j,j) = 1
-         if (nio.eq.0) write(6,*) j,uu(1,j),' uu'
       enddo
 
-      call generalev(uu,Identity,eig,ms,w)
-      call copy(eigv,uu,ms*ms)
-      eig = eig(ms:1:-1)
-
-      nvecs = nb
-      if (nio.eq.0) write(6,*)'number of mode:',nb
-
-      do l = 1,nvecs
-         call copy(evec(1,l),eigv(1,ms-l+1),ms)
-      enddo
+      call genevec(evec,uu,identity,eig,w)
 
       ONE = 1.
       ZERO= 0.
+
+      call opcopy(u0(1,1),u0(1,2),u0(1,3),ub(1,0),vb(1,0),wb(1,0))
+      call get_saved_fields(usave,vsave,wsave,ns,u0)
 
       ! ub, vb, wb, are the modes
       call dgemm( 'N','N',n,nb,ms,ONE,usave,lt,evec,ms,ZERO,ub(1,1),lt)
@@ -254,14 +236,19 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       real usave(lt,ms),vsave(lt,ms),wsave(lt,ms)
-      real uu(ms,ms)
       real uw(lt),vw(lt),ww(lt),h1(lt),h2(lt)
       real u0(lt,3)
+
+      real uu(ms,ms),Identity(ms,ms),eig(ms),eigv(ms,ms),w(ms,ms)
+      real u0r(ms)
 
       if (nio.eq.0) write (6,*) 'inside gengramh10'
 
       n  = lx1*ly1*lz1*nelt
       ns = ms
+
+      call rzero(vz,n)
+      call rzero(wb,n)
 
       call opcopy(u0(1,1),u0(1,2),u0(1,3),ub(1,0),vb(1,0),wb(1,0))
 
@@ -282,6 +269,40 @@ c-----------------------------------------------------------------------
       enddo
 
       if (nio.eq.0) write (6,*) 'exiting gengramh10'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine genevec(evec,uu,identity,eig,w)
+
+      include 'SIZE'
+      include 'POD'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      real usave(lt,ms),vsave(lt,ms),wsave(lt,ms)
+      real uu(ms,ms),identity(ms,ms),eig(ms),eigv(ms,ms),w(ms,ms)
+      real uw(lt),vw(lt),ww(lt),h1(lt),h2(lt)
+      real u0(lt,3)
+      real u0r(ms)
+
+      real evec(ms,nb)
+
+      if (nio.eq.0) write (6,*) 'inside genevec'
+
+      call generalev(uu,identity,eig,ms,w)
+
+
+      call copy(eigv,uu,ms*ms)
+      eig = eig(ms:1:-1)
+
+      nvecs = nb
+      if (nio.eq.0) write(6,*)'number of mode:',nb
+
+      do l = 1,nvecs
+         call copy(evec(1,l),eigv(1,ms-l+1),ms)
+      enddo
+
+      if (nio.eq.0) write (6,*) 'exiting genevec'
 
       return
       end
