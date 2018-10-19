@@ -295,11 +295,9 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
+
       real usave(lt,ls),vsave(lt,ls),wsave(lt,ls)
       real uu(ls,ls),identity(ls,ls),eig(ls),eigv(ls,ls),w(ls,ls)
-      real uw(lt),vw(lt),ww(lt),h1(lt),h2(lt)
-      real u0(lt,3)
-      real u0r(ls)
 
       real evec(ls,nb)
 
@@ -312,15 +310,14 @@ c-----------------------------------------------------------------------
       enddo
 
       call generalev(uu,identity,eig,ls,w)
-
       call copy(eigv,uu,ls*ls)
-      eig = eig(ls:1:-1)
 
-      nvecs = nb
+c     eig = eig(ls:1:-1)
+
       if (nio.eq.0) write(6,*)'number of mode:',nb
 
-      do l = 1,nvecs
-         call copy(evec(1,l),eigv(1,ls-l+1),ls)
+      do l = 1,nb
+         call copy(evec(1,l),eigv(1,ls-l+1),ls) ! reverse order of eigv
       enddo
 
       if (nio.eq.0) write (6,*) 'exiting genevec'
