@@ -1,0 +1,8 @@
+#!/bin/bash
+
+# Get Baffle Snapshots
+
+mkdir ../../data
+cd ../../data
+wget -O baf.tar.gz baf https://uofi.box.com/shared/static/dzkax0ftzplzo1fh7zsijzttwws7iomj.gz
+tar -xvzf baf.tar.gz &> /dev/null
