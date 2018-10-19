@@ -2,7 +2,7 @@
 
 [![Build Status](https://travis-ci.com/kent0/MOR.svg?token=nDCiae81x8NojggcMEcA&branch=master)](https://travis-ci.com/kent0/MOR)
 
-To download the baffle case snapshots, goto MOR/bin and run `./gsnaps`.
+To download the baffle case snapshots, go to MOR/bin and run `./gsnaps`.
 
 For each case run `../../bin/linkc` in a case directory to link the source.
 
