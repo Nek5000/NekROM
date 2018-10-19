@@ -2,15 +2,14 @@
 
 [![Build Status](https://travis-ci.com/kent0/MOR.svg?token=nDCiae81x8NojggcMEcA&branch=master)](https://travis-ci.com/kent0/MOR)
 
-Download pod2 folder from:
+To download the baffle case snapshots, goto MOR/bin and run `./gsnaps`.
 
-https://uofi.app.box.com/s/42r27y4kn3zkrfq82p3d3xin72f6p8oh
-
-and move the contents to pod folder to get started
+For each case run `../../bin/linkc` in a case directory to link the source.
 
 ## Code
 
 * rom.f - includes ROM subroutines
+* pod.f - include POD subroutines
 * aux.f - includes auxiliary subroutines
 
 ## Cases
