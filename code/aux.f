@@ -6,17 +6,17 @@ c-----------------------------------------------------------------------
 
       common /scrk5/ w(lx1*ly1*lz1*lelt)
 
-      real evec(ms,nb)
+      real evec(ls,nb)
 
-      call rzero(evec,ms*nb)
+      call rzero(evec,ls*nb)
 
       if (nid.eq.0) then
          open (unit=12,file='evectors.dat')
-         read (12,*) (evec(k,1),k=1,ms*nb)
+         read (12,*) (evec(k,1),k=1,ls*nb)
          close (unit=12)
       endif
 
-      call gop(evec,w,'+  ',ms*nb)
+      call gop(evec,w,'+  ',ls*nb)
 
       return
       end
