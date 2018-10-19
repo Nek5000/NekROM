@@ -26,8 +26,6 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'POD'
 
-      parameter (lt=lx1*ly1*lz1*lelt)
-
       if (nio.eq.0) write (6,*) 'inside genops'
 
       call get_a_b
@@ -46,16 +44,8 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'POD'
 
-      parameter (lt=lx1*ly1*lz1*lelt)
-
-c     Matrices and vectors for advance
-      real helm(1:nb,1:nb), rhs(1:nb)
-      real tmp(0:nb),tmat(nb,nb+1)
-      real coef(1:nb)
-
-c     Working arrays for LU
-
       if (nid.eq.0) write (6,*) 'inside rom_setup'
+
       time = 0.
 
       do i=1,nb
@@ -68,8 +58,6 @@ c     Working arrays for LU
          call copy(c(1,j,i),c0(1,j,i),nb)
       enddo
       enddo
-
-      n  = lx1*ly1*lz1*nelt
 
       ad_nsteps=nsteps
       ad_iostep=iostep
