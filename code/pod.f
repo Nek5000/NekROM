@@ -67,29 +67,33 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real usave(lt,ms),vsave(lt,ms),wsave(lt,ms)
-      real uu(ms,ms),u0(lt,3),evec(ms,nb)
+      real usave(lt,ls),vsave(lt,ls),wsave(lt,ls)
+      real uu(ls,ls),u0(lt,3),evec(ls,nb)
 
       if (nio.eq.0) write (6,*) 'inside genmodes'
 
       n  = lx1*ly1*lz1*nelt
 
-c     call gengramh10(uu)
-      call gengraml2(uu)
+      if (ifl2) then
+         call gengraml2(uu)
+      else
+         call gengramh10(uu)
+      endif
+
       call genevec(evec,uu)
 
       ONE = 1.
       ZERO= 0.
 
-      ns = ms ! REQUIRED: get_saved_fields overwrites ns argument
+      ns = ls ! REQUIRED: get_saved_fields overwrites ns argument
       call opcopy(u0(1,1),u0(1,2),u0(1,3),ub(1,0),vb(1,0),wb(1,0))
       call get_saved_fields(usave,vsave,wsave,ns,u0)
 
       ! ub, vb, wb, are the modes
-      call dgemm( 'N','N',n,nb,ms,ONE,usave,lt,evec,ms,ZERO,ub(1,1),lt)
-      call dgemm( 'N','N',n,nb,ms,ONE,vsave,lt,evec,ms,ZERO,vb(1,1),lt)
+      call dgemm( 'N','N',n,nb,ls,ONE,usave,lt,evec,ls,ZERO,ub(1,1),lt)
+      call dgemm( 'N','N',n,nb,ls,ONE,vsave,lt,evec,ls,ZERO,vb(1,1),lt)
       if (ldim.eq.3)
-     $call dgemm( 'N','N',n,nb,ms,ONE,wsave,lt,evec,ms,ZERO,wb(1,1),lt)
+     $call dgemm( 'N','N',n,nb,ls,ONE,wsave,lt,evec,ls,ZERO,wb(1,1),lt)
 
       do i=0,nb ! dump the generated modes
          call outpost(ub(1,i),vb(1,i),wb(1,i),pr,t,'bas')
@@ -219,15 +223,15 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real usave(lt,ms),vsave(lt,ms),wsave(lt,ms)
+      real usave(lt,ls),vsave(lt,ls),wsave(lt,ls)
       real uw(lt),vw(lt),ww(lt),h1(lt),h2(lt)
       real u0(lt,3)
-      real uu(ms,ms)
+      real uu(ls,ls)
 
       if (nio.eq.0) write (6,*) 'inside gengramh10'
 
       n  = lx1*ly1*lz1*nelt
-      ns = ms
+      ns = ls
 
       call opcopy(u0(1,1),u0(1,2),u0(1,3),ub(1,0),vb(1,0),wb(1,0))
       call get_saved_fields(usave,vsave,wsave,ns,u0)
@@ -259,16 +263,16 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real usave(lt,ms),vsave(lt,ms),wsave(lt,ms)
+      real usave(lt,ls),vsave(lt,ls),wsave(lt,ls)
       real uw(lt),vw(lt),ww(lt),h1(lt),h2(lt)
       real u0(lt,3)
 
-      real uu(ms,ms),Identity(ms,ms),eig(ms),eigv(ms,ms),w(ms,ms)
-      real u0r(ms)
+      real uu(ls,ls),Identity(ls,ls),eig(ls),eigv(ls,ls),w(ls,ls)
+      real u0r(ls)
 
       if (nio.eq.0) write (6,*) 'inside gengraml2'
 
-      ns = ms ! REQUIRED: get_saved_fields overwrites ns argument
+      ns = ls ! REQUIRED: get_saved_fields overwrites ns argument
 
       call opcopy(u0(1,1),u0(1,2),u0(1,3),ub(1,0),vb(1,0),wb(1,0))
       call get_saved_fields(usave,vsave,wsave,ns,u0)
@@ -291,32 +295,32 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
-      real usave(lt,ms),vsave(lt,ms),wsave(lt,ms)
-      real uu(ms,ms),identity(ms,ms),eig(ms),eigv(ms,ms),w(ms,ms)
+      real usave(lt,ls),vsave(lt,ls),wsave(lt,ls)
+      real uu(ls,ls),identity(ls,ls),eig(ls),eigv(ls,ls),w(ls,ls)
       real uw(lt),vw(lt),ww(lt),h1(lt),h2(lt)
       real u0(lt,3)
-      real u0r(ms)
+      real u0r(ls)
 
-      real evec(ms,nb)
+      real evec(ls,nb)
 
       if (nio.eq.0) write (6,*) 'inside genevec'
 
-      call rzero(identity,ms*ms)
+      call rzero(identity,ls*ls)
 
-      do j=1,ms
+      do j=1,ls
          identity(j,j) = 1
       enddo
 
-      call generalev(uu,identity,eig,ms,w)
+      call generalev(uu,identity,eig,ls,w)
 
-      call copy(eigv,uu,ms*ms)
-      eig = eig(ms:1:-1)
+      call copy(eigv,uu,ls*ls)
+      eig = eig(ls:1:-1)
 
       nvecs = nb
       if (nio.eq.0) write(6,*)'number of mode:',nb
 
       do l = 1,nvecs
-         call copy(evec(1,l),eigv(1,ms-l+1),ms)
+         call copy(evec(1,l),eigv(1,ls-l+1),ls)
       enddo
 
       if (nio.eq.0) write (6,*) 'exiting genevec'

@@ -38,6 +38,30 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine rom_init
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      if (nid.eq.0) write (6,*) 'inside rom_init'
+
+      time = 0.
+
+      ad_nsteps=nsteps
+      ad_iostep=iostep
+
+      ad_dt = dt
+      ad_re = 1/param(2)
+
+      ifl2=.false.
+      if (param(50).eq.0) ifl2=.true.
+
+      if (nid.eq.0) write (6,*) 'exiting rom_init'
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine rom_setup
 
       include 'SIZE'
@@ -45,8 +69,6 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       if (nid.eq.0) write (6,*) 'inside rom_setup'
-
-      time = 0.
 
       do i=1,nb
          call copy(a(1,i),a0(1,i),nb)
@@ -59,16 +81,8 @@ c-----------------------------------------------------------------------
       enddo
       enddo
 
-      ad_nsteps=nsteps
-      ad_iostep=iostep
-
-      ad_dt = dt
-      ad_re = 1/param(2)
-
       ! BDFk/EXTk coefficients ( will change to BD inside Nek)
       call compute_BDF_coef(ad_alpha,ad_beta)
-
-      if (nio.eq.0) write(6,*)'ad_step:',ad_step,ad_iostep,npp
 
       do j=1,nb
          if (nio.eq.0) write(6,*) j,u(j,1)
@@ -498,8 +512,13 @@ c-----------------------------------------------------------------------
       u(0,1) = 1.
 
       call opsub3(t1,t2,t3,vx,vy,vz,ub(1,0),vb(1,0),wb(1,0))
-c     call h10proj(u(1,1),t1,t2,t3)
-      call l2proj(u(1,1),t1,t2,t3)
+
+      if (ifl2) then
+         call l2proj(u(1,1),t1,t2,t3)
+      else
+         call h10proj(u(1,1),t1,t2,t3)
+      endif
+
       call opzero(vxlag,vylag,vzlag)
 
       ii=3
