@@ -12,10 +12,13 @@ before_install:
   - sudo apt-get update -qq
   - sudo apt-get install -y libmpich-dev mpich
 
+  # Download Snapshots
+  - (cd bin; ./gsnaps)
+
   # Set up Nek5000
   - git clone --single-branch -b presolve-fix https://github.com/kent0/Nek5000
   - export SOURCE_ROOT=$ROOT_DIR/Nek5000
-  - cd Nek5000/tools; ./maketools genmap
+  - (cd Nek5000/tools; ./maketools genmap)
 
 script: 
   - $ROOT_DIR/tests/comp-baf-test

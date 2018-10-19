@@ -1,10 +1,5 @@
 #!/bin/bash -x
 
-mkdir $ROOT_DIR/data
-cd $ROOT_DIR/data
-wget -O baf.tar.gz https://uofi.box.com/shared/static/dzkax0ftzplzo1fh7zsijzttwws7iomj.gz
-tar -xvzf baf.tar.gz &> /dev/null
-
 cd $ROOT_DIR/cases/baf
 git clean -dfx .
 
