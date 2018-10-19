@@ -68,36 +68,19 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       real usave(lt,ms),vsave(lt,ms),wsave(lt,ms)
-      real uu(ms,ms),identity(ms,ms),eig(ms),eigv(ms,ms),w(ms,ms)
-      real uw(lt),vw(lt),ww(lt),h1(lt),h2(lt)
-      real u0(lt,3)
-      real u0r(ms)
-
-      real evec(ms,nb)
-
-      character(len=10) fname
+      real uu(ms,ms),u0(lt,3),evec(ms,nb)
 
       if (nio.eq.0) write (6,*) 'inside genmodes'
 
       n  = lx1*ly1*lz1*nelt
-      ns = ms
-
-      call rzero(vz,n)
-      call rzero(wb,n)
 
       call gengramh10(uu)
-
-      call rzero(identity,ms*ms)
-
-      do j=1,ns
-         identity(j,j) = 1
-      enddo
-
-      call genevec(evec,uu,identity,eig,w)
+      call genevec(evec,uu)
 
       ONE = 1.
       ZERO= 0.
 
+      ns = ms ! REQUIRED: get_saved_fields overwrites ns argument
       call opcopy(u0(1,1),u0(1,2),u0(1,3),ub(1,0),vb(1,0),wb(1,0))
       call get_saved_fields(usave,vsave,wsave,ns,u0)
 
@@ -107,7 +90,7 @@ c-----------------------------------------------------------------------
       if (ldim.eq.3)
      $call dgemm( 'N','N',n,nb,ms,ONE,wsave,lt,evec,ms,ZERO,wb(1,1),lt)
 
-      do i=0,nb
+      do i=0,nb ! dump the generated modes
          call outpost(ub(1,i),vb(1,i),wb(1,i),pr,t,'bas')
       enddo
 
@@ -273,7 +256,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine genevec(evec,uu,identity,eig,w)
+      subroutine genevec(evec,uu)
 
       include 'SIZE'
       include 'POD'
@@ -289,8 +272,13 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'inside genevec'
 
-      call generalev(uu,identity,eig,ms,w)
+      call rzero(identity,ms*ms)
 
+      do j=1,ms
+         identity(j,j) = 1
+      enddo
+
+      call generalev(uu,identity,eig,ms,w)
 
       call copy(eigv,uu,ms*ms)
       eig = eig(ms:1:-1)
