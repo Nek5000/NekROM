@@ -256,6 +256,45 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine gengraml2(uu)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'POD'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real usave(lt,ms),vsave(lt,ms),wsave(lt,ms)
+      real uw(lt),vw(lt),ww(lt),h1(lt),h2(lt)
+      real u0(lt,3)
+
+      real uu(ms,ms),Identity(ms,ms),eig(ms),eigv(ms,ms),w(ms,ms)
+      real u0r(ms)
+
+      if (nio.eq.0) write (6,*) 'inside gengraml2'
+
+      n  = lx1*ly1*lz1*nelt
+      ns = ms ! REQUIRED: get_saved_fields overwrites ns argument
+
+      call rzero(vz,n)
+      call rzero(wb,n)
+
+      call opcopy(u0(1,1),u0(1,2),u0(1,3),ub(1,0),vb(1,0),wb(1,0))
+
+      call get_saved_fields(usave,vsave,wsave,ns,u0)
+
+      do j=1,ns ! Form the Gramian, U=U_K^T A U_K using L2 Norm
+      do i=1,ns
+         uu(i,j) =
+         op_glsc2_wt(usave(1,i),vsave(1,i),wsave(1,i),usave(1,j),vsave(1,j),wsave(1,j),bm1)
+      enddo
+      enddo
+
+      if (nio.eq.0) write (6,*) 'exiting gengraml2'
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine genevec(evec,uu)
 
       include 'SIZE'
