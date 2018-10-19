@@ -139,9 +139,9 @@ c     endif
 
       call sub2(rhs,tmp,nb)
 
-      if (ad_step.le.3) call lu(flu,nb,nb,irr,icc)
+      if (ad_step.le.3) call lu(flu,nb,nb,ir,ic)
 
-      call solve(rhs,flu,1,nb,nb,irr,icc)
+      call solve(rhs,flu,1,nb,nb,ir,ic)
 
       call copy(u(1,3),u(1,2),nb)
       call copy(u(1,2),u(1,1),nb)
@@ -300,7 +300,7 @@ c     endif
       do i=1,nb
          l=l+1
          vi(1,l)=mod(ip+nid+1,npp)
-         vi(2,l)=ijk2pid(i,j,k,mps,mqs,mrs,mp,mq,ms)
+         vi(2,l)=ijk2pid(i,j,k,mps,mqs,mrs,mp,mq,ls)
 
          vi(3,l)=i
          vi(4,l)=j
