@@ -1,4 +1,4 @@
-c     parameters and common blocks for POD
+c     parameters and common blocks for MOR
 
       parameter (nb=20)  ! number of basis vectors
       parameter (ms=100) ! number of snapshots

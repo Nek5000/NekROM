@@ -63,7 +63,7 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'
       include 'TOTAL'
-      include 'POD'
+      include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
@@ -74,7 +74,8 @@ c-----------------------------------------------------------------------
 
       n  = lx1*ly1*lz1*nelt
 
-      call gengramh10(uu)
+c     call gengramh10(uu)
+      call gengraml2(uu)
       call genevec(evec,uu)
 
       ONE = 1.
@@ -104,7 +105,7 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'SOLN'
       include 'MASS'
-      include 'POD'
+      include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
@@ -148,7 +149,7 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'SOLN'
       include 'MASS'
-      include 'POD'
+      include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
@@ -184,7 +185,7 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'SOLN'
       include 'MASS'
-      include 'POD'
+      include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
@@ -214,7 +215,7 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'
       include 'TOTAL'
-      include 'POD'
+      include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
@@ -254,7 +255,7 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'
       include 'TOTAL'
-      include 'POD'
+      include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
@@ -274,8 +275,8 @@ c-----------------------------------------------------------------------
 
       do j=1,ns ! Form the Gramian, U=U_K^T A U_K using L2 Norm
       do i=1,ns
-         uu(i,j) =
-         op_glsc2_wt(usave(1,i),vsave(1,i),wsave(1,i),usave(1,j),vsave(1,j),wsave(1,j),bm1)
+         uu(i,j) = op_glsc2_wt(usave(1,i),vsave(1,i),wsave(1,i),
+     $                         usave(1,j),vsave(1,j),wsave(1,j),bm1)
       enddo
       enddo
 
@@ -287,7 +288,7 @@ c-----------------------------------------------------------------------
       subroutine genevec(evec,uu)
 
       include 'SIZE'
-      include 'POD'
+      include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
       real usave(lt,ms),vsave(lt,ms),wsave(lt,ms)

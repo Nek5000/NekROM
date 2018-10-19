@@ -5,7 +5,7 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'
       include 'TOTAL'
-      include 'POD'
+      include 'MOR'
 
       if (nio.eq.0) write (6,*) 'inside readops'
 
@@ -24,7 +24,7 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'
       include 'TOTAL'
-      include 'POD'
+      include 'MOR'
 
       if (nio.eq.0) write (6,*) 'inside genops'
 
@@ -42,7 +42,7 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'
       include 'TOTAL'
-      include 'POD'
+      include 'MOR'
 
       if (nid.eq.0) write (6,*) 'inside rom_setup'
 
@@ -83,7 +83,7 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'
       include 'TOTAL'
-      include 'POD'
+      include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
@@ -211,7 +211,7 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'
       include 'TOTAL'
-      include 'POD'
+      include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
@@ -242,7 +242,7 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'
       include 'TOTAL'
-      include 'POD'
+      include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
       parameter (m=5)
@@ -443,7 +443,7 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'
       include 'TOTAL'
-      include 'POD'
+      include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
@@ -479,7 +479,7 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'SOLN'
       include 'MASS'
-      include 'POD'
+      include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
@@ -498,7 +498,8 @@ c-----------------------------------------------------------------------
       u(0,1) = 1.
 
       call opsub3(t1,t2,t3,vx,vy,vz,ub(1,0),vb(1,0),wb(1,0))
-      call h10proj(u(1,1),t1,t2,t3)
+c     call h10proj(u(1,1),t1,t2,t3)
+      call l2proj(u(1,1),t1,t2,t3)
       call opzero(vxlag,vylag,vzlag)
 
       ii=3
@@ -528,7 +529,7 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'
       include 'TOTAL'
-      include 'POD'
+      include 'MOR'
 
       real cu(nb)
 
