@@ -2,7 +2,7 @@ c-----------------------------------------------------------------------
       subroutine readeig(evec)
 
       include 'SIZE'
-      include 'POD'
+      include 'MOR'
 
       common /scrk5/ w(lx1*ly1*lz1*lelt)
 
@@ -123,7 +123,7 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'
       include 'TOTAL'
-      include 'POD'
+      include 'MOR'
 
       integer mps(1),mqs(1),mrs(1)
 
@@ -146,7 +146,7 @@ c-----------------------------------------------------------------------
       subroutine ijk2l(l,i,j,k)
       
       include 'SIZE'
-      include 'POD'
+      include 'MOR'
 
       il=i-i0
       jl=j-j0
@@ -172,7 +172,7 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'
       include 'TOTAL'
-      include 'POD'
+      include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
       real uu(lt),v(lt),w(lt)
