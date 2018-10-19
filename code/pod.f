@@ -178,3 +178,111 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine l2proj(coef,t1,t2,t3)
+
+      include 'SIZE'
+      include 'SOLN'
+      include 'MASS'
+      include 'POD'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real t1(lt),t2(lt),t3(lt)
+
+      common /scrk3/ t4(lt),t5(lt),t6(lt)
+      common /scrk4/ h1(lt),h2(lt)
+
+      real coef(nb)
+
+      if (nio.eq.0) write (6,*) 'inside l2proj'
+
+      n=lx1*ly1*lz1*nelt
+
+      call rone(h1,n)
+      call rzero(h2,n)
+
+      do i=1,nb
+         uu = op_glsc2_wt(
+     $      ub(1,i),vb(1,i),wb(1,i),ub(1,i),vb(1,i),wb(1,i),bm1)
+         vv = op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),t1,t2,t3,bm1)
+
+         coef(i) = vv/uu
+      enddo
+
+      if (nio.eq.0) write (6,*) 'exiting l2proj'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine h10prod(prod,t1,t2,t3,t4,t5,t6,h1,h2)
+
+      include 'SIZE'
+      include 'SOLN'
+      include 'MASS'
+      include 'POD'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real t1(lt),t2(lt),t3(lt),t4(lt),t5(lt)
+      real h1(lt),h2(lt)
+
+      common /scrk3/ t7(lt),t8(lt),t9(lt)
+
+      real coef(nb)
+
+      if (nio.eq.0) write (6,*) 'inside h10prod'
+
+      n=lx1*ly1*lz1*nelt
+
+      call axhelm(t7,t1,h1,h2,1,1)
+      call axhelm(t8,t2,h1,h2,1,1)
+      if (ldim.eq.3) call axhelm(t9,t3,h1,h2,1,1)
+
+      prod = glsc2(t7,t4,n)+glsc2(t8,t5,n)
+
+      if (nio.eq.0) write (6,*) 'exiting h10prod'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine gengramh10(uu)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'POD'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real usave(lt,ms),vsave(lt,ms),wsave(lt,ms)
+      real uu(ms,ms)
+      real uw(lt),vw(lt),ww(lt),h1(lt),h2(lt)
+      real u0(lt,3)
+
+      if (nio.eq.0) write (6,*) 'inside gengramh10'
+
+      n  = lx1*ly1*lz1*nelt
+      ns = ms
+
+      call opcopy(u0(1,1),u0(1,2),u0(1,3),ub(1,0),vb(1,0),wb(1,0))
+
+      call get_saved_fields(usave,vsave,wsave,ns,u0)
+
+      call rone (h1,n)
+      call rzero(h2,n)
+
+      do j=1,ns ! Form the Gramian, U=U_K^T A U_K using H^1_0 Norm
+         call axhelm(uw,usave(1,j),h1,h2,1,1)
+         call axhelm(vw,vsave(1,j),h1,h2,1,1)
+         if (ldim.eq.3) call axhelm(ww,wsave(1,j),h1,h2,1,1)
+         do i=1,ns
+            uu(i,j) = glsc2(usave(1,i),uw,n)+glsc2(vsave(1,i),vw,n)
+            if (ldim.eq.3) uu(i,j) = uu(i,j)+glsc2(wsave(1,i),ww,n)
+         enddo
+         if (nio.eq.0) write(6,*) j,uu(1,j),' uu'
+      enddo
+
+      if (nio.eq.0) write (6,*) 'exiting gengramh10'
+
+      return
+      end
+c-----------------------------------------------------------------------
