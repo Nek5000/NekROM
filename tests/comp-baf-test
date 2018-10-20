@@ -4,5 +4,5 @@ cd $ROOT_DIR/cases/baf
 git clean -dfx . &> /dev/null
 
 $ROOT_DIR/bin/linkc
-cp "$SOURCE_ROOT/bin/makenek" baf
+$SOURCE_ROOT/bin/makenek baf
 grep 'Compilation successful!' compiler.out &> /dev/null
