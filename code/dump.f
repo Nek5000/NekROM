@@ -1,4 +1,27 @@
 c-----------------------------------------------------------------------
+      subroutine dumpgram(uu,ns)
+
+      include 'SIZE'
+
+      real uu(ns,ns)
+
+      n=lx1*ly1*lz1*nelt
+
+      if (nid.eq.0) then
+         open (unit=12,file='gram')
+
+         do j=1,ns
+         do i=1,ns
+            write (12,*) uu(i,j)
+         enddo
+         enddo
+
+         close (unit=12)
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine dumpbasis(ub,vb,wb,nb)
 
       include 'SIZE'
@@ -20,14 +43,14 @@ c-----------------------------------------------------------------------
 
          do j=0,nb
          do i=1,n
-            write (12,*) ub(i,j)
+            write (12,*) vb(i,j)
          enddo
          enddo
 
          if (ldim.eq.3) then
          do j=0,nb
          do i=1,n
-            write (12,*) ub(i,j)
+            write (12,*) wb(i,j)
          enddo
          enddo
          endif
