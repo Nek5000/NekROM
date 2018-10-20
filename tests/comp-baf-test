@@ -4,5 +4,5 @@ cd $ROOT_DIR/cases/baf
 git clean -dfx . &> /dev/null
 
 cp "$SOURCE_ROOT/bin/makenek" .
-./makenek baf &> /dev/null
+./makenek baf
 grep 'Compilation successful!' compiler.out &> /dev/null
