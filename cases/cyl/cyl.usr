@@ -1,4 +1,7 @@
 c-----------------------------------------------------------------------
+      include 'rom.f'
+      include 'aux.f'
+c-----------------------------------------------------------------------
       subroutine uservp (ix,iy,iz,eg)
       include 'SIZE'
       include 'TOTAL'
@@ -49,8 +52,23 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'
       include 'TOTAL'
+      include 'MOR'
 
-c     if (istep.eq.1) call sns_drive
+      common /myoutflow/ d(lx1,ly1,lz1,lelt),m1(lx1*ly1*lz1,lelt)
+
+      call opcopy(ub(1,0),vb(1,0),wb(1,0),vx,vy,vz) ! set zeroth mode
+      call gfldr('../../data/cyl/cyl0.f01500')    ! set initial state
+
+      call rom_init
+      call genmodes
+      call genops
+      call rom_setup
+
+      do ad_step=1,ad_nsteps
+         call rom_step
+      enddo
+
+      call exitt0
 
       return
       end
