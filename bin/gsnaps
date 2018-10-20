@@ -2,7 +2,11 @@
 
 # Get Baffle Snapshots
 
-mkdir ../data
-cd ../data
+mkdir $ROOT_DIR/data
+cd $ROOT_DIR/data
+
 wget -O baf.tar.gz https://uofi.box.com/shared/static/dzkax0ftzplzo1fh7zsijzttwws7iomj.gz
-tar -xvzf baf.tar.gz &> /dev/null
+tar -xvf baf.tar.gz &> /dev/null
+
+wget -O cyl.tar.gz https://uofi.box.com/shared/static/insxch1bjvzl4bnzr3lpr1c016i4g75p.gz
+tar -xvf cyl.tar.gz &> /dev/null
