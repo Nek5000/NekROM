@@ -28948,7 +28948,7 @@
  E   32004   3199.00       2.00000       0.00000       0.00000       0.00000    
   ***** NO THERMAL BOUNDARY CONDITIONS *****
            1  PRESOLVE/RESTART OPTIONS  *****
-sto0.f00001
+../../data/cyl/cyls0.f00001
            7          INITIAL CONDITIONS *****
 C Default
 C Default
