@@ -8,7 +8,10 @@ notifications:
 sudo: required
 
 env:
-  - FC=mpif77 CC=mpicc FFLAGS="-w"
+  matrix:
+    - TEST=GRAMMIAN_TEST  FC=mpif77 CC=mpicc FFLAGS="-w"
+    - TEST=BAFF_COMP_TEST FC=mpif77 CC=mpicc FFLAGS="-w"
+    - TEST=BAF_COMP_TEST  FC=mpif77 CC=mpicc FFLAGS="-w"
 
 before_install: 
   - export ROOT_DIR=$(pwd -P)
@@ -22,14 +25,4 @@ before_install:
   - export SOURCE_ROOT=$ROOT_DIR/Nek5000
   - (cd Nek5000/tools; ./maketools genmap)
 
-jobs:
-  include:
-    - stage: compilation
-      script: $ROOT_DIR/tests/comp-baff-test
-      script: $ROOT_DIR/tests/comp-baf-test
-
-    - stage: unit
-      script: $ROOT_DIR/tests/test.sh
-
-    - stage: test
-      script: $ROOT_DIR/tests/baf-test
+script: $ROOT_DIR/tests/test.sh
