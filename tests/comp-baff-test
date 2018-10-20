@@ -3,6 +3,5 @@
 cd $ROOT_DIR/cases/baf
 git clean -dfx . &> /dev/null
 
-cp "$SOURCE_ROOT/bin/makenek" .
-./makenek baff
+cp "$SOURCE_ROOT/bin/makenek" baff
 grep 'Compilation successful!' compiler.out &> /dev/null
