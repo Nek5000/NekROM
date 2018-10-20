@@ -6,7 +6,7 @@ $ROOT_DIR/bin/linkc
 echo 'baf'     > SESSION.NAME
 echo `pwd`'/' >> SESSION.NAME
 
-$ROOT_DIR/bin/gnaps baf
+$ROOT_DIR/bin/gsnaps baf
 
 case "$TEST" in
     GRAMMIAN_UNIT)
