@@ -20,7 +20,11 @@ before_install:
   - export SOURCE_ROOT=$ROOT_DIR/Nek5000
   - (cd Nek5000/tools; ./maketools genmap)
 
-script: 
-  - $ROOT_DIR/tests/comp-baf-test
-  - $ROOT_DIR/tests/comp-bafr-test
-  - $ROOT_DIR/tests/bafr-test
+jobs:
+  include:
+    - stage: compilation
+      script: $ROOT_DIR/tests/comp-baf-test
+    -
+      script: $ROOT_DIR/tests/comp-bafr-test
+    - stage: test
+      script: $ROOT_DIR/tests/bafr-test
