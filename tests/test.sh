@@ -13,7 +13,12 @@ case "$TEST" in
         cp $ROOT_DIR/tests/grammain_test.f t.f
         ./nek5000
         ;;
-
+    BAFF_COMP_TEST)
+        $ROOT_DIR/tests/comp-baff-test
+        ;;
+    BAF_COMP_TEST)
+        $ROOT_DIR/tests/comp-baf-test
+        ;;
     *)
         echo 'did not specify test...'
         ;;
