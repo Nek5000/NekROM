@@ -68,14 +68,14 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       real usave(lt,ls),vsave(lt,ls),wsave(lt,ls)
-      real uu(ls,ls),u0(lt,3),evec(ls,nb)
+      real u0(lt,3),evec(ls,nb)
 
       if (nio.eq.0) write (6,*) 'inside genmodes'
 
       n  = lx1*ly1*lz1*nelt
 
-      call gengram(uu)
-      call genevec(evec,uu)
+      call gengram
+      call genevec(evec)
 
       ONE = 1.
       ZERO= 0.
@@ -210,21 +210,21 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine gengram(uu)
+      subroutine gengram
 
       include 'SIZE'
       include 'MOR'
 
       if (ifl2) then
-         call gengraml2(uu)
+         call gengraml2
       else
-         call gengramh10(uu)
+         call gengramh10
       endif
 
       return
       end
 c-----------------------------------------------------------------------
-      subroutine gengramh10(uu)
+      subroutine gengramh10
 
       include 'SIZE'
       include 'TOTAL'
@@ -235,7 +235,6 @@ c-----------------------------------------------------------------------
       real usave(lt,ls),vsave(lt,ls),wsave(lt,ls)
       real uw(lt),vw(lt),ww(lt),h1(lt),h2(lt)
       real u0(lt,3)
-      real uu(ls,ls)
 
       if (nio.eq.0) write (6,*) 'inside gengramh10'
 
@@ -264,7 +263,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine gengraml2(uu)
+      subroutine gengraml2
 
       include 'SIZE'
       include 'TOTAL'
@@ -275,9 +274,6 @@ c-----------------------------------------------------------------------
       real usave(lt,ls),vsave(lt,ls),wsave(lt,ls)
       real uw(lt),vw(lt),ww(lt),h1(lt),h2(lt)
       real u0(lt,3)
-
-      real uu(ls,ls),Identity(ls,ls),eig(ls),eigv(ls,ls),w(ls,ls)
-      real u0r(ls)
 
       if (nio.eq.0) write (6,*) 'inside gengraml2'
 
@@ -298,7 +294,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine genevec(evec,uu)
+      subroutine genevec(evec)
 
       !!! does not work if ns.lt.ls !!!
 
@@ -308,7 +304,7 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       real usave(lt,ls),vsave(lt,ls),wsave(lt,ls)
-      real uu(ls,ls),identity(ls,ls),eig(ls),eigv(ls,ls),w(ls,ls)
+      real identity(ls,ls),eig(ls),eigv(ls,ls),w(ls,ls)
 
       real evec(ls,nb)
 
