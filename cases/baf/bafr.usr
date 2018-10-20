@@ -95,7 +95,7 @@ c-----------------------------------------------------------------------
       common /myoutflow/ d(lx1,ly1,lz1,lelt),m1(lx1*ly1*lz1,lelt)
 
       call opcopy(ub(1,0),vb(1,0),wb(1,0),vx,vy,vz) ! set zeroth mode
-      call gfldr('../../data/baf/chan20.f01000')    ! set initial state
+      call gfldr('../../data/baf/chan20.f00900')    ! set initial state
 
       call rom_init
       call genmodes
