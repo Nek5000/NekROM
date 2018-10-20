@@ -6,7 +6,7 @@ c-----------------------------------------------------------------------
       real uu(ls,ls)
 
       if (nid.eq.0) then
-         open (unit=12,file='gram')
+         open (unit=12,file='ops/gram')
          read (12,*) (uu(i,1),i=1,ls*ls)
          close (unit=12)
       endif
