@@ -25,8 +25,8 @@ before_install:
 jobs:
   include:
     - stage: compilation
-      script: $ROOT_DIR/tests/comp-baf-test
+      script: $ROOT_DIR/tests/comp-baff-test
     -
-      script: $ROOT_DIR/tests/comp-bafr-test
+      script: $ROOT_DIR/tests/comp-baf-test
     - stage: test
-      script: $ROOT_DIR/tests/bafr-test
+      script: $ROOT_DIR/tests/baf-test
