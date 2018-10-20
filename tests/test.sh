@@ -9,14 +9,14 @@ echo `pwd`'/' >> SESSION.NAME
 $ROOT_DIR/bin/gnaps baf
 
 case "$TEST" in
-    GRAMMIAN_TEST)
-        cp $ROOT_DIR/tests/grammain_test.f t.f
+    GRAMMIAN_UNIT)
+        cp $ROOT_DIR/tests/grammian_test.f t.f
         ./nek5000
         ;;
-    BAFF_COMP_TEST)
+    BAFF_COMP)
         $ROOT_DIR/tests/comp-baff-test
         ;;
-    BAF_COMP_TEST)
+    BAF_COMP)
         $ROOT_DIR/tests/comp-baf-test
         ;;
     *)

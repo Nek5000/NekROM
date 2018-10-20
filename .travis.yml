@@ -9,9 +9,9 @@ sudo: required
 
 env:
   matrix:
-    - TEST=GRAMMIAN_TEST  FC=mpif77 CC=mpicc FFLAGS="-w"
-    - TEST=BAFF_COMP_TEST FC=mpif77 CC=mpicc FFLAGS="-w"
-    - TEST=BAF_COMP_TEST  FC=mpif77 CC=mpicc FFLAGS="-w"
+    - TEST=GRAMMIAN_UNIT FC=mpif77 CC=mpicc FFLAGS="-w"
+    - TEST=BAFF_COMP     FC=mpif77 CC=mpicc FFLAGS="-w"
+    - TEST=BAF_COMP      FC=mpif77 CC=mpicc FFLAGS="-w"
 
 before_install: 
   - export ROOT_DIR=$(pwd -P)
