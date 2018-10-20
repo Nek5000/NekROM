@@ -177,9 +177,15 @@ c     if (npp.ne.1) call gop(rhs,work,'+  ',nb)
 
          write(6,*)'ad_step:',ad_step,ad_iostep,npp,nid
 
-         do j=1,nb
-            write(6,*) j,u(j,1)
-         enddo
+         if (ad_step.eq.ad_nsteps) then
+            do j=1,nb
+               write(6,*) 'final',j,u(j,1)
+            enddo
+         else
+            do j=1,nb
+               write(6,*) j,u(j,1)
+            enddo
+         endif
 
          call sleep(np-1-nid)
 
