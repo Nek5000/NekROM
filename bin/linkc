@@ -6,7 +6,11 @@ base="$(cd .. ; dirname $(pwd -P))"
 rm rom.f &> /dev/null
 rm pod.f &> /dev/null
 rm aux.f &> /dev/null
+rm read.f &> /dev/null
+rm dump.f &> /dev/null
 
 ln -s {${base}/code,${cwd}}/rom.f
 ln -s {${base}/code,${cwd}}/pod.f
 ln -s {${base}/code,${cwd}}/aux.f
+ln -s {${base}/code,${cwd}}/read.f
+ln -s {${base}/code,${cwd}}/dump.f
