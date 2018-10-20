@@ -74,12 +74,7 @@ c-----------------------------------------------------------------------
 
       n  = lx1*ly1*lz1*nelt
 
-      if (ifl2) then
-         call gengraml2(uu)
-      else
-         call gengramh10(uu)
-      endif
-
+      call gengram(uu)
       call genevec(evec,uu)
 
       ONE = 1.
@@ -211,6 +206,20 @@ c-----------------------------------------------------------------------
       prod = glsc2(t7,t4,n)+glsc2(t8,t5,n)
 
       if (nio.eq.0) write (6,*) 'exiting h10prod'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine gengram(uu)
+
+      include 'SIZE'
+      include 'MOR'
+
+      if (ifl2) then
+         call gengraml2(uu)
+      else
+         call gengramh10(uu)
+      endif
 
       return
       end
