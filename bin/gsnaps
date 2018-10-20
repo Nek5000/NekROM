@@ -1,12 +1,24 @@
-#!/bin/bash
+#!/bin/bash -x
 
-# Get Baffle Snapshots
+# Get Snapshots
 
 mkdir $ROOT_DIR/data
 cd $ROOT_DIR/data
 
-wget -O baf.tar.gz https://uofi.box.com/shared/static/dzkax0ftzplzo1fh7zsijzttwws7iomj.gz
-tar -xvf baf.tar.gz &> /dev/null
+case=$1
 
-wget -O cyl.tar.gz https://uofi.box.com/shared/static/insxch1bjvzl4bnzr3lpr1c016i4g75p.gz
-tar -xvf cyl.tar.gz &> /dev/null
+case "${case:=all}" in
+    baf)
+        wget -O baf.tar.gz https://uofi.box.com/shared/static/dzkax0ftzplzo1fh7zsijzttwws7iomj.gz
+        tar -xvf baf.tar.gz &> /dev/null
+        ;;
+    cyl)
+        wget -O cyl.tar.gz https://uofi.box.com/shared/static/insxch1bjvzl4bnzr3lpr1c016i4g75p.gz
+        tar -xvf cyl.tar.gz &> /dev/null
+        ;;
+    all)
+        cd $ROOT_DIR/bin
+        ./gsnaps baf
+        ./gsnaps cyl
+        ;;
+esac
