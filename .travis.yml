@@ -26,7 +26,10 @@ jobs:
   include:
     - stage: compilation
       script: $ROOT_DIR/tests/comp-baff-test
-    -
       script: $ROOT_DIR/tests/comp-baf-test
+
+    - stage: unit
+      script: $ROOT_DIR/tests/test.sh
+
     - stage: test
       script: $ROOT_DIR/tests/baf-test
