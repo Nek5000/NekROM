@@ -10,7 +10,7 @@ ls $ROOT_DIR/data/baf | sed 's/^/..\/..\/data\/baf\//g' > file.list
 
 cp "$SOURCE_ROOT/bin/makenek" .
 $ROOT_DIR/bin/linkc
-./makenek bafr
+./makenek baf
 grep 'Compilation successful!' compiler.out &> /dev/null
 comp_code="$?"
 echo "comp_code=$comp_code"
