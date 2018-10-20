@@ -1,5 +1,8 @@
 #!/bin/bash
 
+cd $ROOT_DIR/bin
+./gsnaps baf
+
 cd $ROOT_DIR/cases/baf
 git clean -dfx . &> /dev/null
 
@@ -7,7 +10,7 @@ ls $ROOT_DIR/data/baf | sed 's/^/..\/..\/data\/baf\//g' > file.list
 
 cp "$SOURCE_ROOT/bin/makenek" .
 $ROOT_DIR/bin/linkc
-./makenek bafr &> /dev/null
+./makenek bafr
 grep 'Compilation successful!' compiler.out &> /dev/null
 comp_code="$?"
 echo "comp_code=$comp_code"
@@ -19,7 +22,7 @@ Z
 
 echo baf       >  SESSION.NAME
 echo `pwd`'/' >>  SESSION.NAME
-mpiexec -np 1 ./nek5000 > logfile
+mpiexec -np 1 ./nek5000 | tee logfile
 
 ic_code=$(grep 'ic_test' logfile | awk '{print $1}')
 echo "ic_code=$ic_code"
