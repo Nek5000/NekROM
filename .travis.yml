@@ -8,7 +8,7 @@ notifications:
 sudo: required
 
 env:
-  - FC=mpif77 CC=mpicc
+  - FC=mpif77 CC=mpicc FFLAGS="-w"
 
 before_install: 
   - export ROOT_DIR=$(pwd -P)
