@@ -9,10 +9,10 @@ sudo: required
 
 env:
   matrix:
-    - TEST=GRAMMIAN_UNIT FC=mpif77 CC=mpicc FFLAGS="-w"
-    - TEST=BAFF_COMP     FC=mpif77 CC=mpicc FFLAGS="-w"
-    - TEST=BAF_COMP      FC=mpif77 CC=mpicc FFLAGS="-w"
-    - TEST=BAF_INTEG     FC=mpif77 CC=mpicc FFLAGS="-w"
+    - TEST=GRAMMIAN_UNIT
+    - TEST=BAFF_COMP
+    - TEST=BAF_COMP
+    - TEST=BAF_INTEG
 
 before_install: 
   - export ROOT_DIR=$(pwd -P)
@@ -25,5 +25,10 @@ before_install:
   - git clone --single-branch -b presolve-fix https://github.com/kent0/Nek5000
   - export SOURCE_ROOT=$ROOT_DIR/Nek5000
   - (cd Nek5000/tools; ./maketools genmap)
+
+before_script:
+  - export FC=mpif77
+  - export CC=mpicc
+  - export FFLAGS="-w"
 
 script: $ROOT_DIR/tests/test.sh
