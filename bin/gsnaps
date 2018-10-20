@@ -14,7 +14,8 @@ case "${case:=all}" in
         ;;
     cyl)
         wget -O cyl.tar.gz https://uofi.box.com/shared/static/insxch1bjvzl4bnzr3lpr1c016i4g75p.gz
-        tar -xvf cyl.tar.gz &> /dev/null
+        tar -xvf cyg.tar.gz &> /dev/null
+        wget -O cyls0.f00001 https://uofi.box.com/shared/static/msk1qxdpcw8e0a1olyah9s82cj45acxe.f00001
         ;;
     all)
         cd $ROOT_DIR/bin
