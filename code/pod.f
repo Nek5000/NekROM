@@ -126,16 +126,16 @@ c-----------------------------------------------------------------------
          call axhelm(t4,ub(1,i),h1,h2,1,1)
          call axhelm(t5,vb(1,i),h1,h2,1,1)
 
-         uu = glsc2(t4,ub(1,i),n)+glsc2(t5,vb(1,i),n)
+         ww = glsc2(t4,ub(1,i),n)+glsc2(t5,vb(1,i),n)
          vv = glsc2(t4,t1,n)+glsc2(t5,t2,n)
 
          if (ldim.eq.3) then
             call axhelm(t6,wb(1,i),h1,h2,1,1)
-            uu = uu + glsc2(t6,wb(1,i),n)
+            ww = ww + glsc2(t6,wb(1,i),n)
             vv = vv + glsc2(t6,t3,n)
          endif
 
-         coef(i) = vv/uu
+         coef(i) = vv/ww
       enddo
 
       if (nio.eq.0) write (6,*) 'exiting h10proj'
@@ -167,11 +167,11 @@ c-----------------------------------------------------------------------
       call rzero(h2,n)
 
       do i=1,nb
-         uu = op_glsc2_wt(
+         ww = op_glsc2_wt(
      $      ub(1,i),vb(1,i),wb(1,i),ub(1,i),vb(1,i),wb(1,i),bm1)
          vv = op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),t1,t2,t3,bm1)
 
-         coef(i) = vv/uu
+         coef(i) = vv/ww
       enddo
 
       if (nio.eq.0) write (6,*) 'exiting l2proj'
@@ -305,6 +305,7 @@ c-----------------------------------------------------------------------
 
       real usave(lt,ls),vsave(lt,ls),wsave(lt,ls)
       real identity(ls,ls),eig(ls),eigv(ls,ls),w(ls,ls)
+      real vv(ls,ls)
 
       real evec(ls,nb)
 
@@ -316,8 +317,10 @@ c-----------------------------------------------------------------------
          identity(j,j) = 1
       enddo
 
-      call generalev(uu,identity,eig,ls,w)
-      call copy(eigv,uu,ls*ls)
+      call copy(vv,uu,ls*ls)
+
+      call generalev(vv,identity,eig,ls,w)
+      call copy(eigv,vv,ls*ls)
 
 c     eig = eig(ls:1:-1)
 
