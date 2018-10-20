@@ -1,4 +1,19 @@
 c-----------------------------------------------------------------------
+      subroutine readgram(uu,ls)
+
+      include 'SIZE'
+
+      real uu(ls,ls)
+
+      if (nid.eq.0) then
+         open (unit=12,file='gram')
+         read (12,*) (uu(i,1),i=1,ls*ls)
+         close (unit=12)
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine readevec(evec)
 
       include 'SIZE'
