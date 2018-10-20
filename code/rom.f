@@ -1,5 +1,6 @@
 c-----------------------------------------------------------------------
       include 'pod.f'
+      include 'read.f'
 c-----------------------------------------------------------------------
       subroutine readops
 
@@ -9,9 +10,12 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'inside readops'
 
-      call readab(a0,b0,(nb+1)**2)
-      call readc0(c0,(nb+1)**3)
       call readic(u,nb+1)
+
+      call reada0(a0,(nb+1)**2)
+      call readb0(b0,(nb+1)**2)
+
+      call readc0(c0,(nb+1)**3)
 
       if (np.gt.1) call makecloc
 
@@ -580,62 +584,6 @@ c     enddo
       endif
 
       call gop(cu,work,'+  ',nb)
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine readc0(c0,n)
-
-      include 'SIZE'
-      include 'PARALLEL'
-
-      real c0(n)
-
-      if (nid.eq.(np-1)) then
-         open (unit=12,file='cten')
-         read (12,*) (c0(k),k=1,n)
-         close (unit=12)
-      endif
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine readab(a0,b0,n)
-
-      include 'SIZE'
-
-      real a0(n),b0(n)
-
-      common /scrk5/ w(lx1*ly1*lz1*lelt)
-
-      call rzero(a0,n)
-      call rzero(b0,n)
-
-      if (nid.eq.0) then
-         open (unit=12,file='amat')
-         read (12,*) (a0(k),k=1,n)
-         close (unit=12)
-
-         open (unit=12,file='bmat')
-         read (12,*) (b0(k),k=1,n)
-         close (unit=12)
-      endif
-
-      call gop(a0,w,'+  ',n)
-      call gop(b0,w,'+  ',n)
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine readic(ic,n)
-
-      include 'SIZE'
-
-      real ic(n)
-
-      open (unit=12,file='ic')
-      read (12,*) (ic(k),k=1,n)
-      close (unit=12)
 
       return
       end
