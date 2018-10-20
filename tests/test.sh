@@ -7,6 +7,7 @@ echo 'baf'     > SESSION.NAME
 echo `pwd`'/' >> SESSION.NAME
 
 $ROOT_DIR/bin/gsnaps baf
+$ROOT_DIR/bin/gops   baf
 
 case "$TEST" in
     GRAMMIAN_UNIT)
