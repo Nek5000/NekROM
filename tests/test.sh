@@ -12,6 +12,7 @@ $ROOT_DIR/bin/gops   baf
 case "$TEST" in
     GRAMMIAN_UNIT)
         cp $ROOT_DIR/tests/grammian_test.f t.f
+        $SOURCE_ROOT/bin/makenek test
         ./nek5000
         ;;
     BAFF_COMP)
