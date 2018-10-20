@@ -3,13 +3,14 @@
 cwd="$(pwd -P)"
 base="$(cd .. ; dirname $(pwd -P))"
 
-rm rom.f  &> /dev/null
-rm pod.f  &> /dev/null
-rm aux.f  &> /dev/null
-rm read.f &> /dev/null
-rm dump.f &> /dev/null
-rm usr.f  &> /dev/null
-rm unit.f &> /dev/null
+rm rom.f    &> /dev/null
+rm pod.f    &> /dev/null
+rm aux.f    &> /dev/null
+rm read.f   &> /dev/null
+rm dump.f   &> /dev/null
+rm usr.f    &> /dev/null
+rm unit.f   &> /dev/null
+rm test.usr &> /dev/null
 
 ln -s {${base}/code,${cwd}}/rom.f
 ln -s {${base}/code,${cwd}}/pod.f
@@ -19,3 +20,4 @@ ln -s {${base}/code,${cwd}}/dump.f
 
 ln -s {${base}/tests,${cwd}}/usr.f
 ln -s {${base}/tests,${cwd}}/unit.f
+ln -s {${base}/tests,${cwd}}/test.usr
