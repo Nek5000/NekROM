@@ -11,19 +11,16 @@ $ROOT_DIR/bin/gops   baf
 
 case "$TEST" in
     GRAMMIAN_UNIT)
-        cp $ROOT_DIR/tests/grammian_test.f t.f
-        $SOURCE_ROOT/bin/makenek test
-        $SOURCE_ROOT/bin/genmap << Z
-        baf
-        .01
-        Z
-        ./nek5000
+        $ROOT_DIR/tests/grammian_test.sh
         ;;
     BAFF_COMP)
         $ROOT_DIR/tests/comp-baff-test
         ;;
     BAF_COMP)
         $ROOT_DIR/tests/comp-baf-test
+        ;;
+    BAF_INTEG)
+        $ROOT_DIR/tests/baf-test
         ;;
     *)
         echo 'did not specify test...'

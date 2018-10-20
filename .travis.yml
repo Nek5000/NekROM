@@ -12,6 +12,7 @@ env:
     - TEST=GRAMMIAN_UNIT FC=mpif77 CC=mpicc FFLAGS="-w"
     - TEST=BAFF_COMP     FC=mpif77 CC=mpicc FFLAGS="-w"
     - TEST=BAF_COMP      FC=mpif77 CC=mpicc FFLAGS="-w"
+    - TEST=BAF_INTEG     FC=mpif77 CC=mpicc FFLAGS="-w"
 
 before_install: 
   - export ROOT_DIR=$(pwd -P)
