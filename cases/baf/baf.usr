@@ -98,8 +98,12 @@ c-----------------------------------------------------------------------
       call gfldr('../../data/baf/chan20.f00900')    ! set initial state
 
       call rom_init
-      call genmodes
+
+      call gengram
+      call genevec
+      call genbases
       call genops
+
       call rom_setup
 
       do ad_step=1,ad_nsteps

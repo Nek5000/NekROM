@@ -4,6 +4,7 @@ c     parameters and common blocks for MOR
       parameter (ls=100) ! number of snapshots
 
       common /morgram/ uu(ls,ls)
+      common /moreig/ evec(ls,nb)
 
       common /morbasis/ ub(lx1*ly1*lz1*lelt,0:nb),
      $                  vb(lx1*ly1*lz1*lelt,0:nb),
