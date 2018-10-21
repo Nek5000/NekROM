@@ -30,6 +30,17 @@ case "$TEST" in
     BASES_UNIT)
         test_unit bases_test
         ;;
+    INITIAL_CONDITION_UNIT)
+        test_unit initial_condition_test
+        ;;
+    A0_UNIT)
+        test_unit a_operator_test
+        ;;
+    B0_UNIT)
+        test_unit b_operator_test
+        ;;
+    C0_UNIT)
+        ;;
     BAFF_COMP)
         $ROOT_DIR/tests/comp-baff-test
         ;;
