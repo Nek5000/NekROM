@@ -35,6 +35,9 @@ jobs:
       -
         script: $ROOT_DIR/tests/test.sh
         env: TEST=EIGENVECTOR_UNIT
+      -
+        script: $ROOT_DIR/tests/test.sh
+        env: TEST=BASES_UNIT
 
       - stage: compilation
         script: $ROOT_DIR/tests/test.sh
