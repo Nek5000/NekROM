@@ -43,7 +43,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine dumpbasis(ub,vb,wb,nb)
+      subroutine dumpbases(ub,vb,wb,nb)
 
       include 'SIZE'
 
