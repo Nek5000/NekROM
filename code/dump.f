@@ -54,7 +54,7 @@ c-----------------------------------------------------------------------
       n=lx1*ly1*lz1*nelt
 
       if (nid.eq.0) then
-         open (unit=12,file='basis')
+         open (unit=12,file='bases')
 
          do j=0,nb
          do i=1,n
