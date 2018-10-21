@@ -7,14 +7,6 @@ notifications:
 
 sudo: required
 
-env:
-  matrix:
-    - TEST=GRAMMIAN_UNIT
-    - TEST=EIGENVECTOR_UNIT
-    - TEST=BAFF_COMP
-    - TEST=BAF_COMP
-    - TEST=BAF_INTEG
-
 before_install: 
   - export ROOT_DIR=$(pwd -P)
 
@@ -34,3 +26,15 @@ before_script:
   - export USR_LFLAGS+="-mcmodel=medium"
 
 script: $ROOT_DIR/tests/test.sh
+
+jobs:
+    include:
+      - stage: unit
+        script: TEST=GRAMMIAN_UNIT    $ROOT_DIR/tests/test.sh
+      -
+        script: TEST=EIGENVECTOR_UNIT $ROOT_DIR/tests/test.sh
+      - stage: compilation
+        script: TEST=BAFF_COMP        $ROOT_DIR/tests/test.sh
+        script: TEST=BAF_COMP         $ROOT_DIR/tests/test.sh
+      - stage: integration
+        script: TEST=BAF_INTEG        $ROOT_DIR/tests/test.sh
