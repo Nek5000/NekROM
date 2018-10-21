@@ -119,9 +119,16 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine initial_condition_test(ifl2)
+      subroutine initial_condition_test
 
-      logical ifl2
+      include 'SIZE'
+      include 'MOR'
+
+      real u0(0:nb)
+
+      call readbases(ub,vb,wb,nb)
+      call makeic
+      call readic(u0,nb+1)
 
       return
       end
