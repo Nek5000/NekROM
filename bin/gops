@@ -7,8 +7,8 @@ case=$1
 case "${case:=all}" in
     baf)
         cd $ROOT_DIR/cases/$case
-        wget -O baf-ops.tar.gz https://uofi.box.com/shared/static/5emo71uojyumeaux94p2g5jkjjzwhfi1.gz
-        tar -xvf baf-ops.tar.gz &> /dev/null
+        wget -O baf-l2-ops.tar.gz https://uofi.box.com/shared/static/5emo71uojyumeaux94p2g5jkjjzwhfi1.gz
+        tar -xvf baf-l2-ops.tar.gz &> /dev/null
         ;;
     all)
         cd $ROOT_DIR/bin
