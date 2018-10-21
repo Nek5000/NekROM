@@ -122,6 +122,7 @@ c-----------------------------------------------------------------------
       subroutine initial_condition_test
 
       include 'SIZE'
+      include 'SOLN'
       include 'MOR'
 
       real u0(0:nb)
@@ -130,19 +131,137 @@ c-----------------------------------------------------------------------
       call makeic
       call readic(u0,nb+1)
 
+      s1=0.
+      s2=0.
+
+      do i=0,nb
+         write (6,*) u0(i),u(i,1),'ic'
+      enddo
+
+      do i=1,nb
+         s1=s1+(u0(i)-u(i,1))**2
+         s2=s2+u0(i)**2
+      enddo
+
+      edif=sqrt(s1/s2)
+      if (nio.eq.0) write (6,*) 'edif',edif,s1,s2
+
+      iexit=1
+      if (edif.lt.1e-16) iexit=0
+
+      call exit(iexit)
+
       return
       end
 c-----------------------------------------------------------------------
-      subroutine a_operator_test(ifl2)
+      subroutine a_operator_test
 
-      logical ifl2
+      include 'SIZE'
+      include 'MOR'
+
+      real aa(0:nb,0:nb)
+
+      iexit=0
+
+      call readbases(ub,vb,wb,nb)
+
+      call makea
+      call reada0(aa,(nb+1)**2)
+
+      s1=0.
+      s2=0.
+      s3=0.
+
+      do j=0,nb
+      do i=0,nb
+         s1=s1+(aa(i,j)-a0(i,j))**2
+         s2=s2+(a0(i,j)-a0(j,i))**2
+         s3=s3+aa(i,j)**2
+      enddo
+      enddo
+
+      edif=sqrt(s1/s3)
+      esym=sqrt(s2/s3)
+
+      if (nio.eq.0) write (6,*) 'edif',edif,s1,s3
+      if (nio.eq.0) write (6,*) 'esym',esym,s2,s3
+
+      if (edif.gt.1.e-16) iexit=iexit+1
+      if (esym.gt.1.e-16) iexit=iexit+2
+
+      s1=0.
+      s2=0.
+
+      do j=1,nb
+      do i=1,nb
+         if (i.ne.j) s1=s1+a0(i,j)**2
+         s2=s2+a0(i,j)**2
+      enddo
+      enddo
+
+      edia=sqrt(s1/s2)
+
+      if (nio.eq.0) write (6,*) 'edia',edia,s1,s2
+      if (edia.gt.1.e-16) iexit=iexit+4
+
+      call exit(iexit)
 
       return
       end
 c-----------------------------------------------------------------------
-      subroutine b_operator_test(ifl2)
+      subroutine b_operator_test
 
-      logical ifl2
+      include 'SIZE'
+      include 'SOLN'
+      include 'MOR'
+
+      real bb(0:nb,0:nb)
+
+      iexit=0
+
+      call readbases(ub,vb,wb,nb)
+
+      call makeb
+      call readb0(bb,(nb+1)**2)
+
+      s1=0.
+      s2=0.
+      s3=0.
+
+      do j=0,nb
+      do i=0,nb
+         s1=s1+(bb(i,j)-b0(i,j))**2
+         s2=s2+(b0(i,j)-b0(j,i))**2
+         s3=s3+bb(i,j)**2
+      enddo
+      enddo
+
+      edif=sqrt(s1/s3)
+      esym=sqrt(s2/s3)
+
+      if (edif.gt.1.e-16) iexit=iexit+1
+      if (esym.gt.1.e-16) iexit=iexit+2
+
+      if (nio.eq.0) write (6,*) 'edif',edif,s1,s3
+      if (nio.eq.0) write (6,*) 'esym',esym,s2,s3
+
+      s1=0.
+      s2=0.
+
+      do j=1,nb
+      do i=1,nb
+         if (i.ne.j) s1=s1+bb(i,j)**2
+         s2=s2+bb(i,j)**2
+      enddo
+      enddo
+
+      edia=sqrt(s1/s2)
+
+      if (ifl2.and.edia.gt.1.e-16) iexit=iexit+4
+
+      if (nio.eq.0) write (6,*) 'edia',edia,s1,s2
+
+      call exit(iexit)
 
       return
       end
