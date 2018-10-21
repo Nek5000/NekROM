@@ -10,6 +10,7 @@ sudo: required
 env:
   matrix:
     - TEST=GRAMMIAN_UNIT
+    - TEST=EIGENVECTOR_UNIT
     - TEST=BAFF_COMP
     - TEST=BAF_COMP
     - TEST=BAF_INTEG

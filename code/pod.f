@@ -59,7 +59,7 @@ c     This routine reads files specificed in file.list
       return
       end
 c-----------------------------------------------------------------------
-      subroutine genmodes
+      subroutine genbases
 
       include 'SIZE'
       include 'TOTAL'
@@ -68,14 +68,11 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       real usave(lt,ls),vsave(lt,ls),wsave(lt,ls)
-      real u0(lt,3),evec(ls,nb)
+      real u0(lt,3)
 
-      if (nio.eq.0) write (6,*) 'inside genmodes'
+      if (nio.eq.0) write (6,*) 'inside genbases'
 
       n  = lx1*ly1*lz1*nelt
-
-      call gengram
-      call genevec(evec)
 
       ONE = 1.
       ZERO= 0.
@@ -94,7 +91,7 @@ c-----------------------------------------------------------------------
          call outpost(ub(1,i),vb(1,i),wb(1,i),pr,t,'bas')
       enddo
 
-      if (nio.eq.0) write (6,*) 'exiting genmodes'
+      if (nio.eq.0) write (6,*) 'exiting genbases'
 
       return
       end
@@ -294,7 +291,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine genevec(evec)
+      subroutine genevec
 
       !!! does not work if ns.lt.ls !!!
 
@@ -306,8 +303,6 @@ c-----------------------------------------------------------------------
       real usave(lt,ls),vsave(lt,ls),wsave(lt,ls)
       real identity(ls,ls),eig(ls),eigv(ls,ls),w(ls,ls)
       real vv(ls,ls)
-
-      real evec(ls,nb)
 
       if (nio.eq.0) write (6,*) 'inside genevec'
 

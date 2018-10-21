@@ -13,6 +13,9 @@ case "$TEST" in
     GRAMMIAN_UNIT)
         $ROOT_DIR/tests/grammian_test.sh
         ;;
+    EIGENVECTOR_UNIT)
+        $ROOT_DIR/tests/eigenvector_test.sh
+        ;;
     BAFF_COMP)
         $ROOT_DIR/tests/comp-baff-test
         ;;

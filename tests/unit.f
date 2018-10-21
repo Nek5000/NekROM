@@ -48,9 +48,73 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine basis_test
+      subroutine eigenvector_test
 
-      logical ifl2
+      include 'SIZE'
+      include 'MOR'
+
+      real evec2(ls,nb)
+
+      call readgram(uu,ls)
+      call genevec(evec)
+      call readevec(evec2)
+
+      s1=0.
+      s2=0.
+
+      do j=1,nb
+      do i=1,ls
+         s1=s1+(evec(i,j)-evec2(i,j))**2
+         s2=s2+evec2(i,j)**2
+      enddo
+      enddo
+
+      edif=sqrt(s1/s2)
+      if (nio.eq.0) write (6,*) 'edif',edif
+
+      iexit=1
+      if (edif.lt.1e-16) iexit=0
+
+      call exit(iexit)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine bases_test
+
+      include 'SIZE'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real ubb(lt,0:nb), vbb(lt,0:nb), wbb(lt,0:nb)
+      real du(lt,0:nb), dv(lt,0:nb), dw(lt,0:nb)
+
+      n=lx1*ly1*lz1*nelt
+
+      call readevec(evec,ls,nb)
+      call genbases
+      call readbases(ubb,vbb,wbb,nb)
+
+      s1=0.
+      s2=0.
+
+      do i=0,nb
+         call opsub3(du(1,i),dv(1,i),dw(1,i),ub(1,i),vb(1,i),wb(1,i),
+     $                                       ubb(1,i),vbb(1,i),wbb(1,i))
+         s1=s1+op_glsc2_wt(du(1,i),dv(1,i),dw(1,i),
+     $                     du(1,i),dv(1,i),dw(1,i),bm1)
+         s2=s2+op_glsc2_wt(ubb(1,i),vbb(1,i),wbb(1,i),
+     $                     ubb(1,i),vbb(1,i),wbb(1,i),bm1)
+      enddo
+
+      edif=sqrt(s1/s2)
+      if (nio.eq.0) write (6,*) 'edif',edif
+
+      iexit=1
+      if (edif.lt.1e-16) iexit=0
+
+      call exit(iexit)
 
       return
       end

@@ -14,10 +14,9 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine readevec(evec)
+      subroutine readevec(evec,ls,nb)
 
       include 'SIZE'
-      include 'MOR'
 
       common /scrk5/ w(lx1*ly1*lz1*lelt)
 
@@ -115,7 +114,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine readbasis(ub,vb,wb,nb)
+      subroutine readbases(ub,vb,wb,nb)
 
       ! only works for np.eq.1
 
