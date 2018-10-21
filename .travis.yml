@@ -30,6 +30,7 @@ before_install:
 before_script:
   - export FC=mpif77
   - export CC=mpicc
-  - export FFLAGS="-w"
+  - export FFLAGS="-w -mcmodel=medium"
+  - export USR_LFLAGS+="-mcmodel=medium"
 
 script: $ROOT_DIR/tests/test.sh
