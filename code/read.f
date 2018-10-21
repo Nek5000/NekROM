@@ -127,7 +127,7 @@ c-----------------------------------------------------------------------
       n=lx1*ly1*lz1*nelt
 
       if (nid.eq.0) then
-         open (unit=12,file='basis')
+         open (unit=12,file='ops/bases')
 
          do j=0,nb
             read (12,*) (ub(i,j),i=1,n)
