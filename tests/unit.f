@@ -57,15 +57,15 @@ c-----------------------------------------------------------------------
 
       call readgram(uu,ls)
       call genevec(evec)
-      call readevec(evec2)
+      call readevec(evec2,ls,nb)
 
       s1=0.
       s2=0.
 
       do j=1,nb
       do i=1,ls
-         s1=s1+(evec(i,j)-evec2(i,j))**2
-         s2=s2+evec2(i,j)**2
+c        s1=s1+(evec(i,j)-evec2(i,j))**2
+c        s2=s2+evec2(i,j)**2
       enddo
       enddo
 

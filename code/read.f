@@ -25,7 +25,7 @@ c-----------------------------------------------------------------------
       call rzero(evec,ls*nb)
 
       if (nid.eq.0) then
-         open (unit=12,file='evectors.dat')
+         open (unit=12,file='evec')
          read (12,*) (evec(k,1),k=1,ls*nb)
          close (unit=12)
       endif

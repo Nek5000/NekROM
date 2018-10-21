@@ -1,4 +1,25 @@
 c-----------------------------------------------------------------------
+      subroutine dumpevec(evec,ns,nb)
+
+      include 'SIZE'
+
+      real evec(ns,nb)
+
+      if (nid.eq.0) then
+         open (unit=12,file='evec')
+
+         do j=1,nb
+         do i=1,ns
+            write (12,*) evec(i,j)
+         enddo
+         enddo
+
+         close (unit=12)
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine dumpgram(uu,ns)
 
       include 'SIZE'
