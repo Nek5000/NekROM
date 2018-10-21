@@ -45,6 +45,15 @@ jobs:
       -
         script: $ROOT_DIR/tests/test.sh
         env: TEST=BASES_UNIT
+      -
+        script: $ROOT_DIR/tests/test.sh
+        env: TEST=INITIAL_CONDITION_UNIT
+      -
+        script: $ROOT_DIR/tests/test.sh
+        env: TEST=A0_UNIT
+      -
+        script: $ROOT_DIR/tests/test.sh
+        env: TEST=B0_UNIT
 
       - stage: integration
         script: $ROOT_DIR/tests/test.sh
