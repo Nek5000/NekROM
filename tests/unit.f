@@ -64,8 +64,8 @@ c-----------------------------------------------------------------------
 
       do j=1,nb
       do i=1,ls
-c        s1=s1+(evec(i,j)-evec2(i,j))**2
-c        s2=s2+evec2(i,j)**2
+         s1=s1+(evec(i,j)-evec2(i,j))**2
+         s2=s2+evec2(i,j)**2
       enddo
       enddo
 
