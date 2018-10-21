@@ -6,7 +6,7 @@ c-----------------------------------------------------------------------
       real evec(ns,nb)
 
       if (nid.eq.0) then
-         open (unit=12,file='evec')
+         open (unit=12,file='ops/evec')
 
          do j=1,nb
          do i=1,ns
@@ -29,7 +29,7 @@ c-----------------------------------------------------------------------
       n=lx1*ly1*lz1*nelt
 
       if (nid.eq.0) then
-         open (unit=12,file='gram')
+         open (unit=12,file='ops/gram')
 
          do j=1,ns
          do i=1,ns
@@ -54,7 +54,7 @@ c-----------------------------------------------------------------------
       n=lx1*ly1*lz1*nelt
 
       if (nid.eq.0) then
-         open (unit=12,file='bases')
+         open (unit=12,file='ops/bases')
 
          do j=0,nb
          do i=1,n
@@ -89,7 +89,7 @@ c-----------------------------------------------------------------------
       real c(0:nb,0:nb,0:nb)
 
       if (nid.eq.0) then
-         open (unit=50,file='cten')
+         open (unit=50,file='ops/cten')
 
          do i=0,(nb+1)**3-1
             write (50,*) c(i,0,0)
@@ -108,7 +108,7 @@ c-----------------------------------------------------------------------
       real a(0:nb,0:nb), b(0:nb,0:nb)
 
       if (nid.eq.0) then
-         open (unit=50,file='amat')
+         open (unit=50,file='ops/amat')
 
          do i=0,(nb+1)**2-1
             write (50,*) a(i,1)
@@ -116,7 +116,7 @@ c-----------------------------------------------------------------------
 
          close (unit=50)
 
-         open (unit=50,file='bmat')
+         open (unit=50,file='ops/bmat')
 
          do i=0,(nb+1)**2-1
             write (50,*) b(i,1)
@@ -135,7 +135,7 @@ c-----------------------------------------------------------------------
       real ic(0:nb)
 
       if (nid.eq.0) then
-         open (unit=50,file='ic')
+         open (unit=50,file='ops/ic')
 
          do i=0,nb
             write (50,*) ic(i)
