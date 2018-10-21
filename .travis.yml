@@ -30,12 +30,19 @@ script: $ROOT_DIR/tests/test.sh
 jobs:
     include:
       - stage: unit
-        script: TEST=GRAMMIAN_UNIT    $ROOT_DIR/tests/test.sh
-        env: TESTING=TESTING
+        script: $ROOT_DIR/tests/test.sh
+        env: TEST=GRAMMIAN_UNIT
       -
-        script: TEST=EIGENVECTOR_UNIT $ROOT_DIR/tests/test.sh
+        script: $ROOT_DIR/tests/test.sh
+        env: TEST=EIGENVECTOR_UNIT
+
       - stage: compilation
-        script: TEST=BAFF_COMP        $ROOT_DIR/tests/test.sh
-        script: TEST=BAF_COMP         $ROOT_DIR/tests/test.sh
+        script: $ROOT_DIR/tests/test.sh
+        env: TEST=BAFF_COMP
+      -
+        script: $ROOT_DIR/tests/test.sh
+        env: TEST=BAF_COMP
+
       - stage: integration
-        script: TEST=BAF_INTEG        $ROOT_DIR/tests/test.sh
+        script: $ROOT_DIR/tests/test.sh
+        env: TEST=BAF_INTEG
