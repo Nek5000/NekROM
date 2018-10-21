@@ -27,7 +27,7 @@ c-----------------------------------------------------------------------
       enddo
 
       esym=sqrt(s1/s2)
-      if (nio.eq.0) write (6,*) 'esym',esym
+      if (nio.eq.0) write (6,*) 'esym',esym,s1,s2
 
       s1=0.
       s2=0.
@@ -38,7 +38,7 @@ c-----------------------------------------------------------------------
       enddo
 
       edif=sqrt(s1/s2)
-      if (nio.eq.0) write (6,*) 'edif',edif
+      if (nio.eq.0) write (6,*) 'edif',edif,s1,s2
 
       iexit=1
       if (edif.lt.1e-16.and.esym.lt.2-e15) iexit=0
@@ -70,7 +70,7 @@ c-----------------------------------------------------------------------
       enddo
 
       edif=sqrt(s1/s2)
-      if (nio.eq.0) write (6,*) 'edif',edif
+      if (nio.eq.0) write (6,*) 'edif',edif,s1,s2
 
       iexit=1
       if (edif.lt.1e-16) iexit=0
@@ -109,7 +109,7 @@ c-----------------------------------------------------------------------
       enddo
 
       edif=sqrt(s1/s2)
-      if (nio.eq.0) write (6,*) 'edif',edif
+      if (nio.eq.0) write (6,*) 'edif',edif,s1,s2
 
       iexit=1
       if (edif.lt.1e-16) iexit=0
