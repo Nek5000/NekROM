@@ -83,7 +83,7 @@ c-----------------------------------------------------------------------
       call rzero(b0,n)
 
       if (nid.eq.0) then
-         open (unit=12,file='amat')
+         open (unit=12,file='bmat')
          read (12,*) (b0(k),k=1,n)
          close (unit=12)
       endif
