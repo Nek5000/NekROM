@@ -33,9 +33,12 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'inside genops'
 
-      call get_a_b
+      call makea
+      call makeb
+
       call makec
       call makecloc
+
       call makeic
 
       if (nio.eq.0) write (6,*) 'exiting genops'
@@ -464,7 +467,35 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine get_A_B
+      subroutine makea
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /scrvh/ h1(lt),h2(lt)
+      common /scrns/ usave(lt),vsave(lt),wsave(lt)
+
+      n=lx1*ly1*lz1*nelt
+      call rone (h1,n)
+      call rzero(h2,n)
+
+      do j=0,nb                  ! Form the A matrix for basis function
+         call axhelm(usave,ub(1,j),h1,h2,1,1)
+         call axhelm(vsave,vb(1,j),h1,h2,1,1)
+         if (ldim.eq.3) call axhelm(wsave,wb(1,j),h1,h2,1,1)
+         do i=0,nb
+            a0(i,j) = glsc2(ub(1,i),usave,n)+glsc2(vb(1,i),vsave,n)
+            if (ldim.eq.3) a0(i,j) = a0(i,j)+glsc2(wb(1,i),wsave,n)
+         enddo
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine makeb
 
       include 'SIZE'
       include 'TOTAL'
@@ -480,20 +511,6 @@ c-----------------------------------------------------------------------
          b0(i,j) = op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),
      $                         ub(1,j),vb(1,j),wb(1,j),bm1)
       enddo
-      enddo
-
-      n= lx1*ly1*lz1*nelt
-      call rone (h1,n)
-      call rzero(h2,n)
-
-      do j=0,nb                  ! Form the A matrix for basis function
-         call axhelm(usave,ub(1,j),h1,h2,1,1)
-         call axhelm(vsave,vb(1,j),h1,h2,1,1)
-         if (ldim.eq.3) call axhelm(wsave,wb(1,j),h1,h2,1,1)
-         do i=0,nb
-            a0(i,j) = glsc2(ub(1,i),usave,n)+glsc2(vb(1,i),vsave,n)
-            if (ldim.eq.3) a0(i,j) = a0(i,j)+glsc2(wb(1,i),wsave,n)
-         enddo
       enddo
 
       return
@@ -516,9 +533,6 @@ c-----------------------------------------------------------------------
       call opcopy(t1,t2,t3,vx,vy,vz)
 
       n=lx1*ly1*lz1*nelt
-
-      call rone(h1,n)
-      call rzero(h2,n)
 
       u(0,1) = 1.
 
