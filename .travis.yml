@@ -1,4 +1,4 @@
-language: fortran
+language: bash
 
 notifications:
   email:
