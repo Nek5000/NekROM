@@ -43,7 +43,7 @@ c-----------------------------------------------------------------------
       real c0(n)
 
       if (nid.eq.(np-1)) then
-         open (unit=12,file='cten')
+         open (unit=12,file='ops/cten')
          read (12,*) (c0(k),k=1,n)
          close (unit=12)
       endif
@@ -62,7 +62,7 @@ c-----------------------------------------------------------------------
       call rzero(a0,n)
 
       if (nid.eq.0) then
-         open (unit=12,file='amat')
+         open (unit=12,file='ops/amat')
          read (12,*) (a0(k),k=1,n)
          close (unit=12)
       endif
@@ -83,7 +83,7 @@ c-----------------------------------------------------------------------
       call rzero(b0,n)
 
       if (nid.eq.0) then
-         open (unit=12,file='bmat')
+         open (unit=12,file='ops/bmat')
          read (12,*) (b0(k),k=1,n)
          close (unit=12)
       endif
@@ -104,7 +104,7 @@ c-----------------------------------------------------------------------
       call rzero(ic,n)
 
       if (nid.eq.0) then
-         open (unit=12,file='ic')
+         open (unit=12,file='ops/ic')
          read (12,*) (ic(k),k=1,n)
          close (unit=12)
       endif
