@@ -124,6 +124,8 @@ c-----------------------------------------------------------------------
 
       real ub(lt,0:nb), vb(lt,0:nb), wb(lt,0:nb)
 
+      if (nio.eq.0) write (6,*) 'inside readbases'
+
       n=lx1*ly1*lz1*nelt
 
       if (nid.eq.0) then
@@ -145,6 +147,8 @@ c-----------------------------------------------------------------------
 
          close (unit=12)
       endif
+
+      if (nio.eq.0) write (6,*) 'exiting readbases'
 
       return
       end
