@@ -1,5 +1,16 @@
 # MOR Tests
 
+test_unit() {
+$ROOT_DIR/tests/test_template.sh $1
+ls $ROOT_DIR/data/baf | sed 's/^/..\/..\/data\/baf\//g' > file.list
+$SOURCE_ROOT/bin/makenek test
+$SOURCE_ROOT/bin/genmap << Z
+baf
+.01
+Z
+./nek5000
+}
+
 cd $ROOT_DIR/cases/baf
 $ROOT_DIR/bin/linkc
 
@@ -11,10 +22,13 @@ $ROOT_DIR/bin/gops   baf
 
 case "$TEST" in
     GRAMMIAN_UNIT)
-        $ROOT_DIR/tests/grammian_test.sh
+        test_unit grammian_test
         ;;
     EIGENVECTOR_UNIT)
-        $ROOT_DIR/tests/eigenvector_test.sh
+        test_unit eigenvector_test
+        ;;
+    BASES_UNIT)
+        test_unit bases_test
         ;;
     BAFF_COMP)
         $ROOT_DIR/tests/comp-baff-test
