@@ -12,35 +12,32 @@ c-----------------------------------------------------------------------
 
       real vv(lt,ls)
 
+      iexit=0
+
       call gengram
       call readgram(vv,ls)
 
       s1=0.
       s2=0.
+      s3=0.
 
       do j=1,ls
       do i=1,ls
-         s1=s1+0.25*(uu(i,j)-uu(j,i))**2
-         s2=s2+uu(i,j)**2
+         s1=s1+(uu(i,j)-uu(j,i))**2
+         s2=s2+(uu(i,j)-vv(i,j))**2
+         s3=s3+vv(i,j)**2
+         if (nio.eq.0) write (6,*) 'gram',i,j,uu(i,j),vv(i,j)
       enddo
       enddo
 
-      esym=sqrt(s1/s2)
-      if (nio.eq.0) write (6,*) 'esym',esym,s1,s2
+      esym=sqrt(s1/s3)
+      edif=sqrt(s2/s3)
 
-      s1=0.
-      s2=0.
+      if (nio.eq.0) write (6,*) 'esym',esym,s1,s3
+      if (nio.eq.0) write (6,*) 'edif',edif,s2,s3
 
-      do i=1,ls*ls
-         s1=s1+(uu(i,1)-vv(i,1))**2
-         s2=s2+uu(i,1)**2
-      enddo
-
-      edif=sqrt(s1/s2)
-      if (nio.eq.0) write (6,*) 'edif',edif,s1,s2
-
-      iexit=1
-      if (edif.lt.1e-16.and.esym.lt.2-e15) iexit=0
+      if (esym.gt.1e-14) iexit=iexit+1
+      if (edif.gt.1e-14) iexit=iexit+2
 
       call exit(iexit)
 
@@ -54,6 +51,8 @@ c-----------------------------------------------------------------------
 
       real evec2(ls,nb)
 
+      iexit=0
+
       call readgram(uu,ls)
       call genevec(evec)
       call readevec(evec2,ls,nb)
@@ -65,14 +64,14 @@ c-----------------------------------------------------------------------
       do i=1,ls
          s1=s1+(evec(i,j)-evec2(i,j))**2
          s2=s2+evec2(i,j)**2
+         if (nio.eq.0) write (6,*) 'evec',i,j,evec(i,j),evec2(i,j)
       enddo
       enddo
 
       edif=sqrt(s1/s2)
       if (nio.eq.0) write (6,*) 'edif',edif,s1,s2
 
-      iexit=1
-      if (edif.lt.1e-16) iexit=0
+      if (edif.gt.1e-16) iexit=1
 
       call exit(iexit)
 
