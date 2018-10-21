@@ -9,6 +9,7 @@ c     This routine reads files specificed in file.list
 
       parameter (lt=lx1*ly1*lz1*lelt)
       real usave(lt,nsave),vsave(lt,nsave),wsave(lt,nsave)
+      real uu(lt),vv(lt),ww(lt)
       real u0(lt,3) ! Initial condtion
 
 
@@ -18,6 +19,8 @@ c     This routine reads files specificed in file.list
       if (ierr.gt.0) goto 199
       n = lx1*ly1*lz1*nelt
       n2= lx2*ly2*lz2*nelt
+
+      call opcopy(uu,vv,ww,vx,vy,vz)
 
       icount = 0
       do ipass=1,nsave
@@ -43,6 +46,8 @@ c     This routine reads files specificed in file.list
          endif
 
       enddo
+
+      call opcopy(vx,vy,vz,uu,vv,ww)
 
   999 continue  ! clean up averages
       if (nid.eq.0) close(77)
