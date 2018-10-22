@@ -1,8 +1,0 @@
-#!/bin/bash -x
-
-cd $ROOT_DIR/cases/baf
-git clean -dfx . &> /dev/null
-
-$ROOT_DIR/bin/linkc
-$SOURCE_ROOT/bin/makenek baf
-grep 'Compilation successful!' compiler.out &> /dev/null

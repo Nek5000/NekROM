@@ -29,13 +29,6 @@ script: $ROOT_DIR/tests/test.sh
 
 jobs:
     include:
-      - stage: compilation
-        script: $ROOT_DIR/tests/test.sh
-        env: TEST=BAFF_COMP
-      -
-        script: $ROOT_DIR/tests/test.sh
-        env: TEST=BAF_COMP
-
       - stage: unit
         script: $ROOT_DIR/tests/test.sh
         env: TEST=GRAMMIAN_UNIT
