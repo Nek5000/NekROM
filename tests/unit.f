@@ -3,7 +3,7 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       include 'rom.f'
 c-----------------------------------------------------------------------
-      subroutine grammian_test
+      subroutine grammian_unit
 
       include 'SIZE'
       include 'MOR'
@@ -44,7 +44,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine eigenvector_test
+      subroutine eigenvector_unit
 
       include 'SIZE'
       include 'MOR'
@@ -78,7 +78,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine bases_test
+      subroutine bases_unit
 
       include 'SIZE'
       include 'MOR'
@@ -118,7 +118,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine initial_condition_test
+      subroutine initial_condition_unit
 
       include 'SIZE'
       include 'SOLN'
@@ -153,7 +153,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine a_operator_test
+      subroutine a0_unit
 
       include 'SIZE'
       include 'MOR'
@@ -208,7 +208,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine b_operator_test
+      subroutine b0_unit
 
       include 'SIZE'
       include 'SOLN'
@@ -265,7 +265,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine c_operator_test
+      subroutine c0_unit
 
       include 'SIZE'
       include 'SOLN'
