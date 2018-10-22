@@ -44,5 +44,5 @@ jobs:
       -
         env: TEST=C0_UNIT
 
-      - stage: integration
-        env: TEST=BAF_INTEG
+#     - stage: integration
+#       env: TEST=BAF_INTEG
