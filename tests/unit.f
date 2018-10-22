@@ -3,14 +3,17 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       include 'rom.f'
 c-----------------------------------------------------------------------
-      subroutine grammian_unit
+      subroutine grammian_unit(iflag)
 
       include 'SIZE'
       include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
+      logical iflag
       real vv(ls,ls)
+
+      ifl2=iflag
 
       iexit=0
 
@@ -44,12 +47,15 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine eigenvector_unit
+      subroutine eigenvector_unit(iflag)
 
       include 'SIZE'
       include 'MOR'
 
+      logical iflag
       real evec2(ls,nb)
+
+      ifl2=iflag
 
       iexit=0
 
@@ -78,7 +84,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine bases_unit
+      subroutine bases_unit(iflag)
 
       include 'SIZE'
       include 'MOR'
@@ -86,8 +92,12 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
+      logical iflag
+
       real ubb(lt,0:nb), vbb(lt,0:nb), wbb(lt,0:nb)
       real du(lt,0:nb), dv(lt,0:nb), dw(lt,0:nb)
+
+      ifl2=iflag
 
       n=lx1*ly1*lz1*nelt
 
@@ -118,13 +128,16 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine initial_condition_unit
+      subroutine initial_condition_unit(iflag)
 
       include 'SIZE'
       include 'SOLN'
       include 'MOR'
 
+      logical iflag
       real u0(0:nb)
+
+      ifl2=iflag
 
       call readbases(ub,vb,wb,nb)
       call makeic
@@ -153,12 +166,16 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine a0_unit
+      subroutine a0_unit(iflag)
 
       include 'SIZE'
       include 'MOR'
 
+      logical iflag
+
       real aa(0:nb,0:nb)
+
+      ifl2=iflag
 
       iexit=0
 
@@ -208,13 +225,17 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine b0_unit
+      subroutine b0_unit(iflag)
 
       include 'SIZE'
       include 'SOLN'
       include 'MOR'
 
+      logical iflag
+
       real bb(0:nb,0:nb)
+
+      ifl2=iflag
 
       iexit=0
 
@@ -265,13 +286,17 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine c0_unit
+      subroutine c0_unit(iflag)
 
       include 'SIZE'
       include 'SOLN'
       include 'MOR'
 
+      logical iflag
+
       real cc(0:nb,0:nb,0:nb)
+
+      ifl2=iflag
 
       iexit=0
 
