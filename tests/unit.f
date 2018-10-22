@@ -265,9 +265,40 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine c_operator_test(ifl2)
+      subroutine c_operator_test
 
-      logical ifl2
+      include 'SIZE'
+      include 'SOLN'
+      include 'MOR'
+
+      real cc(0:nb,0:nb,0:nb)
+
+      iexit=0
+
+      call readbases(ub,vb,wb,nb)
+
+      call makec
+      call readc0(cc,(nb+1)**3)
+
+      s1=0.
+      s2=0.
+      s3=0.
+
+      do k=0,nb
+      do j=0,nb
+      do i=0,nb
+         s1=s1+(cc(i,j,k)-c0(i,j,k))**2
+         s2=s2+(c0(i,j,k)+c0(j,i,k))**2
+         s3=s3+cc(i,j,k)**2
+      enddo
+      enddo
+      enddo
+
+      edif=sqrt(s1/s3)
+      if (edif.gt.1.e-16) iexit=iexit+1
+      if (nio.eq.0) write (6,*) 'edif',edif,s1,s3
+
+      call exit(iexit)
 
       return
       end

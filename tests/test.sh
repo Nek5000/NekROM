@@ -40,6 +40,7 @@ case "$TEST" in
         test_unit b_operator_test
         ;;
     C0_UNIT)
+        test_unit c_operator_test
         ;;
     BAFF_COMP)
         $ROOT_DIR/tests/comp-baff-test
