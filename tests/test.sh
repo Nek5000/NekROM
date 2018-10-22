@@ -2,7 +2,7 @@
 
 test_unit() {
 test=$(echo $1 | perl -ne 'print lc')
-$ROOT_DIR/tests/test_template.sh $test
+$ROOT_DIR/tests/test_template.sh "${test}(.true.)"
 ls $ROOT_DIR/data/baf | sed 's/^/..\/..\/data\/baf\//g' > file.list
 $SOURCE_ROOT/bin/makenek test
 $SOURCE_ROOT/bin/genmap << Z
