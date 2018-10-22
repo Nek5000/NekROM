@@ -54,6 +54,9 @@ jobs:
       -
         script: $ROOT_DIR/tests/test.sh
         env: TEST=B0_UNIT
+      -
+        script: $ROOT_DIR/tests/test.sh
+        env: TEST=C0_UNIT
 
       - stage: integration
         script: $ROOT_DIR/tests/test.sh
