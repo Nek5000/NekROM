@@ -30,27 +30,19 @@ script: $ROOT_DIR/tests/test.sh
 jobs:
     include:
       - stage: unit
-        script: $ROOT_DIR/tests/test.sh
         env: TEST=GRAMMIAN_UNIT
       -
-        script: $ROOT_DIR/tests/test.sh
         env: TEST=EIGENVECTOR_UNIT
       -
-        script: $ROOT_DIR/tests/test.sh
         env: TEST=BASES_UNIT
       -
-        script: $ROOT_DIR/tests/test.sh
         env: TEST=INITIAL_CONDITION_UNIT
       -
-        script: $ROOT_DIR/tests/test.sh
         env: TEST=A0_UNIT
       -
-        script: $ROOT_DIR/tests/test.sh
         env: TEST=B0_UNIT
       -
-        script: $ROOT_DIR/tests/test.sh
         env: TEST=C0_UNIT
 
       - stage: integration
-        script: $ROOT_DIR/tests/test.sh
         env: TEST=BAF_INTEG
