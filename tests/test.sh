@@ -51,6 +51,9 @@ case "$TEST" in
     BAF_INTEG)
         $ROOT_DIR/tests/baf-test
         ;;
+    ALL)
+        # TODO run all tests
+        ;;
     *)
         echo 'did not specify test...'
         ;;
