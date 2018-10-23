@@ -193,3 +193,12 @@ c           if (f.eq.3) iobj=2  ! upper wall
 c              write(6,1) iobj,mem,f,ieg,e,nid,' OBJ'
     1          format(6i9,a4)
             endif
+c
+         endif
+      enddo
+      enddo
+c     write(6,*) 'number',(nmember(k),k=1,4)
+c
+      return
+      end
+c-----------------------------------------------------------------------
