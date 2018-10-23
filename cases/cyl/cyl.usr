@@ -59,7 +59,10 @@ c-----------------------------------------------------------------------
       call gfldr('../../data/cyl/cyl0.f01500')    ! set initial state
 
       call rom_init
-      call genmodes
+
+      call gengram
+      call genevec
+      call genbases
       call genops
       call rom_setup
 
