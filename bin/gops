@@ -1,6 +1,6 @@
 #!/bin/bash
 
-# Get Snapshots
+# Get Operators
 
 case=$1
 
