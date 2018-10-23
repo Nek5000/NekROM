@@ -8,7 +8,7 @@ $ROOT_DIR/bin/gsnaps baf
 $ROOT_DIR/bin/gops   baf
 
 if [ ${TEST: -4} == "UNIT" ]; then
-    bash unit.sh $TEST
+    bash $ROOT_DIR/tests/unit.sh $TEST
 else
     case "$TEST" in
         BAF_INTEG)
