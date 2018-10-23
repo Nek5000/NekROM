@@ -55,6 +55,8 @@ c-----------------------------------------------------------------------
 
       common /myoutflow/ d(lx1,ly1,lz1,lelt),m1(lx1*ly1*lz1,lelt)
 
+      real drag(0:nb)
+
       call opcopy(ub(1,0),vb(1,0),wb(1,0),vx,vy,vz) ! set zeroth mode
       call gfldr('../../data/cyl/cyl0.f01500')    ! set initial state
 
@@ -64,10 +66,19 @@ c-----------------------------------------------------------------------
       call genevec
       call genbases
       call genops
+
       call rom_setup
+
+      do i=0,nb
+         call opcopy(vx,vy,vz,ub(1,i),vb(1,i),wb(1,i))
+         call torque_calc(1.,x0,.true.,.false.)
+         drag(i)=dragvx(1)
+      enddo
 
       do ad_step=1,ad_nsteps
          call rom_step
+         dx=vlsc2(drag,u,nb+1)
+         write (6,*) ad_step*dt,dx,'dragxx'
       enddo
 
       call exitt0
@@ -130,6 +141,8 @@ c     param(67) = 4.   ! good default values
       enddo
       enddo
 
+      call set_obj
+
       return
       end
 c-----------------------------------------------------------------------
@@ -140,3 +153,43 @@ c
       return
       end
 c-----------------------------------------------------------------------
+      subroutine set_obj  ! define objects for surface integrals
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      integer e,f
+
+c     Define new objects
+
+      nobj = 1
+      iobj = 0
+      do ii=nhis+1,nhis+nobj
+         iobj = iobj+1
+         hcode(10,ii) = 'I'
+         hcode( 1,ii) = 'F' ! 'F'
+         hcode( 2,ii) = 'F' ! 'F'
+         hcode( 3,ii) = 'F' ! 'F'
+         lochis(1,ii) = iobj
+      enddo
+      nhis = nhis + nobj
+
+      if (maxobj.lt.nobj) write(6,*) 'increase maxobj in SIZE'
+      if (maxobj.lt.nobj) call exitt
+
+      do e=1,nelv
+      do f=1,2*ndim
+         if (cbc(f,e,1).eq.'W  ') then
+            iobj = 0
+c           if (f.eq.1) iobj=1  ! lower wall
+c           if (f.eq.3) iobj=2  ! upper wall
+            iobj=1              ! cylinder wall
+            if (iobj.gt.0) then
+               nmember(iobj) = nmember(iobj) + 1
+               mem = nmember(iobj)
+               ieg = lglel(e)
+               object(iobj,mem,1) = ieg
+               object(iobj,mem,2) = f
+c              write(6,1) iobj,mem,f,ieg,e,nid,' OBJ'
+    1          format(6i9,a4)
+            endif
