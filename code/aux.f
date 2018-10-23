@@ -150,3 +150,23 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine reconstruct(ux,uy,uz)
+
+      include 'SIZE'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real ux(lt),uy(lt),uz(lt)
+
+      n=lx1*ly1*lz1*nelv
+
+      call opzero(ux,uy,uz)
+
+      do i=0,nb
+         call opadds(ux,uy,uz,ub(1,i),vb(1,i),wb(1,i),u(i,1),n,2)
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
