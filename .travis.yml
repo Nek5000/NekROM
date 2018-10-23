@@ -30,19 +30,33 @@ script: $ROOT_DIR/tests/test.sh
 jobs:
     include:
       - stage: unit
-        env: TEST=GRAMMIAN_UNIT
+        env: TEST=GRAMMIAN_L2_UNIT
       -
-        env: TEST=EIGENVECTOR_UNIT
+        env: TEST=EIGENVECTOR_L2_UNIT
       -
-        env: TEST=BASES_UNIT
+        env: TEST=BASES_L2_UNIT
       -
-        env: TEST=INITIAL_CONDITION_UNIT
+        env: TEST=INITIAL_CONDITION_L2_UNIT
       -
-        env: TEST=A0_UNIT
+        env: TEST=A0_L2_UNIT
       -
-        env: TEST=B0_UNIT
+        env: TEST=B0_L2_UNIT
       -
-        env: TEST=C0_UNIT
+        env: TEST=C0_L2_UNIT
+      -
+        env: TEST=GRAMMIAN_H10_UNIT
+      -
+        env: TEST=EIGENVECTOR_H10_UNIT
+      -
+        env: TEST=BASES_H10_UNIT
+      -
+        env: TEST=INITIAL_CONDITION_H10_UNIT
+      -
+        env: TEST=A0_H10_UNIT
+      -
+        env: TEST=B0_H10_UNIT
+      -
+        env: TEST=C0_H10_UNIT
 
 #     - stage: integration
 #       env: TEST=BAF_INTEG
