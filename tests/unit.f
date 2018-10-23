@@ -218,7 +218,7 @@ c-----------------------------------------------------------------------
       edia=sqrt(s1/s2)
 
       if (nio.eq.0) write (6,*) 'edia',edia,s1,s2
-      if (.not.ifl2.and.edia.gt.1.e-16) iexit=iexit+4
+      if (.not.ifl2.and.edia.gt.1.1e-15) iexit=iexit+4
 
       call exit(iexit)
 
