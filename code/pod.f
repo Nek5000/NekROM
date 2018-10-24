@@ -138,6 +138,7 @@ c-----------------------------------------------------------------------
          endif
 
          coef(i) = vv/ww
+         if (nio.eq.0) write (6,*) 'h10coef', coef(i),vv,ww
       enddo
 
       if (nio.eq.0) write (6,*) 'exiting h10proj'
@@ -175,6 +176,7 @@ c-----------------------------------------------------------------------
          vv = op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),t1,t2,t3,bwm1)
 
          coef(i) = vv/ww
+         if (nio.eq.0) write (6,*) 'l2coef', coef(i),vv,ww
       enddo
 
       if (nio.eq.0) write (6,*) 'exiting l2proj'
