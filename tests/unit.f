@@ -13,6 +13,8 @@ c-----------------------------------------------------------------------
       logical iflag
       real vv(ls,ls)
 
+      call rom_init
+
       ifl2=iflag
 
       iexit=0
@@ -54,8 +56,6 @@ c-----------------------------------------------------------------------
 
       logical iflag
       real evec2(ls,nb)
-
-      ifl2=iflag
 
       iexit=0
 
@@ -108,6 +108,8 @@ c-----------------------------------------------------------------------
       s1=0.
       s2=0.
 
+      ! TODO use H10 norm if(.not.ifl2)
+
       do i=0,nb
          call opsub3(du(1,i),dv(1,i),dw(1,i),ub(1,i),vb(1,i),wb(1,i),
      $                                       ubb(1,i),vbb(1,i),wbb(1,i))
@@ -136,6 +138,8 @@ c-----------------------------------------------------------------------
 
       logical iflag
       real u0(0:nb)
+
+      call rom_init
 
       ifl2=iflag
 
