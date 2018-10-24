@@ -157,7 +157,7 @@ c-----------------------------------------------------------------------
       real t1(lt),t2(lt),t3(lt)
 
       common /scrk3/ t4(lt),t5(lt),t6(lt)
-      common /scrk4/ h1(lt),h2(lt)
+      common /scrk4/ h1(lt),h2(lt),bwm1(lt)
 
       real coef(nb)
 
@@ -167,11 +167,12 @@ c-----------------------------------------------------------------------
 
       call rone(h1,n)
       call rzero(h2,n)
+      call col3(bwm1,bm1,wm1,n)
 
       do i=1,nb
          ww = op_glsc2_wt(
-     $      ub(1,i),vb(1,i),wb(1,i),ub(1,i),vb(1,i),wb(1,i),bm1)
-         vv = op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),t1,t2,t3,bm1)
+     $      ub(1,i),vb(1,i),wb(1,i),ub(1,i),vb(1,i),wb(1,i),bwm1)
+         vv = op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),t1,t2,t3,bwm1)
 
          coef(i) = vv/ww
       enddo
@@ -276,6 +277,7 @@ c-----------------------------------------------------------------------
       real usave(lt,ls),vsave(lt,ls),wsave(lt,ls)
       real uw(lt),vw(lt),ww(lt),h1(lt),h2(lt)
       real u0(lt,3)
+      real bwm1(lt)
 
       if (nio.eq.0) write (6,*) 'inside gengraml2'
 
@@ -284,10 +286,14 @@ c-----------------------------------------------------------------------
       call opcopy(u0(1,1),u0(1,2),u0(1,3),ub(1,0),vb(1,0),wb(1,0))
       call get_saved_fields(usave,vsave,wsave,ns,u0)
 
+      n=lx1*ly1*lz1*nelv
+
+      call col3(bwm1,bm1,wm1,n)
+
       do j=1,ns ! Form the Gramian, U=U_K^T A U_K using L2 Norm
       do i=1,ns
          uu(i,j) = op_glsc2_wt(usave(1,i),vsave(1,i),wsave(1,i),
-     $                         usave(1,j),vsave(1,j),wsave(1,j),bm1)
+     $                         usave(1,j),vsave(1,j),wsave(1,j),bwm1)
       enddo
       enddo
 
