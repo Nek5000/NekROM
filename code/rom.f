@@ -65,10 +65,10 @@ c-----------------------------------------------------------------------
       ifl2=.false.
       if (param(50).eq.0) ifl2=.true.
 
-      if (nid.eq.0) write (6,*) 'exiting rom_init'
-
       n=lx1*ly1*lz1*nelv
       call rone(wm1,n)
+
+      if (nid.eq.0) write (6,*) 'exiting rom_init'
 
       return
       end
