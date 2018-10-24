@@ -253,6 +253,8 @@ c-----------------------------------------------------------------------
       call invers2(binv,bm1,lx1*ly1*lz1*nelv)
       call rone(binv,lx1*ly1*lz1*nelv)
 
+      if (nio.eq.0) write (6,*) 'inside makec'
+
       do k=0,nb
          call setcnv_c(ub(1,k),vb(1,k),wb(1,k))
          do j=0,nb
@@ -266,10 +268,12 @@ c              if (nid.eq.0) write (6,*) 'c0',i,j,k,c0(i,j,k)
          enddo
       enddo
 
+      if (nio.eq.0) write (6,*) 'exiting makec'
+
       return
       end
 c-----------------------------------------------------------------------
-      subroutine makecloc
+      subroutine makecloc ! TODO Fix for 1-proc case
 
       include 'SIZE'
       include 'TOTAL'
@@ -481,6 +485,8 @@ c-----------------------------------------------------------------------
       common /scrvh/ h1(lt),h2(lt)
       common /scrns/ usave(lt),vsave(lt),wsave(lt)
 
+      if (nio.eq.0) write (6,*) 'inside makea'
+
       n=lx1*ly1*lz1*nelt
       call rone (h1,n)
       call rzero(h2,n)
@@ -494,6 +500,8 @@ c-----------------------------------------------------------------------
             if (ldim.eq.3) a0(i,j) = a0(i,j)+glsc2(wb(1,i),wsave,n)
          enddo
       enddo
+
+      if (nio.eq.0) write (6,*) 'exiting makea'
 
       return
       end
@@ -509,12 +517,16 @@ c-----------------------------------------------------------------------
       common /scrvh/ h1(lt),h2(lt)
       common /scrns/ usave(lt),vsave(lt),wsave(lt)
 
+      if (nio.eq.0) write (6,*) 'inside makeb'
+
       do j=0,nb
       do i=0,nb
          b0(i,j) = op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),
      $                         ub(1,j),vb(1,j),wb(1,j),bm1)
       enddo
       enddo
+
+      if (nio.eq.0) write (6,*) 'exiting makeb'
 
       return
       end
