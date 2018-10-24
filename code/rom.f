@@ -37,7 +37,7 @@ c-----------------------------------------------------------------------
       call makeb
 
       call makec
-      call makecloc
+      if (np.gt.1) call makecloc
 
       call makeic
 
