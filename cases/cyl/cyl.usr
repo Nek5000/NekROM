@@ -62,6 +62,13 @@ c-----------------------------------------------------------------------
 
       call rom_init
 
+c     call rone(wm1,lx1*ly1*lz1*nelv)
+      do i=1,lx1*ly1*lz1*nelv
+         r2=xm1(i,1,1,1)**2+ym1(i,1,1,1)**2
+         wm1(i)=9*exp(-(r2-1)/100)+1.
+c        wm1(i)=1.
+      enddo
+
       call gengram
       call genevec
       call genbases

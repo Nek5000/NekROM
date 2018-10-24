@@ -96,14 +96,7 @@ c-----------------------------------------------------------------------
          if (nio.eq.0) write(6,*) j,u(j,1)
       enddo
 
-c     call rone(wm1,lx1*ly1*lz1*nelv)
-      do i=1,lx1*ly1*lz1*nelv
-         r2=xm1(i,1,1,1)**2+ym1(i,1,1,1)**2
-         wm1(i)=exp(-r2/500)+1.
-         wm1(i)=1.
-      enddo
-
-      if (nid.eq.0) write (6,*) 'exiting rom_setup'
+      if (nid.eq.0) write (6,*) 'exiting om_setup'
 
       return
       end
