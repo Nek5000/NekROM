@@ -16,6 +16,7 @@ c     parameters and common blocks for MOR
 
       common /morsol/ u(0:nb,3), conv(nb,3)
       common /mortmp/ ctmp((nb*(nb+1)*(nb+1))/lpmin+1)
+      common /morfld/ wm1(lx1*ly1*lz1*lelt)
       common /morpar/ ad_dt, ad_re, ad_alpha(3,3), ad_beta(4,3)
 
       common /morlu/ flu(nb,nb)
