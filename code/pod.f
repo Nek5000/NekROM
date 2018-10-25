@@ -292,6 +292,8 @@ c-----------------------------------------------------------------------
 
       call col3(bwm1,bm1,wm1,n)
 
+      call outpost(bwm1,wm1,vz,pr,t,'bw1')
+
       do j=1,ns ! Form the Gramian, U=U_K^T A U_K using L2 Norm
       do i=1,ns
          uu(i,j) = op_glsc2_wt(usave(1,i),vsave(1,i),wsave(1,i),
