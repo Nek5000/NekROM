@@ -338,6 +338,7 @@ c     eig = eig(ls:1:-1)
 
       do l = 1,nb
          call copy(evec(1,l),eigv(1,ls-l+1),ls) ! reverse order of eigv
+         if (nio.eq.0) write (6,*) 'eigenvalue',l,eig(l)
       enddo
 
       if (nio.eq.0) write (6,*) 'exiting genevec'
