@@ -170,3 +170,26 @@ c-----------------------------------------------------------------------
       return
       end
 
+c-----------------------------------------------------------------------
+      subroutine dumpeig(lmbda)
+      include 'SIZE'
+      include 'MOR'
+
+      real eig(ls),lmbda(ls)
+
+      if (nio.eq.0) write (6,*) 'inside dumpeig'
+
+      if (nio.eq.0) write(6,*)'number of mode:',nb
+      if (nid.eq.0) then
+         open (unit=50,file='./gram_eig')
+
+         do l = 1,ls
+            eig(l)=lmbda(ls-l+1) ! reverse order of eigvalues
+            write (50,*) eig(l)
+         enddo
+
+         close (unit=50)
+      endif
+
+
+      end
