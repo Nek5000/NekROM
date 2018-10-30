@@ -74,10 +74,12 @@ c-----------------------------------------------------------------------
 
       real usave(lt,ls),vsave(lt,ls),wsave(lt,ls)
       real u0(lt,3)
+      common /scrk4/ bwm1(lt)
 
       if (nio.eq.0) write (6,*) 'inside genbases'
 
       n  = lx1*ly1*lz1*nelt
+      call col3(bwm1,bm1,wm1,n)
 
       ONE = 1.
       ZERO= 0.
@@ -91,6 +93,24 @@ c-----------------------------------------------------------------------
       call dgemm( 'N','N',n,nb,ls,ONE,vsave,lt,evec,ls,ZERO,vb(1,1),lt)
       if (ldim.eq.3)
      $call dgemm( 'N','N',n,nb,ls,ONE,wsave,lt,evec,ls,ZERO,wb(1,1),lt)
+
+      ! normalize the basis function
+      if (ifl2) then 
+         do i=1,nb
+            ww = op_glsc2_wt(
+     $         ub(1,i),vb(1,i),wb(1,i),ub(1,i),vb(1,i),wb(1,i),bwm1)
+            ww = sqrt(ww)
+            call cmult(ub(1,i),1./ww,n)
+            call cmult(vb(1,i),1./ww,n)
+            if (ldim.eq.3) call cmult(wb(1,i),1./ww,n)
+      ! vv is the length after normalization, should be 1
+            vv = op_glsc2_wt(
+     $         ub(1,i),vb(1,i),wb(1,i),ub(1,i),vb(1,i),wb(1,i),bwm1)
+            if (nio.eq.0) write (6,*) 'basis in l2 norm', i,vv
+         enddo
+      endif
+
+        
 
       do i=0,nb ! dump the generated modes
          call outpost(ub(1,i),vb(1,i),wb(1,i),pr,t,'bas')
