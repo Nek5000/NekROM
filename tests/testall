@@ -11,7 +11,7 @@ TEST=INITIAL_CONDITION_L2_UNIT $MOR_DIR/tests/test.sh &> t4.log; echo "$?"
 TEST=A0_L2_UNIT $MOR_DIR/tests/test.sh &> t5.log; echo "$?"
 TEST=B0_L2_UNIT $MOR_DIR/tests/test.sh &> t6.log; echo "$?"
 TEST=C0_L2_UNIT $MOR_DIR/tests/test.sh &> t7.log; echo "$?"
-; echo "$?"
+
 TEST=GRAMMIAN_H10_UNIT $MOR_DIR/tests/test.sh &> t8.log; echo "$?"
 TEST=EIGENVECTOR_H10_UNIT $MOR_DIR/tests/test.sh &> t9.log; echo "$?"
 TEST=BASES_H10_UNIT $MOR_DIR/tests/test.sh &> t10.log; echo "$?"
