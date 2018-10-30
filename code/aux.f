@@ -170,3 +170,58 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine fom_analysis
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /scrns/ t1(lt),t2(lt),t3(lt)
+      common /ctracker/ cmax(0:nb), cmin(0:nb)
+
+      if (istep.eq.0) then
+         call rom_init
+
+         call gengram
+         call genevec
+         call genbases
+         call genops
+
+         do i=0,nb
+            cmax(i) = -1e10
+            cmin(i) =  1e10
+         enddo
+
+         call rom_setup
+      endif
+
+      u(0,1) = 1.
+
+      call opsub3(t1,t2,t3,vx,vy,vz,ub(1,0),vb(1,0),wb(1,0))
+
+      if (ifl2) then
+         call wl2proj(u(1,1),t1,t2,t3)
+      else
+         call h10proj(u(1,1),t1,t2,t3)
+      endif
+
+      do i=0,nb
+         if (u(i,1).lt.cmin(i)) cmin(i)=u(i,1)
+         if (u(i,1).gt.cmax(i)) cmax(i)=u(i,1)
+      enddo
+
+      if (mod(istep,100).eq.0) then
+         n=istep/100
+
+         do i=0,nb
+            write (6,*) n,time,u(i,1),'cmax'
+            write (6,*) n,time,u(i,1),'coef'
+            write (6,*) n,time,u(i,1),'cmin'
+         enddo
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
