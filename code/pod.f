@@ -355,7 +355,7 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       real usave(lt,ls),vsave(lt,ls),wsave(lt,ls)
-      real identity(ls,ls),eig(ls),eigv(ls,ls),w(ls,ls)
+      real identity(ls,ls),eigv(ls,ls),w(ls,ls)
       real vv(ls,ls)
 
       if (nio.eq.0) write (6,*) 'inside genevec'
@@ -368,7 +368,7 @@ c-----------------------------------------------------------------------
 
       call copy(vv,uu,ls*ls)
 
-      call generalev(vv,identity,eig,ls,w)
+      call generalev(vv,identity,gram_eig,ls,w)
       call copy(eigv,vv,ls*ls)
 
 c     eig = eig(ls:1:-1)
@@ -377,8 +377,9 @@ c     eig = eig(ls:1:-1)
 
       do l = 1,nb
          call copy(evec(1,l),eigv(1,ls-l+1),ls) ! reverse order of eigv
-         if (nio.eq.0) write (6,*) 'eigenvalue',l,eig(l)
+         if (nio.eq.0) write (6,*) 'eigenvalue',l,gram_eig(l)
       enddo
+
 
       if (nio.eq.0) write (6,*) 'exiting genevec'
 
