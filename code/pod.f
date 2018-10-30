@@ -92,6 +92,8 @@ c-----------------------------------------------------------------------
       if (ldim.eq.3)
      $call dgemm( 'N','N',n,nb,ls,ONE,wsave,lt,evec,ls,ZERO,wb(1,1),lt)
 
+      call scale_bases
+
       do i=0,nb ! dump the generated modes
          call outpost(ub(1,i),vb(1,i),wb(1,i),pr,t,'bas')
       enddo
@@ -184,7 +186,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine h10prod(prod,t1,t2,t3,t4,t5,t6,h1,h2)
+      function h10prod(t1,t2,t3,t4,t5,t6,h1,h2)
 
       include 'SIZE'
       include 'SOLN'
@@ -198,19 +200,50 @@ c-----------------------------------------------------------------------
 
       common /scrk3/ t7(lt),t8(lt),t9(lt)
 
-      real coef(nb)
-
       if (nio.eq.0) write (6,*) 'inside h10prod'
 
       n=lx1*ly1*lz1*nelt
 
       call axhelm(t7,t1,h1,h2,1,1)
       call axhelm(t8,t2,h1,h2,1,1)
-      if (ldim.eq.3) call axhelm(t9,t3,h1,h2,1,1)
 
-      prod = glsc2(t7,t4,n)+glsc2(t8,t5,n)
+      h10prod = glsc2(t7,t4,n)+glsc2(t8,t5,n)
+
+      if (ldim.eq.3) then
+         call axhelm(t9,t3,h1,h2,1,1)
+         h10prod = h10prod + glsc2(t9,t6,n)
+      endif
 
       if (nio.eq.0) write (6,*) 'exiting h10prod'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      function l2prod(t1,t2,t3,t4,t5,t6,h1,h2)
+
+      include 'SIZE'
+      include 'SOLN'
+      include 'MASS'
+      include 'MOR'
+
+      real l2prod
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real t1(lt),t2(lt),t3(lt),t4(lt),t5(lt)
+      real h1(lt),h2(lt)
+
+      common /scrk3/ bwm1(lt),t8(lt),t9(lt)
+
+      if (nio.eq.0) write (6,*) 'inside l2prod'
+
+      n=lx1*ly1*lz1*nelt
+
+      call col3(bwm1,bm1,wm1,n)
+
+      l2prod = op_glsc2_wt(t1,t2,t3,t4,t5,t6,bwm1)
+
+      if (nio.eq.0) write (6,*) 'exiting l2prod'
 
       return
       end
@@ -344,6 +377,36 @@ c     eig = eig(ls:1:-1)
       enddo
 
       if (nio.eq.0) write (6,*) 'exiting genevec'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine scale_bases
+
+      include 'SIZE'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /scruz/ h1(lt),h2(lt)
+
+      if (ifl2) then
+         do i=1,nb
+            p=l2prod(ub(1,i),vb(1,i),wb(1,i),ub(1,i),vb(1,i),wb(1,i))
+            s=1./sqrt(p)
+            call opcmult(ub(1,i),vb(1,i),wb(1,i),s)
+         enddo
+      else
+         n=lx1*ly1*lz1*nelv
+         call rone(h1,n)
+         call rzero(h2,n)
+         do i=1,nb
+            p=h10prod(ub(1,i),vb(1,i),wb(1,i),
+     $                ub(1,i),vb(1,i),wb(1,i),h1,h2)
+            s=1./sqrt(p)
+            call opcmult(ub(1,i),vb(1,i),wb(1,i),s)
+         enddo
+      endif
 
       return
       end
