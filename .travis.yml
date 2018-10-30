@@ -8,7 +8,7 @@ notifications:
 sudo: required
 
 before_install: 
-  - export ROOT_DIR=$(pwd -P)
+  - export MOR_DIR=$(pwd -P)
 
   # Install MPICH
   - sudo apt-get update -qq
@@ -16,7 +16,7 @@ before_install:
 
   # Set up Nek5000
   - git clone --single-branch -b presolve-fix https://github.com/kent0/Nek5000
-  - export SOURCE_ROOT=$ROOT_DIR/Nek5000
+  - export SOURCE_ROOT=$MOR_DIR/Nek5000
   - (cd Nek5000/tools; ./maketools genmap)
 
 before_script:
@@ -25,7 +25,7 @@ before_script:
   - export FFLAGS="-w -mcmodel=medium"
   - export USR_LFLAGS+="-mcmodel=medium"
 
-script: $ROOT_DIR/tests/test.sh
+script: $MOR_DIR/tests/test.sh
 
 jobs:
     include:
