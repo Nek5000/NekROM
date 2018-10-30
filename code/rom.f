@@ -19,7 +19,7 @@ c-----------------------------------------------------------------------
 
       call readc0(c0,(nb+1)**3)
 
-      if (np.gt.1) call makecloc
+c     if (np.gt.1) call makecloc
 
       if (nio.eq.0) write (6,*) 'exiting readops'
 
@@ -38,7 +38,7 @@ c-----------------------------------------------------------------------
       call makeb
 
       call makec
-      if (param(51).ne.0) call makecloc
+c     if (param(51).ne.0) call makecloc
 
       call makeic
 
@@ -128,6 +128,8 @@ c     Working arrays for LU
 
       common /nekmpi/ nidd,npp,nekcomm,nekgroup,nekreal
 
+      if (nio.eq.0) write (6,*) 'entering rom_step'
+
       n  = lx1*ly1*lz1*nelt
 
       time=time+ad_dt
@@ -216,6 +218,8 @@ c     if (npp.ne.1) call gop(rhs,work,'+  ',nb)
 
          call outpost (vx,vy,vz,pr,t,'rom')
       endif
+
+      if (nio.eq.0) write (6,*) 'exiting rom_step'
 
       return
       end

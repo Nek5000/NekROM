@@ -201,11 +201,15 @@ c-----------------------------------------------------------------------
 
       call opsub3(t1,t2,t3,vx,vy,vz,ub(1,0),vb(1,0),wb(1,0))
 
+      nio = -1
+
       if (ifl2) then
          call wl2proj(u(1,1),t1,t2,t3)
       else
          call h10proj(u(1,1),t1,t2,t3)
       endif
+
+      nio = nid
 
       do i=0,nb
          if (u(i,1).lt.cmin(i)) cmin(i)=u(i,1)
@@ -213,13 +217,15 @@ c-----------------------------------------------------------------------
       enddo
 
       if (mod(istep,100).eq.0) then
-         n=istep/100
+         n=istep/50
 
-         do i=0,nb
-            write (6,*) n,time,u(i,1),'cmax'
-            write (6,*) n,time,u(i,1),'coef'
-            write (6,*) n,time,u(i,1),'cmin'
-         enddo
+         if (nio.eq.0) then
+            do i=0,nb
+               write (6,*) n,time,cmax(i),'cmax'
+               write (6,*) n,time,u(i,1),'coef'
+               write (6,*) n,time,cmin(i),'cmin'
+            enddo
+         endif
       endif
 
       return

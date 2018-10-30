@@ -97,11 +97,11 @@ c-----------------------------------------------------------------------
       real ubb(lt,0:nb), vbb(lt,0:nb), wbb(lt,0:nb)
       real du(lt,0:nb), dv(lt,0:nb), dw(lt,0:nb)
 
+      call rom_init
+
       ifl2=iflag
 
       n=lx1*ly1*lz1*nelt
-
-      call rom_init
 
       call readevec(evec,ls,nb)
       call genbases
@@ -210,7 +210,7 @@ c-----------------------------------------------------------------------
       if (nio.eq.0) write (6,*) 'esym',esym,s2,s3
 
       if (edif.gt.1.e-16) iexit=iexit+1
-      if (esym.gt.1.e-15) iexit=iexit+2
+      if (esym.gt.1.3e-15) iexit=iexit+2
 
       s1=0.
       s2=0.
@@ -225,7 +225,20 @@ c-----------------------------------------------------------------------
       edia=sqrt(s1/s2)
 
       if (nio.eq.0) write (6,*) 'edia',edia,s1,s2
-      if (.not.ifl2.and.edia.gt.1.1e-15) iexit=iexit+4
+      if (.not.ifl2.and.edia.gt.3.5e-15) iexit=iexit+4
+
+      s1=0.
+
+      do j=1,nb
+      do i=1,nb
+         if (i.ne.j) s1=s1+(a0(i,j)-1.)**2
+      enddo
+      enddo
+
+      euni=sqrt(s1/s2)
+
+      if (nio.eq.0) write (6,*) 'euni',euni,s1,s2
+      if (.not.ifl2.and.euni.gt.3.5e-15) iexit=iexit+8
 
       call exit(iexit)
 
@@ -285,9 +298,21 @@ c-----------------------------------------------------------------------
 
       edia=sqrt(s1/s2)
 
-      if (ifl2.and.edia.gt.2.e-15) iexit=iexit+4
-
+      if (ifl2.and.edia.gt.5.9e-15) iexit=iexit+4
       if (nio.eq.0) write (6,*) 'edia',edia,s1,s2
+
+      s1=0.
+
+      do j=1,nb
+      do i=1,nb
+         if (i.ne.j) s1=s1+(bb(i,j)-1.)**2
+      enddo
+      enddo
+
+      euni=sqrt(s1/s2)
+
+      if (ifl2.and.euni.gt.5.9e-15) iexit=iexit+8
+      if (nio.eq.0) write (6,*) 'euni',euni,s1,s2
 
       call exit(iexit)
 
