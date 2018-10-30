@@ -1,5 +1,9 @@
 #!/bin/bash
 
+cd $MOR_DIR; git clone --single-branch -b presolve-fix https://github.com/kent0/Nek5000;
+export SOURCE_ROOT=$MOR_DIR/Nek5000;
+(cd $SOURCE_ROOT/tools; ./maketools genmap)
+
 TEST=GRAMMIAN_L2_UNIT $MOR_DIR/tests/test.sh
 TEST=EIGENVECTOR_L2_UNIT $MOR_DIR/tests/test.sh
 TEST=BASES_L2_UNIT $MOR_DIR/tests/test.sh
