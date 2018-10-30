@@ -219,14 +219,12 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      function l2prod(t1,t2,t3,t4,t5,t6,h1,h2)
+      function wl2prod(t1,t2,t3,t4,t5,t6,h1,h2)
 
       include 'SIZE'
       include 'SOLN'
       include 'MASS'
       include 'MOR'
-
-      real l2prod
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
@@ -235,15 +233,15 @@ c-----------------------------------------------------------------------
 
       common /scrk3/ bwm1(lt),t8(lt),t9(lt)
 
-      if (nio.eq.0) write (6,*) 'inside l2prod'
+      if (nio.eq.0) write (6,*) 'inside wl2prod'
 
       n=lx1*ly1*lz1*nelt
 
       call col3(bwm1,bm1,wm1,n)
 
-      l2prod = op_glsc2_wt(t1,t2,t3,t4,t5,t6,bwm1)
+      wl2prod = op_glsc2_wt(t1,t2,t3,t4,t5,t6,bwm1)
 
-      if (nio.eq.0) write (6,*) 'exiting l2prod'
+      if (nio.eq.0) write (6,*) 'exiting wl2prod'
 
       return
       end
@@ -392,7 +390,7 @@ c-----------------------------------------------------------------------
 
       if (ifl2) then
          do i=1,nb
-            p=l2prod(ub(1,i),vb(1,i),wb(1,i),ub(1,i),vb(1,i),wb(1,i))
+            p=wl2prod(ub(1,i),vb(1,i),wb(1,i),ub(1,i),vb(1,i),wb(1,i))
             s=1./sqrt(p)
             call opcmult(ub(1,i),vb(1,i),wb(1,i),s)
          enddo
