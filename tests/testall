@@ -1,0 +1,17 @@
+#!/bin/bash
+
+TEST=GRAMMIAN_L2_UNIT $MOR_DIR/tests/test.sh
+TEST=EIGENVECTOR_L2_UNIT $MOR_DIR/tests/test.sh
+TEST=BASES_L2_UNIT $MOR_DIR/tests/test.sh
+TEST=INITIAL_CONDITION_L2_UNIT $MOR_DIR/tests/test.sh
+TEST=A0_L2_UNIT $MOR_DIR/tests/test.sh
+TEST=B0_L2_UNIT $MOR_DIR/tests/test.sh
+TEST=C0_L2_UNIT $MOR_DIR/tests/test.sh
+
+TEST=GRAMMIAN_H10_UNIT $MOR_DIR/tests/test.sh
+TEST=EIGENVECTOR_H10_UNIT $MOR_DIR/tests/test.sh
+TEST=BASES_H10_UNIT $MOR_DIR/tests/test.sh
+TEST=INITIAL_CONDITION_H10_UNIT $MOR_DIR/tests/test.sh
+TEST=A0_H10_UNIT $MOR_DIR/tests/test.sh
+TEST=B0_H10_UNIT $MOR_DIR/tests/test.sh
+TEST=C0_H10_UNIT $MOR_DIR/tests/test.sh
