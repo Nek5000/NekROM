@@ -38,7 +38,7 @@ c-----------------------------------------------------------------------
       call makeb
 
       call makec
-      if (param(51).ne.0) call makecloc
+c     if (param(51).ne.0) call makecloc
 
       call makeic
 
