@@ -210,7 +210,7 @@ c-----------------------------------------------------------------------
       if (nio.eq.0) write (6,*) 'esym',esym,s2,s3
 
       if (edif.gt.1.e-16) iexit=iexit+1
-      if (esym.gt.1.e-15) iexit=iexit+2
+      if (esym.gt.1.3e-15) iexit=iexit+2
 
       s1=0.
       s2=0.
@@ -225,7 +225,7 @@ c-----------------------------------------------------------------------
       edia=sqrt(s1/s2)
 
       if (nio.eq.0) write (6,*) 'edia',edia,s1,s2
-      if (.not.ifl2.and.edia.gt.1.1e-15) iexit=iexit+4
+      if (.not.ifl2.and.edia.gt.3.5e-15) iexit=iexit+4
 
       call exit(iexit)
 
