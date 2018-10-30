@@ -215,11 +215,13 @@ c-----------------------------------------------------------------------
       if (mod(istep,100).eq.0) then
          n=istep/100
 
-         do i=0,nb
-            write (6,*) n,time,u(i,1),'cmax'
-            write (6,*) n,time,u(i,1),'coef'
-            write (6,*) n,time,u(i,1),'cmin'
-         enddo
+         if (nio.eq.0) then
+            do i=0,nb
+               write (6,*) n,time,u(i,1),'cmax'
+               write (6,*) n,time,u(i,1),'coef'
+               write (6,*) n,time,u(i,1),'cmin'
+            enddo
+         endif
       endif
 
       return
