@@ -118,6 +118,10 @@ c     Matrices and vectors for advance
       real coef(1:nb)
 
       common /scrk3/ work(lt)
+      common /scrk1/ t1(lt),t2(lt),t3(lt)
+
+c     Variable for vorticity
+      real vort(lt,3)
 
 c     Working arrays for LU
 
@@ -201,6 +205,13 @@ c     if (npp.ne.1) call gop(rhs,work,'+  ',nb)
             call opadds(vx,vy,vz,ub(1,j),vb(1,j),wb(1,j),coef(j),n,2)
          enddo
          call opadd2  (vx,vy,vz,ub,vb,wb)
+
+!        comput the vorticity of the ROM reconstructed field
+         call opcopy(t1,t2,t3,vx,vy,vz)
+         call comp_vort3(vort,work1,work2,t1,t2,t3)
+         ifto = .true. ! turn on temp in fld file
+         call copy(t,vort,n)
+
          call outpost (vx,vy,vz,pr,t,'rom')
       endif
 
