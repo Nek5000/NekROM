@@ -38,7 +38,7 @@ c-----------------------------------------------------------------------
       call makeb
 
       call makec
-      if (np.gt.1) call makecloc
+      if (param(51).ne.0) call makecloc
 
       call makeic
 
@@ -152,7 +152,7 @@ c     Working arrays for LU
       call copy(conv(1,3),conv(1,2),nb)
       call copy(conv(1,2),conv(1,1),nb)
 
-      if (npp.eq.1) then
+      if (param(51).eq.0) then
          call mxm(c,nb*(nb+1),u,nb+1,tmat,1)
          call mxm(tmat,nb,u,nb+1,conv,1)
       else
