@@ -42,7 +42,8 @@ c-----------------------------------------------------------------------
 
       real c0(n)
 
-      if (nid.eq.(np-1)) then
+c     if (nid.eq.(np-1)) then
+      if (nid.eq.0) then
          open (unit=12,file='ops/cten')
          read (12,*) (c0(k),k=1,n)
          close (unit=12)

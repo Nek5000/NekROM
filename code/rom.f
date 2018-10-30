@@ -19,7 +19,7 @@ c-----------------------------------------------------------------------
 
       call readc0(c0,(nb+1)**3)
 
-      if (np.gt.1) call makecloc
+c     if (np.gt.1) call makecloc
 
       if (nio.eq.0) write (6,*) 'exiting readops'
 
