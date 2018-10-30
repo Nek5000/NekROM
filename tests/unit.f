@@ -101,6 +101,8 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelt
 
+      call rom_init
+
       call readevec(evec,ls,nb)
       call genbases
       call readbases(ubb,vbb,wbb,nb)
@@ -179,6 +181,7 @@ c-----------------------------------------------------------------------
 
       real aa(0:nb,0:nb)
 
+      call rom_init
       ifl2=iflag
 
       iexit=0
@@ -239,6 +242,7 @@ c-----------------------------------------------------------------------
 
       real bb(0:nb,0:nb)
 
+      call rom_init
       ifl2=iflag
 
       iexit=0
@@ -300,6 +304,7 @@ c-----------------------------------------------------------------------
 
       real cc(0:nb,0:nb,0:nb)
 
+      call rom_init
       ifl2=iflag
 
       iexit=0
