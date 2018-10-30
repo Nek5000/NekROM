@@ -99,7 +99,7 @@ c-----------------------------------------------------------------------
          if (nio.eq.0) write(6,*) j,u(j,1)
       enddo
 
-      if (nid.eq.0) write (6,*) 'exiting om_setup'
+      if (nid.eq.0) write (6,*) 'exiting rom_setup'
 
       return
       end
