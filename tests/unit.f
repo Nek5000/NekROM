@@ -227,6 +227,19 @@ c-----------------------------------------------------------------------
       if (nio.eq.0) write (6,*) 'edia',edia,s1,s2
       if (.not.ifl2.and.edia.gt.3.5e-15) iexit=iexit+4
 
+      s1=0.
+
+      do j=1,nb
+      do i=1,nb
+         if (i.ne.j) s1=s1+(a0(i,j)-1.)**2
+      enddo
+      enddo
+
+      euni=sqrt(s1/s2)
+
+      if (nio.eq.0) write (6,*) 'euni',euni,s1,s2
+      if (.not.ifl2.and.euni.gt.3.5e-15) iexit=iexit+8
+
       call exit(iexit)
 
       return
@@ -286,8 +299,20 @@ c-----------------------------------------------------------------------
       edia=sqrt(s1/s2)
 
       if (ifl2.and.edia.gt.5.9e-15) iexit=iexit+4
-
       if (nio.eq.0) write (6,*) 'edia',edia,s1,s2
+
+      s1=0.
+
+      do j=1,nb
+      do i=1,nb
+         if (i.ne.j) s1=s1+(bb(i,j)-1.)**2
+      enddo
+      enddo
+
+      euni=sqrt(s1/s2)
+
+      if (ifl2.and.euni.gt.5.9e-15) iexit=iexit+8
+      if (nio.eq.0) write (6,*) 'euni',euni,s1,s2
 
       call exit(iexit)
 
