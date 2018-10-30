@@ -1,6 +1,8 @@
 #!/bin/bash
 
-cd $MOR_DIR; git clone --single-branch -b presolve-fix https://github.com/kent0/Nek5000;
+cd $MOR_DIR
+git clean -dfx .
+git clone --single-branch -b presolve-fix https://github.com/kent0/Nek5000;
 export SOURCE_ROOT=$MOR_DIR/Nek5000;
 (cd $SOURCE_ROOT/tools; ./maketools genmap)
 
