@@ -2,8 +2,8 @@
 
 # Get Snapshots
 
-mkdir $ROOT_DIR/data
-cd $ROOT_DIR/data
+mkdir $MOR_DIR/data
+cd $MOR_DIR/data
 
 case=$1
 
@@ -18,7 +18,7 @@ case "${case:=all}" in
         wget -O cyls0.f00001 https://uofi.box.com/shared/static/msk1qxdpcw8e0a1olyah9s82cj45acxe.f00001
         ;;
     all)
-        cd $ROOT_DIR/bin
+        cd $MOR_DIR/bin
         ./gsnaps baf
         ./gsnaps cyl
         ;;

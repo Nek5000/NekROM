@@ -1,17 +1,17 @@
-cd $ROOT_DIR/cases/baf
-$ROOT_DIR/bin/linkc
+cd $MOR_DIR/cases/baf
+$MOR_DIR/bin/linkc
 
 echo 'baf'     > SESSION.NAME
 echo `pwd`'/' >> SESSION.NAME
 
-$ROOT_DIR/bin/gsnaps baf
+$MOR_DIR/bin/gsnaps baf
 
 if [ ${TEST: -4} == "UNIT" ]; then
-    bash $ROOT_DIR/tests/unit.sh $TEST
+    bash $MOR_DIR/tests/unit.sh $TEST
 else
     case "$TEST" in
         BAF_INTEG)
-            $ROOT_DIR/tests/baf-test
+            $MOR_DIR/tests/baf-test
             ;;
     esac
 fi
