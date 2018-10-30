@@ -298,7 +298,9 @@ c-----------------------------------------------------------------------
       do i=1,ns
          uu(i,j) = op_glsc2_wt(usave(1,i),vsave(1,i),wsave(1,i),
      $                         usave(1,j),vsave(1,j),wsave(1,j),bwm1)
+         write (88,*) uu(i,j)
       enddo
+         if (nio.eq.0) write (6,*) 'uu',uu(1,j)
       enddo
 
       if (nio.eq.0) write (6,*) 'exiting gengraml2'
