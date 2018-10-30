@@ -554,7 +554,7 @@ c-----------------------------------------------------------------------
       call opsub3(t1,t2,t3,vx,vy,vz,ub(1,0),vb(1,0),wb(1,0))
 
       if (ifl2) then
-         call l2proj(u(1,1),t1,t2,t3)
+         call wl2proj(u(1,1),t1,t2,t3)
       else
          call h10proj(u(1,1),t1,t2,t3)
       endif
