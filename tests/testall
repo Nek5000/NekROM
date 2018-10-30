@@ -4,18 +4,18 @@ cd $MOR_DIR; git clone --single-branch -b presolve-fix https://github.com/kent0/
 export SOURCE_ROOT=$MOR_DIR/Nek5000;
 (cd $SOURCE_ROOT/tools; ./maketools genmap)
 
-TEST=GRAMMIAN_L2_UNIT $MOR_DIR/tests/test.sh
-TEST=EIGENVECTOR_L2_UNIT $MOR_DIR/tests/test.sh
-TEST=BASES_L2_UNIT $MOR_DIR/tests/test.sh
-TEST=INITIAL_CONDITION_L2_UNIT $MOR_DIR/tests/test.sh
-TEST=A0_L2_UNIT $MOR_DIR/tests/test.sh
-TEST=B0_L2_UNIT $MOR_DIR/tests/test.sh
-TEST=C0_L2_UNIT $MOR_DIR/tests/test.sh
-
-TEST=GRAMMIAN_H10_UNIT $MOR_DIR/tests/test.sh
-TEST=EIGENVECTOR_H10_UNIT $MOR_DIR/tests/test.sh
-TEST=BASES_H10_UNIT $MOR_DIR/tests/test.sh
-TEST=INITIAL_CONDITION_H10_UNIT $MOR_DIR/tests/test.sh
-TEST=A0_H10_UNIT $MOR_DIR/tests/test.sh
-TEST=B0_H10_UNIT $MOR_DIR/tests/test.sh
-TEST=C0_H10_UNIT $MOR_DIR/tests/test.sh
+TEST=GRAMMIAN_L2_UNIT $MOR_DIR/tests/test.sh &> t1.log; echo "$?"
+TEST=EIGENVECTOR_L2_UNIT $MOR_DIR/tests/test.sh &> t2.log; echo "$?"
+TEST=BASES_L2_UNIT $MOR_DIR/tests/test.sh &> t3.log; echo "$?"
+TEST=INITIAL_CONDITION_L2_UNIT $MOR_DIR/tests/test.sh &> t4.log; echo "$?"
+TEST=A0_L2_UNIT $MOR_DIR/tests/test.sh &> t5.log; echo "$?"
+TEST=B0_L2_UNIT $MOR_DIR/tests/test.sh &> t6.log; echo "$?"
+TEST=C0_L2_UNIT $MOR_DIR/tests/test.sh &> t7.log; echo "$?"
+; echo "$?"
+TEST=GRAMMIAN_H10_UNIT $MOR_DIR/tests/test.sh &> t8.log; echo "$?"
+TEST=EIGENVECTOR_H10_UNIT $MOR_DIR/tests/test.sh &> t9.log; echo "$?"
+TEST=BASES_H10_UNIT $MOR_DIR/tests/test.sh &> t10.log; echo "$?"
+TEST=INITIAL_CONDITION_H10_UNIT $MOR_DIR/tests/test.sh &> t11.log; echo "$?"
+TEST=A0_H10_UNIT $MOR_DIR/tests/test.sh &> t12.log; echo "$?"
+TEST=B0_H10_UNIT $MOR_DIR/tests/test.sh &> t13.log; echo "$?"
+TEST=C0_H10_UNIT $MOR_DIR/tests/test.sh > t14.log; echo "$?"
