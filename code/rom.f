@@ -2,6 +2,7 @@ c-----------------------------------------------------------------------
       include 'pod.f'
       include 'read.f'
       include 'aux.f'
+      include 'dump.f'
 c-----------------------------------------------------------------------
       subroutine readops
 
@@ -197,6 +198,7 @@ c     if (npp.ne.1) call gop(rhs,work,'+  ',nb)
                write(6,*) j,u(j,1)
             enddo
          endif
+         call dumpcoef(u(:,1),nb,(ad_step/ad_iostep))
 
          call sleep(np-1-nid)
 
