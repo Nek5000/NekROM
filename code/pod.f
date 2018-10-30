@@ -74,11 +74,15 @@ c-----------------------------------------------------------------------
 
       real usave(lt,ls),vsave(lt,ls),wsave(lt,ls)
       real u0(lt,3)
-      common /scrk4/ bwm1(lt)
+      common /scrk3/ t4(lt),t5(lt),t6(lt)
+      common /scrk4/ h1(lt),h2(lt),bwm1(lt)
 
       if (nio.eq.0) write (6,*) 'inside genbases'
 
       n  = lx1*ly1*lz1*nelt
+
+      call rone(h1,n)
+      call rzero(h2,n)
       call col3(bwm1,bm1,wm1,n)
 
       ONE = 1.
@@ -95,7 +99,7 @@ c-----------------------------------------------------------------------
      $call dgemm( 'N','N',n,nb,ls,ONE,wsave,lt,evec,ls,ZERO,wb(1,1),lt)
 
       ! normalize the basis function
-      if (ifl2) then 
+      if (ifl2) then  ! l2 norm normalization
          do i=1,nb
             ww = op_glsc2_wt(
      $         ub(1,i),vb(1,i),wb(1,i),ub(1,i),vb(1,i),wb(1,i),bwm1)
@@ -103,14 +107,33 @@ c-----------------------------------------------------------------------
             call cmult(ub(1,i),1./ww,n)
             call cmult(vb(1,i),1./ww,n)
             if (ldim.eq.3) call cmult(wb(1,i),1./ww,n)
-      ! vv is the length after normalization, should be 1
-            vv = op_glsc2_wt(
-     $         ub(1,i),vb(1,i),wb(1,i),ub(1,i),vb(1,i),wb(1,i),bwm1)
-            if (nio.eq.0) write (6,*) 'basis in l2 norm', i,vv
+      ! You could uncomment the following line to check whether the norm is 1
+!      ! vv is the length after normalization, should be 1
+!            vv = op_glsc2_wt(
+!     $         ub(1,i),vb(1,i),wb(1,i),ub(1,i),vb(1,i),wb(1,i),bwm1)
+!            if (nio.eq.0) write (6,*) 'basis in l2 norm',i,vv
+         enddo
+      else ! h10 norm normalization
+         do i=1,nb
+            call axhelm(t4,ub(1,i),h1,h2,1,1)
+            call axhelm(t5,vb(1,i),h1,h2,1,1)
+            if (ldim.eq.3) call axhelm(t6,wb(1,i),h1,h2,1,1)
+            ww = glsc2(ub(1,i),t4,n)+glsc2(vb(1,i),t5,n)
+            if (ldim.eq.3) ww = ww+glsc2(wb(1,i),t6,n)
+            ww = sqrt(ww)
+            call cmult(ub(1,i),1./ww,n)
+            call cmult(vb(1,i),1./ww,n)
+            if (ldim.eq.3) call cmult(wb(1,i),1./ww,n)
+      ! You could uncomment the following line to check whether the norm is 1
+!         ! vv is the length after normalization, should be 1
+!            call axhelm(t4,ub(1,i),h1,h2,1,1)
+!            call axhelm(t5,vb(1,i),h1,h2,1,1)
+!            if (ldim.eq.3) call axhelm(t6,wb(1,i),h1,h2,1,1)
+!            vv = glsc2(ub(1,i),t4,n)+glsc2(vb(1,i),t5,n)
+!            if (ldim.eq.3) vv = vv+glsc2(wb(1,i),t6,n)
+!            if (nio.eq.0) write(6,*) 'basis in h10 norm',i,vv
          enddo
       endif
-
-        
 
       do i=0,nb ! dump the generated modes
          call outpost(ub(1,i),vb(1,i),wb(1,i),pr,t,'bas')
