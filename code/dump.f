@@ -147,3 +147,26 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine dumpcoef(uu,nb,k)
+
+      include 'SIZE'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      real uu(0:nb)
+      character*8 fname
+
+      if (nid .eq. 0) then
+         write(fname,22) k
+   22 format(i4.4,".out")
+         open(unit=33,file=fname)
+
+         do i=1,nb
+            write(33,33) uu(i)
+   33    format(1p1e16.7)
+         enddo
+         close(33)
+      endif
+
+      return
+      end
+

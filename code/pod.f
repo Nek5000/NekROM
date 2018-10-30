@@ -74,10 +74,16 @@ c-----------------------------------------------------------------------
 
       real usave(lt,ls),vsave(lt,ls),wsave(lt,ls)
       real u0(lt,3)
+      common /scrk3/ t4(lt),t5(lt),t6(lt)
+      common /scrk4/ h1(lt),h2(lt),bwm1(lt)
 
       if (nio.eq.0) write (6,*) 'inside genbases'
 
       n  = lx1*ly1*lz1*nelt
+
+      call rone(h1,n)
+      call rzero(h2,n)
+      call col3(bwm1,bm1,wm1,n)
 
       ONE = 1.
       ZERO= 0.
