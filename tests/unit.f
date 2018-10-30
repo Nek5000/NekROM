@@ -97,11 +97,11 @@ c-----------------------------------------------------------------------
       real ubb(lt,0:nb), vbb(lt,0:nb), wbb(lt,0:nb)
       real du(lt,0:nb), dv(lt,0:nb), dw(lt,0:nb)
 
+      call rom_init
+
       ifl2=iflag
 
       n=lx1*ly1*lz1*nelt
-
-      call rom_init
 
       call readevec(evec,ls,nb)
       call genbases
