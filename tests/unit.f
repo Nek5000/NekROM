@@ -285,7 +285,7 @@ c-----------------------------------------------------------------------
 
       edia=sqrt(s1/s2)
 
-      if (ifl2.and.edia.gt.2.e-15) iexit=iexit+4
+      if (ifl2.and.edia.gt.5.9e-15) iexit=iexit+4
 
       if (nio.eq.0) write (6,*) 'edia',edia,s1,s2
 
