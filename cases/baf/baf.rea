@@ -1253,8 +1253,8 @@
  W  158  3   0.00000       0.00000       0.00000       0.00000       1.00000    
  E  158  4   152.000       2.00000       0.00000       0.00000       0.00000    
   ***** NO THERMAL BOUNDARY CONDITIONS *****
-           0  PRESOLVE/RESTART OPTIONS  *****
-chan20.f00900
+           1  PRESOLVE/RESTART OPTIONS  *****
+presolve
            7          INITIAL CONDITIONS *****
 C Default                                                                       
 C Default                                                                       
