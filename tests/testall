@@ -2,6 +2,7 @@
 
 cd $MOR_DIR
 git clean -dfx .
+rm -rf Nek5000
 git clone --single-branch -b presolve-fix https://github.com/kent0/Nek5000;
 export SOURCE_ROOT=$MOR_DIR/Nek5000;
 (cd $SOURCE_ROOT/tools; ./maketools genmap)
@@ -20,4 +21,4 @@ TEST=BASES_H10_UNIT $MOR_DIR/tests/test.sh &> t10.log; echo "$?"
 TEST=INITIAL_CONDITION_H10_UNIT $MOR_DIR/tests/test.sh &> t11.log; echo "$?"
 TEST=A0_H10_UNIT $MOR_DIR/tests/test.sh &> t12.log; echo "$?"
 TEST=B0_H10_UNIT $MOR_DIR/tests/test.sh &> t13.log; echo "$?"
-TEST=C0_H10_UNIT $MOR_DIR/tests/test.sh > t14.log; echo "$?"
+TEST=C0_H10_UNIT $MOR_DIR/tests/test.sh &> t14.log; echo "$?"
