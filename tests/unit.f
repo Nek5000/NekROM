@@ -289,7 +289,7 @@ c-----------------------------------------------------------------------
 
       do j=1,nb
       do i=1,nb
-         if (i.ne.j) s1=s1+bb(i,j)**2
+         if (i.ne.j) s1=s1+b0(i,j)**2
          s2=s2+bb(i,j)**2
       enddo
       enddo
@@ -302,12 +302,12 @@ c-----------------------------------------------------------------------
       s1=0.
 
       do i=1,nb
-         s1=s1+(bb(i,i)-1.)**2
+         s1=s1+(b0(i,i)-1.)**2
       enddo
 
       euni=sqrt(s1/s2)
 
-      if (ifl2.and.euni.gt.5.9e-15) iexit=iexit+8
+      if (ifl2.and.euni.gt.4.1e-15) iexit=iexit+8
       if (nio.eq.0) write (6,*) 'euni',euni,s1,s2
 
       call exit(iexit)
