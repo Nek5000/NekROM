@@ -181,13 +181,18 @@ c-----------------------------------------------------------------------
       common /scrns/ t1(lt),t2(lt),t3(lt)
       common /ctracker/ cmax(0:nb), cmin(0:nb)
 
+      character (len=72) fmt1
+      character (len=72) fmt2
+
+      real err(0:nb)
+
       if (istep.eq.0) then
          call rom_init
 
          call gengram
          call genevec
          call genbases
-         call genops
+c        call genops
 
          do i=0,nb
             cmax(i) = -1e10
@@ -195,6 +200,7 @@ c-----------------------------------------------------------------------
          enddo
 
          call rom_setup
+         time=0.
       endif
 
       u(0,1) = 1.
@@ -216,15 +222,31 @@ c-----------------------------------------------------------------------
          if (u(i,1).gt.cmax(i)) cmax(i)=u(i,1)
       enddo
 
-      if (mod(istep,100).eq.0) then
-         n=istep/50
+      write (fmt1,'("(i5,", i0, "(1pe15.7),1x,a4)")') nb+2
+      write (fmt2,'("(i5,", i0, "(1pe15.7),1x,a4)")') nb+3
+
+c     write (6,*) fmt1
+c     write (6,*) fmt2
+
+      if (mod(istep,max(iostep,1)).eq.0) then
+         call opcopy(t1,t2,t3,vx,vy,vz)
+
+         energy=op_glsc2_wt(t1,t2,t3,t1,t2,t3,bm1)
+
+         n=lx1*ly1*lz1*nelv
+
+         do i=0,nb
+            s=-u(i,1)
+            write (6,*) 's',s
+            call opadds(t1,t2,t3,ub(1,i),vb(1,i),wb(1,i),s,n,2)
+            err(i)=op_glsc2_wt(t1,t2,t3,t1,t2,t3,bm1)
+         enddo
 
          if (nio.eq.0) then
-            do i=0,nb
-               write (6,*) n,time,cmax(i),'cmax'
-               write (6,*) n,time,u(i,1),'coef'
-               write (6,*) n,time,cmin(i),'cmin'
-            enddo
+            write (6,fmt1) istep,time,(cmax(i),i=0,nb),'cmax'
+            write (6,fmt1) istep,time,(u(i,1),i=0,nb),'coef'
+            write (6,fmt1) istep,time,(cmin(i),i=0,nb),'cmin'
+            write (6,fmt2) istep,time,energy,(err(i),i=0,nb),'eerr'
          endif
       endif
 
