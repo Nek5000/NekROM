@@ -128,7 +128,7 @@ c     Working arrays for LU
 
       common /nekmpi/ nidd,npp,nekcomm,nekgroup,nekreal
 
-      if (nio.eq.0) write (6,*) 'entering rom_step'
+c     if (nio.eq.0) write (6,*) 'entering rom_step'
 
       n  = lx1*ly1*lz1*nelt
 
@@ -219,7 +219,7 @@ c     if (npp.ne.1) call gop(rhs,work,'+  ',nb)
          call outpost (vx,vy,vz,pr,t,'rom')
       endif
 
-      if (nio.eq.0) write (6,*) 'exiting rom_step'
+c     if (nio.eq.0) write (6,*) 'exiting rom_step'
 
       return
       end
