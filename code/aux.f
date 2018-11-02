@@ -237,7 +237,6 @@ c     write (6,*) fmt2
 
          do i=0,nb
             s=-u(i,1)
-            write (6,*) 's',s
             call opadds(t1,t2,t3,ub(1,i),vb(1,i),wb(1,i),s,n,2)
             err(i)=op_glsc2_wt(t1,t2,t3,t1,t2,t3,bm1)
          enddo
