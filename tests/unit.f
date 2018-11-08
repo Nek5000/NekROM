@@ -13,9 +13,9 @@ c-----------------------------------------------------------------------
       logical iflag
       real vv(ls,ls)
 
+      param(50) = 1
+      if (iflag) param(50) = 0
       call rom_init
-
-      ifl2=iflag
 
       iexit=0
 
@@ -97,9 +97,9 @@ c-----------------------------------------------------------------------
       real ubb(lt,0:nb), vbb(lt,0:nb), wbb(lt,0:nb)
       real du(lt,0:nb), dv(lt,0:nb), dw(lt,0:nb)
 
+      param(50) = 1
+      if (iflag) param(50) = 0
       call rom_init
-
-      ifl2=iflag
 
       n=lx1*ly1*lz1*nelt
 
@@ -141,9 +141,9 @@ c-----------------------------------------------------------------------
       logical iflag
       real u0(0:nb)
 
+      param(50) = 1
+      if (iflag) param(50) = 0
       call rom_init
-
-      ifl2=iflag
 
       call readbases(ub,vb,wb,nb)
       call makeic
@@ -181,8 +181,9 @@ c-----------------------------------------------------------------------
 
       real aa(0:nb,0:nb)
 
+      param(50) = 1
+      if (iflag) param(50) = 0
       call rom_init
-      ifl2=iflag
 
       iexit=0
 
@@ -253,8 +254,9 @@ c-----------------------------------------------------------------------
 
       real bb(0:nb,0:nb)
 
+      param(50) = 1
+      if (iflag) param(50) = 0
       call rom_init
-      ifl2=iflag
 
       iexit=0
 
@@ -325,8 +327,9 @@ c-----------------------------------------------------------------------
 
       real cc(0:nb,0:nb,0:nb)
 
+      param(50) = 1
+      if (iflag) param(50) = 0
       call rom_init
-      ifl2=iflag
 
       iexit=0
 
