@@ -6,6 +6,7 @@ c-----------------------------------------------------------------------
       subroutine grammian_unit(iflag)
 
       include 'SIZE'
+      include 'INPUT'
       include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
@@ -87,6 +88,7 @@ c-----------------------------------------------------------------------
       subroutine bases_unit(iflag)
 
       include 'SIZE'
+      include 'INPUT'
       include 'MOR'
       include 'MASS'
 
@@ -136,6 +138,7 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'
       include 'SOLN'
+      include 'INPUT'
       include 'MOR'
 
       logical iflag
@@ -175,6 +178,7 @@ c-----------------------------------------------------------------------
       subroutine a0_unit(iflag)
 
       include 'SIZE'
+      include 'INPUT'
       include 'MOR'
 
       logical iflag
@@ -248,6 +252,7 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'
       include 'SOLN'
+      include 'INPUT'
       include 'MOR'
 
       logical iflag
@@ -321,6 +326,7 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'
       include 'SOLN'
+      include 'INPUT'
       include 'MOR'
 
       logical iflag
