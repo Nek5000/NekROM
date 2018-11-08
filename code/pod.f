@@ -1,5 +1,5 @@
 c-----------------------------------------------------------------------
-      subroutine get_saved_fields(usave,vsave,wsave,nsave,u0)
+      subroutine get_saved_fields(usave,vsave,wsave,nsave)
 
 c     This routine reads files specificed in file.list
 
@@ -12,7 +12,6 @@ c     This routine reads files specificed in file.list
       real uu(lt),vv(lt),ww(lt)
       real u0(lt,3) ! Initial condtion
 
-
       ierr = 0
       if (nid.eq.0) open(77,file='file.list',status='old',err=199)
       ierr = iglmax(ierr,1)
@@ -21,6 +20,7 @@ c     This routine reads files specificed in file.list
       n2= lx2*ly2*lz2*nelt
 
       call opcopy(uu,vv,ww,vx,vy,vz)
+      call opcopy(u0(1,1),u0(1,2),u0(1,3),vx,vy,vz)
 
       icount = 0
       do ipass=1,nsave
@@ -72,7 +72,6 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real usave(lt,ls),vsave(lt,ls),wsave(lt,ls)
       real u0(lt,3)
       common /scrk3/ t4(lt),t5(lt),t6(lt)
       common /scrk4/ h1(lt),h2(lt),bwm1(lt)
@@ -90,13 +89,12 @@ c-----------------------------------------------------------------------
 
       ns = ls ! REQUIRED: get_saved_fields overwrites ns argument
       call opcopy(u0(1,1),u0(1,2),u0(1,3),ub(1,0),vb(1,0),wb(1,0))
-      call get_saved_fields(usave,vsave,wsave,ns,u0)
 
       ! ub, vb, wb, are the modes
-      call dgemm( 'N','N',n,nb,ls,ONE,usave,lt,evec,ls,ZERO,ub(1,1),lt)
-      call dgemm( 'N','N',n,nb,ls,ONE,vsave,lt,evec,ls,ZERO,vb(1,1),lt)
+      call dgemm( 'N','N',n,nb,ls,ONE,us,lt,evec,ls,ZERO,ub(1,1),lt)
+      call dgemm( 'N','N',n,nb,ls,ONE,vs,lt,evec,ls,ZERO,vb(1,1),lt)
       if (ldim.eq.3)
-     $call dgemm( 'N','N',n,nb,ls,ONE,wsave,lt,evec,ls,ZERO,wb(1,1),lt)
+     $call dgemm( 'N','N',n,nb,ls,ONE,ws,lt,evec,ls,ZERO,wb(1,1),lt)
 
       call scale_bases
 
@@ -274,7 +272,6 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real usave(lt,ls),vsave(lt,ls),wsave(lt,ls)
       real uw(lt),vw(lt),ww(lt),h1(lt),h2(lt)
       real u0(lt,3)
 
@@ -284,18 +281,17 @@ c-----------------------------------------------------------------------
       ns = ls
 
       call opcopy(u0(1,1),u0(1,2),u0(1,3),ub(1,0),vb(1,0),wb(1,0))
-      call get_saved_fields(usave,vsave,wsave,ns,u0)
 
       call rone (h1,n)
       call rzero(h2,n)
 
       do j=1,ns ! Form the Gramian, U=U_K^T A U_K using H^1_0 Norm
-         call axhelm(uw,usave(1,j),h1,h2,1,1)
-         call axhelm(vw,vsave(1,j),h1,h2,1,1)
-         if (ldim.eq.3) call axhelm(ww,wsave(1,j),h1,h2,1,1)
+         call axhelm(uw,us(1,j),h1,h2,1,1)
+         call axhelm(vw,vs(1,j),h1,h2,1,1)
+         if (ldim.eq.3) call axhelm(ww,ws(1,j),h1,h2,1,1)
          do i=1,ns
-            uu(i,j) = glsc2(usave(1,i),uw,n)+glsc2(vsave(1,i),vw,n)
-            if (ldim.eq.3) uu(i,j) = uu(i,j)+glsc2(wsave(1,i),ww,n)
+            uu(i,j) = glsc2(us(1,i),uw,n)+glsc2(vs(1,i),vw,n)
+            if (ldim.eq.3) uu(i,j) = uu(i,j)+glsc2(ws(1,i),ww,n)
          enddo
          if (nio.eq.0) write(6,*) j,uu(1,j),' uu'
       enddo
@@ -313,7 +309,6 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real usave(lt,ls),vsave(lt,ls),wsave(lt,ls)
       real uw(lt),vw(lt),ww(lt),h1(lt),h2(lt)
       real u0(lt,3)
       real bwm1(lt)
@@ -323,7 +318,6 @@ c-----------------------------------------------------------------------
       ns = ls ! REQUIRED: get_saved_fields overwrites ns argument
 
       call opcopy(u0(1,1),u0(1,2),u0(1,3),ub(1,0),vb(1,0),wb(1,0))
-      call get_saved_fields(usave,vsave,wsave,ns,u0)
 
       n=lx1*ly1*lz1*nelv
 
@@ -333,8 +327,8 @@ c-----------------------------------------------------------------------
 
       do j=1,ns ! Form the Gramian, U=U_K^T A U_K using L2 Norm
       do i=1,ns
-         uu(i,j) = op_glsc2_wt(usave(1,i),vsave(1,i),wsave(1,i),
-     $                         usave(1,j),vsave(1,j),wsave(1,j),bwm1)
+         uu(i,j) = op_glsc2_wt(us(1,i),vs(1,i),ws(1,i),
+     $                         us(1,j),vs(1,j),ws(1,j),bwm1)
          write (88,*) uu(i,j)
       enddo
          if (nio.eq.0) write (6,*) 'uu',uu(1,j)
@@ -354,7 +348,6 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real usave(lt,ls),vsave(lt,ls),wsave(lt,ls)
       real identity(ls,ls),eigv(ls,ls),w(ls,ls)
       real vv(ls,ls)
 

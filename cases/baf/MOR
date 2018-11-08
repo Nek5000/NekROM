@@ -10,6 +10,10 @@ c     parameters and common blocks for MOR
      $                  vb(lx1*ly1*lz1*lelt,0:nb),
      $                  wb(lx1*ly1*lz1*lelt,0:nb)
 
+      common /morsave/ us(lx1*ly1*lz1*lelt,ls),
+     $                 vs(lx1*ly1*lz1*lelt,ls),
+     $                 ws(lx1*ly1*lz1*lelt,ls)
+
       common /morops/ a0(0:nb,0:nb),b0(0:nb,0:nb),c0(0:nb,0:nb,0:nb),
      $                a(nb,nb),b(nb,nb),
      $                c(nb,0:nb,0:nb),clocal((nb*(nb+1)*(nb+1))/lpmin+1)
