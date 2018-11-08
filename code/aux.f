@@ -1,3 +1,4 @@
+      include 'pod.f'
 c-----------------------------------------------------------------------
       subroutine factor3(mq,mp,mr,m)
 
@@ -183,11 +184,12 @@ c-----------------------------------------------------------------------
 
       character (len=72) fmt1
       character (len=72) fmt2
+      character*8 fname
 
       real err(0:nb)
 
       if (istep.eq.0) then
-         call rom_init
+c         call rom_init
 
          call gengram
          call genevec
@@ -199,7 +201,7 @@ c        call genops
             cmin(i) =  1e10
          enddo
 
-         call rom_setup
+c         call rom_setup
          time=0.
       endif
 
@@ -240,6 +242,18 @@ c     write (6,*) fmt2
             call opadds(t1,t2,t3,ub(1,i),vb(1,i),wb(1,i),s,n,2)
             err(i)=op_glsc2_wt(t1,t2,t3,t1,t2,t3,bm1)
          enddo
+
+         if (nid .eq. 0) then
+            write(fname,22) istep/iostep
+   22 format(i4.4,".out")
+            open(unit=33,file=fname)
+
+            do i=1,nb
+               write(33,33) u(i,1)
+   33    format(1p1e16.7)
+            enddo
+            close(33)
+         endif
 
          if (nio.eq.0) then
             write (6,fmt1) istep,time,(cmax(i),i=0,nb),'cmax'
