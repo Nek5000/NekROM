@@ -261,3 +261,87 @@ c        call genops
       return
       end
 c-----------------------------------------------------------------------
+      function tkes
+
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /scrns/ ud(lt),vd(lt),wd(lt),ue(lt),ve(lt),we(lt)
+
+      call opsub3(ud,vd,wd,ub,vb,wb,ua,va,wa)
+
+      tkes = 0.
+
+      do i=1,ns
+         call opadd3(ue,ve,we,us(1,i),vs(1,i),ws(1,i),ud,vd,wd)
+         tkes = tkes + op_glsc2_wt(ue,ve,we,ue,ve,we,bm1)
+      enddo
+
+      tkes = tkes / real(ns)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      function tke
+
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /scrns/ ud(lt),vd(lt),wd(lt),ue(lt),ve(lt),we(lt)
+
+      call opsub3(ud,vd,wd,ub,vb,wb,ua,va,wa)
+
+      call opadd3(ue,ve,we,us(1,i),vs(1,i),ws(1,i),ud,vd,wd)
+      tke = op_glsc2_wt(ue,ve,we,ue,ve,we,bm1)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      function e0n
+
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /scrns/ ud(lt),vd(lt),wd(lt)
+
+      call opcopy(ud,vd,wd,ua,va,wa)
+
+      n=lx1*ly1*lz1*nelv
+
+      do i=0,nb
+         s=-avg(i)
+         call opadds(ud,vd,wd,ub(1,i),vb(1,i),wb(1,i),s,n,2)
+      enddo
+
+      e0n = op_glsc2_wt(ud,vd,wd,ud,vd,wd,bm1)
+     $    / op_glsc2_wt(ua,va,wa,ua,va,wa,bm1)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      function e1n
+
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /scrns/ ud(lt),vd(lt),wd(lt)
+
+      call opcopy(ud,vd,wd,ua,va,wa)
+
+      n=lx1*ly1*lz1*nelv
+
+      do i=0,nb
+         s=-avg(i)
+         call opadds(ud,vd,wd,ub(1,i),vb(1,i),wb(1,i),s,n,2)
+      enddo
+
+      e1n = h10prod(ud,vd,wd,ud,vd,wd,h1,h2)
+     $    / h10prod(ua,va,wa,ua,va,wa,h1,h2)
+
+      return
+      end
+c-----------------------------------------------------------------------
