@@ -92,12 +92,8 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
-      common /myoutflow/ d(lx1,ly1,lz1,lelt),m1(lx1*ly1*lz1,lelt)
-
       call opcopy(ub(1,0),vb(1,0),wb(1,0),vx,vy,vz) ! set zeroth mode
       call gfldr('../../data/baf/baf0.f00001')    ! set initial state
-
-      ifl2=.true.
 
       call test
 
