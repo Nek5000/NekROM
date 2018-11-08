@@ -20,7 +20,7 @@ c     This routine reads files specificed in file.list
       n2= lx2*ly2*lz2*nelt
 
       call opcopy(uu,vv,ww,vx,vy,vz)
-      call opcopy(u0(1,1),u0(1,2),u0(1,3),vx,vy,vz)
+      call opcopy(u0(1,1),u0(1,2),u0(1,3),ub,vb,wb)
 
       icount = 0
       do ipass=1,nsave
