@@ -69,6 +69,7 @@ c-----------------------------------------------------------------------
       n=lx1*ly1*lz1*nelv
       call rone(wm1,n)
 
+      ns = ls
       call get_saved_fields(us,vs,ws,ns)
 
       if (nid.eq.0) write (6,*) 'exiting rom_init'
