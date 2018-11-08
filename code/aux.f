@@ -200,36 +200,32 @@ c        call genops
             cmin(i) =  1e10
          enddo
 
-c         call rom_setup
          time=0.
       endif
 
-      u(0,1) = 1.
-
-      call opsub3(t1,t2,t3,vx,vy,vz,ub(1,0),vb(1,0),wb(1,0))
-
-      nio = -1
-
-      if (ifl2) then
-         call wl2proj(u(1,1),t1,t2,t3)
-      else
-         call h10proj(u(1,1),t1,t2,t3)
-      endif
-
-      nio = nid
-
-      do i=0,nb
-         if (u(i,1).lt.cmin(i)) cmin(i)=u(i,1)
-         if (u(i,1).gt.cmax(i)) cmax(i)=u(i,1)
-      enddo
-
-      write (fmt1,'("(i5,", i0, "(1pe15.7),1x,a4)")') nb+2
-      write (fmt2,'("(i5,", i0, "(1pe15.7),1x,a4)")') nb+3
-
-c     write (6,*) fmt1
-c     write (6,*) fmt2
-
       if (mod(istep,max(iostep,1)).eq.0) then
+         u(0,1) = 1.
+
+         call opsub3(t1,t2,t3,vx,vy,vz,ub(1,0),vb(1,0),wb(1,0))
+
+         nio = -1
+
+         if (ifl2) then
+            call wl2proj(u(1,1),t1,t2,t3)
+         else
+            call h10proj(u(1,1),t1,t2,t3)
+         endif
+
+         nio = nid
+
+         do i=0,nb
+            if (u(i,1).lt.cmin(i)) cmin(i)=u(i,1)
+            if (u(i,1).gt.cmax(i)) cmax(i)=u(i,1)
+         enddo
+
+         write (fmt1,'("(i5,", i0, "(1pe15.7),1x,a4)")') nb+2
+         write (fmt2,'("(i5,", i0, "(1pe15.7),1x,a4)")') nb+3
+
          call opcopy(t1,t2,t3,vx,vy,vz)
 
          energy=op_glsc2_wt(t1,t2,t3,t1,t2,t3,bm1)
