@@ -53,6 +53,8 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
+      real u0(lx1*ly1*lz1*lelt,3)
+
       if (nid.eq.0) write (6,*) 'inside rom_init'
 
       time = 0.
@@ -70,7 +72,8 @@ c-----------------------------------------------------------------------
       call rone(wm1,n)
 
       ns = ls
-      call get_saved_fields(us,vs,ws,ns)
+      call opcopy(u0,u0(1,2),u0(1,3),ub,vb,wb)
+      call get_saved_fields(us,vs,ws,ns,u0)
 
       if (nid.eq.0) write (6,*) 'exiting rom_init'
 
