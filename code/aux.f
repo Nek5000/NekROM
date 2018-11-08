@@ -261,87 +261,87 @@ c        call genops
       return
       end
 c-----------------------------------------------------------------------
-      function tkes
+c     function tkes
 
-      include 'MOR'
+c     include 'MOR'
 
-      parameter (lt=lx1*ly1*lz1*lelt)
+c     parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /scrns/ ud(lt),vd(lt),wd(lt),ue(lt),ve(lt),we(lt)
+c     common /scrns/ ud(lt),vd(lt),wd(lt),ue(lt),ve(lt),we(lt)
 
-      call opsub3(ud,vd,wd,ub,vb,wb,ua,va,wa)
+c     call opsub3(ud,vd,wd,ub,vb,wb,ua,va,wa)
 
-      tkes = 0.
+c     tkes = 0.
 
-      do i=1,ns
-         call opadd3(ue,ve,we,us(1,i),vs(1,i),ws(1,i),ud,vd,wd)
-         tkes = tkes + op_glsc2_wt(ue,ve,we,ue,ve,we,bm1)
-      enddo
+c     do i=1,ns
+c        call opadd3(ue,ve,we,us(1,i),vs(1,i),ws(1,i),ud,vd,wd)
+c        tkes = tkes + op_glsc2_wt(ue,ve,we,ue,ve,we,bm1)
+c     enddo
 
-      tkes = tkes / real(ns)
+c     tkes = tkes / real(ns)
 
-      return
-      end
+c     return
+c     end
 c-----------------------------------------------------------------------
-      function tke
+c     function tke
 
-      include 'MOR'
+c     include 'MOR'
 
-      parameter (lt=lx1*ly1*lz1*lelt)
+c     parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /scrns/ ud(lt),vd(lt),wd(lt),ue(lt),ve(lt),we(lt)
+c     common /scrns/ ud(lt),vd(lt),wd(lt),ue(lt),ve(lt),we(lt)
 
-      call opsub3(ud,vd,wd,ub,vb,wb,ua,va,wa)
+c     call opsub3(ud,vd,wd,ub,vb,wb,ua,va,wa)
 
-      call opadd3(ue,ve,we,us(1,i),vs(1,i),ws(1,i),ud,vd,wd)
-      tke = op_glsc2_wt(ue,ve,we,ue,ve,we,bm1)
+c     call opadd3(ue,ve,we,us(1,i),vs(1,i),ws(1,i),ud,vd,wd)
+c     tke = op_glsc2_wt(ue,ve,we,ue,ve,we,bm1)
 
-      return
-      end
+c     return
+c     end
 c-----------------------------------------------------------------------
-      function e0n
+c     function e0n
 
-      include 'MOR'
+c     include 'MOR'
 
-      parameter (lt=lx1*ly1*lz1*lelt)
+c     parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /scrns/ ud(lt),vd(lt),wd(lt)
+c     common /scrns/ ud(lt),vd(lt),wd(lt)
 
-      call opcopy(ud,vd,wd,ua,va,wa)
+c     call opcopy(ud,vd,wd,ua,va,wa)
 
-      n=lx1*ly1*lz1*nelv
+c     n=lx1*ly1*lz1*nelv
 
-      do i=0,nb
-         s=-avg(i)
-         call opadds(ud,vd,wd,ub(1,i),vb(1,i),wb(1,i),s,n,2)
-      enddo
+c     do i=0,nb
+c        s=-avg(i)
+c        call opadds(ud,vd,wd,ub(1,i),vb(1,i),wb(1,i),s,n,2)
+c     enddo
 
-      e0n = op_glsc2_wt(ud,vd,wd,ud,vd,wd,bm1)
-     $    / op_glsc2_wt(ua,va,wa,ua,va,wa,bm1)
+c     e0n = op_glsc2_wt(ud,vd,wd,ud,vd,wd,bm1)
+c    $    / op_glsc2_wt(ua,va,wa,ua,va,wa,bm1)
 
-      return
-      end
+c     return
+c     end
 c-----------------------------------------------------------------------
-      function e1n
+c     function e1n
 
-      include 'MOR'
+c     include 'MOR'
 
-      parameter (lt=lx1*ly1*lz1*lelt)
+c     parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /scrns/ ud(lt),vd(lt),wd(lt)
+c     common /scrns/ ud(lt),vd(lt),wd(lt)
 
-      call opcopy(ud,vd,wd,ua,va,wa)
+c     call opcopy(ud,vd,wd,ua,va,wa)
 
-      n=lx1*ly1*lz1*nelv
+c     n=lx1*ly1*lz1*nelv
 
-      do i=0,nb
-         s=-avg(i)
-         call opadds(ud,vd,wd,ub(1,i),vb(1,i),wb(1,i),s,n,2)
-      enddo
+c     do i=0,nb
+c        s=-avg(i)
+c        call opadds(ud,vd,wd,ub(1,i),vb(1,i),wb(1,i),s,n,2)
+c     enddo
 
-      e1n = h10prod(ud,vd,wd,ud,vd,wd,h1,h2)
-     $    / h10prod(ua,va,wa,ua,va,wa,h1,h2)
+c     e1n = h10prod(ud,vd,wd,ud,vd,wd,h1,h2)
+c    $    / h10prod(ua,va,wa,ua,va,wa,h1,h2)
 
-      return
-      end
+c     return
+c     end
 c-----------------------------------------------------------------------
