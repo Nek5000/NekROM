@@ -1,27 +1,26 @@
+# Specific files
+
 nek5000
 makefile
-obj
-.nek5000
-*log*
 .state
 compiler.out
 mn
 makenek
 SESSION.NAME
-out.*
-cyl
-ldc
-rom40
 notes.txt
 chan2.plt01
-pod/baf-snaps
-docs
-test
-data
+
+# Directories
+
 .sync
+obj
+data
+runs
+docs
 
-# file types
+# File types
 
+*log*
 *.mp4
 *.tif*
 *.tar.gz
@@ -32,8 +31,13 @@ data
 *.out
 *.map
 *.py
+out.*
 
-# cases
+# Cases
+
 cyl2
 cyl3
 pod2
+cyl
+ldc
+rom40
