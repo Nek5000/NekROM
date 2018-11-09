@@ -311,6 +311,7 @@ c-----------------------------------------------------------------------
 
       common /scrns/ t1(lt),t2(lt),t3(lt)
       common /ctrack/ cmax(0:nb), cmin(0:nb), cavg(0:nb)
+      common /scrm1/ rt1(0:nb), rt2(0:nb), rt3(0:nb)
 
       character (len=72) fmt1
       character (len=72) fmt2
