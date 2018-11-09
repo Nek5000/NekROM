@@ -203,18 +203,8 @@ c-----------------------------------------------------------------------
       endif
 
       if (mod(istep,max(iostep,1)).eq.0) then
-         u(0,1) = 1.
-
-         call opsub3(t1,t2,t3,vx,vy,vz,ub(1,0),vb(1,0),wb(1,0))
-
          nio = -1
-
-         if (ifl2) then
-            call wl2proj(u(1,1),t1,t2,t3)
-         else
-            call h10proj(u(1,1),t1,t2,t3)
-         endif
-
+         call proj2bases(u,vx,vy,vz)
          nio = nid
 
          do i=0,nb
@@ -226,7 +216,6 @@ c-----------------------------------------------------------------------
          write (fmt2,'("(i5,", i0, "(1pe15.7),1x,a4)")') nb+3
 
          call opcopy(t1,t2,t3,vx,vy,vz)
-
          energy=op_glsc2_wt(t1,t2,t3,t1,t2,t3,bm1)
 
          n=lx1*ly1*lz1*nelv

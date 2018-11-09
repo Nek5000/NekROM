@@ -571,19 +571,8 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelt
 
-      u(0,1) = 1.
-
-      call opsub3(t1,t2,t3,vx,vy,vz,ub(1,0),vb(1,0),wb(1,0))
-
-      if (ifl2) then
-         call wl2proj(u(1,1),t1,t2,t3)
-      else
-         call h10proj(u(1,1),t1,t2,t3)
-      endif
-
       call opzero(vxlag,vylag,vzlag)
-
-      ii=3
+      call proj2bases(u,vx,vy,vz)
 
       do i=0,nb
          call opadds(
