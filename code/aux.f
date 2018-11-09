@@ -345,17 +345,6 @@ c-----------------------------------------------------------------------
          write (fmt1,'("(i5,", i0, "(1pe15.7),1x,a4)")') nb+2
          write (fmt2,'("(i5,", i0, "(1pe15.7),1x,a4)")') nb+3
 
-         call opcopy(t1,t2,t3,vx,vy,vz)
-
-         energy=op_glsc2_wt(t1,t2,t3,t1,t2,t3,bm1)
-
-         n=lx1*ly1*lz1*nelv
-
-         do i=0,nb
-            s=-u(i,1)
-            call opadds(t1,t2,t3,ub(1,i),vb(1,i),wb(1,i),s,n,2)
-            err(i)=op_glsc2_wt(t1,t2,t3,t1,t2,t3,bm1)
-         enddo
 
          if (nio.eq.0) then
             write (6,fmt1) istep,time,(cmax(i),i=0,nb),'cmax'
