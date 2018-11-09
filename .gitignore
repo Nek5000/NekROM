@@ -18,6 +18,7 @@ pod/baf-snaps
 docs
 test
 data
+.sync
 
 # file types
 
