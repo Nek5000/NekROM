@@ -30,6 +30,7 @@ c     parameters and common blocks for MOR
       common /moripar/ ad_nsteps, ad_iostep, ad_step
 
       common /morivars/ i0,j0,k0,i1,j1,k1,ns,navg
+
       common /morlu/ flu(nb,nb)
       common /morilu/ ir(nb), ic(nb)
 
