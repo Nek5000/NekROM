@@ -283,65 +283,65 @@ c     tkes = tkes / real(ns)
 c     return
 c     end
 c-----------------------------------------------------------------------
-c     function tke
+      subroutine ctke(tke)
 
-c     include 'MOR'
+      include 'MOR'
 
-c     parameter (lt=lx1*ly1*lz1*lelt)
+      parameter (lt=lx1*ly1*lz1*lelt)
 
-c     common /scrns/ ud(lt),vd(lt),wd(lt),ue(lt),ve(lt),we(lt)
+      common /scrns/ ud(lt),vd(lt),wd(lt),ue(lt),ve(lt),we(lt)
 
-c     call opsub3(ud,vd,wd,ub,vb,wb,ua,va,wa)
+      call opsub3(ud,vd,wd,ub,vb,wb,ua,va,wa)
 
-c     call opadd3(ue,ve,we,us(1,i),vs(1,i),ws(1,i),ud,vd,wd)
-c     tke = op_glsc2_wt(ue,ve,we,ue,ve,we,bm1)
+      call opadd3(ue,ve,we,us(1,i),vs(1,i),ws(1,i),ud,vd,wd)
+      tke = op_glsc2_wt(ue,ve,we,ue,ve,we,bm1)
 
-c     return
-c     end
+      return
+      end
 c-----------------------------------------------------------------------
-c     function e0n
+      subroutine ce0n(e0n)
 
-c     include 'MOR'
+      include 'MOR'
 
-c     parameter (lt=lx1*ly1*lz1*lelt)
+      parameter (lt=lx1*ly1*lz1*lelt)
 
-c     common /scrns/ ud(lt),vd(lt),wd(lt)
+      common /scrns/ ud(lt),vd(lt),wd(lt)
 
-c     call opcopy(ud,vd,wd,ua,va,wa)
+      call opcopy(ud,vd,wd,ua,va,wa)
 
-c     n=lx1*ly1*lz1*nelv
+      n=lx1*ly1*lz1*nelv
 
-c     do i=0,nb
-c        s=-avg(i)
-c        call opadds(ud,vd,wd,ub(1,i),vb(1,i),wb(1,i),s,n,2)
-c     enddo
+      do i=0,nb
+         s=-avg(i)
+         call opadds(ud,vd,wd,ub(1,i),vb(1,i),wb(1,i),s,n,2)
+      enddo
 
-c     e0n = op_glsc2_wt(ud,vd,wd,ud,vd,wd,bm1)
-c    $    / op_glsc2_wt(ua,va,wa,ua,va,wa,bm1)
+      e0n = op_glsc2_wt(ud,vd,wd,ud,vd,wd,bm1)
+     $    / op_glsc2_wt(ua,va,wa,ua,va,wa,bm1)
 
-c     return
-c     end
+      return
+      end
 c-----------------------------------------------------------------------
-c     function e1n
+      subroutine ce1n(e1n)
 
-c     include 'MOR'
+      include 'MOR'
 
-c     parameter (lt=lx1*ly1*lz1*lelt)
+      parameter (lt=lx1*ly1*lz1*lelt)
 
-c     common /scrns/ ud(lt),vd(lt),wd(lt)
+      common /scrns/ ud(lt),vd(lt),wd(lt)
 
-c     call opcopy(ud,vd,wd,ua,va,wa)
+      call opcopy(ud,vd,wd,uavg,vavg,wavg)
 
-c     n=lx1*ly1*lz1*nelv
+      n=lx1*ly1*lz1*nelv
 
-c     do i=0,nb
-c        s=-avg(i)
-c        call opadds(ud,vd,wd,ub(1,i),vb(1,i),wb(1,i),s,n,2)
-c     enddo
+      do i=0,nb
+         s=-avg(i)
+         call opadds(ud,vd,wd,ub(1,i),vb(1,i),wb(1,i),s,n,2)
+      enddo
 
-c     e1n = h10prod(ud,vd,wd,ud,vd,wd,h1,h2)
-c    $    / h10prod(ua,va,wa,ua,va,wa,h1,h2)
+      e1n = h10prod(ud,vd,wd,ud,vd,wd,h1,h2)
+     $    / h10prod(ua,va,wa,ua,va,wa,h1,h2)
 
-c     return
-c     end
+      return
+      end
 c-----------------------------------------------------------------------
