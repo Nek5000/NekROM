@@ -272,7 +272,7 @@ c-----------------------------------------------------------------------
       write (fmt2,'("(i5,", i0, "(1pe15.7),1x,a4)")') nb+3
 
       call rzero(cvar,nb+1)
-      tke=0
+      tkes=0
 
       do i=1,ns
          if (nio.eq.0) write (6,*) i,'th snapshot:'
@@ -285,10 +285,10 @@ c-----------------------------------------------------------------------
          enddo
 
          call ctke_fom(tmp,us(1,i),vs(1,i),ws(1,i))
-         tke=tke+tmp
+         tkes=tkes+tmp
       enddo
 
-      tke=tke/real(ns)
+      tkes=tkes/real(ns)
 
       if (nio.eq.0) then
          write (6,fmt1) (cmax(i),i=0,nb),'cmax'
