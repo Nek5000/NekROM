@@ -38,9 +38,5 @@ c
       parameter (lcvelt=1)             ! cvode
       parameter (lfdm=0)               ! == 1 for fast diagonalization method
 
-      ! MOR
-      parameter (ls=100) ! number of snapshots
-      parameter (nb=20)  ! number of basis vectors
-
       ! INTERNALS
       include 'SIZE.inc'
