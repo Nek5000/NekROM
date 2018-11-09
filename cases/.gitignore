@@ -1,6 +1,8 @@
+MOR
 *.f
-*ops
+ops
 fort.12
 fort.66
 fort.88
 file.list
+avg.list
