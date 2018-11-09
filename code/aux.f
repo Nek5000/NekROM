@@ -179,7 +179,159 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       common /scrns/ t1(lt),t2(lt),t3(lt)
-      common /ctracker/ cmax(0:nb), cmin(0:nb)
+      common /ctrack/ cmax(0:nb), cmin(0:nb)
+
+      character (len=72) fmt1
+      character (len=72) fmt2
+      character*8 fname
+
+      real err(0:nb)
+
+      if (istep.eq.0) then
+         call rom_init
+
+         call gengram
+         call genevec
+         call genbases
+
+         do i=0,nb
+            cmax(i) = -1e10
+            cmin(i) =  1e10
+         enddo
+
+         time=0.
+      endif
+
+      if (mod(istep,max(iostep,1)).eq.0) then
+         u(0,1) = 1.
+
+         call opsub3(t1,t2,t3,vx,vy,vz,ub(1,0),vb(1,0),wb(1,0))
+
+         nio = -1
+
+         if (ifl2) then
+            call wl2proj(u(1,1),t1,t2,t3)
+         else
+            call h10proj(u(1,1),t1,t2,t3)
+         endif
+
+         nio = nid
+
+         do i=0,nb
+            if (u(i,1).lt.cmin(i)) cmin(i)=u(i,1)
+            if (u(i,1).gt.cmax(i)) cmax(i)=u(i,1)
+         enddo
+
+         write (fmt1,'("(i5,", i0, "(1pe15.7),1x,a4)")') nb+2
+         write (fmt2,'("(i5,", i0, "(1pe15.7),1x,a4)")') nb+3
+
+         call opcopy(t1,t2,t3,vx,vy,vz)
+
+         energy=op_glsc2_wt(t1,t2,t3,t1,t2,t3,bm1)
+
+         n=lx1*ly1*lz1*nelv
+
+         do i=0,nb
+            s=-u(i,1)
+            call opadds(t1,t2,t3,ub(1,i),vb(1,i),wb(1,i),s,n,2)
+            err(i)=op_glsc2_wt(t1,t2,t3,t1,t2,t3,bm1)
+         enddo
+
+         if (nio.eq.0) then
+            write (6,fmt1) istep,time,(cmax(i),i=0,nb),'cmax'
+            write (6,fmt1) istep,time,(u(i,1),i=0,nb),'coef'
+            write (6,fmt1) istep,time,(cmin(i),i=0,nb),'cmin'
+            write (6,fmt2) istep,time,energy,(err(i),i=0,nb),'eerr'
+         endif
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine snap_analysis
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /scrns/ t1(lt),t2(lt),t3(lt)
+      common /ctrack/ cmax(0:nb), cmin(0:nb)
+
+      character (len=72) fmt1
+      character (len=72) fmt2
+      character*8 fname
+
+      real err(0:nb)
+
+      call rom_init
+
+      call gengram
+      call genevec
+      call genbases
+
+      do i=0,nb
+         cmax(i) = -1e10
+         cmin(i) =  1e10
+      enddo
+
+      call load_avg
+
+      u(0,1) = 1.
+
+      call opsub3(t1,t2,t3,vx,vy,vz,ub(1,0),vb(1,0),wb(1,0))
+
+      nio = -1
+
+      if (ifl2) then
+         call wl2proj(usa,ua,va,wa)
+      else
+         call h10proj(usa,ua,va,wa)
+      endif
+
+      nio = nid
+
+      do i=0,nb
+         if (u(i,1).lt.cmin(i)) cmin(i)=u(i,1)
+         if (u(i,1).gt.cmax(i)) cmax(i)=u(i,1)
+      enddo
+
+      write (fmt1,'("(i5,", i0, "(1pe15.7),1x,a4)")') nb+2
+      write (fmt2,'("(i5,", i0, "(1pe15.7),1x,a4)")') nb+3
+
+      call opcopy(t1,t2,t3,vx,vy,vz)
+
+      energy=op_glsc2_wt(t1,t2,t3,t1,t2,t3,bm1)
+
+      n=lx1*ly1*lz1*nelv
+
+      do i=0,nb
+         s=-u(i,1)
+         call opadds(t1,t2,t3,ub(1,i),vb(1,i),wb(1,i),s,n,2)
+         err(i)=op_glsc2_wt(t1,t2,t3,t1,t2,t3,bm1)
+      enddo
+
+      if (nio.eq.0) then
+         write (6,fmt1) istep,time,(cmax(i),i=0,nb),'cmax'
+         write (6,fmt1) istep,time,(u(i,1),i=0,nb),'coef'
+         write (6,fmt1) istep,time,(cmin(i),i=0,nb),'cmin'
+         write (6,fmt2) istep,time,energy,(err(i),i=0,nb),'eerr'
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine rom_analysis
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /scrns/ t1(lt),t2(lt),t3(lt)
+      common /ctrack/ cmax(0:nb), cmin(0:nb)
 
       character (len=72) fmt1
       character (len=72) fmt2
@@ -412,8 +564,6 @@ c     This routine reads average files specificed in avg.list
       parameter (lt=lx1*ly1*lz1*lelt)
 
       common /scrns/ t1(lt),t2(lt),t3(lt)
-
-      parameter (lt=lx1*ly1*lz1*lelt)
 
       ierr = 0
 
