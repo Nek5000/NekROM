@@ -326,10 +326,8 @@ c-----------------------------------------------------------------------
          call genevec
          call genbases
 
-         do i=0,nb
-            cmax(i) = -1e10
-            cmin(i) =  1e10
-         enddo
+         call cfill(cmax,-1e10,nb+1)
+         call cfill(cmin, 1e10,nb+1)
 
          time=0.
       endif
