@@ -310,14 +310,13 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       common /scrns/ t1(lt),t2(lt),t3(lt)
-      common /ctrack/ cmax(0:nb), cmin(0:nb), cavg(0:nb)
-      common /scrm1/ rt1(0:nb), rt2(0:nb), rt3(0:nb)
+      common /ctrack/ tlast,tdiff,
+     $                cmax(0:nb),cmin(0:nb),cavg(0:nb),cvar(0:nb)
+      common /scrm1/ rt1(0:nb),rt2(0:nb),rt3(0:nb)
 
       character (len=72) fmt1
       character (len=72) fmt2
       character*8 fname
-
-      real err(0:nb)
 
       if (istep.eq.0) then
          call rom_init
@@ -328,11 +327,27 @@ c-----------------------------------------------------------------------
 
          call cfill(cmax,-1e10,nb+1)
          call cfill(cmin, 1e10,nb+1)
+         call rzero(cavg,nb+1)
+         call rzero(cvar,nb+1)
+         tke=0.
 
          time=0.
+         tlast=0.
       endif
 
-      if (mod(istep,max(iostep,1)).eq.0) then
+      call add2s2(cavg,u,dt,nb+1)
+
+      do i=0,nb
+         cvar(i)=cvar(i)+dt*(usa(i)-u(i))**2
+      enddo
+
+      call ctke_rom(tmp,u)
+      tke=tke+dt*tmp
+
+      if (mod(max(istep,1),max(iostep,1)).eq.0) then
+         deltat=time-tlast
+         tlast=time
+
          nio = -1
          call proj2bases(u,vx,vy,vz)
          nio = nid
@@ -340,18 +355,28 @@ c-----------------------------------------------------------------------
          do i=0,nb
             if (u(i,1).lt.cmin(i)) cmin(i)=u(i,1)
             if (u(i,1).gt.cmax(i)) cmax(i)=u(i,1)
+            cvar(i)=cvar(i)
          enddo
 
          write (fmt1,'("(i5,", i0, "(1pe15.7),1x,a4)")') nb+2
          write (fmt2,'("(i5,", i0, "(1pe15.7),1x,a4)")') nb+3
 
+         s=1./deltat
+         call cmult(cavg,s,nb+1)
+         tke=tke/deltat
 
          if (nio.eq.0) then
             write (6,fmt1) istep,time,(cmax(i),i=0,nb),'cmax'
             write (6,fmt1) istep,time,(u(i,1),i=0,nb),'coef'
             write (6,fmt1) istep,time,(cmin(i),i=0,nb),'cmin'
-            write (6,fmt2) istep,time,energy,(err(i),i=0,nb),'eerr'
+            write (6,fmt2) istep,time,deltat,(cavg(i),i=0,nb),'cavg'
+            write (6,fmt2) istep,time,deltat,(cvar(i),i=0,nb),'cvar'
+            write (6,(i5,3(1pe15.7),a3)) istep,time,deltat,tke,'tke'
          endif
+
+         tke=0.
+         call rzero(cavg,nb+1)
+         call rzero(cvar,nb+1)
       endif
 
       return
