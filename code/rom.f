@@ -777,19 +777,61 @@ c     update approximate Hessian
       return
       end
 c-----------------------------------------------------------------------
-      subroutine comp_gradf
+      subroutine comp_qngradf
       
       include 'SIZE'
       include 'MOR'
-      real tmp1(nb),tmp2(nb),tmp3(nb)
+      real tmp1(nb),tmp2(nb),tmp3(nb),tmp4(nb)
 
 
       call sub3(tmp1,u(1,1),sample_max,nb)  
       call sub3(tmp2,u(1,1),sample_min,nb)  
       call add3(tmp3,tmp1,tmp2,nb)
 
-      call add3s12(gradf,rhs,tmp3,-1,-par,nb)
-c      gradf = helm * u(1,1)
+      call add3s12(qngradf,rhs,tmp3,-1,-par,nb)
+
+      ONE = 1.
+      ZERO= 0.
+      call dgemv( 'N',nb,nb,ONE,helm,nb,u(1,1),1,ZERO,tmp4,1)
+      call add2(qngradf,tmp4,nb)
 
       return 
+      end
+c-----------------------------------------------------------------------
+      subroutine comp_qnf
+      
+      include 'SIZE'
+      include 'MOR'
+      real tmp1(nb),tmp2(nb),tmp3(nb),tmp4(nb),tmp5(nb)
+      real term1,term2,term3,term4
+
+c     bar1 and bar2 are the barrier function for two constrains
+      real bar1,bar2
+
+      call sub3(tmp1,sample_max,u(1,1),nb)  
+      call sub3(tmp2,u(1,1),sample_min,nb)  
+
+c     currently can only come up with this way to compute log for an array
+      do i=1,nb
+         tmp3(i) = log(tmp1(i))
+         tmp4(i) = log(tmp2(i))
+      enddo
+
+      bar1 = vlsum(tmp3,nb)
+      bar2 = vlsum(tmp4,nb)
+
+c     evaluate quasi-newton f
+c     inverse of helm hasn't been implemented yet
+
+      term2 = glsc2(u(1,1),rhs,nb)
+      term3 = par*(bar1+bar2)
+
+      ONE = 1.
+      ZERO= 0.
+      call dgemv( 'N',nb,nb,ONE,helm,nb,u(1,1),1,ZERO,tmp5,1)
+      term1 = 0.5 * glsc2(tmp5,u(1,1),nb)
+
+      qnf = term1 - term2 - term3
+
+      return
       end
