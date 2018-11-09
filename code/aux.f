@@ -401,41 +401,44 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine ctkes(tkes)
+      subroutine ctke_fom(tke,u1,u2,u3)
 
       include 'SIZE'
       include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /scrns/ ud(lt),vd(lt),wd(lt),ue(lt),ve(lt),we(lt)
+      common /scrns/ ud(lt),vd(lt),wd(lt)
 
-      call opsub3(ud,vd,wd,ub,vb,wb,ua,va,wa)
+      real u1(lt),u2(lt),u3(lt)
 
-      tkes = 0.
+      call opsub3(ud,vd,wd,u1,u2,u3,ua,va,wa)
 
-      do i=1,ns
-         call opadd3(ue,ve,we,us(1,i),vs(1,i),ws(1,i),ud,vd,wd)
-         tkes = tkes + op_glsc2_wt(ue,ve,we,ue,ve,we,bm1)
-      enddo
-
-      tkes = tkes / real(ns)
+      tke = op_glsc2_wt(ud,vd,wd,ud,vd,wd,bm1)
 
       return
       end
 c-----------------------------------------------------------------------
-      subroutine ctke(tke)
+      subroutine ctke_rom(tke,coef)
 
       include 'SIZE'
       include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /scrns/ ud(lt),vd(lt),wd(lt),ue(lt),ve(lt),we(lt)
+      real coef(0:nb), cdiff(0:nb)
 
-      call opsub3(ud,vd,wd,ub,vb,wb,ua,va,wa)
+      tke=0.
 
-      call opadd3(ue,ve,we,us(1,i),vs(1,i),ws(1,i),ud,vd,wd)
-      tke = op_glsc2_wt(ue,ve,we,ue,ve,we,bm1)
+      do i=0,nb
+         cdiff(i)=coef(i)-usa(i)
+      enddo
+
+      do j=0,nb
+      do i=0,nb
+         tke=tke+b0(i,j)*cdiff(i)*cdiff(j)
+      enddo
+      enddo
 
       return
       end
