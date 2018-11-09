@@ -790,6 +790,7 @@ c     update approximate Hessian
 c-----------------------------------------------------------------------
       subroutine comp_gradf
       
+      include 'SIZE'
       include 'MOR'
       real tmp1(nb),tmp2(nb),tmp3(nb)
 
