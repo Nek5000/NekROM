@@ -246,7 +246,7 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       common /scrns/ t1(lt),t2(lt),t3(lt)
-      common /ctrack/ cmax(0:nb), cmin(0:nb)
+      common /ctrack/ cmax(0:nb), cmin(0:nb), cvar(0:nb)
 
       character (len=72) fmt1
       character (len=72) fmt2
@@ -267,30 +267,28 @@ c-----------------------------------------------------------------------
 
       call load_avg
 
-      u(0,1) = 1.
-
-      call opsub3(t1,t2,t3,vx,vy,vz,ub(1,0),vb(1,0),wb(1,0))
-
-      nio = -1
-
-      if (ifl2) then
-         call wl2proj(usa,ua,va,wa)
-      else
-         call h10proj(usa,ua,va,wa)
-      endif
-
-      nio = nid
-
-      do i=0,nb
-         if (u(i,1).lt.cmin(i)) cmin(i)=u(i,1)
-         if (u(i,1).gt.cmax(i)) cmax(i)=u(i,1)
-      enddo
+      if (nio.eq.0) write (6,*) 'generating average coefficients'
+      call proj2bases(usa,ua,va,wa)
 
       write (fmt1,'("(i5,", i0, "(1pe15.7),1x,a4)")') nb+2
       write (fmt2,'("(i5,", i0, "(1pe15.7),1x,a4)")') nb+3
 
-      call opcopy(t1,t2,t3,vx,vy,vz)
+      call rzero(cvar,nb+1)
 
+      do i=1,ns
+         if (nio.eq.0) write (6,*) i,'th snapshot:'
+         call proj2bases(u,us,vs,ws)
+
+         do i=0,nb
+            cvar(i)=cvar(i)+(usa(i)-u(i,1))**2
+            if (u(i,1).lt.cmin(i)) cmin(i)=u(i,1)
+            if (u(i,1).gt.cmax(i)) cmax(i)=u(i,1)
+         enddo
+
+         call ctke_fom(tke,us(1,i),vs(1,i),ws(1,i))
+      enddo
+
+      call opcopy(t1,t2,t3,vx,vy,vz)
       energy=op_glsc2_wt(t1,t2,t3,t1,t2,t3,bm1)
 
       n=lx1*ly1*lz1*nelv
@@ -302,10 +300,11 @@ c-----------------------------------------------------------------------
       enddo
 
       if (nio.eq.0) then
-         write (6,fmt1) istep,time,(cmax(i),i=0,nb),'cmax'
-         write (6,fmt1) istep,time,(u(i,1),i=0,nb),'coef'
-         write (6,fmt1) istep,time,(cmin(i),i=0,nb),'cmin'
-         write (6,fmt2) istep,time,energy,(err(i),i=0,nb),'eerr'
+         write (6,fmt1) (cmax(i),i=0,nb),'cmax'
+         write (6,fmt1) (usa(i) ,i=0,nb),'cavg'
+         write (6,fmt1) (cmin(i),i=0,nb),'cmin'
+         write (6,fmt1) (cmin(i),i=0,nb),'cvar'
+         write (6,*)                tkes,'tkes'
       endif
 
       return
@@ -344,18 +343,10 @@ c-----------------------------------------------------------------------
       endif
 
       if (mod(istep,max(iostep,1)).eq.0) then
-         u(0,1) = 1.
-
          call opsub3(t1,t2,t3,vx,vy,vz,ub(1,0),vb(1,0),wb(1,0))
 
          nio = -1
-
-         if (ifl2) then
-            call wl2proj(u(1,1),t1,t2,t3)
-         else
-            call h10proj(u(1,1),t1,t2,t3)
-         endif
-
+         call proj2bases(u,vx,vy,vz)
          nio = nid
 
          do i=0,nb
