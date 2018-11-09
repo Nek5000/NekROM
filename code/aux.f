@@ -150,21 +150,21 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine reconstruct(ux,uy,uz)
+      subroutine recon(ux,uy,uz,coef)
 
       include 'SIZE'
       include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real ux(lt),uy(lt),uz(lt)
+      real ux(lt),uy(lt),uz(lt), coef(0:nb)
 
       n=lx1*ly1*lz1*nelv
 
       call opzero(ux,uy,uz)
 
       do i=0,nb
-         call opadds(ux,uy,uz,ub(1,i),vb(1,i),wb(1,i),u(i,1),n,2)
+         call opadds(ux,uy,uz,ub(1,i),vb(1,i),wb(1,i),coef(i,1),n,2)
       enddo
 
       return
