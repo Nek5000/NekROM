@@ -29,6 +29,9 @@ c     parameters and common blocks for MOR
       common /morlu/ flu(nb,nb)
       common /morilu/ ir(nb), ic(nb)
 
+      common /moropt/ helm(nb,nb)
+      common /morhyperpar/ sample_min(nb), sample_max(nb)
+
       integer ad_nsteps, ad_iostep, ad_step
       common /moripar/ ad_nsteps, ad_iostep, ad_step
 
