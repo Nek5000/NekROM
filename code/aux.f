@@ -193,7 +193,6 @@ c-----------------------------------------------------------------------
          call gengram
          call genevec
          call genbases
-c        call genops
 
          do i=0,nb
             cmax(i) = -1e10
