@@ -139,6 +139,8 @@ c     if (nio.eq.0) write (6,*) 'entering rom_step'
 
       time=time+ad_dt
 
+      ad_step = istep
+
       count = min0(ad_step,3)
 
       if (ad_step.le.3) then
