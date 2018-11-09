@@ -51,44 +51,9 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /stokes/ rgx(lt), rgy(lt)
-      common /scrk1/ t1(lt)
-
       real ud(lt),vd(lt),dp(lt)
 
-      if (nio.eq.0) write (6,*) 'step=',istep
-      if (istep.eq.0) call outpost(vx,vy,vz,pr,t,'   ')
-      if (istep.eq.1.and.iftran) then
-         call outpost(vx,vy,vz,pr,t,'   ')
-         call exitt0
-      endif
-
-      if (istep.eq.2) then
-         call opdiv(t1,vx,vy,vz)
-         call outpost(vx,vy,vz,t1,t,'sto')
-         call incomprn(vx,vy,vz,t1)
-         call opdiv(t1,vx,vy,vz)
-         call outpost(vx,vy,vz,t1,t,'sto')
-      endif
-
-      if (mod(istep,max(iostep,1)).eq.0) then ! output the difference
-         call opsub3(ud,vd,vz,vx,vy,vz,vxlag,vylag,vzlag)
-         call opnorm(dl2,ud,vd,vz,'L2 ')
-         if (nio.eq.0) write (6,123) istep,time,dl2
-      endif
-
-      if (istep.eq.0) then ! set stokes solution to rgx & rgy
-c        n = lx1*ly1*lz1*nelv
-c        call copy(rgx,vx,n)
-c        call copy(rgy,vy,n)
-c        call opzero(vx,vy,vz)
-c        call bcdirvc(vx,vy,vz,v1mask,v2mask,v3mask)
-c        call incomprn(vx,vy,vz,dp)
-      else ! get the lifted solution at a given time-step
-c        call opsub3(ud,vd,vz,vx,vy,vz,rgx,rgy,vz)
-      endif
-
- 123  format('dl2',i8,1p2e12.4)
+      call avg_all
 
       return
       end
@@ -138,65 +103,25 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'TOTAL'
 
-      integer e
-
-      common /ldcpar/ dxmin
-      real tmp(1)
-
-      eps = 1.e-4
-
-      xmin = glmin(xc,nelt*2**ldim)
-      xmax = glmax(xc,nelt*2**ldim)
-
-      ymin = glmin(yc,nelt*2**ldim)
-      ymax = glmax(yc,nelt*2**ldim)
-
-      xave = xmax - xmin
-
-      sx = 1 / (xmax-xmin)
-      sy = 1 / (ymay-ymin)
-
-      nelx = nint(sqrt(real(nelgt)))
-
-      do e=1,nelt
-      do i=1,2**ldim
-         xc(i,e) = 2.*nint(nelx * xc(i,e)) / real(nelx)-1.
-         yc(i,e) = 2.*nint(nelx * yc(i,e)) / real(nelx)-1.
-      enddo
-      enddo
-
-      g = .8
-      if (param(49).gt.0.1) g = param(49)
-
-      if (nio.eq.0) write (6,*) 'geometric factor = ',g
-
-      dxmin = 1.
-      
-      do e=1,nelt
-      do i=1,2**ldim
-         x = xc(i,e)
-         y = yc(i,e)
-         m = nint(nelx*.5)
-         nx = abs(nint(x*m))
-         ny = abs(nint(y*m))
-         xc(i,e) = 2*(sign(1.,x) * (1-g**nx)/(1-g**m) * .5 + .5)-1.
-         yc(i,e) = 2*(sign(1.,y) * (1-g**ny)/(1-g**m) * .5 + .5)-1.
-         x = xc(i,e)
-
-         if (x.gt.eps.and.x.lt.dxmin) dxmin = x
-      enddo
-      enddo
-
-      tmp(1) = dxmin
-
-      dxmin = glmin(tmp,1)
-
       return
       end
 c-----------------------------------------------------------------------
       subroutine usrdat2
+
       include 'SIZE'
       include 'TOTAL'
+
+c     call rescale_x(xm1,1,2)
+      ifxyo = .true.
+      n=lx1*ly1*lz1*nelv
+      do i=1,n
+         x=xm1(i,1,1,1)
+         y=ym1(i,1,1,1)
+         xm1(i,1,1,1) = x*2-1
+         ym1(i,1,1,1) = y*2-1
+      enddo
+      call outpost(xm1,ym1,zm1,pr,t,'mes')
+c     call rescale_x(ym1,-1,1)
 
       return
       end
