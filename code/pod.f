@@ -344,3 +344,41 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine comp_hyperpar
+
+      include 'SIZE'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real ep
+      real uw(lt),vw(lt),ww(lt),h1(lt),h2(lt)
+      real tmp1(nb),tmp2(nb),delta(nb)
+      real work(ls,nb)
+      ep = 1e-2
+
+      n  = lx1*ly1*lz1*nelt
+
+      call rone (h1,n)
+      call rzero(h2,n)
+
+      do j=1,nb                    ! compute hyper-parameter
+         call axhelm(uw,ub(1,j),h1,h2,1,1)
+         call axhelm(vw,vb(1,j),h1,h2,1,1)
+         if (ldim.eq.3) call axhelm(ww,wb(1,j),h1,h2,1,1)
+         do i=1,ls
+            work(i,j) = glsc2(us(1,i),uw,n)+glsc2(vs(1,i),vw,n)
+            if (ldim.eq.3) work(i,j) = work(i,j)+glsc2(ws(1,i),ww,n)
+         enddo
+         tmp1(j) = vlmin(work(:,j),ls)
+         tmp2(j) = vlmax(work(:,j),ls)
+         delta(j) = tmp2(j)-tmp1(j)
+         sample_min(j) = tmp1(j) - ep * delta(j)
+         sample_max(j) = tmp2(j) + ep * delta(j)
+         write(6,*) j,sample_min(j),sample_max(j)
+      enddo
+
+      write(6,*) 'quit in comp_hyperpar',nb,ls
+      call exitt0
+      return
+      end
