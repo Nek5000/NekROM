@@ -42,7 +42,23 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine h10proj(coef,t1,t2,t3)
+      subroutine proj2bases(coef,u1,u2,u3)
+
+      include 'SIZE'
+      include 'MOR'
+
+      real coef(0:nb),u1(lt),u2(lt),u3(lt)
+
+      if (ifl2) then
+         call wl2proj(coef,u1,u2,u3)
+      else
+         call h10proj(coef,u1,u2,u3)
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine h10proj(coef,u1,u2,u3)
 
       include 'SIZE'
       include 'SOLN'
@@ -51,12 +67,13 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real t1(lt),t2(lt),t3(lt)
+      real u1(lt),u2(lt),u3(lt)
 
-      common /scrk3/ t4(lt),t5(lt),t6(lt)
+
+      common /scrk3/ t1(lt),t4(lt),t3(lt),t4(lt),t5(lt),t6(lt)
       common /scrk4/ h1(lt),h2(lt)
 
-      real coef(nb)
+      real coef(0:nb)
 
       if (nio.eq.0) write (6,*) 'inside h10proj'
 
@@ -64,6 +81,10 @@ c-----------------------------------------------------------------------
 
       call rone(h1,n)
       call rzero(h2,n)
+      call opsub3(t1,t2,t3,u1,u2,u3,ub,vb,wb)
+
+      coef(0) = 1.
+      if (nio.eq.0) write (6,*) 'h10coef', coef(0),coef(0),1
 
       do i=1,nb
          call axhelm(t4,ub(1,i),h1,h2,1,1)
@@ -87,7 +108,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine wl2proj(coef,t1,t2,t3)
+      subroutine wl2proj(coef,u1,u2,u3)
 
       include 'SIZE'
       include 'SOLN'
@@ -96,20 +117,25 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real t1(lt),t2(lt),t3(lt)
+      real u1(lt),u2(lt),u3(lt)
 
-      common /scrk3/ t4(lt),t5(lt),t6(lt)
+      common /scrk3/ t1(lt),t2(lt),t3(lt),t4(lt),t5(lt),t6(lt)
       common /scrk4/ h1(lt),h2(lt),bwm1(lt)
 
-      real coef(nb)
+      real coef(0:nb)
 
-      if (nio.eq.0) write (6,*) 'inside l2proj'
+      if (nio.eq.0) write (6,*) 'inside wl2proj'
 
       n=lx1*ly1*lz1*nelt
 
       call rone(h1,n)
       call rzero(h2,n)
       call col3(bwm1,bm1,wm1,n)
+      call opsub3(t1,t2,t3,u1,u2,u3,ub,vb,wb)
+
+      coef(0) = 1.
+
+      if (nio.eq.0) write (6,*) 'l2coef', coef(0),coef(0),1
 
       do i=1,nb
          ww = op_glsc2_wt(
@@ -120,7 +146,7 @@ c-----------------------------------------------------------------------
          if (nio.eq.0) write (6,*) 'l2coef', coef(i),vv,ww
       enddo
 
-      if (nio.eq.0) write (6,*) 'exiting l2proj'
+      if (nio.eq.0) write (6,*) 'exiting wl2proj'
 
       return
       end
