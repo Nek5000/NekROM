@@ -120,7 +120,6 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
 c     Matrices and vectors for advance
-      real helm(1:nb,1:nb), rhs(1:nb)
       real tmp(0:nb),tmat(nb,nb+1)
       real coef(1:nb)
 
@@ -647,3 +646,160 @@ c     enddo
       return
       end
 c-----------------------------------------------------------------------
+      subroutine rom_const
+c This subroutine is solving rom with constrains
+c The subroutine is based on BFGS method with barrier function
+      
+c-----------------------------------------------------------------------
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+c     Matrices and vectors for advance
+      real tmp(0:nb),tmat(nb,nb+1)
+      real coef(1:nb)
+
+      common /scrk3/ work(lt)
+      common /scrk1/ t1(lt),t2(lt),t3(lt)
+
+c     Variable for vorticity
+      real vort(lt,3)
+
+c     Working arrays for LU
+
+      common /nekmpi/ nidd,npp,nekcomm,nekgroup,nekreal
+
+c     if (nio.eq.0) write (6,*) 'entering rom_step'
+
+      n  = lx1*ly1*lz1*nelt
+
+      time=time+ad_dt
+
+      count = min0(ad_step,3)
+
+      if (ad_step.le.3) then
+         call cmult2(helm,b,ad_beta(1,count)/ad_dt,nb*nb)
+         call add2s2(helm,a,1/ad_re,nb*nb)
+      endif
+
+      ONE = 1.
+      ZERO= 0.
+
+      call mxm(u,nb+1,ad_beta(2,count),3,tmp,1)
+
+      call dgemv( 'N',nb,nb,ONE,b,nb,tmp(1),1,ZERO,rhs,1)
+
+      call cmult(rhs,-1/ad_dt,nb)
+      call add2s2(rhs,a0(1,0),-1/ad_re,nb)
+
+      call copy(conv(1,3),conv(1,2),nb)
+      call copy(conv(1,2),conv(1,1),nb)
+
+      if (param(51).eq.0) then
+         call mxm(c,nb*(nb+1),u,nb+1,tmat,1)
+         call mxm(tmat,nb,u,nb+1,conv,1)
+      else
+         call evalc(conv)
+      endif
+
+      call mxm(conv,nb,ad_alpha(1,count),3,tmp,1)
+
+      call sub2(rhs,tmp,nb)
+
+      call copy(u(1,3),u(1,2),nb)
+      call copy(u(1,2),u(1,1),nb)
+
+      call opt_const
+
+      if (mod(ad_step,ad_iostep).eq.0) then
+
+!        This output is to make sure the ceof matches with matlab code
+
+         call sleep(nid)
+
+         write(6,*)'ad_step:',ad_step,ad_iostep,npp,nid
+
+         if (ad_step.eq.ad_nsteps) then
+            do j=1,nb
+               write(6,*) 'final',j,u(j,1)
+            enddo
+         else
+            do j=1,nb
+               write(6,*) j,u(j,1)
+            enddo
+         endif
+         call dumpcoef(u(:,1),nb,(ad_step/ad_iostep))
+
+         call sleep(np-1-nid)
+
+         call opzero(vx,vy,vz)
+         do j=1,nb
+            call opadds(vx,vy,vz,ub(1,j),vb(1,j),wb(1,j),coef(j),n,2)
+         enddo
+         call opadd2  (vx,vy,vz,ub,vb,wb)
+
+!        comput the vorticity of the ROM reconstructed field
+         call opcopy(t1,t2,t3,vx,vy,vz)
+         call comp_vort3(vort,work1,work2,t1,t2,t3)
+         ifto = .true. ! turn on temp in fld file
+         call copy(t,vort,n)
+
+         call outpost (vx,vy,vz,pr,t,'rom')
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine opt_const
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+c     parameter for barrier function
+c     it should starting from value greater than one and decrease
+      real B_qn(nb,nb)
+      integer par_step
+
+      par_step = 3
+      par = 1 
+
+c     use helm from BDF3/EXT3 as intial approximation
+      do i=1,nb
+         call copy(B_qn(1,i),helm(1,i),nb)
+      enddo
+
+c     BFGS method with barrier function starts
+      do i=1,par_step
+
+c     compute quasi-Newton step
+         do j=1,500
+c     update solution
+
+c     update approximate Hessian
+
+         enddo
+         par = par*0.1
+
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine comp_gradf
+      
+      include 'MOR'
+      real tmp1(nb),tmp2(nb),tmp3(nb)
+
+
+      call sub3(tmp1,u(1,1),sample_max,nb)  
+      call sub3(tmp2,u(1,1),sample_min,nb)  
+      call add3(tmp3,tmp1,tmp2,nb)
+
+      call add3s12(gradf,rhs,tmp3,-1,-par,nb)
+c      gradf = helm * u(1,1)
+
+      return 
+      end
