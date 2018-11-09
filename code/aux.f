@@ -279,10 +279,10 @@ c-----------------------------------------------------------------------
          if (nio.eq.0) write (6,*) i,'th snapshot:'
          call proj2bases(u,us,vs,ws)
 
-         do i=0,nb
-            cvar(i)=cvar(i)+(usa(i)-u(i,1))**2
-            if (u(i,1).lt.cmin(i)) cmin(i)=u(i,1)
-            if (u(i,1).gt.cmax(i)) cmax(i)=u(i,1)
+         do j=0,nb
+            cvar(j)=cvar(j)+(usa(j)-u(j,1))**2
+            if (u(j,1).lt.cmin(j)) cmin(j)=u(j,1)
+            if (u(j,1).gt.cmax(j)) cmax(j)=u(j,1)
          enddo
 
          call ctke_fom(tke,us(1,i),vs(1,i),ws(1,i))
