@@ -69,8 +69,7 @@ c-----------------------------------------------------------------------
 
       real u1(lt),u2(lt),u3(lt)
 
-
-      common /scrk3/ t1(lt),t4(lt),t3(lt),t4(lt),t5(lt),t6(lt)
+      common /scrk3/ t1(lt),t2(lt),t3(lt),t4(lt),t5(lt),t6(lt)
       common /scrk4/ h1(lt),h2(lt)
 
       real coef(0:nb)
