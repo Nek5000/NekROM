@@ -13,7 +13,7 @@ c     parameters and common blocks for MOR
      $                 vs(lx1*ly1*lz1*lelt,ls),
      $                 ws(lx1*ly1*lz1*lelt,ls)
 
-      common /morave/ ua(lx1*ly1*lz1*lelt,ls),
+      common /moravg/ ua(lx1*ly1*lz1*lelt,ls),
      $                va(lx1*ly1*lz1*lelt,ls),
      $                wa(lx1*ly1*lz1*lelt,ls)
 
