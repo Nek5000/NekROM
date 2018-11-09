@@ -261,27 +261,27 @@ c        call genops
       return
       end
 c-----------------------------------------------------------------------
-c     function tkes
+      subroutine ctkes(tkes)
 
-c     include 'MOR'
+      include 'MOR'
 
-c     parameter (lt=lx1*ly1*lz1*lelt)
+      parameter (lt=lx1*ly1*lz1*lelt)
 
-c     common /scrns/ ud(lt),vd(lt),wd(lt),ue(lt),ve(lt),we(lt)
+      common /scrns/ ud(lt),vd(lt),wd(lt),ue(lt),ve(lt),we(lt)
 
-c     call opsub3(ud,vd,wd,ub,vb,wb,ua,va,wa)
+      call opsub3(ud,vd,wd,ub,vb,wb,ua,va,wa)
 
-c     tkes = 0.
+      tkes = 0.
 
-c     do i=1,ns
-c        call opadd3(ue,ve,we,us(1,i),vs(1,i),ws(1,i),ud,vd,wd)
-c        tkes = tkes + op_glsc2_wt(ue,ve,we,ue,ve,we,bm1)
-c     enddo
+      do i=1,ns
+         call opadd3(ue,ve,we,us(1,i),vs(1,i),ws(1,i),ud,vd,wd)
+         tkes = tkes + op_glsc2_wt(ue,ve,we,ue,ve,we,bm1)
+      enddo
 
-c     tkes = tkes / real(ns)
+      tkes = tkes / real(ns)
 
-c     return
-c     end
+      return
+      end
 c-----------------------------------------------------------------------
       subroutine ctke(tke)
 
