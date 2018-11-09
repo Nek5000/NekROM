@@ -299,7 +299,7 @@ c-----------------------------------------------------------------------
       n=lx1*ly1*lz1*nelv
 
       do i=0,nb
-         s=-avg(i)
+         s=-usa(i)
          call opadds(ud,vd,wd,ub(1,i),vb(1,i),wb(1,i),s,n,2)
       enddo
 
@@ -322,7 +322,7 @@ c-----------------------------------------------------------------------
       n=lx1*ly1*lz1*nelv
 
       do i=0,nb
-         s=-avg(i)
+         s=-usa(i)
          call opadds(ud,vd,wd,ub(1,i),vb(1,i),wb(1,i),s,n,2)
       enddo
 
