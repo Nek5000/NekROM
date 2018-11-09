@@ -3,7 +3,7 @@
   2  DIMENSIONAL RUN
  118  PARAMETERS FOLLOW
    1.00000         DENSITY
-  -10000           VISCOS
+  -15000           VISCOS
    0.00000         BETAG
    0.00000         GTHETA
    0.00000         PGRADX
@@ -12,11 +12,11 @@
    1.00000         CONDUCT
    0.00000         QVOL
    0.00000         FINTIME
-  50000            NSTEPS
-   -2.50e-3         DT
+   1.00000E+05     NSTEPS
+  -5.00000E-03     DT
    0.00000         IOCOMM
    0.00000         IOTIME
-   500              IOSTEP
+   2.00000E+02      IOSTEP
    0.00000         EQTYPE
    1.00000         AXIS
   0.500000E-01     GRID
@@ -28,7 +28,7 @@
   1.000000E-08     TOLREL
   1.000000E-04     TOLABS
    1.00000         COURANT
-   2.00000         TORDER
+   3.00000         TORDER
    0.00000
    0.00000
    0.00000
@@ -64,12 +64,12 @@
    0.00000
    0.00000
    0.00000
-   0.00000
+   8.00000     p063 =8 --> force 8-byte output
    0.00000
    1.00000         =separate .fld file for each dump.
    4.00000         ormat for output .fld file
    4.00000         ormat for input file
-   0.00000
+   2.00000E+04 p068 iastep: freq for avg_all (0=iostep)
 0  5000.00                   frequency of srf dump
    0.00000
    0.00000
@@ -129,7 +129,7 @@
  T         IFFLOW
  F         IFHEAT
  T         IFTRAN
- F, 10*F   IFNAV & IFADVC (convection in P.S. fields)
+ T, 10*F   IFNAV & IFADVC (convection in P.S. fields)
  2*F, 10*T IFTMSH (IF mesh for this field is T mesh)
  F         IFAXIS
  F         IFSTRS
