@@ -32,6 +32,7 @@ c     parameters and common blocks for MOR
       common /moropt/ helm(nb,nb), rhs(nb)
       common /morhyperpar/ sample_min(nb), sample_max(nb)
       common /moropt_par/ par
+      common /morqn/ qngradf,qnf
 
       integer ad_nsteps, ad_iostep, ad_step
       common /moripar/ ad_nsteps, ad_iostep, ad_step
