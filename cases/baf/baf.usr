@@ -102,6 +102,7 @@ c-----------------------------------------------------------------------
       call genevec
       call dumpeig(gram_eig)
       call genbases
+      call comp_hyperpar
       call genops
 
       call rom_setup
