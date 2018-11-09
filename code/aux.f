@@ -338,7 +338,7 @@ c-----------------------------------------------------------------------
       call add2s2(cavg,u,dt,nb+1)
 
       do i=0,nb
-         cvar(i)=cvar(i)+dt*(usa(i)-u(i))**2
+         cvar(i)=cvar(i)+dt*(usa(i)-u(i,1))**2
       enddo
 
       call ctke_rom(tmp,u)
@@ -371,7 +371,7 @@ c-----------------------------------------------------------------------
             write (6,fmt1) istep,time,(cmin(i),i=0,nb),'cmin'
             write (6,fmt2) istep,time,deltat,(cavg(i),i=0,nb),'cavg'
             write (6,fmt2) istep,time,deltat,(cvar(i),i=0,nb),'cvar'
-            write (6,(i5,3(1pe15.7),a3)) istep,time,deltat,tke,'tke'
+            write (6,'(i5,3(1pe15.7),a3)') istep,time,deltat,tke,'tke'
          endif
 
          tke=0.
