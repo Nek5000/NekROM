@@ -400,3 +400,77 @@ c     This routine reads files specificed in file.list
       return
       end
 c-----------------------------------------------------------------------
+      subroutine load_avg
+
+c     This routine reads average files specificed in avg.list
+
+      include 'SIZE'
+      include 'MOR'
+      include 'TOTAL'
+      include 'ZPER'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /scrns/ t1(lt),t2(lt),t3(lt)
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      ierr = 0
+
+      if (nid.eq.0) open(77,file='avg.list',status='old',err=199)
+
+      ierr = iglmax(ierr,1)
+
+      if (ierr.gt.0) goto 199
+
+      n = lx1*ly1*lz1*nelt
+
+      call opcopy(t1,t2,t3,vx,vy,vz)
+      call opzero(us,vs,ws)
+
+      ttime=0.
+
+      icount = 0
+
+      do ipass=1,navg
+         call blank(initc,127)
+         initc(1) = 'done '
+         if (nid.eq.0) read(77,127,end=998) initc(1)
+  998    call bcast(initc,127)
+  127    format(a127)
+
+         if (indx1(initc,'done ',5).eq.0) then ! We're not done
+
+            nfiles = 1
+
+            call restart(nfiles)  ! Note -- time is reset.
+            ttime=ttime+time
+
+            call opadds(us,vs,ws,vx,vy,vz,time,n,2)
+
+            icount = icount+1
+         else
+            goto 999
+         endif
+      enddo
+
+      s=1./ttime
+      call opcmult(us,vs,ws,s)
+
+      call opcopy(vx,vy,vz,t1,t2,t3)
+
+  999 continue  ! clean up averages
+      if (nid.eq.0) close(77)
+
+      nsave = icount ! Actual number of files read
+
+      return
+
+  199 continue ! exception handle for file not found
+      ierr = 1
+      if (nid.eq.0) ierr = iglmax(ierr,1)
+      call exitti('load_avg did not find avg.list$',ierr)
+
+      return
+      end
+c-----------------------------------------------------------------------
