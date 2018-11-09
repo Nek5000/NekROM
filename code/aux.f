@@ -238,18 +238,6 @@ c        call genops
             err(i)=op_glsc2_wt(t1,t2,t3,t1,t2,t3,bm1)
          enddo
 
-         if (nid .eq. 0) then
-            write(fname,22) istep/iostep
-   22 format(i4.4,".out")
-            open(unit=33,file=fname)
-
-            do i=1,nb
-               write(33,33) u(i,1)
-   33    format(1p1e16.7)
-            enddo
-            close(33)
-         endif
-
          if (nio.eq.0) then
             write (6,fmt1) istep,time,(cmax(i),i=0,nb),'cmax'
             write (6,fmt1) istep,time,(u(i,1),i=0,nb),'coef'
