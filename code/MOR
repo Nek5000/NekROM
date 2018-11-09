@@ -1,8 +1,5 @@
 c     parameters and common blocks for MOR
 
-      parameter (nb=20)  ! number of basis vectors
-      parameter (ls=100) ! number of snapshots
-
       common /morgram/ uu(ls,ls)
       common /moreig/ evec(ls,nb), gram_eig(ls)
 
