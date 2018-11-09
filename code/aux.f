@@ -333,8 +333,6 @@ c-----------------------------------------------------------------------
       endif
 
       if (mod(istep,max(iostep,1)).eq.0) then
-         call opsub3(t1,t2,t3,vx,vy,vz,ub(1,0),vb(1,0),wb(1,0))
-
          nio = -1
          call proj2bases(u,vx,vy,vz)
          nio = nid
