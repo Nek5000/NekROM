@@ -260,10 +260,8 @@ c-----------------------------------------------------------------------
       call genevec
       call genbases
 
-      do i=0,nb
-         cmax(i) = -1e10
-         cmin(i) =  1e10
-      enddo
+      call cfill(cmax,-1e10,nb+1)
+      call cfill(cmin,1e10,nb+1)
 
       call load_avg
 
@@ -274,6 +272,7 @@ c-----------------------------------------------------------------------
       write (fmt2,'("(i5,", i0, "(1pe15.7),1x,a4)")') nb+3
 
       call rzero(cvar,nb+1)
+      tke=0
 
       do i=1,ns
          if (nio.eq.0) write (6,*) i,'th snapshot:'
@@ -285,19 +284,11 @@ c-----------------------------------------------------------------------
             if (u(j,1).gt.cmax(j)) cmax(j)=u(j,1)
          enddo
 
-         call ctke_fom(tke,us(1,i),vs(1,i),ws(1,i))
+         call ctke_fom(tmp,us(1,i),vs(1,i),ws(1,i))
+         tke=tke+tmp
       enddo
 
-      call opcopy(t1,t2,t3,vx,vy,vz)
-      energy=op_glsc2_wt(t1,t2,t3,t1,t2,t3,bm1)
-
-      n=lx1*ly1*lz1*nelv
-
-      do i=0,nb
-         s=-u(i,1)
-         call opadds(t1,t2,t3,ub(1,i),vb(1,i),wb(1,i),s,n,2)
-         err(i)=op_glsc2_wt(t1,t2,t3,t1,t2,t3,bm1)
-      enddo
+      tke=tke/real(ns)
 
       if (nio.eq.0) then
          write (6,fmt1) (cmax(i),i=0,nb),'cmax'
