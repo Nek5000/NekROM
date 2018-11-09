@@ -26,6 +26,10 @@ c     parameters and common blocks for MOR
       common /morfld/ wm1(lx1*ly1*lz1*lelt)
       common /morpar/ ad_dt, ad_re, ad_alpha(3,3), ad_beta(4,3)
 
+      integer ad_nsteps, ad_iostep, ad_step
+      common /moripar/ ad_nsteps, ad_iostep, ad_step
+
+      common /morivars/ i0,j0,k0,i1,j1,k1,ns,navg
       common /morlu/ flu(nb,nb)
       common /morilu/ ir(nb), ic(nb)
 
@@ -33,11 +37,6 @@ c     parameters and common blocks for MOR
       common /morhyperpar/ sample_min(nb), sample_max(nb)
       common /moropt_par/ par
       common /morqn/ qngradf,qnf
-
-      integer ad_nsteps, ad_iostep, ad_step
-      common /moripar/ ad_nsteps, ad_iostep, ad_step
-
-      common /morivars/ i0,j0,k0,i1,j1,k1,ns,navg
 
       logical ifl2
 
