@@ -355,6 +355,9 @@ c-----------------------------------------------------------------------
       real uw(lt),vw(lt),ww(lt),h1(lt),h2(lt)
       real tmp1(nb),tmp2(nb),delta(nb)
       real work(ls,nb)
+
+      ! eps is the free parameter
+      ! 1e-2 is used in the paper
       ep = 1e-2
 
       n  = lx1*ly1*lz1*nelt
@@ -378,7 +381,5 @@ c-----------------------------------------------------------------------
          write(6,*) j,sample_min(j),sample_max(j)
       enddo
 
-      write(6,*) 'quit in comp_hyperpar',nb,ls
-      call exitt0
       return
       end
