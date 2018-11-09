@@ -164,7 +164,7 @@ c-----------------------------------------------------------------------
       call opzero(ux,uy,uz)
 
       do i=0,nb
-         call opadds(ux,uy,uz,ub(1,i),vb(1,i),wb(1,i),coef(i,1),n,2)
+         call opadds(ux,uy,uz,ub(1,i),vb(1,i),wb(1,i),coef(i),n,2)
       enddo
 
       return

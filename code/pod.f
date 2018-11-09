@@ -47,6 +47,8 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
 
+      parameter (lt=lx1*ly1*lz1*lelt)
+
       real coef(0:nb),u1(lt),u2(lt),u3(lt)
 
       if (ifl2) then
