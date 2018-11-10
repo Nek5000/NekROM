@@ -557,6 +557,8 @@ c     This routine reads average files specificed in avg.list
       call opcopy(t1,t2,t3,vx,vy,vz)
       call opzero(ua,va,wa)
 
+      tmp=time
+
       ttime=0.
 
       icount = 0
@@ -588,6 +590,8 @@ c     This routine reads average files specificed in avg.list
       call proj2bases(usa,ua,va,wa)
 
       call opcopy(vx,vy,vz,t1,t2,t3)
+
+      time=tmp
 
   999 continue  ! clean up averages
       if (nid.eq.0) close(77)
