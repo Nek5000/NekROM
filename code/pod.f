@@ -33,9 +33,15 @@ c-----------------------------------------------------------------------
 
       call scale_bases
 
+      itmp = istep
+      ttmp = time
       do i=0,nb ! dump the generated modes
+         istep = i
+         time = real(istep)
          call outpost(ub(1,i),vb(1,i),wb(1,i),pr,t,'bas')
       enddo
+      istep = itmp
+      time = ttmp
 
       if (nio.eq.0) write (6,*) 'exiting genbases'
 
