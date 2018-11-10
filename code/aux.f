@@ -246,7 +246,7 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       common /scrns/ t1(lt),t2(lt),t3(lt)
-      common /ctrack/ cmax(0:nb), cmin(0:nb), cvar(0:nb)
+      common /ctrack/ cavg(0:nb), cmax(0:nb), cmin(0:nb), cvar(0:nb)
 
       character (len=72) fmt1
       character (len=72) fmt2
@@ -265,17 +265,22 @@ c-----------------------------------------------------------------------
 
       call load_avg
 
-      if (nio.eq.0) write (6,*) 'generating average coefficients'
-      call proj2bases(usa,ua,va,wa)
-
       write (fmt1,'("(", i0, "(1pe15.7),1x,a4)")') nb+1
 
       call rzero(cvar,nb+1)
+      call rzero(cavg,nb+1)
       tkes=0
 
       do i=1,ns
          if (nio.eq.0) write (6,*) i,'th snapshot:'
-         call proj2bases(u,us(1,i),vs(1,i),ws(1,i))
+         call opadd3(t1,t2,t3,us(1,i),vs(1,i),ws(1,i),ub,vb,wb)
+c        call opcopy(t1,t2,t3,us(1,i),vs(1,i),ws(1,i))
+         call outpost(t1,t2,t3,pr,t,'sna')
+         call proj2bases(u,t1,t2,t3)
+         call recon(t1,t2,t3,u)
+         call outpost(t1,t2,t3,pr,t,'sna')
+         call exitt0
+         call add2(cavg,u,nb+1)
 
          do j=0,nb
             cvar(j)=cvar(j)+(usa(j)-u(j,1))**2
@@ -287,11 +292,15 @@ c-----------------------------------------------------------------------
          tkes=tkes+tmp
       enddo
 
+      s=1/real(ns)
+      call cmult(cavg,s,nb+1)
+
       tkes=tkes/real(ns)
 
       if (nio.eq.0) then
          write (6,fmt1) (cmax(i),i=0,nb),'cmax'
-         write (6,fmt1) (usa(i) ,i=0,nb),'cavg'
+         write (6,fmt1) (usa(i) ,i=0,nb),'ravg'
+         write (6,fmt1) (cavg(i),i=0,nb),'cavg'
          write (6,fmt1) (cmin(i),i=0,nb),'cmin'
          write (6,fmt1) (cvar(i),i=0,nb),'cvar'
          write (6,*)                tkes,'tkes'
@@ -506,6 +515,8 @@ c     This routine reads files specificed in file.list
 
             call opsub3 (usave(1,ipass),vsave(1,ipass),wsave(1,ipass)
      $                  ,vx,vy,vz,u0(1,1),u0(1,2),u0(1,3))
+            call outpost(usave(1,ipass),vsave(1,ipass),wsave(1,ipass),
+     $                   pr,t,'sav')
 
             icount = icount+1
          else
