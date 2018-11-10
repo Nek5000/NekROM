@@ -585,6 +585,7 @@ c     This routine reads average files specificed in avg.list
 
       s=1./ttime
       call opcmult(ua,va,wa,s)
+      call proj2bases(usa,ua,va,wa)
 
       call opcopy(vx,vy,vz,t1,t2,t3)
 
