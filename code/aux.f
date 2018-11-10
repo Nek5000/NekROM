@@ -348,7 +348,6 @@ c-----------------------------------------------------------------------
          do i=0,nb
             if (u(i,1).lt.cmin(i)) cmin(i)=u(i,1)
             if (u(i,1).gt.cmax(i)) cmax(i)=u(i,1)
-            cvar(i)=cvar(i)
          enddo
 
          write (fmt1,'("(i7,", i0, "(1pe15.7),1x,a4)")') nb+2
