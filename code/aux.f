@@ -309,7 +309,7 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       common /scrns/ t1(lt),t2(lt),t3(lt)
-      common /ctrack/ tlast,tdiff,
+      common /ctrack/ tlast,tdiff,tke,
      $                cmax(0:nb),cmin(0:nb),cavg(0:nb),cvar(0:nb)
       common /scrm1/ rt1(0:nb),rt2(0:nb),rt3(0:nb)
 
