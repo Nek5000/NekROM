@@ -212,8 +212,8 @@ c-----------------------------------------------------------------------
             if (u(i,1).gt.cmax(i)) cmax(i)=u(i,1)
          enddo
 
-         write (fmt1,'("(i5,", i0, "(1pe15.7),1x,a4)")') nb+2
-         write (fmt2,'("(i5,", i0, "(1pe15.7),1x,a4)")') nb+3
+         write (fmt1,'("(i7,", i0, "(1pe15.7),1x,a4)")') nb+2
+         write (fmt2,'("(i7,", i0, "(1pe15.7),1x,a4)")') nb+3
 
          call opcopy(t1,t2,t3,vx,vy,vz)
          energy=op_glsc2_wt(t1,t2,t3,t1,t2,t3,bm1)
@@ -268,8 +268,8 @@ c-----------------------------------------------------------------------
       if (nio.eq.0) write (6,*) 'generating average coefficients'
       call proj2bases(usa,ua,va,wa)
 
-      write (fmt1,'("(i5,", i0, "(1pe15.7),1x,a4)")') nb+2
       write (fmt2,'("(i5,", i0, "(1pe15.7),1x,a4)")') nb+3
+      write (fmt1,'("(", i0, "(1pe15.7),1x,a4)")') nb+1
 
       call rzero(cvar,nb+1)
       tkes=0
@@ -358,8 +358,8 @@ c-----------------------------------------------------------------------
             cvar(i)=cvar(i)
          enddo
 
-         write (fmt1,'("(i5,", i0, "(1pe15.7),1x,a4)")') nb+2
-         write (fmt2,'("(i5,", i0, "(1pe15.7),1x,a4)")') nb+3
+         write (fmt1,'("(i7,", i0, "(1pe15.7),1x,a4)")') nb+2
+         write (fmt2,'("(i7,", i0, "(1pe15.7),1x,a4)")') nb+3
 
          s=1./deltat
          call cmult(cavg,s,nb+1)
@@ -371,7 +371,8 @@ c-----------------------------------------------------------------------
             write (6,fmt1) istep,time,(cmin(i),i=0,nb),'cmin'
             write (6,fmt2) istep,time,deltat,(cavg(i),i=0,nb),'cavg'
             write (6,fmt2) istep,time,deltat,(cvar(i),i=0,nb),'cvar'
-            write (6,'(i5,3(1pe15.7),a3)') istep,time,deltat,tke,'tke'
+            write (6,'(i7,3(1pe15.7),1x,a3)')
+     $                     istep,time,deltat,tke,'tke'
          endif
 
          tke=0.
