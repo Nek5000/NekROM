@@ -178,7 +178,7 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /scrns/ t1(lt),t2(lt),t3(lt)
+      common /scrk5/ t1(lt),t2(lt),t3(lt)
       common /ctrack/ cmax(0:nb), cmin(0:nb)
 
       character (len=72) fmt1
@@ -220,11 +220,18 @@ c-----------------------------------------------------------------------
 
          n=lx1*ly1*lz1*nelv
 
+         ttmp = time
+         itmp = istep
          do i=0,nb
             s=-u(i,1)
             call opadds(t1,t2,t3,ub(1,i),vb(1,i),wb(1,i),s,n,2)
             err(i)=op_glsc2_wt(t1,t2,t3,t1,t2,t3,bm1)
+            istep = i
+            time = err(i)
+            call outpost(t1,t2,t3,pr,t,'err')
          enddo
+         time = ttmp
+         istep = itmp
 
          if (nio.eq.0) then
             write (6,fmt1) istep,time,(cmax(i),i=0,nb),'cmax'
