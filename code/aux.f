@@ -338,6 +338,7 @@ c-----------------------------------------------------------------------
       tke=tke+dt*tmp
 
       if (mod(ad_step,max(ad_iostep,1)).eq.0) then
+         istep=ad_step
          deltat=time-tlast
          tlast=time
 
