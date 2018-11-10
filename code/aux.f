@@ -544,6 +544,8 @@ c     This routine reads average files specificed in avg.list
 
       common /scrns/ t1(lt),t2(lt),t3(lt)
 
+      if (nio.eq.0) write (6,*) 'inside load_avg'
+
       ierr = 0
 
       if (nid.eq.0) open(77,file='avg.list',status='old',err=199)
