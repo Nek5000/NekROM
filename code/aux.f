@@ -317,21 +317,15 @@ c-----------------------------------------------------------------------
       character (len=72) fmt2
       character*8 fname
 
-      if (istep.eq.0) then
-         call rom_init
-
-         call gengram
-         call genevec
-         call genbases
-
+      if (istep.eq.1) then
          call cfill(cmax,-1e10,nb+1)
          call cfill(cmin, 1e10,nb+1)
          call rzero(cavg,nb+1)
          call rzero(cvar,nb+1)
          tke=0.
+         time = 0.
 
-         time=0.
-         tlast=0.
+         tlast=time
       endif
 
       call add2s2(cavg,u,dt,nb+1)
