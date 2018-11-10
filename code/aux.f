@@ -356,6 +356,7 @@ c-----------------------------------------------------------------------
 
          s=1./deltat
          call cmult(cavg,s,nb+1)
+         call cmult(cvar,s,nb+1)
          tke=tke/deltat
 
          if (nio.eq.0) then
