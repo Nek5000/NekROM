@@ -337,7 +337,7 @@ c-----------------------------------------------------------------------
       call ctke_rom(tmp,u)
       tke=tke+dt*tmp
 
-      if (mod(max(istep,1),max(iostep,1)).eq.0) then
+      if (mod(ad_step,max(ad_iostep,1)).eq.0) then
          deltat=time-tlast
          tlast=time
 
