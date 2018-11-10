@@ -555,7 +555,7 @@ c     This routine reads average files specificed in avg.list
       n = lx1*ly1*lz1*nelt
 
       call opcopy(t1,t2,t3,vx,vy,vz)
-      call opzero(us,vs,ws)
+      call opzero(ua,va,wa)
 
       ttime=0.
 
@@ -575,7 +575,7 @@ c     This routine reads average files specificed in avg.list
             call restart(nfiles)  ! Note -- time is reset.
             ttime=ttime+time
 
-            call opadds(us,vs,ws,vx,vy,vz,time,n,2)
+            call opadds(ua,va,wa,vx,vy,vz,time,n,2)
 
             icount = icount+1
          else
@@ -584,7 +584,7 @@ c     This routine reads average files specificed in avg.list
       enddo
 
       s=1./ttime
-      call opcmult(us,vs,ws,s)
+      call opcmult(ua,va,wa,s)
 
       call opcopy(vx,vy,vz,t1,t2,t3)
 
