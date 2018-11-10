@@ -275,7 +275,7 @@ c-----------------------------------------------------------------------
 
       do i=1,ns
          if (nio.eq.0) write (6,*) i,'th snapshot:'
-         call proj2bases(u,us,vs,ws)
+         call proj2bases(u,us(1,i),vs(1,i),ws(1,i))
 
          do j=0,nb
             cvar(j)=cvar(j)+(usa(j)-u(j,1))**2
@@ -293,7 +293,7 @@ c-----------------------------------------------------------------------
          write (6,fmt1) (cmax(i),i=0,nb),'cmax'
          write (6,fmt1) (usa(i) ,i=0,nb),'cavg'
          write (6,fmt1) (cmin(i),i=0,nb),'cmin'
-         write (6,fmt1) (cmin(i),i=0,nb),'cvar'
+         write (6,fmt1) (cvar(i),i=0,nb),'cvar'
          write (6,*)                tkes,'tkes'
       endif
 
