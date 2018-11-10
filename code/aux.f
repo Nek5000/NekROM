@@ -380,6 +380,7 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'
       include 'MOR'
+      include 'MASS'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
@@ -388,7 +389,6 @@ c-----------------------------------------------------------------------
       real u1(lt),u2(lt),u3(lt)
 
       call opsub3(ud,vd,wd,u1,u2,u3,ua,va,wa)
-
       tke = op_glsc2_wt(ud,vd,wd,ud,vd,wd,bm1)
 
       return
