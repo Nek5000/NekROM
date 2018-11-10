@@ -268,7 +268,6 @@ c-----------------------------------------------------------------------
       if (nio.eq.0) write (6,*) 'generating average coefficients'
       call proj2bases(usa,ua,va,wa)
 
-      write (fmt2,'("(i5,", i0, "(1pe15.7),1x,a4)")') nb+3
       write (fmt1,'("(", i0, "(1pe15.7),1x,a4)")') nb+1
 
       call rzero(cvar,nb+1)
