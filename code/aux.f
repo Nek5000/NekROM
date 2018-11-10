@@ -143,9 +143,9 @@ c-----------------------------------------------------------------------
       real c1(1),c2(1),c3(1)
 
       ntot1=lx1*ly1*lz1*nelv
-      call add2(a1,b1,c1,ntot1)
-      call add2(a2,b2,c2,ntot1)
-      if (ldim.eq.3) call add2(a3,b3,c3,ntot1)
+      call add3(a1,b1,c1,ntot1)
+      call add3(a2,b2,c2,ntot1)
+      if (ldim.eq.3) call add3(a3,b3,c3,ntot1)
 
       return
       end
