@@ -414,5 +414,20 @@ c-----------------------------------------------------------------------
          write(6,*) j,sample_min(j),sample_max(j)
       enddo
 
+      if (nid.eq.0) then
+         open (unit=51,file='sample_min')
+         do i=1,nb
+            write (51,*) sample_min(i)
+         enddo
+         close (unit=51)
+
+         open (unit=52,file='sample_max')
+         do i=1,nb
+            write (52,*) sample_max(i)
+         enddo
+         close (unit=52)
+      endif
+
+
       return
       end
