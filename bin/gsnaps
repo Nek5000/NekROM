@@ -9,13 +9,13 @@ case=$1
 
 case "${case:=all}" in
     baf)
-        wget -O baf.tar.gz https://uofi.box.com/shared/static/dzkax0ftzplzo1fh7zsijzttwws7iomj.gz
+        wget -nv -O baf.tar.gz https://uofi.box.com/shared/static/dzkax0ftzplzo1fh7zsijzttwws7iomj.gz
         tar -xvf baf.tar.gz &> /dev/null
         ;;
     cyl)
-        wget -O cyl.tar.gz https://uofi.box.com/shared/static/insxch1bjvzl4bnzr3lpr1c016i4g75p.gz
+        wget -nv -O cyl.tar.gz https://uofi.box.com/shared/static/insxch1bjvzl4bnzr3lpr1c016i4g75p.gz
         tar -xvf cyg.tar.gz &> /dev/null
-        wget -O cyls0.f00001 https://uofi.box.com/shared/static/msk1qxdpcw8e0a1olyah9s82cj45acxe.f00001
+        wget -nv -O cyls0.f00001 https://uofi.box.com/shared/static/msk1qxdpcw8e0a1olyah9s82cj45acxe.f00001
         ;;
     all)
         cd $MOR_DIR/bin

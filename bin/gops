@@ -7,12 +7,12 @@ case=$1
 case "${case:=all}" in
     baf-l2)
         cd $MOR_DIR/cases/$case
-        wget -O baf-l2-ops.tar.gz https://uofi.box.com/shared/static/5emo71uojyumeaux94p2g5jkjjzwhfi1.gz
+        wget -nv -O baf-l2-ops.tar.gz https://uofi.box.com/shared/static/5emo71uojyumeaux94p2g5jkjjzwhfi1.gz
         tar -xvf baf-l2-ops.tar.gz &> /dev/null
         ;;
     baf-h10)
         cd $MOR_DIR/cases/$case
-        wget -O baf-h10-ops.tar.gz https://uofi.box.com/shared/static/tfx4phdqrv7q4vyk6g4lfutsvlcbbjgv.gz
+        wget -nv -O baf-h10-ops.tar.gz https://uofi.box.com/shared/static/tfx4phdqrv7q4vyk6g4lfutsvlcbbjgv.gz
         tar -xvf baf-h10-ops.tar.gz &> /dev/null
         ;;
     all)
