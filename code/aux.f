@@ -188,7 +188,7 @@ c-----------------------------------------------------------------------
       real err(0:nb)
 
       if (istep.eq.0) then
-         call rom_init
+         call rom_init_params
 
          call gengram
          call genevec
@@ -261,7 +261,7 @@ c-----------------------------------------------------------------------
 
       real err(0:nb)
 
-      call rom_init
+      call rom_init_params
 
       call gengram
       call genevec

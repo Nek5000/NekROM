@@ -96,7 +96,7 @@ c-----------------------------------------------------------------------
       call opcopy(ub(1,0),vb(1,0),wb(1,0),vx,vy,vz) ! set zeroth mode
       call gfldr('../../data/baf/chan20.f00900')    ! set initial state
 
-      call rom_init
+      call rom_init_params
 
       call gengram
       call genevec

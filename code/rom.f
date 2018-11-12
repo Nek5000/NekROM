@@ -46,7 +46,7 @@ c     if (param(51).ne.0) call makecloc
       return
       end
 c-----------------------------------------------------------------------
-      subroutine rom_init
+      subroutine rom_init_params
 
       include 'SIZE'
       include 'TOTAL'
@@ -54,7 +54,7 @@ c-----------------------------------------------------------------------
 
       real u0(lx1*ly1*lz1*lelt,3)
 
-      if (nid.eq.0) write (6,*) 'inside rom_init'
+      if (nid.eq.0) write (6,*) 'inside rom_init_params'
 
       time = 0.
 
@@ -74,7 +74,7 @@ c-----------------------------------------------------------------------
       call opcopy(u0,u0(1,2),u0(1,3),ub,vb,wb)
       call get_saved_fields(us,vs,ws,ns,u0)
 
-      if (nid.eq.0) write (6,*) 'exiting rom_init'
+      if (nid.eq.0) write (6,*) 'exiting rom_init_params'
 
       return
       end

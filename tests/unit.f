@@ -16,7 +16,7 @@ c-----------------------------------------------------------------------
 
       param(50) = 1
       if (iflag) param(50) = 0
-      call rom_init
+      call rom_init_params
 
       iexit=0
 
@@ -101,7 +101,7 @@ c-----------------------------------------------------------------------
 
       param(50) = 1
       if (iflag) param(50) = 0
-      call rom_init
+      call rom_init_params
 
       n=lx1*ly1*lz1*nelt
 
@@ -146,7 +146,7 @@ c-----------------------------------------------------------------------
 
       param(50) = 1
       if (iflag) param(50) = 0
-      call rom_init
+      call rom_init_params
 
       call readbases(ub,vb,wb,nb)
       call makeic
@@ -187,7 +187,7 @@ c-----------------------------------------------------------------------
 
       param(50) = 1
       if (iflag) param(50) = 0
-      call rom_init
+      call rom_init_params
 
       iexit=0
 
@@ -261,7 +261,7 @@ c-----------------------------------------------------------------------
 
       param(50) = 1
       if (iflag) param(50) = 0
-      call rom_init
+      call rom_init_params
 
       iexit=0
 
@@ -335,7 +335,7 @@ c-----------------------------------------------------------------------
 
       param(50) = 1
       if (iflag) param(50) = 0
-      call rom_init
+      call rom_init_params
 
       iexit=0
 
