@@ -367,3 +367,42 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine cloc_unit(iflag)
+
+      include 'SIZE'
+      include 'SOLN'
+      include 'INPUT'
+      include 'MOR'
+
+      logical iflag
+
+      real cc(0:nb,0:nb,0:nb)
+
+      param(50) = 1
+      if (iflag) param(50) = 0
+      call rom_init_params
+
+      iexit=0
+
+      if (nid.eq.(np-1)) then
+         do i=0,(nb+1)**3-1
+            c0(i,0,0)=i
+         enddo
+      endif
+
+      call makecloc
+
+      call nekgsync
+      call sleep(nid)
+
+      do i=1,nloc
+         write (6,*) 'clocal',nid,i,clocal(i)
+      enddo
+
+      call nekgsync
+
+      call exit(iexit)
+
+      return
+      end
+c-----------------------------------------------------------------------
