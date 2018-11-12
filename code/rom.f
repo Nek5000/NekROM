@@ -52,12 +52,6 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
-      parameter (lt=lx1*ly1*lz1*lelt)
-
-      real u0(lx1*ly1*lz1*lelt,3)
-
-      common /scrk0/ t1(lt),t2(lt),t3(lt)
-
       if (nid.eq.0) write (6,*) 'inside rom_init_params'
 
       time = 0.
@@ -116,6 +110,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+
       subroutine rom_setup
 
       include 'SIZE'
