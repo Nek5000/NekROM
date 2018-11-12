@@ -281,10 +281,6 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'inside gengraml2'
 
-      ns = ls ! REQUIRED: get_saved_fields overwrites ns argument
-
-      call opcopy(u0(1,1),u0(1,2),u0(1,3),ub(1,0),vb(1,0),wb(1,0))
-
       n=lx1*ly1*lz1*nelv
 
       call col3(bwm1,bm1,wm1,n)
