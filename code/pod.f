@@ -142,14 +142,24 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'wl2coef', coef(0),coef(0),1
 
-      do i=1,nb
-         ww = op_glsc2_wt(
-     $      ub(1,i),vb(1,i),wb(1,i),ub(1,i),vb(1,i),wb(1,i),bwm1)
-         vv = op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),t1,t2,t3,bwm1)
+      if (ifvort) then
+         do i=1,nb
+            ww = glsc3(ub(1,i),ub(1,i),bwm1,n)
+            vv = glsc3(ub(1,i),t1,bwm1,n)
 
-         coef(i) = vv/ww
-      enddo
+            coef(i) = vv/ww
             if (nio.eq.0) write (6,*) 'wl2coef', coef(i),vv,ww
+         enddo
+      else
+         do i=1,nb
+            ww = op_glsc2_wt(
+     $         ub(1,i),vb(1,i),wb(1,i),ub(1,i),vb(1,i),wb(1,i),bwm1)
+            vv = op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),t1,t2,t3,bwm1)
+
+            coef(i) = vv/ww
+            if (nio.eq.0) write (6,*) 'wl2coef', coef(i),vv,ww
+         enddo
+      endif
 
       if (nio.eq.0) write (6,*) 'exiting wl2proj'
 
@@ -175,13 +185,16 @@ c-----------------------------------------------------------------------
       n=lx1*ly1*lz1*nelt
 
       call axhelm(t7,t1,h1,h2,1,1)
-      call axhelm(t8,t2,h1,h2,1,1)
+      h10prod=glsc2(t7,t4,n)
 
-      h10prod = glsc2(t7,t4,n)+glsc2(t8,t5,n)
+      if (.not.ifvort) then
+         call axhelm(t8,t2,h1,h2,1,1)
+         h10prod=h10prod+glsc2(t8,t5,n)
 
-      if (ldim.eq.3) then
-         call axhelm(t9,t3,h1,h2,1,1)
-         h10prod = h10prod + glsc2(t9,t6,n)
+         if (ldim.eq.3) then
+            call axhelm(t9,t3,h1,h2,1,1)
+            h10prod = h10prod + glsc2(t9,t6,n)
+         endif
       endif
 
       if (nio.eq.0) write (6,*) 'exiting h10prod'
@@ -209,7 +222,11 @@ c-----------------------------------------------------------------------
 
       call col3(bwm1,bm1,wm1,n)
 
-      wl2prod = op_glsc2_wt(t1,t2,t3,t4,t5,t6,bwm1)
+      if (ifvort) then
+         wl2prod = glsc3(t1,t4,bwm1,n)
+      else
+         wl2prod = op_glsc2_wt(t1,t2,t3,t4,t5,t6,bwm1)
+      endif
 
       if (nio.eq.0) write (6,*) 'exiting wl2prod'
 
@@ -285,12 +302,14 @@ c-----------------------------------------------------------------------
 
       call col3(bwm1,bm1,wm1,n)
 
-      call outpost(bwm1,wm1,vz,pr,t,'bw1')
-
       do j=1,ns ! Form the Gramian, U=U_K^T A U_K using L2 Norm
       do i=1,ns
-         uu(i,j) = op_glsc2_wt(us(1,i),vs(1,i),ws(1,i),
-     $                         us(1,j),vs(1,j),ws(1,j),bwm1)
+         if (ifvort) then
+            uu(i,j)=glsc3(us(1,i),us(1,j,bwm1,n)
+         else
+            uu(i,j) = op_glsc2_wt(us(1,i),vs(1,i),ws(1,i),
+     $                            us(1,j),vs(1,j),ws(1,j),bwm1)
+         endif
          write (88,*) uu(i,j)
       enddo
          if (nio.eq.0) write (6,*) 'uu',uu(1,j)

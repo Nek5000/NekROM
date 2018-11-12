@@ -334,7 +334,6 @@ c-----------------------------------------------------------------------
          call rzero(cavg,nb+1)
          call rzero(cvar,nb+1)
          tke=0.
-         time = 0.
 
          tlast=time
       endif
@@ -514,13 +513,14 @@ c     This routine reads files specificed in file.list
             nfiles = 1
             call restart(nfiles)  ! Note -- time is reset.
 
-
-            call opsub3 (usave(1,ipass),vsave(1,ipass),wsave(1,ipass)
-     $                  ,vx,vy,vz,u0(1,1),u0(1,2),u0(1,3))
-            call outpost(usave(1,ipass),vsave(1,ipass),wsave(1,ipass),
-     $                   pr,t,'sav')
 !           Usave = U_snapshot - U_0:
 
+            if (ifvort) then
+               call comp_vort3(t1,t2,t3,vx,vy,vz)
+               call sub3(usave(1,ipass),t1,u0,n)
+            else
+               call opsub3 (t1,t2,t3,vx,vy,vz,u0(1,1),u0(1,2),u0(1,3))
+            endif
             icount = icount+1
          else
             goto 999

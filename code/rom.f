@@ -52,7 +52,11 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
+      parameter (lt=lx1*ly1*lz1*lelt)
+
       real u0(lx1*ly1*lz1*lelt,3)
+
+      common /scrk0/ t1(lt),t2(lt),t3(lt)
 
       if (nid.eq.0) write (6,*) 'inside rom_init_params'
 
@@ -71,7 +75,22 @@ c-----------------------------------------------------------------------
       call rone(wm1,n)
 
       ns = ls
-      call opcopy(u0,u0(1,2),u0(1,3),ub,vb,wb)
+
+      if (ifvort) then
+         call comp_vort3(u0,t1,t2,ub,vb,wb)
+         call comp_vort3(t1,t2,t3,vx,vy,vz)
+
+         call copy(ub,u0,n)
+         call rzero(vb,n)
+         call rzero(wb,n)
+
+         call copy(vx,t1,n)
+         call rzero(vy,n)
+         call rzero(vz,n)
+      else
+         call opcopy(u0,u0(1,2),u0(1,3),ub,vb,wb)
+      endif
+
       call get_saved_fields(us,vs,ws,ns,u0)
 
       if (nid.eq.0) write (6,*) 'exiting rom_init_params'
