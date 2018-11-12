@@ -37,7 +37,7 @@ c     parameters and common blocks for MOR
       common /moropt/ helm(nb,nb), rhs(nb)
       common /morhyperpar/ sample_min(nb), sample_max(nb)
       common /moropt_par/ par
-      common /morqn/ qngradf,qnf
+      common /morqn/ qngradf(nb), qnf
 
       logical ifl2
 
