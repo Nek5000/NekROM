@@ -71,10 +71,27 @@ c-----------------------------------------------------------------------
       ifl2=.false.
       if (param(50).eq.0) ifl2=.true.
 
+      ifvort=.false. ! default to false for now
+
+      if (nid.eq.0) write (6,*) 'exiting rom_init_params'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine rom_init_fields
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /scrk0/ t1(lt),t2(lt),t3(lt),u0(lx1*ly1*lz1*lelt,3)
+
+      if (nid.eq.0) write (6,*) 'inside rom_init_fields'
+
       n=lx1*ly1*lz1*nelv
       call rone(wm1,n)
-
-      ns = ls
 
       if (ifvort) then
          call comp_vort3(u0,t1,t2,ub,vb,wb)
@@ -91,9 +108,10 @@ c-----------------------------------------------------------------------
          call opcopy(u0,u0(1,2),u0(1,3),ub,vb,wb)
       endif
 
-      call get_saved_fields(us,vs,ws,ns,u0)
+      ns = ls
+      call get_saved_fields(us,vs,ws,ns,u0,ifvort)
 
-      if (nid.eq.0) write (6,*) 'exiting rom_init_params'
+      if (nid.eq.0) write (6,*) 'exiting rom_init_fields'
 
       return
       end
