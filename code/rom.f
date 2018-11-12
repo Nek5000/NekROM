@@ -750,7 +750,7 @@ c-----------------------------------------------------------------------
 c     parameter for barrier function
 c     it should starting from value greater than one and decrease
       real B_qn(nb,nb)
-      real go(nb)
+      real go(nb),fo,qndf
       integer par_step
 
       par_step = 3
@@ -770,7 +770,7 @@ c     use helm from BDF3/EXT3 as intial approximation
 
 c     compute quasi-Newton step
          do j=1,500
-            if (j==1)
+            if (j==1) then
                call lu(flu,nb,nb,ir,ic)
                call copy(qns,qngradf,nb)
                call solve(s,flu,1,nb,nb,ir,ic)
@@ -783,7 +783,11 @@ c     compute quasi-Newton step
             call copy(go,gngraf,nb) ! store old qn-gradf
             call comp_qngradf ! update qn-gradf
             call sub3(qny,qngradf,go,nb)
-               
+c     BFGS update
+
+            fo = qnf ! store old qn-f
+            call comp_qnf ! update qn-f
+            qndf = abs(qnf-fo) 
          
 c     update solution
 
