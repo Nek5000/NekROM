@@ -252,7 +252,7 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /scrns/ t1(lt),t2(lt),t3(lt)
+      common /scrk5/ t1(lt),t2(lt),t3(lt)
       common /ctrack/ cavg(0:nb), cmax(0:nb), cmin(0:nb), cvar(0:nb)
 
       character (len=72) fmt1
