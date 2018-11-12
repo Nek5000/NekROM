@@ -594,16 +594,6 @@ c-----------------------------------------------------------------------
          enddo
       enddo
 
-      if (ad_step.eq.1.or.ad_step.eq.2.or.ad_step.eq.ad_nsteps) then
-      call sleep(nid)
-
-c     do i=1,nb
-c        write (6,*) '1 evalc',cu(i)
-c     enddo
-
-      call sleep(np-nid-1)
-      endif
-
       call gop(cu,work,'+  ',nb)
 
       return
