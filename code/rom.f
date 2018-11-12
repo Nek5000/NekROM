@@ -750,6 +750,7 @@ c-----------------------------------------------------------------------
 c     parameter for barrier function
 c     it should starting from value greater than one and decrease
       real B_qn(nb,nb)
+      real go(nb)
       integer par_step
 
       par_step = 3
@@ -757,7 +758,7 @@ c     it should starting from value greater than one and decrease
 
 
 c     BFGS method with barrier function starts
-      do i=1,par_step
+      do k=1,par_step
 
 c     use helm from BDF3/EXT3 as intial approximation
          do i=1,nb
@@ -765,9 +766,25 @@ c     use helm from BDF3/EXT3 as intial approximation
          enddo
          call comp_qnf
          call comp_qngradf
+         call cmult(qngradf,-1,nb)
 
 c     compute quasi-Newton step
          do j=1,500
+            if (j==1)
+               call lu(flu,nb,nb,ir,ic)
+               call copy(qns,qngradf,nb)
+               call solve(s,flu,1,nb,nb,ir,ic)
+               call add2(u(1,1),s,nb)
+            else
+               call copy(qns,qngradf,nb)
+               call add2(u(1,1),s,nb)
+               
+            endif
+            call copy(go,gngraf,nb) ! store old qn-gradf
+            call comp_qngradf ! update qn-gradf
+            call sub3(qny,qngradf,go,nb)
+               
+         
 c     update solution
 
 c     update approximate Hessian

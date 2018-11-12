@@ -34,10 +34,11 @@ c     parameters and common blocks for MOR
       common /morlu/ flu(nb,nb)
       common /morilu/ ir(nb), ic(nb)
 
+      real qnf
       common /moropt/ helm(nb,nb), rhs(nb)
       common /morhyperpar/ sample_min(nb), sample_max(nb)
       common /moropt_par/ par
-      common /morqn/ qngradf(nb), qnf
+      common /morqn/ qngradf(nb), qns(nb), qny(nb), qnf
 
       logical ifl2
 
