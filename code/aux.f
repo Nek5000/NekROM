@@ -479,7 +479,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine get_saved_fields(usave,vsave,wsave,nsave,u0)
+      subroutine get_saved_fields(usave,vsave,wsave,nsave,u0,ifvort)
 
 c     This routine reads files specificed in file.list
 
@@ -490,6 +490,7 @@ c     This routine reads files specificed in file.list
       parameter (lt=lx1*ly1*lz1*lelt)
       real usave(lt,nsave),vsave(lt,nsave),wsave(lt,nsave)
       real u0(lt,3) ! Initial condtion
+      logical ifvort
 
       common /scrk5/ uu(lt),vv(lt),ww(lt),t1(lt),t2(lt),t3(lt)
 
