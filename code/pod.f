@@ -305,7 +305,7 @@ c-----------------------------------------------------------------------
       do j=1,ns ! Form the Gramian, U=U_K^T A U_K using L2 Norm
       do i=1,ns
          if (ifvort) then
-            uu(i,j)=glsc3(us(1,i),us(1,j,bwm1,n)
+            uu(i,j)=glsc3(us(1,i),us(1,j),bwm1,n)
          else
             uu(i,j) = op_glsc2_wt(us(1,i),vs(1,i),ws(1,i),
      $                            us(1,j),vs(1,j),ws(1,j),bwm1)
