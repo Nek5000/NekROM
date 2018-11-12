@@ -135,8 +135,6 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelt
 
-      call rone(h1,n)
-      call rzero(h2,n)
       call col3(bwm1,bm1,wm1,n)
       call opsub3(t1,t2,t3,u1,u2,u3,ub,vb,wb)
 
