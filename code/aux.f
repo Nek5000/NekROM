@@ -281,12 +281,7 @@ c-----------------------------------------------------------------------
       do i=1,ns
          if (nio.eq.0) write (6,*) i,'th snapshot:'
          call opadd3(t1,t2,t3,us(1,i),vs(1,i),ws(1,i),ub,vb,wb)
-c        call opcopy(t1,t2,t3,us(1,i),vs(1,i),ws(1,i))
-         call outpost(t1,t2,t3,pr,t,'sna')
          call proj2bases(u,t1,t2,t3)
-         call recon(t1,t2,t3,u)
-         call outpost(t1,t2,t3,pr,t,'sna')
-         call exitt0
          call add2(cavg,u,nb+1)
 
          do j=0,nb
