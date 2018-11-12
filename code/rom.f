@@ -785,6 +785,9 @@ c     compute quasi-Newton step
             call comp_qngradf ! update qn-gradf
             call sub3(qny,qngradf,go,nb)
 c     BFGS update
+            call copy(IBgf,gngraf,nb) ! comp B^-1 \nabla f
+            call copy(IBy,gny,nb) ! compt B^-1 y
+            sy = glsc2(qns,qny,nb) 
             
 
             fo = qnf ! store old qn-f
