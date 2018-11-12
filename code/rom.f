@@ -18,7 +18,6 @@ c-----------------------------------------------------------------------
       call readb0(b0,(nb+1)**2)
 
       call readc0(c0,(nb+1)**3)
-
 c     if (np.gt.1) call makecloc
 
       if (nio.eq.0) write (6,*) 'exiting readops'
@@ -315,6 +314,8 @@ c-----------------------------------------------------------------------
       common /romi/ crh
       common /nekmpi/ nidd,npp,nekcomm,nekgroup,nekreal
 
+      if (nio.eq.0) write (6,*) 'inside makecloc'
+
       ntot=nb*(nb+1)*(nb+1)
 
       nblock=nb*(nb+1)*(nb+1)/npp+1
@@ -329,23 +330,20 @@ c-----------------------------------------------------------------------
       call izero(mrs,lt)
 
       call factor3(mp,mq,mr,npp)
-      if (nio.eq.0) write (6,*) 'factor3',mp,mq,mr,npp
 
+      call nekgsync
+      write (6,*) 'factor3',nid,mp,mq,mr,npp
+
+      call nekgsync
       call setpart3(mps,mqs,mrs,mp,mq,mr,nb)
-c     if (nio.eq.0) then
-c        write (6,*) 'setpart3'
-c        do i=1,mp
-c           write (6,*) 'mps',mps(i)
-c        enddo
-c        do i=1,mq
-c           write (6,*) 'mqs',mqs(i)
-c        enddo
-c        do i=1,mr
-c           write (6,*) 'mrs',mrs(i)
-c        enddo
-c     endif
 
+      call nekgsync
       call setrange(mps,mqs,mrs,mp,mq,mr) ! set index range i0,i1,j0,j1,k0,k1
+
+      call nekgsync
+      write (6,1) nid,i0,i1,j0,j1,k0,k1
+
+    1 format ('range',7(i4))
 
       kp=1
       n=1
@@ -355,6 +353,7 @@ c     endif
       do k=0,nb
       do j=0,nb
       do i=1,nb
+         if (nio.eq.0) write (6,*) 'i,j,k',i,j,k
          l=l+1
          vi(1,l)=mod(ip+nid+1,npp)
          vi(2,l)=ijk2pid(i,j,k,mps,mqs,mrs,mp,mq,ls)
@@ -363,7 +362,6 @@ c     endif
          vi(4,l)=j
          vi(5,l)=k
 
-c        if (nio.eq.0) write (6,*) 'ijk2pid',i,j,k,vi(2,l)
          vr(  l)=c0(i,j,k)
          if (l.eq.nblock.or.(k.eq.nb.and.j.eq.nb.and.i.eq.nb)) then
             call fgslib_crystal_tuple_transfer
@@ -380,30 +378,12 @@ c        if (nio.eq.0) write (6,*) 'ijk2pid',i,j,k,vi(2,l)
       enddo
       enddo
 
-      call sleep(nid)
-
-c     write (6,*) '1 nid,npp',nid,npp,inums
-
-c     do i=1,inums
-c        write (6,*) nid,ctmp(i),ui(2,i)
-c     enddo
-
-      call sleep(npp-nid-1)
-
       kp=2
+
+      if (nio.eq.0) write (6,*) 'second crystal_router'
 
       call fgslib_crystal_tuple_transfer
      $   (crh,inums,lt,ui,m,vl,0,ctmp,1,kp)
-
-      call sleep(nid)
-
-c     write (6,*) '2 nid,npp',nid,npp,inums
-
-c     do i=1,inums
-c        write (6,*) nid,ctmp(i),ui(2,i),ui(3,i),ui(4,i),ui(5,i)
-c     enddo
-
-      call sleep(npp-nid-1)
 
       call fgslib_crystal_free(crh)
 
@@ -412,13 +392,7 @@ c     enddo
          clocal(l) = ctmp(i)
       enddo
 
-      call sleep(nid)
-
-c     do i=1,inums
-c        write (6,*) nid,clocal(i)
-c     enddo
-
-      call sleep(npp-nid)
+      if (nio.eq.0) write (6,*) 'exiting makecloc'
 
       return
       end
