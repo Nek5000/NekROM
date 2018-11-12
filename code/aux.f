@@ -624,3 +624,48 @@ c     This routine reads average files specificed in avg.list
       return
       end
 c-----------------------------------------------------------------------
+      subroutine bases_analysis
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /scrk5/ t1(lt),t2(lt),t3(lt)
+      common /ctrack/ cmax(0:nb), cmin(0:nb)
+
+      character (len=72) fmt1
+      character (len=72) fmt2
+      character*8 fname
+
+      real err(0:nb)
+
+      nio = -1
+      call proj2bases(u,vx,vy,vz)
+      nio = nid
+
+      write (fmt1,'("(i7,", i0, "(1pe15.7),1x,a4)")') nb+2
+      write (fmt2,'("(i7,", i0, "(1pe15.7),1x,a4)")') nb+3
+
+      call opcopy(t1,t2,t3,vx,vy,vz)
+      energy=op_glsc2_wt(t1,t2,t3,t1,t2,t3,bm1)
+
+      n=lx1*ly1*lz1*nelv
+
+      ttmp = time
+      itmp = istep
+      do i=0,nb
+         s=-u(i,1)
+         call opadds(t1,t2,t3,ub(1,i),vb(1,i),wb(1,i),s,n,2)
+         err(i)=op_glsc2_wt(t1,t2,t3,t1,t2,t3,bm1)
+         istep = i
+         time = err(i)
+         call outpost(t1,t2,t3,pr,t,'err')
+      enddo
+      time = ttmp
+      istep = itmp
+
+      return
+      end
+c-----------------------------------------------------------------------
