@@ -755,13 +755,16 @@ c     it should starting from value greater than one and decrease
       par_step = 3
       par = 1 
 
-c     use helm from BDF3/EXT3 as intial approximation
-      do i=1,nb
-         call copy(B_qn(1,i),helm(1,i),nb)
-      enddo
 
 c     BFGS method with barrier function starts
       do i=1,par_step
+
+c     use helm from BDF3/EXT3 as intial approximation
+         do i=1,nb
+            call copy(B_qn(1,i),helm(1,i),nb)
+         enddo
+         call comp_qnf
+         call comp_qngradf
 
 c     compute quasi-Newton step
          do j=1,500
