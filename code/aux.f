@@ -293,6 +293,9 @@ c-----------------------------------------------------------------------
             if (u(j,1).lt.cmin(j)) cmin(j)=u(j,1)
             if (u(j,1).gt.cmax(j)) cmax(j)=u(j,1)
          enddo
+
+         call ctke_fom(tmp,us(1,i),vs(1,i),ws(1,i))
+         tkes=tkes+tmp
       enddo
 
       s=1/real(ns)
@@ -304,9 +307,6 @@ c-----------------------------------------------------------------------
          do j=0,nb
             cvar(j)=cvar(j)+(cavg(j)-u(j,1))**2
          enddo
-
-         call ctke_fom(tmp,us(1,i),vs(1,i),ws(1,i))
-         tkes=tkes+tmp
       enddo
 
       tkes=tkes/real(ns)
