@@ -254,7 +254,7 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       common /scrk5/ t1(lt),t2(lt),t3(lt)
-      common /ctrack/ cavg(0:nb), cmax(0:nb), cmin(0:nb), cvar(0:nb)
+      common /ctrack/ savg(0:nb), smax(0:nb), smin(0:nb), svar(0:nb)
 
       character (len=72) fmt1
       character (len=72) fmt2
@@ -269,15 +269,15 @@ c-----------------------------------------------------------------------
       call genevec
       call genbases
 
-      call cfill(cmax,-1e10,nb+1)
-      call cfill(cmin,1e10,nb+1)
+      call cfill(smax,-1e10,nb+1)
+      call cfill(smin,1e10,nb+1)
 
       call load_avg
 
       write (fmt1,'("(", i0, "(1pe15.7),1x,a4)")') nb+1
 
-      call rzero(cvar,nb+1)
-      call rzero(cavg,nb+1)
+      call rzero(svar,nb+1)
+      call rzero(savg,nb+1)
 
       call proj2bases(usa,ua,va,wa)
 
@@ -287,11 +287,11 @@ c-----------------------------------------------------------------------
          if (nio.eq.0) write (6,*) i,'th snapshot:'
          call opadd3(t1,t2,t3,us(1,i),vs(1,i),ws(1,i),ub,vb,wb)
          call proj2bases(u,t1,t2,t3)
-         call add2(cavg,u,nb+1)
+         call add2(savg,u,nb+1)
 
          do j=0,nb
-            if (u(j,1).lt.cmin(j)) cmin(j)=u(j,1)
-            if (u(j,1).gt.cmax(j)) cmax(j)=u(j,1)
+            if (u(j,1).lt.smin(j)) smin(j)=u(j,1)
+            if (u(j,1).gt.smax(j)) smax(j)=u(j,1)
          enddo
 
          call ctke_fom(tmp,us(1,i),vs(1,i),ws(1,i))
@@ -301,22 +301,22 @@ c-----------------------------------------------------------------------
       tkes=tkes/real(ns)
 
       s=1/real(ns)
-      call cmult(cavg,s,nb+1)
+      call cmult(savg,s,nb+1)
 
       do i=1,ns
          call opadd3(t1,t2,t3,us(1,i),vs(1,i),ws(1,i),ub,vb,wb)
          call proj2bases(u,t1,t2,t3)
          do j=0,nb
-            cvar(j)=cvar(j)+(cavg(j)-u(j,1))**2
+            svar(j)=svar(j)+(savg(j)-u(j,1))**2
          enddo
       enddo
 
       if (nio.eq.0) then
-         write (6,fmt1) (cmax(i),i=0,nb),'cmax'
+         write (6,fmt1) (smax(i),i=0,nb),'smax'
          write (6,fmt1) (usa(i) ,i=0,nb),'ravg'
-         write (6,fmt1) (cavg(i),i=0,nb),'cavg'
-         write (6,fmt1) (cmin(i),i=0,nb),'cmin'
-         write (6,fmt1) (cvar(i),i=0,nb),'cvar'
+         write (6,fmt1) (savg(i),i=0,nb),'savg'
+         write (6,fmt1) (smin(i),i=0,nb),'smin'
+         write (6,fmt1) (svar(i),i=0,nb),'svar'
          write (6,*)                tkes,'tkes'
       endif
 
