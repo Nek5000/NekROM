@@ -522,7 +522,8 @@ c     This routine reads files specificed in file.list
                call comp_vort3(t1,t2,t3,vx,vy,vz)
                call sub3(usave(1,ipass),t1,u0,n)
             else
-               call opsub3 (t1,t2,t3,vx,vy,vz,u0(1,1),u0(1,2),u0(1,3))
+               call opsub3(usave(1,ipass),vsave(1,ipass),wsave(1,ipass),
+     $                     vx,vy,vz,u0(1,1),u0(1,2),u0(1,3))
             endif
             icount = icount+1
          else
