@@ -287,17 +287,24 @@ c-----------------------------------------------------------------------
          call add2(cavg,u,nb+1)
 
          do j=0,nb
-            cvar(j)=cvar(j)+(usa(j)-u(j,1))**2
             if (u(j,1).lt.cmin(j)) cmin(j)=u(j,1)
             if (u(j,1).gt.cmax(j)) cmax(j)=u(j,1)
+         enddo
+      enddo
+
+      s=1/real(ns)
+      call cmult(cavg,s,nb+1)
+
+      do i=1,ns
+         call opadd3(t1,t2,t3,us(1,i),vs(1,i),ws(1,i),ub,vb,wb)
+         call proj2bases(u,t1,t2,t3)
+         do j=0,nb
+            cvar(j)=cvar(j)+(cavg(j)-u(j,1))**2
          enddo
 
          call ctke_fom(tmp,us(1,i),vs(1,i),ws(1,i))
          tkes=tkes+tmp
       enddo
-
-      s=1/real(ns)
-      call cmult(cavg,s,nb+1)
 
       tkes=tkes/real(ns)
 
