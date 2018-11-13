@@ -643,6 +643,7 @@ c-----------------------------------------------------------------------
 
       real err(0:nb)
 
+      if (nio.eq.0) write (6,*) 'inside bases_analysis'
 
       n=lx1*ly1*lz1*nelv
 
@@ -669,6 +670,8 @@ c-----------------------------------------------------------------------
       enddo
       time = ttmp
       istep = itmp
+
+      if (nio.eq.0) write (6,*) 'exiting bases_analysis'
 
       return
       end
