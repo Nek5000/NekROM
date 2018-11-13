@@ -643,6 +643,9 @@ c-----------------------------------------------------------------------
 
       real err(0:nb)
 
+
+      n=lx1*ly1*lz1*nelv
+
       nio = -1
       call proj2bases(u,vx,vy,vz)
       nio = nid
@@ -653,7 +656,6 @@ c-----------------------------------------------------------------------
       call opcopy(t1,t2,t3,vx,vy,vz)
       energy=op_glsc2_wt(t1,t2,t3,t1,t2,t3,bm1)
 
-      n=lx1*ly1*lz1*nelv
 
       ttmp = time
       itmp = istep
