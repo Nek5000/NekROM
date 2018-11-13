@@ -298,6 +298,8 @@ c-----------------------------------------------------------------------
          tkes=tkes+tmp
       enddo
 
+      tkes=tkes/real(ns)
+
       s=1/real(ns)
       call cmult(cavg,s,nb+1)
 
@@ -308,8 +310,6 @@ c-----------------------------------------------------------------------
             cvar(j)=cvar(j)+(cavg(j)-u(j,1))**2
          enddo
       enddo
-
-      tkes=tkes/real(ns)
 
       if (nio.eq.0) then
          write (6,fmt1) (cmax(i),i=0,nb),'cmax'
