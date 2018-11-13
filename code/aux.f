@@ -679,6 +679,7 @@ c-----------------------------------------------------------------------
          istep = i
          time = err(i)
          call outpost(t1,t2,t3,pr,t,'err')
+         if (nio.eq.0) write (6,*) i,energy,err(i),'l2err'
       enddo
       time = ttmp
       istep = itmp
