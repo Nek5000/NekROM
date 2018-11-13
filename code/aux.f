@@ -245,7 +245,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine snap_analysis
+      subroutine sample_stats(savg,smax,smin,svar)
 
       include 'SIZE'
       include 'TOTAL'
@@ -254,34 +254,21 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       common /scrk5/ t1(lt),t2(lt),t3(lt)
-      common /ctrack/ savg(0:nb), smax(0:nb), smin(0:nb), svar(0:nb)
+      real savg(0:nb), smax(0:nb), smin(0:nb), svar(0:nb)
 
       character (len=72) fmt1
       character (len=72) fmt2
       character*8 fname
 
-      real err(0:nb)
-
-      call rom_init_params
-      call rom_init_fields
-
-      call gengram
-      call genevec
-      call genbases
-
       call cfill(smax,-1e10,nb+1)
       call cfill(smin,1e10,nb+1)
-
-      call load_avg
-
-      write (fmt1,'("(", i0, "(1pe15.7),1x,a4)")') nb+1
 
       call rzero(svar,nb+1)
       call rzero(savg,nb+1)
 
-      call proj2bases(usa,ua,va,wa)
-
       tkes=0
+
+      write (fmt1,'("(", i0, "(1pe15.7),1x,a4)")') nb+1
 
       do i=1,ns
          if (nio.eq.0) write (6,*) i,'th snapshot:'
@@ -313,7 +300,6 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) then
          write (6,fmt1) (smax(i),i=0,nb),'smax'
-         write (6,fmt1) (usa(i) ,i=0,nb),'ravg'
          write (6,fmt1) (savg(i),i=0,nb),'savg'
          write (6,fmt1) (smin(i),i=0,nb),'smin'
          write (6,fmt1) (svar(i),i=0,nb),'svar'
