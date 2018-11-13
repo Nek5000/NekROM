@@ -655,15 +655,27 @@ c-----------------------------------------------------------------------
       write (fmt2,'("(i7,", i0, "(1pe15.7),1x,a4)")') nb+3
 
       call opcopy(t1,t2,t3,vx,vy,vz)
-      energy=op_glsc2_wt(t1,t2,t3,t1,t2,t3,bm1)
 
+      if (ifvort) then
+         energy=glsc3(t1,t1,bm1,n)
+      else
+         energy=op_glsc2_wt(t1,t2,t3,t1,t2,t3,bm1)
+      endif
 
       ttmp = time
       itmp = istep
+      istep = -1
+      time = energy
+      call outpost(t1,t2,t3,pr,t,'err')
       do i=0,nb
          s=-u(i,1)
-         call opadds(t1,t2,t3,ub(1,i),vb(1,i),wb(1,i),s,n,2)
-         err(i)=op_glsc2_wt(t1,t2,t3,t1,t2,t3,bm1)
+         if (ifvort) then
+            call add2s2(t1,ub(1,i),s,n)
+            err(i)=glsc3(t1,t1,bm1,n)
+         else
+            call opadds(t1,t2,t3,ub(1,i),vb(1,i),wb(1,i),s,n,2)
+            err(i)=op_glsc2_wt(t1,t2,t3,t1,t2,t3,bm1)
+         endif
          istep = i
          time = err(i)
          call outpost(t1,t2,t3,pr,t,'err')
