@@ -278,6 +278,9 @@ c-----------------------------------------------------------------------
 
       call rzero(cvar,nb+1)
       call rzero(cavg,nb+1)
+
+      call proj2bases(usa,ua,va,wa)
+
       tkes=0
 
       do i=1,ns
