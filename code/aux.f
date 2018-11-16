@@ -181,13 +181,18 @@ c-----------------------------------------------------------------------
       common /scrk5/ t1(lt),t2(lt),t3(lt)
       common /ctrack/ cmax(0:nb), cmin(0:nb)
 
+      integer icalld
+      save    icalld
+      data    icalld /0/
+
       character (len=72) fmt1
       character (len=72) fmt2
       character*8 fname
 
       real err(0:nb)
 
-      if (istep.eq.0) then
+      if (icalld.eq.0) then
+         icalld=1
          call rom_init_params
          call rom_init_fields
 
@@ -200,7 +205,7 @@ c-----------------------------------------------------------------------
             cmin(i) =  1e10
          enddo
 
-         time=0.
+         tlast=time
       endif
 
       if (mod(istep,max(iostep,1)).eq.0) then
