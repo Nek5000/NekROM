@@ -30,7 +30,6 @@ docs
 *.nek5000
 *.out
 *.map
-*.py
 out.*
 
 # Cases
