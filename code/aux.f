@@ -327,46 +327,49 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       common /scrk5/ t1(lt),t2(lt),t3(lt)
-      common /ctrack/ tlast,tdiff,tke,
-     $                cmax(0:nb),cmin(0:nb),cavg(0:nb),cvar(0:nb)
+      common /ctrack/ tlast,tdiff,tke,cmax(0:nb),cmin(0:nb),cavg(0:nb),
+     $                cvar(0:nb)
+      common /strack/ smax(0:nb),smin(0:nb),savg(0:nb),svar(0:nb)
+
       common /scrm1/ rt1(0:nb),rt2(0:nb),rt3(0:nb)
 
       character (len=72) fmt1
       character (len=72) fmt2
       character*8 fname
 
-      if (istep.eq.1) then
+      integer icalld
+      save    icalld
+      data    icalld /0/
+
+      if (icalld.eq.0) then
+         icalld=1
+
          call cfill(cmax,-1e10,nb+1)
          call cfill(cmin, 1e10,nb+1)
          call rzero(cavg,nb+1)
          call rzero(cvar,nb+1)
-         tke=0.
 
-         tlast=time
+         tlast=time-dt
       endif
 
       call add2s2(cavg,u,dt,nb+1)
 
       do i=0,nb
-         cvar(i)=cvar(i)+dt*(usa(i)-u(i,1))**2
+         cvar(i)=cvar(i)+dt*(savg(i)-u(i,1))**2
       enddo
 
-      call ctke_rom(tmp,u)
-      tke=tke+dt*tmp
+      do i=0,nb
+         if (u(i,1).lt.cmin(i)) cmin(i)=u(i,1)
+         if (u(i,1).gt.cmax(i)) cmax(i)=u(i,1)
+      enddo
+
+      call ctke_rom(tke,u)
+      if (nio.eq.0) write (6,*) istep,time,tke,'ctke'
 
       if (mod(ad_step,max(ad_iostep,1)).eq.0) then
          istep=ad_step
          deltat=time-tlast
          tlast=time
-
-         nio = -1
-         call proj2bases(u,vx,vy,vz)
-         nio = nid
-
-         do i=0,nb
-            if (u(i,1).lt.cmin(i)) cmin(i)=u(i,1)
-            if (u(i,1).gt.cmax(i)) cmax(i)=u(i,1)
-         enddo
 
          write (fmt1,'("(i7,", i0, "(1pe15.7),1x,a4)")') nb+2
          write (fmt2,'("(i7,", i0, "(1pe15.7),1x,a4)")') nb+3
@@ -374,7 +377,6 @@ c-----------------------------------------------------------------------
          s=1./deltat
          call cmult(cavg,s,nb+1)
          call cmult(cvar,s,nb+1)
-         tke=tke/deltat
 
          if (nio.eq.0) then
             write (6,fmt1) istep,time,(cmax(i),i=0,nb),'cmax'
@@ -382,11 +384,8 @@ c-----------------------------------------------------------------------
             write (6,fmt1) istep,time,(cmin(i),i=0,nb),'cmin'
             write (6,fmt2) istep,time,deltat,(cavg(i),i=0,nb),'cavg'
             write (6,fmt2) istep,time,deltat,(cvar(i),i=0,nb),'cvar'
-            write (6,'(i7,3(1pe15.7),1x,a3)')
-     $                     istep,time,deltat,tke,'tke'
          endif
 
-         tke=0.
          call rzero(cavg,nb+1)
          call rzero(cvar,nb+1)
       endif
