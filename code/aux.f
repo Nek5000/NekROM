@@ -305,6 +305,8 @@ c-----------------------------------------------------------------------
          enddo
       enddo
 
+      call cmult(svar,s,nb+1)
+
       if (nio.eq.0) then
          write (6,fmt1) (smax(i),i=0,nb),'smax'
          write (6,fmt1) (savg(i),i=0,nb),'savg'
