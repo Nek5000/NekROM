@@ -259,6 +259,8 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       common /scrk5/ t1(lt),t2(lt),t3(lt)
+      common /scrk9/ utmp(0:nb)
+
       real savg(0:nb), smax(0:nb), smin(0:nb), svar(0:nb)
 
       character (len=72) fmt1
@@ -278,8 +280,8 @@ c-----------------------------------------------------------------------
       do i=1,ns
          if (nio.eq.0) write (6,*) i,'th snapshot:'
          call opadd3(t1,t2,t3,us(1,i),vs(1,i),ws(1,i),ub,vb,wb)
-         call proj2bases(u,t1,t2,t3)
-         call add2(savg,u,nb+1)
+         call proj2bases(utmp,t1,t2,t3)
+         call add2(savg,utmp,nb+1)
 
          do j=0,nb
             if (u(j,1).lt.smin(j)) smin(j)=u(j,1)
@@ -297,9 +299,9 @@ c-----------------------------------------------------------------------
 
       do i=1,ns
          call opadd3(t1,t2,t3,us(1,i),vs(1,i),ws(1,i),ub,vb,wb)
-         call proj2bases(u,t1,t2,t3)
+         call proj2bases(utmp,t1,t2,t3)
          do j=0,nb
-            svar(j)=svar(j)+(savg(j)-u(j,1))**2
+            svar(j)=svar(j)+(savg(j)-utmp(j))**2
          enddo
       enddo
 
