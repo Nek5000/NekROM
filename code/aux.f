@@ -344,6 +344,8 @@ c-----------------------------------------------------------------------
       if (icalld.eq.0) then
          icalld=1
 
+         call sample_stats(savg,smin,smax,svar)
+
          call cfill(cmax,-1e10,nb+1)
          call cfill(cmin, 1e10,nb+1)
          call rzero(cavg,nb+1)
