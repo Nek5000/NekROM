@@ -284,8 +284,8 @@ c-----------------------------------------------------------------------
          call add2(savg,utmp,nb+1)
 
          do j=0,nb
-            if (u(j,1).lt.smin(j)) smin(j)=u(j,1)
-            if (u(j,1).gt.smax(j)) smax(j)=u(j,1)
+            if (u(j,1).lt.smin(j)) smin(j)=utmp(j)
+            if (u(j,1).gt.smax(j)) smax(j)=utmp(j)
          enddo
 
          call ctke_fom(tmp,us(1,i),vs(1,i),ws(1,i))
