@@ -277,7 +277,7 @@ c-----------------------------------------------------------------------
 
       write (fmt1,'("(", i0, "(1pe15.7),1x,a4)")') nb+1
 
-      do i=0,ns
+      do i=1,ns
          if (nio.eq.0) write (6,*) i,'th snapshot:'
          call opadd3(t1,t2,t3,us(1,i),vs(1,i),ws(1,i),ub,vb,wb)
          call proj2bases(utmp,t1,t2,t3)
@@ -297,7 +297,7 @@ c-----------------------------------------------------------------------
       s=1/real(ns)
       call cmult(savg,s,nb+1)
 
-      do i=0,ns
+      do i=1,ns
          call opadd3(t1,t2,t3,us(1,i),vs(1,i),ws(1,i),ub,vb,wb)
          call proj2bases(utmp,t1,t2,t3)
          do j=0,nb
