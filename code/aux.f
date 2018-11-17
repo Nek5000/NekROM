@@ -280,7 +280,9 @@ c-----------------------------------------------------------------------
       do i=1,ns
          if (nio.eq.0) write (6,*) i,'th snapshot:'
          call opadd3(t1,t2,t3,us(1,i),vs(1,i),ws(1,i),ub,vb,wb)
+         nio = -1
          call proj2bases(utmp,t1,t2,t3)
+         nio = nid
          call add2(savg,utmp,nb+1)
 
          do j=0,nb
@@ -299,7 +301,9 @@ c-----------------------------------------------------------------------
 
       do i=1,ns
          call opadd3(t1,t2,t3,us(1,i),vs(1,i),ws(1,i),ub,vb,wb)
+         nio = -1
          call proj2bases(utmp,t1,t2,t3)
+         nio = nid
          do j=0,nb
             svar(j)=svar(j)+(savg(j)-utmp(j))**2
          enddo
