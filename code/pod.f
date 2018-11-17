@@ -354,6 +354,10 @@ c     eig = eig(ls:1:-1)
          if (nio.eq.0) write (6,*) 'eigenvalue',l,gram_eig(l)
       enddo
 
+      do i=1,ns
+         if (nio.eq.0) write (6,*) i,gram_eig(ns-i+1),'eval'
+      enddo
+
 
       if (nio.eq.0) write (6,*) 'exiting genevec'
 
