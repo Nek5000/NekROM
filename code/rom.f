@@ -91,6 +91,7 @@ c-----------------------------------------------------------------------
       if (param(50).eq.0) ifl2=.true.
 
       ifvort=.false. ! default to false for now
+      ifdump=.false.
 
       call compute_BDF_coef(ad_alpha,ad_beta)
 
@@ -242,38 +243,36 @@ c     enddo
 
 !        This output is to make sure the ceof matches with matlab code
 
-c        call sleep(nid)
-
-         write(6,*)'ad_step:',ad_step,ad_iostep,npp,nid
-
          if (nio.eq.0) then
-         if (ad_step.eq.ad_nsteps) then
-            do j=1,nb
-               write(6,*) j,u(j,1),'final'
-            enddo
-         else
-            do j=1,nb
-               write(6,*) j,u(j,1)
-            enddo
+            write (6,*)'ad_step:',ad_step,ad_iostep,npp,nid
+            if (ad_step.eq.ad_nsteps) then
+               do j=1,nb
+                  write(6,*) j,u(j,1),'final'
+               enddo
+            else
+               do j=1,nb
+                  write(6,*) j,u(j,1)
+               enddo
+            endif
          endif
-         call dumpcoef(u(:,1),nb,(ad_step/ad_iostep))
+
+         if (ifdump) then
+            call dumpcoef(u(:,1),nb,(ad_step/ad_iostep))
+
+            call opzero(vx,vy,vz)
+            do j=1,nb
+               call opadds(vx,vy,vz,ub(1,j),vb(1,j),wb(1,j),coef(j),n,2)
+            enddo
+            call opadd2  (vx,vy,vz,ub,vb,wb)
+
+            ! compute the vorticity of the ROM reconstructed field
+            call opcopy(t1,t2,t3,vx,vy,vz)
+            call comp_vort3(vort,work1,work2,t1,t2,t3)
+            ifto = .true. ! turn on temp in fld file
+            call copy(t,vort,n)
+
+            call outpost (vx,vy,vz,pr,t,'rom')
          endif
-
-         call sleep(np-1-nid)
-
-         call opzero(vx,vy,vz)
-         do j=1,nb
-            call opadds(vx,vy,vz,ub(1,j),vb(1,j),wb(1,j),coef(j),n,2)
-         enddo
-         call opadd2  (vx,vy,vz,ub,vb,wb)
-
-!        comput the vorticity of the ROM reconstructed field
-         call opcopy(t1,t2,t3,vx,vy,vz)
-         call comp_vort3(vort,work1,work2,t1,t2,t3)
-         ifto = .true. ! turn on temp in fld file
-         call copy(t,vort,n)
-
-         call outpost (vx,vy,vz,pr,t,'rom')
       endif
 
 c     if (nio.eq.0) write (6,*) 'exiting rom_step'
