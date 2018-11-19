@@ -705,3 +705,32 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine partialc(vr,n,nmax)
+
+      ! fills vr with contents of c0
+
+      ! TODO: support for loading ctens
+
+      include 'SIZE'
+      include 'MOR'
+
+      integer ii
+      save    ii
+      data    ii /0/
+
+      real vr(nmax)
+
+      imax = nb*(nb+1)**2
+
+      n=nmax
+      if (ii+n.gt.imax) n = imax-ii
+
+      do j=1,n
+         ii=ii+1
+         vr(j)=c(ii,0,0)
+c        write (6,*) j,ii,vr(j),imax,n,nmax,'partialc'
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
