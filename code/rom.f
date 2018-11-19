@@ -37,8 +37,8 @@ c-----------------------------------------------------------------------
       call makeb
 
       call makec
-c     if (param(51).ne.0) call makecloc
-
+      if (np.ne.1) call makecloc
+      
       call makeic
 
       if (nio.eq.0) write (6,*) 'exiting genops'
@@ -192,12 +192,18 @@ c     call add2s2(rhs,a0,s,nb+1) ! not working...
       call copy(conv(1,3),conv(1,2),nb)
       call copy(conv(1,2),conv(1,1),nb)
 
-      if (param(51).eq.0) then
+      if (np.eq.1) then
          call mxm(c,nb*(nb+1),u,nb+1,tmat,1)
          call mxm(tmat,nb,u,nb+1,conv,1)
       else
          call evalc(conv)
       endif
+
+c     if (nio.eq.0) write (6,*) ''
+
+c     do i=1,nb
+c        if (nio.eq.0) write (6,*) i,conv(i,1),'dbg conv'
+c     enddo
 
       call mxm(conv,nb,ad_alpha(1,count),3,tmp,1)
 
@@ -316,6 +322,10 @@ c              if (nid.eq.0) write (6,*) 'c0',i,j,k,c0(i,j,k)
          enddo
       enddo
 
+c     do i=0,(nb+1)**3-1
+c        c0(i,0,0)=i
+c     enddo
+
       do i=0,nb
       do j=0,nb
          call copy(c(1,j,i),c0(1,j,i),nb)
@@ -334,7 +344,7 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
-      parameter (m=5)
+      parameter (m=2)
 
       real cux(lt), cuy(lt), cuz(lt)
       integer mps(lt),mqs(lt),mrs(lt)
@@ -365,10 +375,25 @@ c-----------------------------------------------------------------------
       call factor3(mp,mq,mr,npp)
 
       call nekgsync
-      write (6,*) 'factor3',nid,mp,mq,mr,npp
+c     write (6,*) 'factor3',nid,mp,mq,mr,npp
 
       call nekgsync
       call setpart3(mps,mqs,mrs,mp,mq,mr,nb)
+
+      if (nio.eq.0) then
+         write (6,*) ''
+         do i=1,mp+1
+            write (6,*) i,mps(i),'mps'
+         enddo
+         write (6,*) ''
+         do i=1,mq+1
+            write (6,*) i,mqs(i),'mqs'
+         enddo
+         write (6,*) ''
+         do i=1,mr+1
+            write (6,*) i,mrs(i),'mrs'
+         enddo
+      endif
 
       call nekgsync
       call setrange(mps,mqs,mrs,mp,mq,mr) ! set index range i0,i1,j0,j1,k0,k1
@@ -379,50 +404,81 @@ c-----------------------------------------------------------------------
     1 format ('range',7(i4))
 
       kp=1
-      n=1
-      ip=0
-      l=0
+      nmax=lt
+      ii=1
+      ltrack=1
 
-      do k=0,nb
-      do j=0,nb
-      do i=1,nb
-         if (nio.eq.0) write (6,*) 'i,j,k',i,j,k
-         l=l+1
-         vi(1,l)=mod(ip+nid+1,npp)
-         vi(2,l)=ijk2pid(i,j,k,mps,mqs,mrs,mp,mq,ls)
+      call rzero(ctmp,nmax)
+      nmax = 14
 
-         vi(3,l)=i
-         vi(4,l)=j
-         vi(5,l)=k
+      if (nio.eq.0) write (6,*) 'first crystal_router'
 
-         vr(  l)=c0(i,j,k)
-         if (l.eq.nblock.or.(k.eq.nb.and.j.eq.nb.and.i.eq.nb)) then
-            call fgslib_crystal_tuple_transfer
-     $         (crh,l,lt,vi,m,vl,0,vr,1,kp)
-            if (nid.eq.ip) then
-               call copy(ctmp,vr,lt)
-               call icopy(ui,vi,lt*m)
-               inums=l
-            endif
-            l=0
-            ip=ip+1
+      ! for testing purposes
+
+      npr=np
+
+      do ipr=0,npr-1
+         write (6,*) 'ipr',nid,ipr
+         n=0
+         if (nid.eq.npr-1) then
+            call partialc(vr,n,nmax)
+            do i=1,n
+               vi(1,i)=ipr
+               vi(2,i)=ii
+               ii=ii+1
+            enddo
+         else
+            n=0
+         endif
+
+         call sleep(nid)
+c        write (6,*) nid,n,ipr,npr,'ninfo'
+         call nekgsync
+         call fgslib_crystal_tuple_transfer(
+     $           crh,n,nmax,vi,m,vl,0,vr,1,kp)
+
+         if (nid.eq.ipr) then
+            call copy(ctmp,vr,n)
+            call icopy(ui,vi,nmax*m)
+            ncloc=n
+            write (6,*) 'inums',inums
          endif
       enddo
-      enddo
+
+      call nekgsync
+      call sleep(nid)
+
+      do i=1,ncloc
+         ii=mod(ui(2,i),nb)
+         jj=mod((ui(2,i)-1)/nb,nb*(nb+1))
+         kk=(ui(2,i)-1)/(nb*(nb+1))
+         ui(1,i)=ijk2pid(ii,jj,kk,mps,mqs,mrs,mp,mq,mr)
+         write (6,*) nid,i,vr(i),ui(1,i),ui(2,i)
       enddo
 
-      kp=2
+      call nekgsync
+
+      ! process vi such to find destination
+      ! end process
 
       if (nio.eq.0) write (6,*) 'second crystal_router'
 
       call fgslib_crystal_tuple_transfer
-     $   (crh,inums,lt,ui,m,vl,0,ctmp,1,kp)
+     $   (crh,ncloc,lt,ui,m,vl,0,vr,1,kp)
+
+      call nekgsync
+      call sleep(nid)
+
+      do i=1,ncloc
+         write (6,*) nid,i,vr(i),ui(1,i),ui(2,i)
+      enddo
+
+      call nekgsync
 
       call fgslib_crystal_free(crh)
 
-      do i=1,inums
-         call ijk2l(l,ui(3,i),ui(4,i),ui(5,i))
-         clocal(l) = ctmp(i)
+      do i=1,ncloc
+         clocal(i) = vr(i)
       enddo
 
       if (nio.eq.0) write (6,*) 'exiting makecloc'
@@ -613,6 +669,8 @@ c-----------------------------------------------------------------------
       common /scrk4/ work(lx1*ly1*lz1*lelt)
 
       l=1
+
+c     if (nio.eq.0) write (6,*) 'calling evalc'
 
       call rzero(cu,nb)
 
