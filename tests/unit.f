@@ -197,7 +197,7 @@ c-----------------------------------------------------------------------
 
       call readbases(ub,vb,wb,nb)
 
-      call makea
+      call makea0
       call reada0(aa,(nb+1)**2)
 
       s1=0.
@@ -272,7 +272,7 @@ c-----------------------------------------------------------------------
 
       call readbases(ub,vb,wb,nb)
 
-      call makeb
+      call makeb0
       call readb0(bb,(nb+1)**2)
 
       s1=0.
@@ -347,7 +347,7 @@ c-----------------------------------------------------------------------
 
       call readbases(ub,vb,wb,nb)
 
-      call makec
+      call makec0
       call readc0(cc,(nb+1)**3)
 
       s1=0.
@@ -397,7 +397,7 @@ c-----------------------------------------------------------------------
          enddo
       endif
 
-      call makecloc
+      call setcloc
 
       call nekgsync
       call sleep(nid)
