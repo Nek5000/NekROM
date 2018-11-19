@@ -428,7 +428,7 @@ c     write (6,*) 'factor3',nid,mp,mq,mr,npp
       nmax=nb*(nb+1)**2/npr+1
 
       do ipr=0,npr-1
-         write (6,*) 'ipr',nid,ipr
+c        write (6,*) 'ipr',nid,ipr
          n=0
          if (nid.eq.npr-1) then
             call partialc(vr,n,nmax)
@@ -451,7 +451,7 @@ c        write (6,*) nid,n,ipr,npr,'ninfo'
             call copy(ctmp,vr,n)
             call icopy(ui,vi,nmax*m)
             ncloc=n
-            write (6,*) 'inums',inums
+c           write (6,*) 'inums',inums
          endif
       enddo
 
@@ -463,7 +463,7 @@ c        write (6,*) nid,n,ipr,npr,'ninfo'
          jj=mod((ui(2,i)-1)/nb,nb*(nb+1))
          kk=(ui(2,i)-1)/(nb*(nb+1))
          ui(1,i)=ijk2pid(ii,jj,kk,mps,mqs,mrs,mp,mq,mr)
-         write (6,*) nid,i,ctmp(i),ui(1,i),ui(2,i)
+c        write (6,*) nid,i,ctmp(i),ui(1,i),ui(2,i)
       enddo
 
       call nekgsync
