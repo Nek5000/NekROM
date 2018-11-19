@@ -34,7 +34,7 @@ c-----------------------------------------------------------------------
       mq=imin
       mr=n/mq
 
-      if (nio.eq.0) write (6,*) 'mp,mq,mr,mp*mq*mr',mp,mq,mr,mp*mq*mr
+c     if (nio.eq.0) write (6,*) 'mp,mq,mr,mp*mq*mr',mp,mq,mr,mp*mq*mr
 
       return
       end
@@ -80,9 +80,15 @@ c-----------------------------------------------------------------------
 
       real mps(1),mqs(1),mrs(1)
 
+      ii=i
+      jj=j
+      kk=k
+
       ip=i2p(i,mps)
       iq=i2p(j+1,mqs)
       ir=i2p(k+1,mrs)
+
+c     write (6,*) ip,iq,ir,ii,jj,kk,'i2p'
 
       return
       end
