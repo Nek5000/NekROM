@@ -17,8 +17,7 @@ c-----------------------------------------------------------------------
       call reada0(a0,(nb+1)**2)
       call readb0(b0,(nb+1)**2)
 
-      call readc0(c0,(nb+1)**3)
-c     if (np.gt.1) call makecloc
+      if (nid.eq.(np-1)) call readc0(c0,(nb+1)**3)
 
       if (nio.eq.0) write (6,*) 'exiting readops'
 
@@ -33,13 +32,39 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'inside genops'
 
-      call makea
-      call makeb
-
-      call makec
-      if (np.ne.1) call makecloc
+      call makea0
+      call makeb0
+      call makec0
       
       call makeic
+
+      if (nio.eq.0) write (6,*) 'exiting genops'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine setops
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      if (nio.eq.0) write (6,*) 'inside genops'
+
+      do i=1,nb
+         call copy(a(1,i),a0(1,i),nb)
+         call copy(b(1,i),b0(1,i),nb)
+      enddo
+
+      if (nid.eq.(np-1)) then
+      do j=1,nb
+      do i=1,nb
+         call copy(c(1,i,j),c0(1,i,j),nb)
+      enddo
+      enddo
+      endif
+
+      if (np.gt.1) call setcloc
 
       if (nio.eq.0) write (6,*) 'exiting genops'
 
@@ -66,6 +91,8 @@ c-----------------------------------------------------------------------
       if (param(50).eq.0) ifl2=.true.
 
       ifvort=.false. ! default to false for now
+
+      call compute_BDF_coef(ad_alpha,ad_beta)
 
       if (nid.eq.0) write (6,*) 'exiting rom_init_params'
 
@@ -118,17 +145,8 @@ c-----------------------------------------------------------------------
 
       if (nid.eq.0) write (6,*) 'inside rom_setup'
 
-      do i=1,nb
-         call copy(a(1,i),a0(1,i),nb)
-         call copy(b(1,i),b0(1,i),nb)
-      enddo
-
       ! BDFk/EXTk coefficients ( will change to BD inside Nek)
       call compute_BDF_coef(ad_alpha,ad_beta)
-
-      do j=1,nb
-         if (nio.eq.0) write(6,*) j,u(j,1)
-      enddo
 
       if (nid.eq.0) write (6,*) 'exiting rom_setup'
 
@@ -224,20 +242,22 @@ c     enddo
 
 !        This output is to make sure the ceof matches with matlab code
 
-         call sleep(nid)
+c        call sleep(nid)
 
          write(6,*)'ad_step:',ad_step,ad_iostep,npp,nid
 
+         if (nio.eq.0) then
          if (ad_step.eq.ad_nsteps) then
-            do j=1,nb
-               write(6,*) j,u(j,1)
-            enddo
-         else
             do j=1,nb
                write(6,*) j,u(j,1),'final'
             enddo
+         else
+            do j=1,nb
+               write(6,*) j,u(j,1)
+            enddo
          endif
          call dumpcoef(u(:,1),nb,(ad_step/ad_iostep))
+         endif
 
          call sleep(np-1-nid)
 
@@ -292,7 +312,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine makec
+      subroutine makec0
 
       include 'SIZE'
       include 'TOTAL'
@@ -322,22 +342,12 @@ c              if (nid.eq.0) write (6,*) 'c0',i,j,k,c0(i,j,k)
          enddo
       enddo
 
-c     do i=0,(nb+1)**3-1
-c        c0(i,0,0)=i
-c     enddo
-
-      do i=0,nb
-      do j=0,nb
-         call copy(c(1,j,i),c0(1,j,i),nb)
-      enddo
-      enddo
-
       if (nio.eq.0) write (6,*) 'exiting makec'
 
       return
       end
 c-----------------------------------------------------------------------
-      subroutine makecloc ! TODO Fix for 1-proc case
+      subroutine setcloc ! TODO Fix for 1-proc case
 
       include 'SIZE'
       include 'TOTAL'
@@ -409,13 +419,14 @@ c     write (6,*) 'factor3',nid,mp,mq,mr,npp
       ltrack=1
 
       call rzero(ctmp,nmax)
-      nmax = 14
 
       if (nio.eq.0) write (6,*) 'first crystal_router'
 
       ! for testing purposes
 
       npr=np
+
+      nmax=nb*(nb+1)**2/npr+1
 
       do ipr=0,npr-1
          write (6,*) 'ipr',nid,ipr
@@ -453,7 +464,7 @@ c        write (6,*) nid,n,ipr,npr,'ninfo'
          jj=mod((ui(2,i)-1)/nb,nb*(nb+1))
          kk=(ui(2,i)-1)/(nb*(nb+1))
          ui(1,i)=ijk2pid(ii,jj,kk,mps,mqs,mrs,mp,mq,mr)
-         write (6,*) nid,i,vr(i),ui(1,i),ui(2,i)
+         write (6,*) nid,i,ctmp(i),ui(1,i),ui(2,i)
       enddo
 
       call nekgsync
@@ -464,21 +475,21 @@ c        write (6,*) nid,n,ipr,npr,'ninfo'
       if (nio.eq.0) write (6,*) 'second crystal_router'
 
       call fgslib_crystal_tuple_transfer
-     $   (crh,ncloc,lt,ui,m,vl,0,vr,1,kp)
+     $   (crh,ncloc,lt,ui,m,vl,0,ctmp,1,kp)
 
       call nekgsync
       call sleep(nid)
 
-      do i=1,ncloc
-         write (6,*) nid,i,vr(i),ui(1,i),ui(2,i)
-      enddo
+c     do i=1,ncloc
+c        write (6,*) nid,i,ctmp(i),ui(1,i),ui(2,i)
+c     enddo
 
       call nekgsync
 
       call fgslib_crystal_free(crh)
 
       do i=1,ncloc
-         clocal(i) = vr(i)
+         clocal(i) = ctmp(i)
       enddo
 
       if (nio.eq.0) write (6,*) 'exiting makecloc'
@@ -559,7 +570,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine makea
+      subroutine makea0
 
       include 'SIZE'
       include 'TOTAL'
@@ -591,7 +602,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine makeb
+      subroutine makeb0
 
       include 'SIZE'
       include 'TOTAL'
@@ -714,8 +725,6 @@ c     Variable for vorticity
 c     Working arrays for LU
 
       common /nekmpi/ nidd,npp,nekcomm,nekgroup,nekreal
-
-c     if (nio.eq.0) write (6,*) 'entering rom_step'
 
       n  = lx1*ly1*lz1*nelt
 
