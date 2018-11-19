@@ -49,7 +49,7 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
-      if (nio.eq.0) write (6,*) 'inside genops'
+      if (nio.eq.0) write (6,*) 'inside setops'
 
       do i=1,nb
          call copy(a(1,i),a0(1,i),nb)
@@ -66,7 +66,7 @@ c-----------------------------------------------------------------------
 
       if (np.gt.1) call setcloc
 
-      if (nio.eq.0) write (6,*) 'exiting genops'
+      if (nio.eq.0) write (6,*) 'exiting setops'
 
       return
       end
