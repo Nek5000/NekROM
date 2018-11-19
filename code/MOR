@@ -40,6 +40,6 @@ c     parameters and common blocks for MOR
       common /moropt_par/ par
       common /morqn/ qngradf(nb), qns(nb), qny(nb), qnf
 
-      logical ifl2, ifvort
+      logical ifl2, ifvort, ifdump
 
-      common /morflags/ ifl2, ifvort
+      common /morflags/ ifl2, ifvort, ifdump
