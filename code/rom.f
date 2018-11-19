@@ -110,7 +110,6 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-
       subroutine rom_setup
 
       include 'SIZE'
@@ -122,12 +121,6 @@ c-----------------------------------------------------------------------
       do i=1,nb
          call copy(a(1,i),a0(1,i),nb)
          call copy(b(1,i),b0(1,i),nb)
-      enddo
-
-      do i=0,nb
-      do j=0,nb
-         call copy(c(1,j,i),c0(1,j,i),nb)
-      enddo
       enddo
 
       ! BDFk/EXTk coefficients ( will change to BD inside Nek)
@@ -321,6 +314,12 @@ c-----------------------------------------------------------------------
 c              if (nid.eq.0) write (6,*) 'c0',i,j,k,c0(i,j,k)
             enddo
          enddo
+      enddo
+
+      do i=0,nb
+      do j=0,nb
+         call copy(c(1,j,i),c0(1,j,i),nb)
+      enddo
       enddo
 
       if (nio.eq.0) write (6,*) 'exiting makec'
