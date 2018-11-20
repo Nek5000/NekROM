@@ -7,14 +7,14 @@ notifications:
 
 sudo: required
 
-before_install: 
+before_install:
   - export MOR_DIR=$(pwd -P)
 
   # Install MPICH
   - sudo apt-get update -qq
   - sudo apt-get install -y libmpich-dev mpich
 
-  # Set up Nek5000
+  # Setup Nek5000
   - git clone --single-branch -b presolve-fix https://github.com/kent0/Nek5000
   - export SOURCE_ROOT=$MOR_DIR/Nek5000
   - (cd Nek5000/tools; ./maketools genmap)
@@ -26,37 +26,24 @@ before_script:
   - export USR_LFLAGS+="-mcmodel=medium"
 
 script: $MOR_DIR/tests/test.sh
-
 jobs:
-    include:
-      - stage: unit
-        env: TEST=GRAMMIAN_L2_UNIT
-      -
-        env: TEST=EIGENVECTOR_L2_UNIT
-      -
-        env: TEST=BASES_L2_UNIT
-      -
-        env: TEST=INITIAL_CONDITION_L2_UNIT
-      -
-        env: TEST=A0_L2_UNIT
-      -
-        env: TEST=B0_L2_UNIT
-      -
-        env: TEST=C0_L2_UNIT
-      -
-        env: TEST=GRAMMIAN_H10_UNIT
-      -
-        env: TEST=EIGENVECTOR_H10_UNIT
-      -
-        env: TEST=BASES_H10_UNIT
-      -
-        env: TEST=INITIAL_CONDITION_H10_UNIT
-      -
-        env: TEST=A0_H10_UNIT
-      -
-        env: TEST=B0_H10_UNIT
-      -
-        env: TEST=C0_H10_UNIT
+  include:
+  - stage: unit
+    env: TEST=GRAMMIAN_L2_UNIT
+  - env: TEST=EIGENVECTOR_L2_UNIT
+  - env: TEST=BASES_L2_UNIT
+  - env: TEST=INITIAL_CONDITION_L2_UNIT
+  - env: TEST=A0_L2_UNIT
+  - env: TEST=B0_L2_UNIT
+  - env: TEST=C0_L2_UNIT
+  - env: TEST=GRAMMIAN_H10_UNIT
+  - env: TEST=EIGENVECTOR_H10_UNIT
+  - env: TEST=BASES_H10_UNIT
+  - env: TEST=INITIAL_CONDITION_H10_UNIT
+  - env: TEST=A0_H10_UNIT
+  - env: TEST=B0_H10_UNIT
+  - env: TEST=C0_H10_UNIT
 
-#     - stage: integration
-#       env: TEST=BAF_INTEG
+env:
+  global:
+    secure: bnXmYvIM+avMEjfHSwJ+VyXppvUSov2cMwagXJgU8xRgTkWhDD1H1lzN+PYqDr66859vzdc+kxxDK17yVfEOqUEiZAeEdWhe+fvXznijPPI8C7Gyycra81XWpxFhGaweOF0q+cUQbjZJhcd4O+aHTVtAVi3QWA1rQsucHrLzjixpW28eooPAQ0x01BZkSmfq6eaJ+2mpby3j6gfHbrz7nmmEa+SaDtuZ9kFZPvrABAJ/W5EetrTUMP2a+X/y4IwrAZhbma+z+uSmsNMf8mgydyar9Nnt9pxjcpOtsMrhBv5nY0ngDGAR0mzJn2ZD/mzwC5xI0PApYhgyIXTdPsGAPhyDjEbzhQqv8UmcuqzFTrtalYekTTAM+6orr3bOaLo/7Uv83+CdiXAh87sRRyMQ9nwNmHAQRWNdXHRLbamoQIBmQcOxZa2Uwspq8RbIlzeshYlSA4P0EK5rgkgAVVw/NohoFOh3f7pNdxhM3iUPGB6s6d885ktOpWWoaMngZjL2wl5KQ9JWjv9I/v4gEI0KcDsQwsasxDBnsBhaFq1Caur4Rd04qXPRMzlG4JH0dYsSvqjJNaXe3XhPXvdou/V7j9+Mlo5ZhfWpLvRHxOX8hz+PXVz0DZ7cDTl0XM0rM26t6T9zuD1pCNRdYMHqJJX4wAqKoKj51cZXfwmhaWby1+c=
