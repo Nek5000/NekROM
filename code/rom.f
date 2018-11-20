@@ -164,7 +164,7 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
 c     Matrices and vectors for advance
-      real tmp(0:nb),tmat(nb,nb+1)
+      real tmp(0:nb),tmat(nb,nb+1),rhs(0:nb)
       real coef(1:nb), e0(0:nb)
 
       common /scrk3/ work(lt)
@@ -741,16 +741,22 @@ c     Working arrays for LU
       ZERO= 0.
 
       call mxm(u,nb+1,ad_beta(2,count),3,tmp,1)
+      call mxm(b,nb,tmp(1),nb,opt_rhs,1)
 
-      call dgemv( 'N',nb,nb,ONE,b,nb,tmp(1),1,ZERO,rhs,1)
+      call cmult(opt_rhs,-1/ad_dt,nb+1)
 
-      call cmult(rhs,-1/ad_dt,nb)
-      call add2s2(rhs,a0(1,0),-1/ad_re,nb)
+      s=-1.0/ad_re
+
+c     call add2s2(rhs,a0,s,nb+1) ! not working...
+      do i=0,nb
+         opt_rhs(i)=opt_rhs(i)+s*a0(i,0)
+      enddo
+c      call add2s2(rhs,a0(1,0),-1/ad_re,nb)
 
       call copy(conv(1,3),conv(1,2),nb)
       call copy(conv(1,2),conv(1,1),nb)
 
-      if (param(51).eq.0) then
+      if (np.eq.1) then
          call mxm(c,nb*(nb+1),u,nb+1,tmat,1)
          call mxm(tmat,nb,u,nb+1,conv,1)
       else
@@ -759,7 +765,7 @@ c     Working arrays for LU
 
       call mxm(conv,nb,ad_alpha(1,count),3,tmp,1)
 
-      call sub2(rhs,tmp,nb)
+      call sub2(opt_rhs,tmp,nb)
 
       call copy(u(1,3),u(1,2),nb)
       call copy(u(1,2),u(1,1),nb)
@@ -881,7 +887,7 @@ c-----------------------------------------------------------------------
       call sub3(tmp2,u(1,1),sample_min,nb)  
       call add3(tmp3,tmp1,tmp2,nb)
 
-      call add3s12(qngradf,rhs,tmp3,-1,-par,nb)
+      call add3s12(qngradf,opt_rhs(1),tmp3,-1,-par,nb)
 
       ONE = 1.
       ZERO= 0.
@@ -916,7 +922,7 @@ c     currently can only come up with this way to compute log for an array
 c     evaluate quasi-newton f
 c     inverse of helm hasn't been implemented yet
 
-      term2 = glsc2(u(1,1),rhs,nb)
+      term2 = glsc2(u(1,1),opt_rhs(1),nb)
       term3 = par*(bar1+bar2)
 
       ONE = 1.
