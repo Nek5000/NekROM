@@ -22,7 +22,7 @@ before_install:
 before_script:
   - export FC=mpif77
   - export CC=mpicc
-  - export FFLAGS="-w -mcmodel=medium"
+  - export FFLAGS="-w -mcmodel=medium -fprofile-arcs -ftest-coverage"
   - export USR_LFLAGS+="-mcmodel=medium"
 
 script: $MOR_DIR/tests/test.sh
