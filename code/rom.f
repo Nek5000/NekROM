@@ -818,12 +818,14 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
 c     parameter for barrier function
-c     it should starting from value greater than one and decrease
+c     it should start from value greater than one and decrease
       real B_qn(nb,nb), IBgf(nb), IBy(nb)
       real yIBy,sgf,sy,yBIgf
       real go(nb),fo,qndf
       integer par_step
+      real tmp(nb,nb)
 
+      if (nio.eq.0) write (6,*) 'inside opt_const'
       par_step = 3
       par = 1 
 
@@ -837,16 +839,18 @@ c     use helm from BDF3/EXT3 as intial approximation
          enddo
          call comp_qnf
          call comp_qngradf
-         call cmult(qngradf,-1,nb)
+         call cmult(qngradf,-1.0,nb)
 
 c     compute quasi-Newton step
          do j=1,500
             if (j==1) then
-               call lu(flu,nb,nb,ir,ic)
+               call lu(B_qn,nb,nb,ir,ic)
                call copy(qns,qngradf,nb)
-               call solve(qns,flu,1,nb,nb,ir,ic)
+               call solve(qns,B_qn,1,nb,nb,ir,ic)
                call add2(u(1,1),qns,nb)
             else
+c              outer product               
+               call mxm(qns,nb,qns,1,tmp,nb)
                call copy(qns,qngradf,nb)
                call add2(u(1,1),qns,nb)
                
@@ -872,6 +876,7 @@ c     update approximate Hessian
          par = par*0.1
 
       enddo
+      if (nio.eq.0) write (6,*) 'exitting opt_const'
 
       return
       end
@@ -882,17 +887,20 @@ c-----------------------------------------------------------------------
       include 'MOR'
       real tmp1(nb),tmp2(nb),tmp3(nb),tmp4(nb)
 
+      if (nio.eq.0) write (6,*) 'inside com_qngradf'
 
       call sub3(tmp1,u(1,1),sample_max,nb)  
       call sub3(tmp2,u(1,1),sample_min,nb)  
       call add3(tmp3,tmp1,tmp2,nb)
 
-      call add3s12(qngradf,opt_rhs(1),tmp3,-1,-par,nb)
+      call add3s12(qngradf,opt_rhs(1:nb),tmp3,-1.0,-par,nb)
 
       ONE = 1.
       ZERO= 0.
       call dgemv( 'N',nb,nb,ONE,helm,nb,u(1,1),1,ZERO,tmp4,1)
       call add2(qngradf,tmp4,nb)
+
+      if (nio.eq.0) write (6,*) 'exiting com_qngradf'
 
       return 
       end
@@ -906,6 +914,8 @@ c-----------------------------------------------------------------------
 
 c     bar1 and bar2 are the barrier function for two constrains
       real bar1,bar2
+
+      if (nio.eq.0) write (6,*) 'inside com_qnf'
 
       call sub3(tmp1,sample_max,u(1,1),nb)  
       call sub3(tmp2,u(1,1),sample_min,nb)  
@@ -931,6 +941,8 @@ c     inverse of helm hasn't been implemented yet
       term1 = 0.5 * glsc2(tmp5,u(1,1),nb)
 
       qnf = term1 - term2 - term3
+
+      if (nio.eq.0) write (6,*) 'exitting com_qnf'
 
       return
       end

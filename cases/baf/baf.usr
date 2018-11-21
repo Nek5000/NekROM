@@ -108,7 +108,7 @@ c-----------------------------------------------------------------------
       call rom_setup
 
       do ad_step=1,ad_nsteps
-         call rom_const
+c         call rom_const
          call rom_step
       enddo
 
