@@ -198,7 +198,7 @@ c     if (nio.eq.0) write (6,*) 'entering rom_step'
 
       call mxm(u,nb+1,ad_beta(2,count),3,tmp,1)
 c     call mxm(b0,nb+1,tmp,nb+1,rhs,1)
-      call mxm(b,nb,tmp(1),nb,rhs,1)
+      call mxm(b,nb,tmp(1),nb,rhs(1),1)
 
       call cmult(rhs,-1/ad_dt,nb+1)
 
@@ -227,18 +227,30 @@ c     enddo
 
       call mxm(conv,nb,ad_alpha(1,count),3,tmp,1)
 
-      call sub2(rhs,tmp,nb)
+      call sub2(rhs,tmp,nb+1)
+      write(6,*)'here'
+      do i=1,nb
+      do j=1,nb
+      write(6,*)i,j,flu(i,j)
+      enddo
+      enddo
 
       if (ad_step.le.3) call lu(flu,nb,nb,ir,ic)
+      do i=1,nb
+      do j=1,nb
+      write(6,*)i,j,flu(i,j)
+      enddo
+      enddo
+      call exitt0
 
       call solve(rhs(1),flu,1,nb,nb,ir,ic)
 
       call copy(u(1,3),u(1,2),nb)
       call copy(u(1,2),u(1,1),nb)
 
-      call copy(u(1,1),rhs,nb)
+      call copy(u(1,1),rhs(1),nb)
 
-      call copy(coef,rhs,nb)
+      call copy(coef,rhs(1),nb)
 
       if (mod(ad_step,ad_iostep).eq.0) then
 
@@ -741,7 +753,10 @@ c     Working arrays for LU
       ZERO= 0.
 
       call mxm(u,nb+1,ad_beta(2,count),3,tmp,1)
-      call mxm(b,nb,tmp(1),nb,opt_rhs,1)
+      call mxm(b,nb,tmp(1),nb,opt_rhs(1),1)
+      do i=0,nb
+         write(6,*)i,opt_rhs(i)
+      enddo
 
       call cmult(opt_rhs,-1/ad_dt,nb+1)
 
@@ -827,8 +842,14 @@ c     it should start from value greater than one and decrease
 
       if (nio.eq.0) write (6,*) 'inside opt_const'
       par_step = 3
-      par = 1 
+      par = 1.0 
 
+
+c     invhelm for computing qnf
+c     not changing during BFGS
+c     only changes during the time stepper
+      call copy(invhelm(1,1),helm(1,1),nb*nb)
+      call lu(invhelm,nb,nb,ir,ic)
 
 c     BFGS method with barrier function starts
       do k=1,par_step
@@ -837,6 +858,7 @@ c     use helm from BDF3/EXT3 as intial approximation
          do i=1,nb
             call copy(B_qn(1,i),helm(1,i),nb)
          enddo
+
          call comp_qnf
          call comp_qngradf
          call cmult(qngradf,-1.0,nb)
@@ -858,6 +880,7 @@ c              outer product
             call copy(go,gngraf,nb) ! store old qn-gradf
             call comp_qngradf ! update qn-gradf
             call sub3(qny,qngradf,go,nb)
+            call cmult(qngradf,-1.0,nb)
 c     BFGS update
             call copy(IBgf,gngraf,nb) ! comp B^-1 \nabla f
             call copy(IBy,gny,nb) ! compt B^-1 y
@@ -893,7 +916,7 @@ c-----------------------------------------------------------------------
       call sub3(tmp2,u(1,1),sample_min,nb)  
       call add3(tmp3,tmp1,tmp2,nb)
 
-      call add3s12(qngradf,opt_rhs(1:nb),tmp3,-1.0,-par,nb)
+      call add3s12(qngradf,opt_rhs(1),tmp3,-1.0,-par,nb)
 
       ONE = 1.
       ZERO= 0.
@@ -909,7 +932,8 @@ c-----------------------------------------------------------------------
       
       include 'SIZE'
       include 'MOR'
-      real tmp1(nb),tmp2(nb),tmp3(nb),tmp4(nb),tmp5(nb)
+      real tmp1(nb),tmp2(nb),tmp3(nb)
+      real tmp4(nb),tmp5(nb),tmp6(nb)
       real term1,term2,term3,term4
 
 c     bar1 and bar2 are the barrier function for two constrains
@@ -917,30 +941,47 @@ c     bar1 and bar2 are the barrier function for two constrains
 
       if (nio.eq.0) write (6,*) 'inside com_qnf'
 
+c     evaluate quasi-newton f
+
+c     term1 represents 0.5*H*x
+      ONE = 1.
+      ZERO= 0.
+      call dgemv( 'N',nb,nb,ONE,helm,nb,u(1,1),1,ZERO,tmp6,1)
+      term1 = 0.5 * glsc2(tmp6,u(1,1),nb)
+      write(6,*)'term1',term1
+
+c     term2 represents x'*g
+      term2 = glsc2(u(1,1),opt_rhs(1),nb)
+      write(6,*)'term2',term2
+
+c     term3 represents 0.5*g'*inv(H)*g
+      call copy(tmp5,opt_rhs(1),nb)
+      call solve(tmp5,invhelm,1,nb,nb,ir,ic)
+      term3 = 0.5 * glsc2(opt_rhs(1),tmp5,nb)
+      write(6,*)'term3',term3
+
+c     barrier term
       call sub3(tmp1,sample_max,u(1,1),nb)  
       call sub3(tmp2,u(1,1),sample_min,nb)  
+      write(6,*)'tmp1,tmp2'
+      do i=1,nb
+      write(6,*)i,tmp1(i),tmp2(i)
+      enddo
 
 c     currently can only come up with this way to compute log for an array
       do i=1,nb
          tmp3(i) = log(tmp1(i))
          tmp4(i) = log(tmp2(i))
+         write(6,*)i,tmp3(i),tmp4(i)
       enddo
 
       bar1 = vlsum(tmp3,nb)
       bar2 = vlsum(tmp4,nb)
+      term4 = par*(bar1+bar2)
+      write(6,*)'term4',term4
 
-c     evaluate quasi-newton f
-c     inverse of helm hasn't been implemented yet
-
-      term2 = glsc2(u(1,1),opt_rhs(1),nb)
-      term3 = par*(bar1+bar2)
-
-      ONE = 1.
-      ZERO= 0.
-      call dgemv( 'N',nb,nb,ONE,helm,nb,u(1,1),1,ZERO,tmp5,1)
-      term1 = 0.5 * glsc2(tmp5,u(1,1),nb)
-
-      qnf = term1 - term2 - term3
+      qnf = term1 - term2 + term3 - term4
+      call exitt0
 
       if (nio.eq.0) write (6,*) 'exitting com_qnf'
 
