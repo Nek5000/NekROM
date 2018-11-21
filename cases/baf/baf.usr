@@ -107,9 +107,14 @@ c-----------------------------------------------------------------------
 
       call rom_setup
 
+      ifstep=.false.
+
       do ad_step=1,ad_nsteps
-c         call rom_const
-         call rom_step
+         if (ifstep) then
+            call rom_step
+         else
+            call rom_const
+         endif
       enddo
 
       call exitt0
