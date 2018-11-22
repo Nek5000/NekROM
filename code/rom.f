@@ -963,16 +963,11 @@ c     term3 represents 0.5*g'*inv(H)*g
 c     barrier term
       call sub3(tmp1,sample_max,u(1,1),nb)  
       call sub3(tmp2,u(1,1),sample_min,nb)  
-      write(6,*)'tmp1,tmp2'
-      do i=1,nb
-      write(6,*)i,tmp1(i),tmp2(i)
-      enddo
 
 c     currently can only come up with this way to compute log for an array
       do i=1,nb
          tmp3(i) = log(tmp1(i))
          tmp4(i) = log(tmp2(i))
-         write(6,*)i,tmp3(i),tmp4(i)
       enddo
 
       bar1 = vlsum(tmp3,nb)
