@@ -754,9 +754,6 @@ c     Working arrays for LU
 
       call mxm(u,nb+1,ad_beta(2,count),3,tmp,1)
       call mxm(b,nb,tmp(1),nb,opt_rhs(1),1)
-      do i=0,nb
-         write(6,*)i,opt_rhs(i)
-      enddo
 
       call cmult(opt_rhs,-1/ad_dt,nb+1)
 
@@ -861,26 +858,26 @@ c     use helm from BDF3/EXT3 as intial approximation
 
          call comp_qnf
          call comp_qngradf
-         call cmult(qngradf,-1.0,nb)
 
 c     compute quasi-Newton step
          do j=1,500
             if (j==1) then
                call lu(B_qn,nb,nb,ir,ic)
                call copy(qns,qngradf,nb)
+               call chsign(qns,nb)
                call solve(qns,B_qn,1,nb,nb,ir,ic)
                call add2(u(1,1),qns,nb)
             else
 c              outer product               
                call mxm(qns,nb,qns,1,tmp,nb)
                call copy(qns,qngradf,nb)
+               call chsign(qns,nb)
                call add2(u(1,1),qns,nb)
                
             endif
             call copy(go,gngraf,nb) ! store old qn-gradf
             call comp_qngradf ! update qn-gradf
             call sub3(qny,qngradf,go,nb)
-            call cmult(qngradf,-1.0,nb)
 c     BFGS update
             call copy(IBgf,gngraf,nb) ! comp B^-1 \nabla f
             call copy(IBy,gny,nb) ! compt B^-1 y
@@ -976,7 +973,6 @@ c     currently can only come up with this way to compute log for an array
       write(6,*)'term4',term4
 
       qnf = term1 - term2 + term3 - term4
-      call exitt0
 
       if (nio.eq.0) write (6,*) 'exitting com_qnf'
 
