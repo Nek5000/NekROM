@@ -907,6 +907,21 @@ c            outer product: y_k * y_k^T
                call cmult(yy(1,ii),1.0/ys,nb)
             enddo
 
+            do ii=1,nb
+            do jj=1,nb
+            write(6,*)ii,jj,B_qn(ii,jj)
+            enddo
+            enddo
+
+            do ii=1,nb
+               call add4(B_qn(1,ii),B_qn(1,ii),tmp2(1,ii),yy(1,ii),nb)
+            enddo
+
+            do ii=1,nb
+            do jj=1,nb
+            write(6,*)ii,jj,B_qn(ii,jj)
+            enddo
+            enddo
 
 c     BFGS update
 c            call copy(IBgf,gngraf,nb) ! comp B^-1 \nabla f
