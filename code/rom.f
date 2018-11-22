@@ -834,8 +834,10 @@ c     it should start from value greater than one and decrease
       real B_qn(nb,nb), IBgf(nb), IBy(nb)
       real yIBy,sgf,sy,yBIgf
       real go(nb),fo,qndf
+      real tmp(nb,nb),tmp1(nb,nb),tmp2(nb,nb),tmp3(nb,nb)
+      real tmp4(nb),tmp5(nb),tmp6(nb,nb),tmp7(nb,nb)
+      real yy(nb,nb),ys,sBs
       integer par_step
-      real tmp(nb,nb)
 
       if (nio.eq.0) write (6,*) 'inside opt_const'
       par_step = 3
@@ -862,35 +864,64 @@ c     use helm from BDF3/EXT3 as intial approximation
 c     compute quasi-Newton step
          do j=1,500
             if (j==1) then
-               call lu(B_qn,nb,nb,ir,ic)
+               call copy(tmp3(1,1),B_qn(1,1),nb*nb)
+               call lu(tmp3,nb,nb,ir,ic)
                call copy(qns,qngradf,nb)
                call chsign(qns,nb)
-               call solve(qns,B_qn,1,nb,nb,ir,ic)
+               call solve(qns,tmp3,1,nb,nb,ir,ic)
                call add2(u(1,1),qns,nb)
             else
-c              outer product               
-               call mxm(qns,nb,qns,1,tmp,nb)
+               call copy(tmp3(1,1),B_qn(1,1),nb*nb)
+               call lu(tmp3,nb,nb,ir,ic)
                call copy(qns,qngradf,nb)
                call chsign(qns,nb)
+               call solve(qns,tmp3,1,nb,nb,ir,ic)
                call add2(u(1,1),qns,nb)
                
             endif
             call copy(go,gngraf,nb) ! store old qn-gradf
-            call comp_qngradf ! update qn-gradf
+            call comp_qngradf       ! update qn-gradf
             call sub3(qny,qngradf,go,nb)
+
+c     update approximate Hessian by two rank-one update
+c     first rank-one update
+c            outer product: s_k * s_k^T               
+            call mxm(qns,nb,qns,1,tmp,nb)
+c            s_k * s_k^T * B_k
+            call mxm(tmp,nb,B_qn,nb,tmp1,nb)
+c            B_k * s_k * s_k^T * B_k 
+            call mxm(B_qn,nb,tmp1,nb,tmp2,nb)
+
+c            s_k^T * B_k * s_k 
+            call mxm(B_qn,nb,qns,nb,tmp5,1)
+            sBs = glsc2(qns,tmp5,nb)
+
+c     second rank-one update
+c            outer product: y_k * y_k^T               
+            call mxm(qny,nb,qny,1,yy,nb)
+
+            ys = glsc2(qny,qns,nb)
+
+            do ii=1,nb
+               call cmult(tmp2(1,ii),-1.0/sBs,nb)
+               call cmult(yy(1,ii),1.0/ys,nb)
+            enddo
+
+
 c     BFGS update
-            call copy(IBgf,gngraf,nb) ! comp B^-1 \nabla f
-            call copy(IBy,gny,nb) ! compt B^-1 y
-            sy = glsc2(qns,qny,nb) 
+c            call copy(IBgf,gngraf,nb) ! comp B^-1 \nabla f
+c            call copy(IBy,gny,nb) ! compt B^-1 y
+c            sy = glsc2(qns,qny,nb) 
             
 
-            fo = qnf ! store old qn-f
+            fo = qnf      ! store old qn-f
             call comp_qnf ! update qn-f
             qndf = abs(qnf-fo) 
+
+            call exitt0
          
 c     update solution
 
-c     update approximate Hessian
 
          enddo
          par = par*0.1
