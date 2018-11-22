@@ -57,8 +57,8 @@ c-----------------------------------------------------------------------
       enddo
 
       if (nid.eq.(np-1)) then
-      do j=1,nb
-      do i=1,nb
+      do j=0,nb
+      do i=0,nb
          call copy(c(1,i,j),c0(1,i,j),nb)
       enddo
       enddo
@@ -225,23 +225,11 @@ c     do i=1,nb
 c        if (nio.eq.0) write (6,*) i,conv(i,1),'dbg conv'
 c     enddo
 
-      call mxm(conv,nb,ad_alpha(1,count),3,tmp,1)
+      call mxm(conv,nb,ad_alpha(1,count),3,tmp(1),1)
 
       call sub2(rhs,tmp,nb+1)
-      write(6,*)'here'
-      do i=1,nb
-      do j=1,nb
-      write(6,*)i,j,flu(i,j)
-      enddo
-      enddo
 
       if (ad_step.le.3) call lu(flu,nb,nb,ir,ic)
-      do i=1,nb
-      do j=1,nb
-      write(6,*)i,j,flu(i,j)
-      enddo
-      enddo
-      call exitt0
 
       call solve(rhs(1),flu,1,nb,nb,ir,ic)
 
@@ -775,12 +763,14 @@ c      call add2s2(rhs,a0(1,0),-1/ad_re,nb)
          call evalc(conv)
       endif
 
-      call mxm(conv,nb,ad_alpha(1,count),3,tmp,1)
+      call mxm(conv,nb,ad_alpha(1,count),3,tmp(1),1)
 
-      call sub2(opt_rhs,tmp,nb)
+      call sub2(opt_rhs,tmp,nb+1)
 
       call copy(u(1,3),u(1,2),nb)
       call copy(u(1,2),u(1,1),nb)
+
+      call exitt0
 
       call opt_const
 
@@ -870,6 +860,10 @@ c     compute quasi-Newton step
                call chsign(qns,nb)
                call solve(qns,tmp3,1,nb,nb,ir,ic)
                call add2(u(1,1),qns,nb)
+               write(6,*)'updated u'
+               do ii=1,nb
+               write(6,*)ii,u(ii,1)
+               enddo
             else
                call copy(tmp3(1,1),B_qn(1,1),nb*nb)
                call lu(tmp3,nb,nb,ir,ic)
@@ -907,8 +901,8 @@ c            outer product: y_k * y_k^T
                call cmult(yy(1,ii),1.0/ys,nb)
             enddo
 
-            do ii=1,nb
             do jj=1,nb
+            do ii=1,nb
             write(6,*)ii,jj,B_qn(ii,jj)
             enddo
             enddo
@@ -917,8 +911,8 @@ c            outer product: y_k * y_k^T
                call add4(B_qn(1,ii),B_qn(1,ii),tmp2(1,ii),yy(1,ii),nb)
             enddo
 
-            do ii=1,nb
             do jj=1,nb
+            do ii=1,nb
             write(6,*)ii,jj,B_qn(ii,jj)
             enddo
             enddo
@@ -931,6 +925,7 @@ c            sy = glsc2(qns,qny,nb)
 
             fo = qnf      ! store old qn-f
             call comp_qnf ! update qn-f
+            write(6,*)'f and old f',qnf,fo
             qndf = abs(qnf-fo) 
 
             call exitt0
