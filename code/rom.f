@@ -770,8 +770,6 @@ c      call add2s2(rhs,a0(1,0),-1/ad_re,nb)
       call copy(u(1,3),u(1,2),nb)
       call copy(u(1,2),u(1,1),nb)
 
-      call exitt0
-
       call opt_const
 
       if (mod(ad_step,ad_iostep).eq.0) then
@@ -821,8 +819,7 @@ c-----------------------------------------------------------------------
 
 c     parameter for barrier function
 c     it should start from value greater than one and decrease
-      real B_qn(nb,nb), IBgf(nb), IBy(nb)
-      real yIBy,sgf,sy,yBIgf
+      real B_qn(nb,nb)
       real go(nb),fo,qndf
       real tmp(nb,nb),tmp1(nb,nb),tmp2(nb,nb),tmp3(nb,nb)
       real tmp4(nb),tmp5(nb),tmp6(nb,nb),tmp7(nb,nb)
@@ -916,12 +913,6 @@ c            outer product: y_k * y_k^T
             write(6,*)ii,jj,B_qn(ii,jj)
             enddo
             enddo
-
-c     BFGS update
-c            call copy(IBgf,gngraf,nb) ! comp B^-1 \nabla f
-c            call copy(IBy,gny,nb) ! compt B^-1 y
-c            sy = glsc2(qns,qny,nb) 
-            
 
             fo = qnf      ! store old qn-f
             call comp_qnf ! update qn-f
