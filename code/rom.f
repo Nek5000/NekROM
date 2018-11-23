@@ -827,6 +827,7 @@ c     it should start from value greater than one and decrease
       integer par_step
 
       if (nio.eq.0) write (6,*) 'inside opt_const'
+
       par_step = 3
       par = 1.0 
 
@@ -847,6 +848,10 @@ c     use helm from BDF3/EXT3 as intial approximation
 
          call comp_qnf
          call comp_qngradf
+               write(6,*)'old qngradf'
+               do ii=1,nb
+               write(6,*)ii,qngradf(ii)
+               enddo
 
 c     compute quasi-Newton step
          do j=1,500
@@ -854,6 +859,10 @@ c     compute quasi-Newton step
                call copy(tmp3(1,1),B_qn(1,1),nb*nb)
                call lu(tmp3,nb,nb,ir,ic)
                call copy(qns,qngradf,nb)
+               write(6,*)'updated qns'
+               do ii=1,nb
+               write(6,*)ii,qns(ii)
+               enddo
                call chsign(qns,nb)
                call solve(qns,tmp3,1,nb,nb,ir,ic)
                call add2(u(1,1),qns,nb)
@@ -870,7 +879,7 @@ c     compute quasi-Newton step
                call add2(u(1,1),qns,nb)
                
             endif
-            call copy(go,gngraf,nb) ! store old qn-gradf
+            call copy(go,qngradf,nb) ! store old qn-gradf
             call comp_qngradf       ! update qn-gradf
             call sub3(qny,qngradf,go,nb)
 
@@ -943,6 +952,9 @@ c-----------------------------------------------------------------------
 
       call sub3(tmp1,u(1,1),sample_max,nb)  
       call sub3(tmp2,u(1,1),sample_min,nb)  
+      call invcol1(tmp1,nb)
+      call invcol1(tmp2,nb)
+
       call add3(tmp3,tmp1,tmp2,nb)
 
       call add3s12(qngradf,opt_rhs(1),tmp3,-1.0,-par,nb)
