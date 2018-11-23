@@ -91,7 +91,7 @@ c-----------------------------------------------------------------------
       if (param(50).eq.0) ifl2=.true.
 
       ifvort=.false. ! default to false for now
-      ifdump=.false.
+      ifdump=.true.
       ifrecon=.true.
 
       call compute_BDF_coef(ad_alpha,ad_beta)
@@ -835,8 +835,10 @@ c     it should start from value greater than one and decrease
 c     invhelm for computing qnf
 c     not changing during BFGS
 c     only changes during the time stepper
-      call copy(invhelm(1,1),helm(1,1),nb*nb)
-      call lu(invhelm,nb,nb,ir,ic)
+      if (ad_step.le.3) then 
+         call copy(invhelm(1,1),helm(1,1),nb*nb)
+         call lu(invhelm,nb,nb,ir,ic)
+      endif
 
 c     BFGS method with barrier function starts
       do k=1,par_step
