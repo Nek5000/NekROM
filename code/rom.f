@@ -851,22 +851,14 @@ c     use helm from BDF3/EXT3 as intial approximation
 
 c     compute quasi-Newton step
          do j=1,500
-            if (j==1) then
-               call copy(tmp3(1,1),B_qn(1,1),nb*nb)
-               call lu(tmp3,nb,nb,ir,ic)
-               call copy(qns,qngradf,nb)
-               call chsign(qns,nb)
-               call solve(qns,tmp3,1,nb,nb,ir,ic)
-               call add2(u(1,1),qns,nb)
-            else
-               call copy(tmp3(1,1),B_qn(1,1),nb*nb)
-               call lu(tmp3,nb,nb,ir,ic)
-               call copy(qns,qngradf,nb)
-               call chsign(qns,nb)
-               call solve(qns,tmp3,1,nb,nb,ir,ic)
-               call add2(u(1,1),qns,nb)
-               
-            endif
+
+            call copy(tmp3(1,1),B_qn(1,1),nb*nb)
+            call lu(tmp3,nb,nb,ir,ic)
+            call copy(qns,qngradf,nb)
+            call chsign(qns,nb)
+            call solve(qns,tmp3,1,nb,nb,ir,ic)
+            call add2(u(1,1),qns,nb)
+
             call copy(go,qngradf,nb) ! store old qn-gradf
             call comp_qngradf       ! update qn-gradf
             call sub3(qny,qngradf,go,nb)
@@ -904,7 +896,6 @@ c            outer product: y_k * y_k^T
             write(6,*)'f and old f',qnf,fo
             qndf = abs(qnf-fo) 
 
-            call exitt0
          
 c     update solution
 
