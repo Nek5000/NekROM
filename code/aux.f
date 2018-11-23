@@ -599,7 +599,7 @@ c     This routine reads average files specificed in avg.list
 
       icount = 0
 
-      do ipass=1,navg
+      do ipass=1,10000
          call blank(initc,127)
          initc(1) = 'done '
          if (nid.eq.0) read(77,127,end=998) initc(1)
