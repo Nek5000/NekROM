@@ -848,10 +848,6 @@ c     use helm from BDF3/EXT3 as intial approximation
 
          call comp_qnf
          call comp_qngradf
-               write(6,*)'old qngradf'
-               do ii=1,nb
-               write(6,*)ii,qngradf(ii)
-               enddo
 
 c     compute quasi-Newton step
          do j=1,500
@@ -859,17 +855,9 @@ c     compute quasi-Newton step
                call copy(tmp3(1,1),B_qn(1,1),nb*nb)
                call lu(tmp3,nb,nb,ir,ic)
                call copy(qns,qngradf,nb)
-               write(6,*)'updated qns'
-               do ii=1,nb
-               write(6,*)ii,qns(ii)
-               enddo
                call chsign(qns,nb)
                call solve(qns,tmp3,1,nb,nb,ir,ic)
                call add2(u(1,1),qns,nb)
-               write(6,*)'updated u'
-               do ii=1,nb
-               write(6,*)ii,u(ii,1)
-               enddo
             else
                call copy(tmp3(1,1),B_qn(1,1),nb*nb)
                call lu(tmp3,nb,nb,ir,ic)
@@ -907,20 +895,8 @@ c            outer product: y_k * y_k^T
                call cmult(yy(1,ii),1.0/ys,nb)
             enddo
 
-            do jj=1,nb
-            do ii=1,nb
-            write(6,*)ii,jj,B_qn(ii,jj)
-            enddo
-            enddo
-
             do ii=1,nb
                call add4(B_qn(1,ii),B_qn(1,ii),tmp2(1,ii),yy(1,ii),nb)
-            enddo
-
-            do jj=1,nb
-            do ii=1,nb
-            write(6,*)ii,jj,B_qn(ii,jj)
-            enddo
             enddo
 
             fo = qnf      ! store old qn-f
@@ -957,12 +933,13 @@ c-----------------------------------------------------------------------
 
       call add3(tmp3,tmp1,tmp2,nb)
 
-      call add3s12(qngradf,opt_rhs(1),tmp3,-1.0,-par,nb)
+      call add3s12(qngradf,opt_rhs(1),tmp3,-1.0,-1.0*par,nb)
 
       ONE = 1.
       ZERO= 0.
       call dgemv( 'N',nb,nb,ONE,helm,nb,u(1,1),1,ZERO,tmp4,1)
       call add2(qngradf,tmp4,nb)
+
 
       if (nio.eq.0) write (6,*) 'exiting com_qngradf'
 
