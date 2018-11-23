@@ -859,25 +859,36 @@ c     compute quasi-Newton step
             call solve(qns,tmp3,1,nb,nb,ir,ic)
             call add2(u(1,1),qns,nb)
 
+            ! check whether solution exceed the boundary
+            do ii=1,nb
+               if (u(ii,1) .ge. sample_max(ii)) then
+                  u(ii,1) = 0.9 * sample_max(ii)
+               elseif (u(ii,1) .le. sample_min(ii)) then
+                  u(ii,1) = 0.9 * sample_min(ii)
+               endif
+            enddo
+
             call copy(go,qngradf,nb) ! store old qn-gradf
-            call comp_qngradf       ! update qn-gradf
+            call comp_qngradf        ! update qn-gradf
             call sub3(qny,qngradf,go,nb)
 
-c     update approximate Hessian by two rank-one update
-c     first rank-one update
-c            outer product: s_k * s_k^T               
+            ! update approximate Hessian by two rank-one update
+            ! first rank-one update
+            ! outer product: s_k * s_k^T               
             call mxm(qns,nb,qns,1,tmp,nb)
-c            s_k * s_k^T * B_k
+             
+            ! s_k * s_k^T * B_k
             call mxm(tmp,nb,B_qn,nb,tmp1,nb)
-c            B_k * s_k * s_k^T * B_k 
+
+            ! B_k * s_k * s_k^T * B_k 
             call mxm(B_qn,nb,tmp1,nb,tmp2,nb)
 
-c            s_k^T * B_k * s_k 
+            ! s_k^T * B_k * s_k 
             call mxm(B_qn,nb,qns,nb,tmp5,1)
             sBs = glsc2(qns,tmp5,nb)
 
-c     second rank-one update
-c            outer product: y_k * y_k^T               
+            ! second rank-one update
+            ! outer product: y_k * y_k^T               
             call mxm(qny,nb,qny,1,yy,nb)
 
             ys = glsc2(qny,qns,nb)
@@ -893,14 +904,14 @@ c            outer product: y_k * y_k^T
 
             fo = qnf      ! store old qn-f
             call comp_qnf ! update qn-f
-            write(6,*)'f and old f',qnf,fo
             qndf = abs(qnf-fo) 
+            write(6,*)'f and old f',qnf,fo,qndf
 
-         
+            if (qndf .lt. 1e-10) goto 900
+
 c     update solution
-
-
          enddo
+  900    write(6,*)'criterion reached, number of iteration:',j 
          par = par*0.1
 
       enddo
