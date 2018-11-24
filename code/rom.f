@@ -200,7 +200,7 @@ c     if (nio.eq.0) write (6,*) 'entering rom_step'
 c     call mxm(b0,nb+1,tmp,nb+1,rhs,1)
       call mxm(b,nb,tmp(1),nb,rhs(1),1)
 
-      call cmult(rhs,-1/ad_dt,nb+1)
+      call cmult(rhs,-1.0/ad_dt,nb+1)
 
       s=-1.0/ad_re
 
@@ -743,7 +743,7 @@ c     Working arrays for LU
       call mxm(u,nb+1,ad_beta(2,count),3,tmp,1)
       call mxm(b,nb,tmp(1),nb,opt_rhs(1),1)
 
-      call cmult(opt_rhs,-1/ad_dt,nb+1)
+      call cmult(opt_rhs,-1.0/ad_dt,nb+1)
 
       s=-1.0/ad_re
 
@@ -828,8 +828,9 @@ c     it should start from value greater than one and decrease
 
       if (nio.eq.0) write (6,*) 'inside opt_const'
 
-      par_step = 3
-      par = 1.0 
+      par_step = 1
+c      par = 1.0 
+      par = 0.01 
 
 
 c     invhelm for computing qnf
@@ -863,9 +864,9 @@ c     compute quasi-Newton step
 
             ! check whether solution exceed the boundary
             do ii=1,nb
-               if (u(ii,1) .ge. sample_max(ii)) then
+               if ((u(ii,1)-sample_max(ii)).ge.1e-10) then
                   u(ii,1) = 0.9 * sample_max(ii)
-               elseif (u(ii,1) .le. sample_min(ii)) then
+               elseif ((sample_min(ii)-u(ii,1)).ge.1e-10) then
                   u(ii,1) = 0.9 * sample_min(ii)
                endif
             enddo
@@ -913,7 +914,7 @@ c     compute quasi-Newton step
 
 c     update solution
          enddo
-  900    write(6,*)'criterion reached, number of iteration:',j 
+  900    write(6,*)'criterion reached, number of iteration:',j,par 
          par = par*0.1
 
       enddo
@@ -927,8 +928,9 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
       real tmp1(nb),tmp2(nb),tmp3(nb),tmp4(nb)
+      real mpar
 
-      if (nio.eq.0) write (6,*) 'inside com_qngradf'
+!      if (nio.eq.0) write (6,*) 'inside com_qngradf'
 
       call sub3(tmp1,u(1,1),sample_max,nb)  
       call sub3(tmp2,u(1,1),sample_min,nb)  
@@ -937,7 +939,9 @@ c-----------------------------------------------------------------------
 
       call add3(tmp3,tmp1,tmp2,nb)
 
-      call add3s12(qngradf,opt_rhs(1),tmp3,-1.0,-1.0*par,nb)
+      mpar = -1.0*par
+
+      call add3s12(qngradf,opt_rhs(1),tmp3,-1.0,mpar,nb)
 
       ONE = 1.
       ZERO= 0.
@@ -945,7 +949,7 @@ c-----------------------------------------------------------------------
       call add2(qngradf,tmp4,nb)
 
 
-      if (nio.eq.0) write (6,*) 'exiting com_qngradf'
+!      if (nio.eq.0) write (6,*) 'exiting com_qngradf'
 
       return 
       end
@@ -961,11 +965,11 @@ c-----------------------------------------------------------------------
 c     bar1 and bar2 are the barrier function for two constrains
       real bar1,bar2
 
-      if (nio.eq.0) write (6,*) 'inside com_qnf'
+!      if (nio.eq.0) write (6,*) 'inside com_qnf'
 
 c     evaluate quasi-newton f
 
-c     term1 represents 0.5*H*x
+c     term1 represents 0.5*x'*H*x
       ONE = 1.
       ZERO= 0.
       call dgemv( 'N',nb,nb,ONE,helm,nb,u(1,1),1,ZERO,tmp6,1)
@@ -999,7 +1003,7 @@ c     currently can only come up with this way to compute log for an array
 
       qnf = term1 - term2 + term3 - term4
 
-      if (nio.eq.0) write (6,*) 'exitting com_qnf'
+!      if (nio.eq.0) write (,*) 'exitting com_qnf'
 
       return
       end
