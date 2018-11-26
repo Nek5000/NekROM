@@ -260,11 +260,7 @@ c     enddo
          if (ifdump) then
             call dumpcoef(u(:,1),nb,(ad_step/ad_iostep))
 
-            call opzero(vx,vy,vz)
-            do j=1,nb
-               call opadds(vx,vy,vz,ub(1,j),vb(1,j),wb(1,j),coef(j),n,2)
-            enddo
-            call opadd2  (vx,vy,vz,ub,vb,wb)
+            call recon(vx,vy,vz,u)
 
             ! compute the vorticity of the ROM reconstructed field
             call opcopy(t1,t2,t3,vx,vy,vz)
