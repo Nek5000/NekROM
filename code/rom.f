@@ -259,8 +259,6 @@ c     call add2s2(rhs,a0,s,nb+1) ! not working...
          endif
       endif
 
-c     if (nio.eq.0) write (6,*) 'exiting rom_step'
-
       return
       end
 c-----------------------------------------------------------------------
