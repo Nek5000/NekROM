@@ -173,11 +173,7 @@ c     Matrices and vectors for advance
 c     Variable for vorticity
       real vort(lt,3)
 
-c     Working arrays for LU
-
       common /nekmpi/ nidd,npp,nekcomm,nekgroup,nekreal
-
-c     if (nio.eq.0) write (6,*) 'entering rom_step'
 
       n  = lx1*ly1*lz1*nelt
 
@@ -219,12 +215,6 @@ c     call add2s2(rhs,a0,s,nb+1) ! not working...
          call evalc(conv)
       endif
 
-c     if (nio.eq.0) write (6,*) ''
-
-c     do i=1,nb
-c        if (nio.eq.0) write (6,*) i,conv(i,1),'dbg conv'
-c     enddo
-
       call mxm(conv,nb,ad_alpha(1,count),3,tmp(1),1)
 
       call sub2(rhs,tmp,nb+1)
@@ -235,9 +225,7 @@ c     enddo
 
       call copy(u(1,3),u(1,2),nb)
       call copy(u(1,2),u(1,1),nb)
-
       call copy(u(1,1),rhs(1),nb)
-
       call copy(coef,rhs(1),nb)
 
       if (mod(ad_step,ad_iostep).eq.0) then
