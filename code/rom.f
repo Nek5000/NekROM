@@ -246,8 +246,8 @@ c     call add2s2(rhs,a0,s,nb+1) ! not working...
          endif
 
          if (ifdump) then
-            call dumpcoef(u(:,1),nb,(ad_step/ad_iostep))
-
+            idump=ad_step/ad_iostep
+            call dumpcoef(u,nb,idump)
             call recon(vx,vy,vz,u)
 
             ! compute the vorticity of the ROM reconstructed field
@@ -255,7 +255,6 @@ c     call add2s2(rhs,a0,s,nb+1) ! not working...
             call comp_vort3(vort,work1,work2,t1,t2,t3)
             ifto = .true. ! turn on temp in fld file
             call copy(t,vort,n)
-
             call outpost (vx,vy,vz,pr,t,'rom')
          endif
       endif
