@@ -1,6 +1,7 @@
 # Specific files
 
 nek5000
+tags
 makefile
 .state
 compiler.out
