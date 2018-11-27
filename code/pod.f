@@ -175,7 +175,7 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real t1(lt),t2(lt),t3(lt),t4(lt),t5(lt)
+      real t1(lt),t2(lt),t3(lt),t4(lt),t5(lt),t6(lt)
       real h1(lt),h2(lt)
 
       common /scrk3/ t7(lt),t8(lt),t9(lt)
