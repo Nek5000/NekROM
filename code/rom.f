@@ -64,7 +64,8 @@ c-----------------------------------------------------------------------
       enddo
       endif
 
-      if (np.gt.1) call setcloc
+c     if (np.gt.1) call setcloc
+      if (nio.eq.0) write (6,*) 'setcloc not supported yet'
 
       if (nio.eq.0) write (6,*) 'exiting setops'
 
