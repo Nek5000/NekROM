@@ -232,6 +232,11 @@ c     call add2s2(rhs,a0,s,nb+1) ! not working...
       if (mod(ad_step,ad_iostep).eq.0) then
 
 !        This output is to make sure the ceof matches with matlab code
+      write(6,*)'ad_step,ad_iostep',ad_step,ad_iostep
+      do j=1,nb
+         write(6,*) j,u(j,1)
+      enddo
+
 
          if (nio.eq.0) then
             write (6,*)'ad_step:',ad_step,ad_iostep,npp,nid
@@ -256,6 +261,7 @@ c     call add2s2(rhs,a0,s,nb+1) ! not working...
             call comp_vort3(vort,work1,work2,t1,t2,t3)
             ifto = .true. ! turn on temp in fld file
             call copy(t,vort,n)
+
             call outpost (vx,vy,vz,pr,t,'rom')
          endif
       endif
@@ -629,6 +635,7 @@ c-----------------------------------------------------------------------
 
       call opzero(vxlag,vylag,vzlag)
       call proj2bases(u,vx,vy,vz)
+      call dumpcoef(u,nb,0)
 
       do i=0,nb
          call opadds(
@@ -773,6 +780,7 @@ c      call add2s2(rhs,a0(1,0),-1/ad_re,nb)
 
          if (ifdump) then
             call dumpcoef(u(:,1),nb,(ad_step/ad_iostep))
+            call copy(coef,u(1,1),nb)
 
             call opzero(vx,vy,vz)
             do j=1,nb
@@ -806,13 +814,14 @@ c     it should start from value greater than one and decrease
       real tmp(nb,nb),tmp1(nb,nb),tmp2(nb,nb),tmp3(nb,nb)
       real tmp4(nb),tmp5(nb),tmp6(nb,nb),tmp7(nb,nb)
       real yy(nb,nb),ys,sBs
+      real ww(nb), ngf
       integer par_step
 
-      if (nio.eq.0) write (6,*) 'inside opt_const'
+c      if (nio.eq.0) write (6,*) 'inside opt_const'
 
-      par_step = 1
-c      par = 1.0 
-      par = 0.01 
+      par_step = 3
+      par = 1.0 
+c      par = 0.01 
 
 
 c     invhelm for computing qnf
@@ -827,9 +836,10 @@ c     BFGS method with barrier function starts
       do k=1,par_step
 
 c     use helm from BDF3/EXT3 as intial approximation
-         do i=1,nb
-            call copy(B_qn(1,i),helm(1,i),nb)
-         enddo
+         call copy(B_qn(1,1),helm(1,1),nb*nb)
+c         do i=1,nb
+c            call copy(B_qn(1,i),helm(1,i),nb)
+c         enddo
 
          call comp_qnf
          call comp_qngradf
@@ -845,10 +855,19 @@ c     compute quasi-Newton step
             call add2(u(1,1),qns,nb)
 
             ! check whether solution exceed the boundary
-            do ii=1,nb
-               if ((u(ii,1)-sample_max(ii)).ge.1e-10) then
+            if ((u(1,1)-sample_max(1)).ge.1e-8) then
+c               u(1,1) = 0.99 * sample_max(1)
+               u(1,1) = 0.9 * sample_max(1)
+            elseif ((sample_min(1)-u(1,1)).ge.1e-8) then
+c               u(1,1) = 1.01 * sample_min(1)
+               u(1,1) = 1.1 * sample_min(1)
+            endif
+            do ii=2,nb
+               if ((u(ii,1)-sample_max(ii)).ge.1e-8) then
+c                  u(ii,1) = 0.99 * sample_max(ii)
                   u(ii,1) = 0.9 * sample_max(ii)
-               elseif ((sample_min(ii)-u(ii,1)).ge.1e-10) then
+               elseif ((sample_min(ii)-u(ii,1)).ge.1e-8) then
+c                  u(ii,1) = 0.99 * sample_min(ii)
                   u(ii,1) = 0.9 * sample_min(ii)
                endif
             enddo
@@ -887,20 +906,27 @@ c     compute quasi-Newton step
                call add4(B_qn(1,ii),B_qn(1,ii),tmp2(1,ii),yy(1,ii),nb)
             enddo
 
+            call copy(ww,qngradf,nb)
+            call solve(ww,invhelm,1,nb,nb,ir,ic)
+            ngf = glsc2(ww,qngradf,nb)
+            ngf = sqrt(ngf)
+
             fo = qnf      ! store old qn-f
             call comp_qnf ! update qn-f
-            qndf = abs(qnf-fo) 
-            write(6,*)'f and old f',qnf,fo,qndf
+            qndf = abs(qnf-fo)/abs(fo) 
+            write(6,*)'f and old f',qnf,fo,qndf,ngf
 
-            if (qndf .lt. 1e-10) goto 900
+c            if (qndf .lt. 1e-2) goto 900
+            if (ngf .lt. 1e-8) goto 900
 
 c     update solution
          enddo
-  900    write(6,*)'criterion reached, number of iteration:',j,par 
+  900    write(6,*)'criterion reached, number of iteration:'
+     $              ,ad_step,j,par 
          par = par*0.1
 
       enddo
-      if (nio.eq.0) write (6,*) 'exitting opt_const'
+c      if (nio.eq.0) write (6,*) 'exitting opt_const'
 
       return
       end
@@ -956,17 +982,17 @@ c     term1 represents 0.5*x'*H*x
       ZERO= 0.
       call dgemv( 'N',nb,nb,ONE,helm,nb,u(1,1),1,ZERO,tmp6,1)
       term1 = 0.5 * glsc2(tmp6,u(1,1),nb)
-      write(6,*)'term1',term1
+c      write(6,*)'term1',term1
 
 c     term2 represents x'*g
       term2 = glsc2(u(1,1),opt_rhs(1),nb)
-      write(6,*)'term2',term2
+c      write(6,*)'term2',term2
 
 c     term3 represents 0.5*g'*inv(H)*g
       call copy(tmp5,opt_rhs(1),nb)
       call solve(tmp5,invhelm,1,nb,nb,ir,ic)
       term3 = 0.5 * glsc2(opt_rhs(1),tmp5,nb)
-      write(6,*)'term3',term3
+c      write(6,*)'term3',term3
 
 c     barrier term
       call sub3(tmp1,sample_max,u(1,1),nb)  
@@ -981,7 +1007,7 @@ c     currently can only come up with this way to compute log for an array
       bar1 = vlsum(tmp3,nb)
       bar2 = vlsum(tmp4,nb)
       term4 = par*(bar1+bar2)
-      write(6,*)'term4',term4
+c      write(6,*)'term4',term4
 
       qnf = term1 - term2 + term3 - term4
 

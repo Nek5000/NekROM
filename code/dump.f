@@ -147,12 +147,12 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine dumpcoef(uu,nb,k)
+      subroutine dumpcoef(uuu,nb,k)
 
       include 'SIZE'
 
       parameter (lt=lx1*ly1*lz1*lelt)
-      real uu(0:nb)
+      real uuu(0:nb)
       character*8 fname
 
       if (nid .eq. 0) then
@@ -161,7 +161,7 @@ c-----------------------------------------------------------------------
          open(unit=33,file=fname)
 
          do i=1,nb
-            write(33,33) uu(i)
+            write(33,33) uuu(i)
    33    format(1p1e16.7)
          enddo
          close(33)
