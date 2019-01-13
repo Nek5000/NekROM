@@ -817,7 +817,7 @@ c     it should start from value greater than one and decrease
       real ww(nb), ngf
       integer par_step
 
-c      if (nio.eq.0) write (6,*) 'inside opt_const'
+      if (nio.eq.0) write (6,*) 'inside opt_const'
 
       par_step = 3
       par = 1.0 
@@ -926,7 +926,7 @@ c     update solution
          par = par*0.1
 
       enddo
-c      if (nio.eq.0) write (6,*) 'exitting opt_const'
+      if (nio.eq.0) write (6,*) 'exitting opt_const'
 
       return
       end
