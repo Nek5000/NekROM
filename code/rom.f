@@ -872,30 +872,28 @@ c     compute quasi-Newton step
 
             ! update approximate Hessian by two rank-one update
             ! first rank-one update
-            ! outer product: s_k * s_k^T               
+
+            ! s_k * s_k^T               
             call mxm(qns,nb,qns,1,tmp,nb)
-             
             ! s_k * s_k^T * B_k
             call mxm(tmp,nb,B_qn,nb,tmp1,nb)
-
             ! B_k * s_k * s_k^T * B_k 
             call mxm(B_qn,nb,tmp1,nb,tmp2,nb)
-
             ! s_k^T * B_k * s_k 
             call mxm(B_qn,nb,qns,nb,tmp5,1)
             sBs = glsc2(qns,tmp5,nb)
 
             ! second rank-one update
-            ! outer product: y_k * y_k^T               
-            call mxm(qny,nb,qny,1,yy,nb)
 
+            ! y_k * y_k^T               
+            call mxm(qny,nb,qny,1,yy,nb)
+            ! y_k^T * s_k
             ys = glsc2(qny,qns,nb)
 
             do ii=1,nb
                call cmult(tmp2(1,ii),-1.0/sBs,nb)
                call cmult(yy(1,ii),1.0/ys,nb)
             enddo
-
             do ii=1,nb
                call add4(B_qn(1,ii),B_qn(1,ii),tmp2(1,ii),yy(1,ii),nb)
             enddo
