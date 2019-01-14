@@ -807,8 +807,6 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
-c     parameter for barrier function
-c     it should start from value greater than one and decrease
       real B_qn(nb,nb)
       real go(nb),fo,qndf
       real tmp(nb,nb),tmp1(nb,nb),tmp2(nb,nb),tmp3(nb,nb)
@@ -819,10 +817,10 @@ c     it should start from value greater than one and decrease
 
       if (nio.eq.0) write (6,*) 'inside opt_const'
 
-      par_step = 3
+c     parameter for barrier function
+c     it should start from value greater than one and decrease
       par = 1.0 
-c      par = 0.01 
-
+      par_step = 3
 
 c     invhelm for computing qnf
 c     not changing during BFGS
