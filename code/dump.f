@@ -135,7 +135,7 @@ c-----------------------------------------------------------------------
       real ic(0:nb)
 
       if (nid.eq.0) then
-         open (unit=50,file='ops/ic')
+         open (unit=50,file='ic')
 
          do i=0,nb
             write (50,*) ic(i)
