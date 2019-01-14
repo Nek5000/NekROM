@@ -960,10 +960,10 @@ c-----------------------------------------------------------------------
       
       include 'SIZE'
       include 'MOR'
+
       real tmp1(nb),tmp2(nb),tmp3(nb)
       real tmp4(nb),tmp5(nb),tmp6(nb)
       real term1,term2,term3,term4
-
 c     bar1 and bar2 are the barrier function for two constrains
       real bar1,bar2
 
@@ -971,18 +971,19 @@ c     bar1 and bar2 are the barrier function for two constrains
 
 c     evaluate quasi-newton f
 
-c     term1 represents 0.5*x'*H*x
       ONE = 1.
       ZERO= 0.
+c     H*coef
       call dgemv( 'N',nb,nb,ONE,helm,nb,u(1,1),1,ZERO,tmp6,1)
+c     coef'*H*coef
       term1 = 0.5 * glsc2(tmp6,u(1,1),nb)
 c      write(6,*)'term1',term1
 
-c     term2 represents x'*g
+c     coef'*rhs
       term2 = glsc2(u(1,1),opt_rhs(1),nb)
 c      write(6,*)'term2',term2
 
-c     term3 represents 0.5*g'*inv(H)*g
+c     0.5*rhs'*inv(H)*rhs
       call copy(tmp5,opt_rhs(1),nb)
       call solve(tmp5,invhelm,1,nb,nb,ir,ic)
       term3 = 0.5 * glsc2(opt_rhs(1),tmp5,nb)
@@ -997,7 +998,6 @@ c     currently can only come up with this way to compute log for an array
          tmp3(i) = log(tmp1(i))
          tmp4(i) = log(tmp2(i))
       enddo
-
       bar1 = vlsum(tmp3,nb)
       bar2 = vlsum(tmp4,nb)
       term4 = par*(bar1+bar2)
