@@ -635,7 +635,7 @@ c-----------------------------------------------------------------------
 
       call opzero(vxlag,vylag,vzlag)
       call proj2bases(u,vx,vy,vz)
-      call dumpcoef(u,nb,0)
+      call dumpic(u,nb)
 
       do i=0,nb
          call opadds(
