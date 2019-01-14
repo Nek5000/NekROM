@@ -929,6 +929,7 @@ c-----------------------------------------------------------------------
       
       include 'SIZE'
       include 'MOR'
+
       real tmp1(nb),tmp2(nb),tmp3(nb),tmp4(nb)
       real mpar
 
@@ -938,18 +939,15 @@ c-----------------------------------------------------------------------
       call sub3(tmp2,u(1,1),sample_min,nb)  
       call invcol1(tmp1,nb)
       call invcol1(tmp2,nb)
-
       call add3(tmp3,tmp1,tmp2,nb)
 
       mpar = -1.0*par
-
       call add3s12(qngradf,opt_rhs(1),tmp3,-1.0,mpar,nb)
 
       ONE = 1.
       ZERO= 0.
-      call dgemv( 'N',nb,nb,ONE,helm,nb,u(1,1),1,ZERO,tmp4,1)
+      call dgemv('N',nb,nb,ONE,helm,nb,u(1,1),1,ZERO,tmp4,1)
       call add2(qngradf,tmp4,nb)
-
 
 !      if (nio.eq.0) write (6,*) 'exiting com_qngradf'
 
@@ -974,7 +972,7 @@ c     evaluate quasi-newton f
       ONE = 1.
       ZERO= 0.
 c     H*coef
-      call dgemv( 'N',nb,nb,ONE,helm,nb,u(1,1),1,ZERO,tmp6,1)
+      call dgemv('N',nb,nb,ONE,helm,nb,u(1,1),1,ZERO,tmp6,1)
 c     coef'*H*coef
       term1 = 0.5 * glsc2(tmp6,u(1,1),nb)
 c      write(6,*)'term1',term1
