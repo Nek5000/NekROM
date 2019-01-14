@@ -854,18 +854,14 @@ c     compute quasi-Newton step
 
             ! check whether solution exceed the boundary
             if ((u(1,1)-sample_max(1)).ge.1e-8) then
-c               u(1,1) = 0.99 * sample_max(1)
                u(1,1) = 0.9 * sample_max(1)
             elseif ((sample_min(1)-u(1,1)).ge.1e-8) then
-c               u(1,1) = 1.01 * sample_min(1)
                u(1,1) = 1.1 * sample_min(1)
             endif
             do ii=2,nb
                if ((u(ii,1)-sample_max(ii)).ge.1e-8) then
-c                  u(ii,1) = 0.99 * sample_max(ii)
                   u(ii,1) = 0.9 * sample_max(ii)
                elseif ((sample_min(ii)-u(ii,1)).ge.1e-8) then
-c                  u(ii,1) = 0.99 * sample_min(ii)
                   u(ii,1) = 0.9 * sample_min(ii)
                endif
             enddo
