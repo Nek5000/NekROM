@@ -1,20 +1,27 @@
 clear all; close all;
 % advance state using cten, amat, bmat, c1mat, c2mat, avec, cvec
 
-t = dlmread('cten');
+t = dlmread('ops/cten');
 n = nthroot(length(t),3);
 c0 = reshape(t,n,n,n);
 
-t = dlmread('amat');
+t = dlmread('ops/amat');
 n = sqrt(length(t));
 a0 = reshape(t,n,n);
 
-t = dlmread('bmat');
+t = dlmread('ops/bmat');
 n = sqrt(length(t));
 b0 = reshape(t,n,n);
 
 sample_min = dlmread('sample_min');
 sample_max = dlmread('sample_max');
+
+% actual boundary for coefficient
+coef_min = 0.9*sample_min;
+coef_max = 0.9*sample_max;
+
+% sample_min(1) is positive
+coef_min(1) = 1.1*sample_min(1);
 
 nb = n - 1;
 
@@ -27,11 +34,12 @@ c2 = reshape(c0(2:n,2:n,1),nb,nb);
 c3 = reshape(c0(2:n,1,1),[nb,1]);
 
 %dt = 1e-5;
-dt = 3e-4;
-re = 1e3;
+dt = 5e-5;
+re = 5e2;
 
-nstep = 538000;
-iostep = 3e2;
+nstep = 1e+7;
+nstep = 60000;
+iostep = 20000;
 
 u0 = dlmread('ic');
 e0 = [1;zeros(nb,1)];
@@ -78,64 +86,84 @@ for istep = 1:nstep
 
     u(:,3) = u(:,2);
     u(:,2) = u(:,1);
+    invhelm = inv(helm);
 
 % constrained optimization
     for j = 1:length(par);
     
+%        If B = identity, need line search to determine alpha
+%        B = eye(nb);
+
         B = helm;
-        f = f_eval(helm,u(2:n,1),rhs,par(j),sample_min,sample_max,b);
+        f = f_eval(helm,invhelm,u(2:n,1),rhs,par(j),sample_min,sample_max,b);
         gradf = gradf_eval(helm,u(2:n,1),rhs,par(j),sample_min,sample_max,b); 
+
+%        invv = inv(B);
+%        invv = eye(nb);
     
-       for k = 1:500;
+       for k = 1,500;
     
           xo = u(2:n,1);
           s = -B\gradf;
+%          s = invv*(-gradf);
           u(2:n,1) = u(2:n,1) + s;
+
+    % check so that the solution does not exceed boundary
+          if (u(2,1) >= sample_max(1)) 
+             u(2,1) = coef_max(1);
+          elseif (u(2,1) <= sample_min(1))
+             u(2,1) = coef_min(1);
+          end
+          for i = 3:n
+             if (u(i,1) >= sample_max(i-1)) 
+                u(i,1) = coef_max(i-1);
+             elseif (u(i,1) <= sample_min(i-1))
+                u(i,1) = coef_min(i-1); 
+             end
+          end
     
           go = gradf; gradf = gradf_eval(helm,u(2:n,1),rhs,par(j),sample_min,sample_max,b); 
           y = gradf-go;
+
           B = B + (y*y')/(y'*s) - B*(s*s')*B/(s'*B*s);
+
+%        try to use inverse formula
+%          invv = (eye(nb)-(s*y'./s'*y))*invv*(eye(nb)-(y*s'./s'*y)) + (s*s')./(s'*s);
     
-          fo = f; f = f_eval(helm,u(2:n,1),rhs,par(j),sample_min,sample_max,b);
+          fo = f; f = f_eval(helm,invhelm,u(2:n,1),rhs,par(j),sample_min,sample_max,b);
     
           ns(k) = norm(s); nk(k) = abs(f-fo); kk(k) = k;
-          [istep k ns(k) nk(k) abs(nk(k)/ns(k))];
+          ngf(k) = sqrt(gradf'*invhelm*gradf);
+
+          [istep k ns(k) ngf(k) nk(k) abs(nk(k)/ns(k))]
           iter(istep) = k;
-          if (nk(k) < 1e-12) 
+
+          if (ngf(k) < 1e-8) % of (nk(k) < 1e-10)
              break
           end
     
-    % check so that the solution does not exceed boundary
-          for i = 2:n
-             if (u(i,1) >= sample_max(i-1)) 
-                u(i,1) = 0.9*sample_max(i-1);
-             elseif (u(i,1) <= sample_min(i-1))
-                u(i,1) = 0.9*sample_min(i-1);
-             end
-          end
-       end
-    end
+       end % BFGS_step
+    end % par_step
 
     if (mod(istep,iostep) == 0)
         m = (istep/iostep);
-        str = num2str(m,'%04.f');
+        str = num2str(m,'./matout/%04.f');
         fname = strcat(str,'.out');
         fid = fopen(fname,'w');
         fprintf(fid,'%d\n',u(2:n,1));
         fclose(fid);
    
+%     ploting coefficient behavior
         plot([2:n],u(2:n,1),'ko','MarkerFaceColor','k')
         hold on
-        plot([2:n],sample_min,'r-o',[2:n],sample_max,'b-o')
+        plot([2:n],sample_min,'r-',[2:n],sample_max,'b-')
         hold on
-        plot([2:n],0.9*sample_min,'r-',[2:n],0.9*sample_max,'b-','linewidth',1.4)
+        plot([2:n],coef_min,'r-o',[2:n],coef_max,'b-o','linewidth',1.4)
         hold off
         strr = sprintf('Coefficients solved with constraint, istep: %d',istep)
         title(strr)
-        legend({'coef a','sample\_min','sample\_max','0.9*sample\_min','0.9*sample\_max'})
+        legend({'coef a','sample\_min','sample\_max','coef\_min','coef\_max'})
         xlabel('modes')
         drawnow
-        name = strcat(str,'.png')
-        saveas(gcf,fullfile('./const/const_opt_par_1to1em2_rest_h1ic_dt3em4_correct/', name))
     end
-end
+end % time_step
