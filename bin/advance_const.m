@@ -38,7 +38,7 @@ dt = 5e-5;
 re = 5e2;
 
 nstep = 1e+7;
-nstep = 60000;
+nstep = 40000;
 iostep = 20000;
 
 u0 = dlmread('ic');
@@ -101,7 +101,7 @@ for istep = 1:nstep
 %        invv = inv(B);
 %        invv = eye(nb);
     
-       for k = 1,500;
+       for k =1:500;
     
           xo = u(2:n,1);
           s = -B\gradf;
@@ -109,19 +109,19 @@ for istep = 1:nstep
           u(2:n,1) = u(2:n,1) + s;
 
     % check so that the solution does not exceed boundary
-          if (u(2,1) >= sample_max(1)) 
+    
+          if ((u(2,1)-sample_max(1)) >= 1e-8) 
              u(2,1) = coef_max(1);
-          elseif (u(2,1) <= sample_min(1))
+          elseif ((sample_min(1)-u(2,1)) >= 1e-8)
              u(2,1) = coef_min(1);
           end
           for i = 3:n
-             if (u(i,1) >= sample_max(i-1)) 
+             if ((u(i,1)-sample_max(i-1)) >= 1e-8) 
                 u(i,1) = coef_max(i-1);
-             elseif (u(i,1) <= sample_min(i-1))
+             elseif ((sample_min(i-1)-u(i,1) >= 1e-8))
                 u(i,1) = coef_min(i-1); 
              end
           end
-    
           go = gradf; gradf = gradf_eval(helm,u(2:n,1),rhs,par(j),sample_min,sample_max,b); 
           y = gradf-go;
 
@@ -138,7 +138,7 @@ for istep = 1:nstep
           [istep k ns(k) ngf(k) nk(k) abs(nk(k)/ns(k))]
           iter(istep) = k;
 
-          if (ngf(k) < 1e-8) % of (nk(k) < 1e-10)
+          if (ngf(k) < 1e-8) % (nk(k) < 1e-8)
              break
           end
     
@@ -153,7 +153,6 @@ for istep = 1:nstep
         fprintf(fid,'%d\n',u(2:n,1));
         fclose(fid);
    
-%     ploting coefficient behavior
         plot([2:n],u(2:n,1),'ko','MarkerFaceColor','k')
         hold on
         plot([2:n],sample_min,'r-',[2:n],sample_max,'b-')
