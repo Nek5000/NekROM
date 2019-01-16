@@ -220,6 +220,7 @@ c     call add2s2(rhs,a0,s,nb+1) ! not working...
 
       call sub2(rhs,tmp,nb+1)
 
+
       if (ad_step.le.3) call lu(flu,nb,nb,ir,ic)
 
       call solve(rhs(1),flu,1,nb,nb,ir,ic)
@@ -693,7 +694,6 @@ c-----------------------------------------------------------------------
       subroutine rom_const
 c This subroutine is solving rom with constrains
 c The subroutine is based on BFGS method with barrier function
-      
 c-----------------------------------------------------------------------
       include 'SIZE'
       include 'TOTAL'
@@ -712,7 +712,6 @@ c     Variable for vorticity
       real vort(lt,3)
 
 c     Working arrays for LU
-
       common /nekmpi/ nidd,npp,nekcomm,nekgroup,nekreal
 
       n  = lx1*ly1*lz1*nelt
@@ -835,9 +834,6 @@ c     BFGS method with barrier function starts
 
 c     use helm from BDF3/EXT3 as intial approximation
          call copy(B_qn(1,1),helm(1,1),nb*nb)
-c         do i=1,nb
-c            call copy(B_qn(1,i),helm(1,i),nb)
-c         enddo
 
          call comp_qnf
          call comp_qngradf
