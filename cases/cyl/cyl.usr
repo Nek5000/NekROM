@@ -58,11 +58,12 @@ c-----------------------------------------------------------------------
       real drag(0:nb)
 
       call opcopy(ub(1,0),vb(1,0),wb(1,0),vx,vy,vz) ! set zeroth mode
-      call gfldr('../../data/cyl/cyl0.f01500')    ! set initial state
+      call gfldr('../../data/cyl/cyl0.f01900')    ! set initial state
 
-      call rom_init
+      call rom_init_params
+      call rom_init_fields
 
-      ifl2=.false.
+c      ifl2=.false.
 
 c     do i=1,lx1*ly1*lz1*nelv
 c        r2=xm1(i,1,1,1)**2+ym1(i,1,1,1)**2
@@ -72,7 +73,9 @@ c     enddo
       call gengram
       call genevec
       call genbases
+      call comp_hyperpar
       call genops
+      call setops
 
       call rom_setup
 
