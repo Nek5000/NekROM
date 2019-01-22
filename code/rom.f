@@ -129,6 +129,7 @@ c-----------------------------------------------------------------------
          call rzero(vy,n)
          call rzero(vz,n)
       else
+         ! copy zero mode to u0(1,1:3)
          call opcopy(u0,u0(1,2),u0(1,3),ub,vb,wb)
       endif
 
@@ -233,11 +234,6 @@ c     call add2s2(rhs,a0,s,nb+1) ! not working...
       if (mod(ad_step,ad_iostep).eq.0) then
 
 !        This output is to make sure the ceof matches with matlab code
-      write(6,*)'ad_step,ad_iostep',ad_step,ad_iostep
-      do j=1,nb
-         write(6,*) j,u(j,1)
-      enddo
-
 
          if (nio.eq.0) then
             write (6,*)'ad_step:',ad_step,ad_iostep,npp,nid
@@ -816,6 +812,7 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'inside opt_const'
 
+
 c     parameter for barrier function
 c     it should start from value greater than one and decrease
       par = 1.0 
@@ -846,6 +843,7 @@ c     compute quasi-Newton step
             call copy(qns,qngradf,nb)
             call chsign(qns,nb)
             call solve(qns,tmp3,1,nb,nb,ir,ic)
+
             call add2(u(1,1),qns,nb)
 
             ! check whether solution exceed the boundary
@@ -902,7 +900,7 @@ c     compute quasi-Newton step
             fo = qnf      ! store old qn-f
             call comp_qnf ! update qn-f
             qndf = abs(qnf-fo)/abs(fo) 
-            write(6,*)'f and old f',qnf,fo,qndf,ngf
+            write(6,*)'f and old f',j,qnf,fo,qndf,ngf
 
 c            if (qndf .lt. 1e-2) goto 900
             if (ngf .lt. 1e-8) goto 900
@@ -914,6 +912,7 @@ c     update solution
          par = par*0.1
 
       enddo
+
       if (nio.eq.0) write (6,*) 'exitting opt_const'
 
       return
@@ -927,23 +926,36 @@ c-----------------------------------------------------------------------
       real tmp1(nb),tmp2(nb),tmp3(nb),tmp4(nb)
       real mpar
 
-!      if (nio.eq.0) write (6,*) 'inside com_qngradf'
+      if (nio.eq.0) write (6,*) 'inside com_qngradf'
 
       call sub3(tmp1,u(1,1),sample_max,nb)  
       call sub3(tmp2,u(1,1),sample_min,nb)  
       call invcol1(tmp1,nb)
       call invcol1(tmp2,nb)
       call add3(tmp3,tmp1,tmp2,nb)
+!      do i=1,nb
+!      write(6,*)'bar',tmp3(i)
+!      enddo
 
       mpar = -1.0*par
       call add3s12(qngradf,opt_rhs(1),tmp3,-1.0,mpar,nb)
+!      do i=1,nb
+!      write(6,*)'rhsandbar',qngradf(i)
+!      enddo
 
       ONE = 1.
       ZERO= 0.
+!      call mxm(helm,nb,u(1,1),nb,tmp4,1)
       call dgemv('N',nb,nb,ONE,helm,nb,u(1,1),1,ZERO,tmp4,1)
+!      do i=1,nb
+!      write(6,*)'helmcoef',tmp4(i)
+!      enddo
       call add2(qngradf,tmp4,nb)
+!      do i=1,nb
+!      write(6,*)'gradf',qngradf(i)
+!      enddo
 
-!      if (nio.eq.0) write (6,*) 'exiting com_qngradf'
+      if (nio.eq.0) write (6,*) 'exiting com_qngradf'
 
       return 
       end
