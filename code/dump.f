@@ -156,14 +156,15 @@ c-----------------------------------------------------------------------
       character*8 fname
 
       if (nid .eq. 0) then
+
          write(fname,22) k
    22 format(i4.4,".out")
          open(unit=33,file=fname)
 
          do i=1,nb
-            write(33,33) uuu(i)
-   33    format(1p1e16.7)
+            write(33,*) uuu(i)
          enddo
+
          close(33)
       endif
 
