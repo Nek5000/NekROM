@@ -813,10 +813,13 @@ c-----------------------------------------------------------------------
       enddo
 
       if (ad_step.eq.ad_nsteps) then
-         write(6,*)'usa'
-         do i=0,nb
-            write(6,*)i,usa(i)
-         enddo
+         if (nid.eq.0) then 
+            write(6,*)'usa'
+            do i=0,nb
+               write(6,*)i,usa(i)
+            enddo
+            call dumpusa(usa,nb)
+         endif
       endif
 
       return
