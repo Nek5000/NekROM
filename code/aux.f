@@ -821,3 +821,58 @@ c-----------------------------------------------------------------------
 
       return
       end
+c-----------------------------------------------------------------------
+      subroutine snap_sample
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /scrk5/ t1(lt),t2(lt),t3(lt)
+      common /scrk9/ utmp(0:nb)
+
+      real savg(0:nb), svar(0:nb)
+
+      character (len=72) fmt1
+      character*8 fname
+
+      call rzero(svar,nb+1)
+      call rzero(savg,nb+1)
+
+      write (fmt1,'("(", i0, "(1pe15.7),1x,a4)")') nb+1
+
+      do i=1,ns
+         if (nio.eq.0) write (6,*) i,'th snapshot:'
+         call opadd3(t1,t2,t3,us(1,i),vs(1,i),ws(1,i),ub,vb,wb)
+         nio = -1
+         call proj2bases(utmp,t1,t2,t3)
+         call dumpcoef(utmp,nb,i)
+         nio = nid
+         call add2(savg,utmp,nb+1)
+      enddo
+
+      s=1/real(ns)
+      call cmult(savg,s,nb+1)
+
+      do i=1,ns
+         call opadd3(t1,t2,t3,us(1,i),vs(1,i),ws(1,i),ub,vb,wb)
+         nio = -1
+         call proj2bases(utmp,t1,t2,t3)
+         nio = nid
+         do j=0,nb
+            svar(j)=svar(j)+(savg(j)-utmp(j))**2
+         enddo
+      enddo
+
+      s=1/real(ns-1)
+      call cmult(svar,s,nb+1)
+
+      if (nio.eq.0) then
+         write (6,fmt1) (savg(i),i=0,nb),'savg'
+         write (6,fmt1) (svar(i),i=0,nb),'svar'
+      endif
+
+      return
+      end
