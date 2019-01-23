@@ -791,7 +791,7 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real coef(0:nb),cacc(0:nb) 
+      real coef(0:nb)
 
       integer icalld
       save    icalld
@@ -799,12 +799,12 @@ c-----------------------------------------------------------------------
 
       if (icalld.eq.0) then
          icalld=1
-         call rzero(cacc,nb+1)
+         call rzero(usa,nb+1)
       endif
 
       ! sum up all the coefficients
       do i=0,nb
-         cacc(i)=cacc(i)+coef(i)
+         usa(i)=usa(i)+coef(i)
       enddo
 
       ! compute usa which is cavg*s
@@ -815,8 +815,12 @@ c-----------------------------------------------------------------------
 
       if (ad_step.eq.ad_nsteps) then
          if (nid.eq.0) then 
+            write(6,*)'checking'
             do i=0,nb
-               usa(i)=cacc(i)*s
+            write(6,*)i,usa(i)
+            enddo
+            do i=0,nb
+               usa(i)=usa(i)*s
             enddo
             write(6,*)'s',s,'ad_nsteps',ad_nsteps
             write(6,*)'usa'
