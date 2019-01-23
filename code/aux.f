@@ -296,6 +296,7 @@ c-----------------------------------------------------------------------
             if (u(j,1).gt.smax(j)) smax(j)=utmp(j)
          enddo
 
+         ! ctke_fom is used to compute mean TKE
          call ctke_fom(tmp,us(1,i),vs(1,i),ws(1,i))
          tkes=tkes+tmp
       enddo
@@ -375,6 +376,7 @@ c-----------------------------------------------------------------------
          if (u(i,1).gt.cmax(i)) cmax(i)=u(i,1)
       enddo
 
+      ! ctke_rom is used to compute instantaneous TKE
       call ctke_rom(tke,u)
       if (nio.eq.0) write (6,*) istep,time,tke,'ctke'
 
@@ -734,3 +736,88 @@ c        write (6,*) j,ii,vr(j),imax,n,nmax,'partialc'
       return
       end
 c-----------------------------------------------------------------------
+      subroutine rom_sample(coef)
+
+      include 'SIZE'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      common /ctrack/ cavg(0:nb),cvar(0:nb)
+
+      real coef(0:nb) 
+
+      integer icalld
+      save    icalld
+      data    icalld /0/
+
+      if (icalld.eq.0) then
+         icalld=1
+         call rzero(cavg,nb+1)
+         call rzero(cvar,nb+1)
+      endif
+
+      ! sum up all the coefficients
+      do i=0,nb
+         cavg(i)=cavg(i)+coef(i)
+      enddo
+
+      ! cavg stands for sample mean of coefficients
+
+      if (ad_step.eq.ad_nsteps) then
+         K=ad_nsteps/ad_iostep
+         s=1./K
+         write(6,*)'s',s,'ad_nsteps',ad_nsteps,'K',K
+         do i=0,nb
+            cavg(i)=cavg(i)*s
+         enddo
+         write(6,*)'cavg'
+         do i=0,nb
+            write(6,*)i,cavg(i)
+         enddo
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine rom_avg(coef)
+
+      include 'SIZE'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real coef(0:nb),cacc(0:nb) 
+
+      integer icalld
+      save    icalld
+      data    icalld /0/
+
+      if (icalld.eq.0) then
+         icalld=1
+         call rzero(cacc,nb+1)
+      endif
+
+      ! sum up all the coefficients
+      do i=0,nb
+         cacc(i)=cacc(i)+coef(i)
+      enddo
+
+      ! compute usa which is cavg*s
+      ! s = \Delta t/T-T_0
+      ! NOTE: This only correct when initial conidtion is starting
+      ! with snapshot
+      s=1./ad_nsteps
+      write(6,*)'s',s,'ad_nsteps',ad_nsteps
+      do i=0,nb
+         usa(i)=cacc(i)*s
+      enddo
+
+      if (ad_step.eq.ad_nsteps) then
+         write(6,*)'usa'
+         do i=0,nb
+            write(6,*)i,usa(i)
+         enddo
+      endif
+
+      return
+      end
