@@ -764,16 +764,21 @@ c-----------------------------------------------------------------------
       ! cavg stands for sample mean of coefficients
 
       if (ad_step.eq.ad_nsteps) then
+
          K=ad_nsteps/ad_iostep
          s=1./K
-         write(6,*)'s',s,'ad_nsteps',ad_nsteps,'K',K
          do i=0,nb
             cavg(i)=cavg(i)*s
          enddo
-         write(6,*)'cavg'
-         do i=0,nb
-            write(6,*)i,cavg(i)
-         enddo
+
+         if (nid.eq.0) then
+            write(6,*)'s',s,'ad_nsteps',ad_nsteps,'K',K
+            write(6,*)'cavg'
+            do i=0,nb
+               write(6,*)i,cavg(i)
+            enddo
+         endif
+
       endif
 
       return
@@ -807,13 +812,13 @@ c-----------------------------------------------------------------------
       ! NOTE: This only correct when initial conidtion is starting
       ! with snapshot
       s=1./ad_nsteps
-      write(6,*)'s',s,'ad_nsteps',ad_nsteps
-      do i=0,nb
-         usa(i)=cacc(i)*s
-      enddo
 
       if (ad_step.eq.ad_nsteps) then
          if (nid.eq.0) then 
+            do i=0,nb
+               usa(i)=cacc(i)*s
+            enddo
+            write(6,*)'s',s,'ad_nsteps',ad_nsteps
             write(6,*)'usa'
             do i=0,nb
                write(6,*)i,usa(i)
