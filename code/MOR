@@ -43,3 +43,6 @@ c     parameters and common blocks for MOR
       logical ifl2, ifvort, ifdump, ifrecon, ifstep
 
       common /morflags/ ifl2, ifvort, ifdump, ifrecon, ifstep
+
+      real mtke
+      common /morstat/  mtke

@@ -888,3 +888,54 @@ c-----------------------------------------------------------------------
 
       return
       end
+c-----------------------------------------------------------------------
+      subroutine mtke_rom(coef)
+
+      include 'SIZE'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real coef(0:nb), cdiff(0:nb)
+      real tke
+      character*27 fname
+
+      integer icalld
+      save    icalld
+      data    icalld /0/
+
+      if (icalld.eq.0) then
+         icalld=1
+
+         ! usa stands for coefficients for <\hat{u}>_g
+         if (nid.eq.0) then
+            write(fname,37) 
+            write(6,*) 'fname',fname
+   37 format('./MOR_data/usa')
+            open (unit=12,file=fname)
+            read (12,*) (usa(i),i=0,nb)
+            close (unit=12)
+         endif
+
+         mtke=0.
+      endif
+
+      do i=0,nb
+         write(6,*)i,usa(i)
+         cdiff(i)=coef(i)-usa(i)
+      enddo
+
+      write(6,*)mtke
+      do j=0,nb
+      do i=0,nb
+         mtke=mtke+b0(i,j)*cdiff(i)*cdiff(j)
+      enddo
+      enddo
+      write(6,*)mtke
+
+      if (ad_step.eq.ad_nsteps) then 
+         mtke = mtke/(2*ad_nsteps)
+         if (nid.eq.0) write(6,*)'mtke_rom',mtke
+      endif
+      return
+      end
