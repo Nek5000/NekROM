@@ -876,10 +876,10 @@ c-----------------------------------------------------------------------
          do j=0,nb
             svar(j)=svar(j)+(savg(j)-utmp(j))**2
          enddo
-      enddo
+         enddo
 
-      s=1/real(ns-1)
-      call cmult(svar,s,nb+1)
+         s=1/real(ns-1)
+         call cmult(svar,s,nb+1)
 
       if (nio.eq.0) then
          write (6,fmt1) (savg(i),i=0,nb),'savg'
@@ -897,7 +897,6 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       real coef(0:nb), cdiff(0:nb)
-      real tke
       character*27 fname
 
       integer icalld
@@ -921,20 +920,74 @@ c-----------------------------------------------------------------------
       endif
 
       do i=0,nb
-         write(6,*)i,usa(i)
          cdiff(i)=coef(i)-usa(i)
       enddo
 
-      write(6,*)mtke
       do j=0,nb
       do i=0,nb
          mtke=mtke+b0(i,j)*cdiff(i)*cdiff(j)
       enddo
       enddo
-      write(6,*)mtke
 
       if (ad_step.eq.ad_nsteps) then 
-         mtke = mtke/(2*ad_nsteps)
+         write(6,*)'usa'
+         do i=0,nb
+            write(6,*)i,usa(i)
+         enddo
+         write(6,*)'mtke before',mtke
+
+         mtke = mtke/(2*(ad_nsteps/ad_iostep))
+         if (nid.eq.0) write(6,*)'mtke_rom',mtke
+      endif
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine testtt(coef)
+
+      include 'SIZE'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real coef(0:nb), cdiff(0:nb)
+      real tmp
+
+      integer icalld
+      save    icalld
+      data    icalld /0/
+
+      if (icalld.eq.0) then
+         icalld=1
+         mtke=0.
+      endif
+
+      ! Compute \sum\sum a_i a_j b0(i,j)
+      do j=0,nb
+      do i=0,nb
+         mtke=mtke+b0(i,j)*coef(i)*coef(j)
+      enddo
+      enddo
+
+      if (ad_step.eq.ad_nsteps) then 
+c         mtke=mtke/(2*(ad_nsteps/ad_iostep))
+
+         write(6,*)'usa'
+         do i=0,nb
+         write(6,*)i,usa(i)
+         enddo
+
+         tmp=0.
+         do j=0,nb
+         do i=0,nb
+            tmp=tmp+b0(i,j)*usa(i)*usa(j)
+         enddo
+         enddo
+
+         mtke=mtke-((ad_nsteps/ad_iostep)*tmp) 
+         write(6,*)'mtke before',mtke
+         write(6,*)'K',(ad_nsteps/ad_iostep)
+         mtke=mtke/(2*(ad_nsteps/ad_iostep)) 
+c         mtke=mtke-(tmp/2) 
          if (nid.eq.0) write(6,*)'mtke_rom',mtke
       endif
       return
