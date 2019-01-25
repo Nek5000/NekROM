@@ -737,6 +737,7 @@ c        write (6,*) j,ii,vr(j),imax,n,nmax,'partialc'
       end
 c-----------------------------------------------------------------------
       subroutine rom_sample(coef)
+c     This subroutine computes the sample mean and the sample variance
 
       include 'SIZE'
       include 'MOR'
@@ -759,6 +760,7 @@ c-----------------------------------------------------------------------
       ! sum up all the coefficients
       do i=0,nb
          cavg(i)=cavg(i)+coef(i)
+         cvar(i)=cvar(i)+coef(i)**2
       enddo
 
       ! cavg stands for sample mean of coefficients
@@ -770,12 +772,25 @@ c-----------------------------------------------------------------------
          do i=0,nb
             cavg(i)=cavg(i)*s
          enddo
-
+         
          if (nid.eq.0) then
             write(6,*)'s',s,'ad_nsteps',ad_nsteps,'K',K
             write(6,*)'cavg'
             do i=0,nb
                write(6,*)i,cavg(i)
+            enddo
+         endif
+
+         s=1./(K-1)
+         do i=0,nb
+            cvar(i)=s*(cvar(i)-K*(cavg(i)**2))
+         enddo
+
+         if (nid.eq.0) then
+            write(6,*)'s',s,'ad_nsteps',ad_nsteps
+            write(6,*)'cvar'
+            do i=0,nb
+               write(6,*)i,cvar(i)
             enddo
          endif
 
@@ -785,6 +800,7 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine rom_avg(coef)
+c     This subroutine computes the reduced space coefficient of the long-time average velocity field <u>_g
 
       include 'SIZE'
       include 'MOR'
@@ -835,6 +851,9 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine snap_sample
+c     This subroutine uses the snapshots (us,vs,ws)
+c     and computes the corresponding coefficient by 
+c     projecting on to the reduce space
 
       include 'SIZE'
       include 'TOTAL'
@@ -876,10 +895,10 @@ c-----------------------------------------------------------------------
          do j=0,nb
             svar(j)=svar(j)+(savg(j)-utmp(j))**2
          enddo
-         enddo
+      enddo
 
-         s=1/real(ns-1)
-         call cmult(svar,s,nb+1)
+      s=1/real(ns-1)
+      call cmult(svar,s,nb+1)
 
       if (nio.eq.0) then
          write (6,fmt1) (savg(i),i=0,nb),'savg'
