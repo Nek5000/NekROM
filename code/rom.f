@@ -231,6 +231,7 @@ c     call add2s2(rhs,a0,s,nb+1) ! not working...
       call copy(u(1,1),rhs(1),nb)
       call copy(coef,rhs(1),nb)
 
+
       if (mod(ad_step,ad_iostep).eq.0) then
 
 !        This output is to make sure the ceof matches with matlab code
@@ -247,6 +248,9 @@ c     call add2s2(rhs,a0,s,nb+1) ! not working...
                enddo
             endif
          endif
+         
+         ! compute sample mean
+         call rom_sample(u)
 
          if (ifdump) then
             idump=ad_step/ad_iostep
