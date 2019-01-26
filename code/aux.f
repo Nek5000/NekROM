@@ -953,10 +953,9 @@ c-----------------------------------------------------------------------
          do i=0,nb
             write(6,*)i,usa(i)
          enddo
-         write(6,*)'mtke before',mtke
 
          mtke = mtke/(2*(ad_nsteps/ad_iostep))
-         if (nid.eq.0) write(6,*)'mtke_rom',mtke
+         if (nid.eq.0) write(6,*)'mtke_rom',mtke,(ad_nsteps/ad_iostep)
       endif
       return
       end
@@ -970,6 +969,7 @@ c-----------------------------------------------------------------------
 
       real coef(0:nb), cdiff(0:nb)
       real tmp
+      character*27 fname
 
       integer icalld
       save    icalld
@@ -977,37 +977,51 @@ c-----------------------------------------------------------------------
 
       if (icalld.eq.0) then
          icalld=1
+         if (nid.eq.0) then
+            write(fname,37) 
+            write(6,*) 'fname',fname
+   37 format('./MOR_data/usa')
+            open (unit=12,file=fname)
+            read (12,*) (usa(i),i=0,nb)
+            close (unit=12)
+         endif
          mtke=0.
       endif
 
       ! Compute \sum\sum a_i a_j b0(i,j)
       do j=0,nb
       do i=0,nb
-         mtke=mtke+b0(i,j)*coef(i)*coef(j)
+c         mtke=mtke+b0(i,j)*(coef(i)*coef(j))
+c         mtke=mtke+b0(i,j)*(coef(i)*coef(j)-usa(i)*usa(j))
+         mtke=mtke+b0(i,j)*(coef(i)*coef(j)-coef(i)*usa(j)
+     $               -usa(i)*coef(j)+usa(i)*usa(j))
       enddo
       enddo
 
       if (ad_step.eq.ad_nsteps) then 
-c         mtke=mtke/(2*(ad_nsteps/ad_iostep))
+         mtke=mtke/(2*(ad_nsteps/ad_iostep))
 
          write(6,*)'usa'
          do i=0,nb
+c         usa(i)=0
          write(6,*)i,usa(i)
          enddo
 
-         tmp=0.
-         do j=0,nb
-         do i=0,nb
-            tmp=tmp+b0(i,j)*usa(i)*usa(j)
-         enddo
-         enddo
+c         tmp=0.
+c         write(6,*)'tmp',tmp
+c         do j=0,nb
+c         do i=0,nb
+c            tmp=tmp+b0(i,j)*usa(i)*usa(j)
+c         enddo
+c         enddo
 
-         mtke=mtke-((ad_nsteps/ad_iostep)*tmp) 
-         write(6,*)'mtke before',mtke
-         write(6,*)'K',(ad_nsteps/ad_iostep)
-         mtke=mtke/(2*(ad_nsteps/ad_iostep)) 
+c         mtke=mtke-((ad_nsteps/ad_iostep)*tmp) 
+c         write(6,*)'mtke before',mtke
+c         write(6,*)'K',(ad_nsteps/ad_iostep)
+c         mtke=mtke/(2*(ad_nsteps/ad_iostep)) 
 c         mtke=mtke-(tmp/2) 
          if (nid.eq.0) write(6,*)'mtke_rom',mtke
       endif
+
       return
       end
