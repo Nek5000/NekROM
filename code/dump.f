@@ -194,3 +194,27 @@ c-----------------------------------------------------------------------
 
 
       end
+c-----------------------------------------------------------------------
+      subroutine dumpusa(uuu,nb)
+
+      include 'SIZE'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      real uuu(0:nb)
+      character*19 fname
+
+      if (nid .eq. 0) then
+
+         write(fname,22) 
+   22 format("./MOR_data/usa")
+         open(unit=33,file=fname)
+
+         do i=0,nb
+            write(33,*) uuu(i)
+         enddo
+
+         close(33)
+      endif
+
+      return
+      end
