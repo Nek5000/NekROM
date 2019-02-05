@@ -36,7 +36,7 @@ c     parameters and common blocks for MOR
 
       real qnf, helm, invhelm, qngradf, qny, qns
       common /moropt/ helm(nb,nb), opt_rhs(0:nb), invhelm(nb,nb)
-      common /morhyperpar/ sample_min(nb), sample_max(nb)
+      common /morhyperpar/ sample_min(nb), sample_max(nb), sam_dis(nb)
       common /moropt_par/ par
       common /morqn/ qngradf(nb), qns(nb), qny(nb), qnf
 

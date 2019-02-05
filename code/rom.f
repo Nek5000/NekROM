@@ -820,7 +820,7 @@ c-----------------------------------------------------------------------
 c     parameter for barrier function
 c     it should start from value greater than one and decrease
       par = 1.0 
-      par_step = 3
+      par_step = 2
 
 c     invhelm for computing qnf
 c     not changing during BFGS
@@ -851,16 +851,11 @@ c     compute quasi-Newton step
             call add2(u(1,1),qns,nb)
 
             ! check whether solution exceed the boundary
-            if ((u(1,1)-sample_max(1)).ge.1e-8) then
-               u(1,1) = 0.9 * sample_max(1)
-            elseif ((sample_min(1)-u(1,1)).ge.1e-8) then
-               u(1,1) = 1.1 * sample_min(1)
-            endif
-            do ii=2,nb
+            do ii=1,nb
                if ((u(ii,1)-sample_max(ii)).ge.1e-8) then
-                  u(ii,1) = 0.9 * sample_max(ii)
+                  u(ii,1) = sample_max(ii) - 0.1*sam_dis(ii)
                elseif ((sample_min(ii)-u(ii,1)).ge.1e-8) then
-                  u(ii,1) = 0.9 * sample_min(ii)
+                  u(ii,1) = sample_min(ii) + 0.1*sam_dis(ii)
                endif
             enddo
 
@@ -907,7 +902,7 @@ c     compute quasi-Newton step
             write(6,*)'f and old f',j,qnf,fo,qndf,ngf
 
 c            if (qndf .lt. 1e-2) goto 900
-            if (ngf .lt. 1e-8) goto 900
+            if (ngf .lt. 1e-8 ) goto 900
 
 c     update solution
          enddo

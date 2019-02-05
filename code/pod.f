@@ -432,6 +432,14 @@ c-----------------------------------------------------------------------
          write(6,*) j,sample_min(j),sample_max(j)
       enddo
 
+      ! compute distance between sample_max and sample_min
+      call sub3(sam_dis,sample_max,sample_min,nb)
+      if (nid.eq.0) then
+         do i=1,nb
+            write(6,*)i,sam_dis(i)
+         enddo
+      endif
+
       if (nid.eq.0) then
          open (unit=51,file='sample_min')
          do i=1,nb
@@ -445,6 +453,8 @@ c-----------------------------------------------------------------------
          enddo
          close (unit=52)
       endif
+
+
 
 
       return
