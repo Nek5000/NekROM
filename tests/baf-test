@@ -8,7 +8,7 @@ git clean -dfx . &> /dev/null
 
 ls $ROOT_DIR/data/baf | sed 's/^/..\/..\/data\/baf\//g' > file.list
 
-$ROOT_DIR/bin/linkc
+$ROOT_DIR/bin/linkm
 $SOURCE_ROOT/bin/makenek baf
 
 grep 'Compilation successful!' compiler.out &> /dev/null

@@ -14,15 +14,17 @@ c-----------------------------------------------------------------------
       logical iflag
       real vv(ls,ls)
 
-      param(50) = 1
-      if (iflag) param(50) = 0
-      call rom_init_params
-      call rom_init_fields
+      param(33) = 1
+      if (iflag) param(33) = 0
+      param(34) = 1
+      param(35) = 2
+
+      call rom_setup
 
       iexit=0
 
+      call copy(vv,uu,ls*ls)
       call gengram
-      call readgram(vv,ls)
 
       s1=0.
       s2=0.
@@ -51,91 +53,6 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine eigenvector_unit(iflag)
-
-      include 'SIZE'
-      include 'MOR'
-
-      logical iflag
-      real evec2(ls,nb)
-
-      iexit=0
-
-      call readgram(uu,ls)
-      call genevec(evec)
-      call readevec(evec2,ls,nb)
-
-      s1=0.
-      s2=0.
-
-      do j=1,nb
-      do i=1,ls
-         s1=s1+(evec(i,j)-evec2(i,j))**2
-         s2=s2+evec2(i,j)**2
-         if (nio.eq.0) write (6,*) 'evec',i,j,evec(i,j),evec2(i,j)
-      enddo
-      enddo
-
-      edif=sqrt(s1/s2)
-      if (nio.eq.0) write (6,*) 'edif',edif,s1,s2
-
-      if (edif.gt.1e-16) iexit=1
-
-      call exit(iexit)
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine bases_unit(iflag)
-
-      include 'SIZE'
-      include 'INPUT'
-      include 'MOR'
-      include 'MASS'
-
-      parameter (lt=lx1*ly1*lz1*lelt)
-
-      logical iflag
-
-      real ubb(lt,0:nb), vbb(lt,0:nb), wbb(lt,0:nb)
-      real du(lt,0:nb), dv(lt,0:nb), dw(lt,0:nb)
-
-      param(50) = 1
-      if (iflag) param(50) = 0
-      call rom_init_params
-      call rom_init_fields
-
-      n=lx1*ly1*lz1*nelt
-
-      call readevec(evec,ls,nb)
-      call genbases
-      call readbases(ubb,vbb,wbb,nb)
-
-      s1=0.
-      s2=0.
-
-      ! TODO use H10 norm if(.not.ifl2)
-
-      do i=0,nb
-         call opsub3(du(1,i),dv(1,i),dw(1,i),ub(1,i),vb(1,i),wb(1,i),
-     $                                       ubb(1,i),vbb(1,i),wbb(1,i))
-         s1=s1+op_glsc2_wt(du(1,i),dv(1,i),dw(1,i),
-     $                     du(1,i),dv(1,i),dw(1,i),bm1)
-         s2=s2+op_glsc2_wt(ubb(1,i),vbb(1,i),wbb(1,i),
-     $                     ubb(1,i),vbb(1,i),wbb(1,i),bm1)
-      enddo
-
-      edif=sqrt(s1/s2)
-      if (nio.eq.0) write (6,*) 'edif',edif,s1,s2
-
-      iexit=1
-      if (edif.lt.1e-16) iexit=0
-
-      call exit(iexit)
-
-      return
-      end
-c-----------------------------------------------------------------------
       subroutine initial_condition_unit(iflag)
 
       include 'SIZE'
@@ -146,14 +63,15 @@ c-----------------------------------------------------------------------
       logical iflag
       real u0(0:nb)
 
-      param(50) = 1
-      if (iflag) param(50) = 0
-      call rom_init_params
-      call rom_init_fields
+      param(33) = 1
+      if (iflag) param(33) = 0
+      param(34) = 1
+      param(35) = 2
 
-      call readbases(ub,vb,wb,nb)
-      call makeic
-      call readic(u0,nb+1)
+      call rom_setup
+
+      call copy(u0,u,nb+1)
+      call setu
 
       s1=0.
       s2=0.
@@ -171,7 +89,7 @@ c-----------------------------------------------------------------------
       if (nio.eq.0) write (6,*) 'edif',edif,s1,s2
 
       iexit=1
-      if (edif.lt.1e-16) iexit=0
+      if (edif.lt.5e-15) iexit=0
 
       call exit(iexit)
 
@@ -188,17 +106,17 @@ c-----------------------------------------------------------------------
 
       real aa(0:nb,0:nb)
 
-      param(50) = 1
-      if (iflag) param(50) = 0
-      call rom_init_params
-      call rom_init_fields
+      param(33) = 1
+      if (iflag) param(33) = 0
+      param(34) = 1
+      param(35) = 2
+
+      call rom_setup
 
       iexit=0
 
-      call readbases(ub,vb,wb,nb)
-
-      call makea0
-      call reada0(aa,(nb+1)**2)
+      call copy(aa,a0,(nb+1)**2)
+      call seta
 
       s1=0.
       s2=0.
@@ -263,17 +181,17 @@ c-----------------------------------------------------------------------
 
       real bb(0:nb,0:nb)
 
-      param(50) = 1
-      if (iflag) param(50) = 0
-      call rom_init_params
-      call rom_init_fields
+      param(33) = 1
+      if (iflag) param(33) = 0
+      param(34) = 1
+      param(35) = 2
+
+      call rom_setup
 
       iexit=0
 
-      call readbases(ub,vb,wb,nb)
-
-      call makeb0
-      call readb0(bb,(nb+1)**2)
+      call copy(bb,b0,(nb+1)**2)
+      call setb
 
       s1=0.
       s2=0.
@@ -308,7 +226,7 @@ c-----------------------------------------------------------------------
 
       edia=sqrt(s1/s2)
 
-      if (ifl2.and.edia.gt.1.6e-14) iexit=iexit+4
+      if (ifl2.and.edia.gt.1.0e-14) iexit=iexit+4
       if (nio.eq.0) write (6,*) 'edia',edia,s1,s2
 
       s1=0.
@@ -319,7 +237,7 @@ c-----------------------------------------------------------------------
 
       euni=sqrt(s1/s2)
 
-      if (ifl2.and.euni.gt.5.2e-15) iexit=iexit+8
+      if (ifl2.and.euni.gt.1.0e-14) iexit=iexit+8
       if (nio.eq.0) write (6,*) 'euni',euni,s1,s2
 
       call exit(iexit)
@@ -336,30 +254,43 @@ c-----------------------------------------------------------------------
 
       logical iflag
 
-      real cc(0:nb,0:nb,0:nb)
+      real cc(lcloc), cglob(nb,nb+1,nb+1)
 
-      param(50) = 1
-      if (iflag) param(50) = 0
-      call rom_init_params
-      call rom_init_fields
+      param(33) = 1
+      if (iflag) param(33) = 0
+      param(34) = 1
+      param(35) = 2
+
+      call rom_setup
 
       iexit=0
 
-      call readbases(ub,vb,wb,nb)
-
-      call makec0
-      call readc0(cc,(nb+1)**3)
+      call copy(cc,clocal,nb*(nb+1)**2)
+      call setc
 
       s1=0.
       s2=0.
       s3=0.
 
-      do k=0,nb
-      do j=0,nb
-      do i=0,nb
-         s1=s1+(cc(i,j,k)-c0(i,j,k))**2
-         s2=s2+(c0(i,j,k)+c0(j,i,k))**2
-         s3=s3+cc(i,j,k)**2
+      call rzero(cglob,nb*(nb+1)**2)
+
+      do jc=1,nb*(nb+1)**2
+         i=icloc(1,jc)
+         j=icloc(2,jc)
+         k=icloc(3,jc)
+
+         cglob(i,j,k)=cglob(i,j,k)+clocal(jc)
+         cglob(k,j,i)=cglob(k,j,i)-cc(jc)
+
+         s1=s1+(cc(jc)-clocal(jc))**2
+         s3=s3+cc(jc)**2
+         write (6,*) 'cc',clocal(jc),cc(jc)
+      enddo
+
+      do k=1,nb
+      do j=1,nb
+      do i=1,nb
+         s2=s2+(cglob(i,j,k)+cglob(k,j,i))**2
       enddo
       enddo
       enddo
@@ -368,45 +299,9 @@ c-----------------------------------------------------------------------
       if (edif.gt.1.e-16) iexit=iexit+1
       if (nio.eq.0) write (6,*) 'edif',edif,s1,s3
 
-      call exit(iexit)
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine cloc_unit(iflag)
-
-      include 'SIZE'
-      include 'SOLN'
-      include 'INPUT'
-      include 'MOR'
-
-      logical iflag
-
-      real cc(0:nb,0:nb,0:nb)
-
-      param(50) = 1
-      if (iflag) param(50) = 0
-      call rom_init_params
-      call rom_init_fields
-
-      iexit=0
-
-      if (nid.eq.(np-1)) then
-         do i=0,(nb+1)**3-1
-            c0(i,0,0)=i
-         enddo
-      endif
-
-      call setcloc
-
-      call nekgsync
-      call sleep(nid)
-
-      do i=1,nloc
-         write (6,*) 'clocal',nid,i,clocal(i)
-      enddo
-
-      call nekgsync
+      eskew=sqrt(s2/s3)
+c     if (eskew.gt.1.e-16) iexit=iexit+2
+      if (nio.eq.0) write (6,*) 'eskew',eskew,s1,s2
 
       call exit(iexit)
 

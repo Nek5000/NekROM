@@ -1,0 +1,6 @@
+#!/bin/bash
+
+genb tl
+genb tr
+genb top
+genb bot

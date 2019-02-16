@@ -1,5 +1,5 @@
 c-----------------------------------------------------------------------
-      subroutine genbases
+      subroutine setbases
 
       include 'SIZE'
       include 'TOTAL'
@@ -11,39 +11,33 @@ c-----------------------------------------------------------------------
       common /scrk3/ t4(lt),t5(lt),t6(lt)
       common /scrk4/ h1(lt),h2(lt),bwm1(lt)
 
-      if (nio.eq.0) write (6,*) 'inside genbases'
+      if (nio.eq.0) write (6,*) 'inside setbases'
 
-      n  = lx1*ly1*lz1*nelt
+      if (ifread) then
+         call loadbases(ub,vb,wb,nb)
+      else
+         n=lx1*ly1*lz1*nelt
 
-      call rone(h1,n)
-      call rzero(h2,n)
-      call col3(bwm1,bm1,wm1,n)
+         call rone(h1,n)
+         call rzero(h2,n)
+         call col3(bwm1,bm1,wm1,n)
 
-      ONE = 1.
-      ZERO= 0.
+         one = 1.
+         zero= 0.
 
-      ns = ls ! REQUIRED: get_saved_fields overwrites ns argument
-      call opcopy(u0(1,1),u0(1,2),u0(1,3),ub(1,0),vb(1,0),wb(1,0))
+         ns = ls ! REQUIRED: get_saved_fields overwrites ns argument
+         call opcopy(u0(1,1),u0(1,2),u0(1,3),ub(1,0),vb(1,0),wb(1,0))
 
-      ! ub, vb, wb, are the modes
-      call dgemm( 'N','N',n,nb,ls,ONE,us,lt,evec,ls,ZERO,ub(1,1),lt)
-      call dgemm( 'N','N',n,nb,ls,ONE,vs,lt,evec,ls,ZERO,vb(1,1),lt)
-      if (ldim.eq.3)
-     $call dgemm( 'N','N',n,nb,ls,ONE,ws,lt,evec,ls,ZERO,wb(1,1),lt)
+         ! ub, vb, wb, are the modes
+         call dgemm( 'N','N',n,nb,ls,one,ust,lt,evec,ls,zero,ub(1,1),lt)
+         call dgemm( 'N','N',n,nb,ls,one,vst,lt,evec,ls,zero,vb(1,1),lt)
+         if (ldim.eq.3)
+     $   call dgemm( 'N','N',n,nb,ls,one,wst,lt,evec,ls,zero,wb(1,1),lt)
 
-      call scale_bases
+         call scale_bases
+      endif
 
-      itmp = istep
-      ttmp = time
-      do i=0,nb ! dump the generated modes
-         istep = i
-         time = real(istep)
-         call outpost(ub(1,i),vb(1,i),wb(1,i),pr,t,'bas')
-      enddo
-      istep = itmp
-      time = ttmp
-
-      if (nio.eq.0) write (6,*) 'exiting genbases'
+      if (nio.eq.0) write (6,*) 'exiting setbases'
 
       return
       end
@@ -270,12 +264,13 @@ c-----------------------------------------------------------------------
       call rzero(h2,n)
 
       do j=1,ns ! Form the Gramian, U=U_K^T A U_K using H^1_0 Norm
-         call axhelm(uw,us(1,j),h1,h2,1,1)
-         call axhelm(vw,vs(1,j),h1,h2,1,1)
-         if (ldim.eq.3) call axhelm(ww,ws(1,j),h1,h2,1,1)
+         call axhelm(uw,ust(1,j),h1,h2,1,1)
+         call axhelm(vw,vst(1,j),h1,h2,1,1)
+         if (ldim.eq.3) call axhelm(ww,wst(1,j),h1,h2,1,1)
          do i=1,ns
-            uu(i,j) = glsc2(us(1,i),uw,n)+glsc2(vs(1,i),vw,n)
-            if (ldim.eq.3) uu(i,j) = uu(i,j)+glsc2(ws(1,i),ww,n)
+            uu(i,j) = glsc2(ust(1,i),uw,n)+glsc2(vst(1,i),vw,n)
+            if (ldim.eq.3) uu(i,j) = uu(i,j)+glsc2(wst(1,i),ww,n)
+            if (nio.eq.0) write (99,*) uu(i,j)
          enddo
          if (nio.eq.0) write(6,*) j,uu(1,j),' uu'
       enddo
@@ -303,15 +298,16 @@ c-----------------------------------------------------------------------
 
       call col3(bwm1,bm1,wm1,n)
 
+      if (nio.eq.0) write (6,*) 'ns',ns
+
       do j=1,ns ! Form the Gramian, U=U_K^T A U_K using L2 Norm
       do i=1,ns
          if (ifvort) then
             uu(i,j)=glsc3(us(1,i),us(1,j),bwm1,n)
          else
-            uu(i,j) = op_glsc2_wt(us(1,i),vs(1,i),ws(1,i),
-     $                            us(1,j),vs(1,j),ws(1,j),bwm1)
+            uu(i,j) = op_glsc2_wt(ust(1,i),vst(1,i),wst(1,i),
+     $                            ust(1,j),vst(1,j),wst(1,j),bwm1)
          endif
-         write (88,*) uu(i,j)
       enddo
          if (nio.eq.0) write (6,*) 'uu',uu(1,j)
       enddo
@@ -326,6 +322,7 @@ c-----------------------------------------------------------------------
       !!! does not work if ns.lt.ls !!!
 
       include 'SIZE'
+      include 'TSTEP'
       include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
@@ -356,7 +353,7 @@ c     eig = eig(ls:1:-1)
       enddo
 
       do i=1,ns
-         if (nio.eq.0) write (6,*) i,gram_eig(ns-i+1),'eval'
+         if (nio.eq.0) write (6,*) istep,i,gram_eig(ns-i+1),'eval'
       enddo
 
 
@@ -368,12 +365,14 @@ c-----------------------------------------------------------------------
       subroutine scale_bases
 
       include 'SIZE'
+      include 'TOTAL'
       include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
       common /scruz/ h1(lt),h2(lt)
 
+      nio=-1
       if (ifl2) then
          do i=1,nb
             p=wl2prod(ub(1,i),vb(1,i),wb(1,i),ub(1,i),vb(1,i),wb(1,i))
@@ -391,6 +390,7 @@ c-----------------------------------------------------------------------
             call opcmult(ub(1,i),vb(1,i),wb(1,i),s)
          enddo
       endif
+      nio=nid
 
       return
       end
@@ -453,9 +453,6 @@ c-----------------------------------------------------------------------
          enddo
          close (unit=52)
       endif
-
-
-
 
       return
       end

@@ -1,0 +1,32 @@
+#!/bin/bash
+
+cwd="$(pwd -P)"
+: ${MOR_DIR:=$(cd ..; dirname $(pwd -P))}
+
+rm rom.f    &> /dev/null
+rm pod.f    &> /dev/null
+rm aux.f    &> /dev/null
+rm read.f   &> /dev/null
+rm dump.f   &> /dev/null
+rm usr.f    &> /dev/null
+rm unit.f   &> /dev/null
+rm test.usr &> /dev/null
+rm part.f  &> /dev/null
+rm conv.f  &> /dev/null
+rm time.f  &> /dev/null
+rm MOR      &> /dev/null
+
+ln -s {$MOR_DIR/code,$cwd}/rom.f
+ln -s {$MOR_DIR/code,$cwd}/pod.f
+ln -s {$MOR_DIR/code,$cwd}/aux.f
+ln -s {$MOR_DIR/code,$cwd}/read.f
+ln -s {$MOR_DIR/code,$cwd}/dump.f
+ln -s {$MOR_DIR/code,$cwd}/part.f
+ln -s {$MOR_DIR/code,$cwd}/conv.f
+ln -s {$MOR_DIR/code,$cwd}/time.f
+
+ln -s {$MOR_DIR/tests,$cwd}/usr.f
+ln -s {$MOR_DIR/tests,$cwd}/unit.f
+ln -s {$MOR_DIR/tests,$cwd}/test.usr
+
+ln -s {$MOR_DIR/code,${cwd}}/MOR

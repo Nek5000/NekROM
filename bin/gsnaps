@@ -9,7 +9,7 @@ case=$1
 
 case "${case:=all}" in
     baf)
-        wget -nv -O baf.tar.gz https://uofi.box.com/shared/static/dzkax0ftzplzo1fh7zsijzttwws7iomj.gz
+        wget -nv -O baf.tar.gz https://uofi.box.com/shared/static/bnoflcpf6i6mmofiy4ufmm8gey6t83k1.gz
         tar -xvf baf.tar.gz &> /dev/null
         ;;
     cyl)

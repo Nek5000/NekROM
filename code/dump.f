@@ -1,220 +1,116 @@
 c-----------------------------------------------------------------------
-      subroutine dumpevec(evec,ns,nb)
+      subroutine dump_global(a,n,fname,wk1,wk2,nid)
 
-      include 'SIZE'
+      real a(n),wk1(1),wk2(1)
 
-      real evec(ns,nb)
+      character*128 fname
+      character*128 fntrunc
 
       if (nid.eq.0) then
-         open (unit=12,file='ops/evec')
+         call blank(fntrunc,128)
+         len=ltruncr(fname,128)
+         call chcopy(fntrunc,fname,len)
+      endif
 
-         do j=1,nb
-         do i=1,ns
-            write (12,*) evec(i,j)
-         enddo
-         enddo
+      call dump_global_helper(a,n,fntrunc,wk1,wk2,nid)
 
-         close (unit=12)
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine dump_serial(a,n,fname,nid)
+
+      real a(n)
+
+      character*128 fname
+      character*128 fntrunc
+
+      if (nid.eq.0) then
+         call blank(fntrunc,128)
+
+         len=ltruncr(fname,128)
+         call chcopy(fntrunc,fname,len)
+
+         call dump_serial_helper(a,n,fntrunc)
       endif
 
       return
       end
 c-----------------------------------------------------------------------
-      subroutine dumpgram(uu,ns)
+      subroutine dump_global_helper(a,n,fname,wk1,wk2,nid)
 
-      include 'SIZE'
+      real a(n),wk1(1),wk2(1)
+      integer iwk(1)
 
-      real uu(ns,ns)
+      character*128 fname
 
-      n=lx1*ly1*lz1*nelt
+      if (nid.eq.0) open (unit=12,file=fname)
 
-      if (nid.eq.0) then
-         open (unit=12,file='ops/gram')
+      iwk(1)=n
+      nmax=iglmax(iwk,1)
 
-         do j=1,ns
-         do i=1,ns
-            write (12,*) uu(i,j)
-         enddo
-         enddo
+      iwk(1)=nid
+      ipmax=iglmax(iwk,1)
 
-         close (unit=12)
-      endif
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine dumpbases(ub,vb,wb,nb)
-
-      include 'SIZE'
-
-      parameter (lt=lx1*ly1*lz1*lelt)
-
-      real ub(lt,0:nb), vb(lt,0:nb), wb(lt,0:nb)
-
-      n=lx1*ly1*lz1*nelt
-
-      if (nid.eq.0) then
-         open (unit=12,file='ops/bases')
-
-         do j=0,nb
-         do i=1,n
-            write (12,*) ub(i,j)
-         enddo
-         enddo
-
-         do j=0,nb
-         do i=1,n
-            write (12,*) vb(i,j)
-         enddo
-         enddo
-
-         if (ldim.eq.3) then
-         do j=0,nb
-         do i=1,n
-            write (12,*) wb(i,j)
-         enddo
-         enddo
+      do ip=0,ipmax
+         if (nid.eq.ip) then
+            call copy(wk1,a,nmax)
+            iwk(1)=n
+         else
+            call rzero(wk1,nmax)
+            iwk(1)=0
          endif
 
-         close (unit=12)
-      endif
+         iwk(1)=iglmax(iwk,1)
+
+         call gop(wk1,wk2,'+  ',nmax)
+
+         if (nid.eq.0) then
+            do i=1,iwk(1)
+               write (12,*) wk1(i)
+            enddo
+         endif
+      enddo
+
+      if (nid.eq.0) close (unit=12)
 
       return
       end
 c-----------------------------------------------------------------------
-      subroutine dumptens(c,nb)
+      subroutine dump_serial_helper(a,n,fname)
 
-      include 'SIZE'
+      real a(n)
 
-      real c(0:nb,0:nb,0:nb)
+      character*128 fname
 
-      if (nid.eq.0) then
-         open (unit=50,file='ops/cten')
+      open (unit=12,file=fname)
 
-         do i=0,(nb+1)**3-1
-            write (50,*) c(i,0,0)
-         enddo
+      do i=1,n
+         write (12,*) a(i)
+      enddo
 
-         close (unit=50)
-      endif
+      close (unit=12)
 
       return
       end
 c-----------------------------------------------------------------------
-      subroutine dumpmats(a,b,nb)
+      subroutine dump_all
 
       include 'SIZE'
-
-      real a(0:nb,0:nb), b(0:nb,0:nb)
-
-      if (nid.eq.0) then
-         open (unit=50,file='ops/amat')
-
-         do i=0,(nb+1)**2-1
-            write (50,*) a(i,0)
-         enddo
-
-         close (unit=50)
-
-         open (unit=50,file='ops/bmat')
-
-         do i=0,(nb+1)**2-1
-            write (50,*) b(i,0)
-         enddo
-
-         close (unit=50)
-      endif
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine dumpic(ic,nb)
-
-      include 'SIZE'
-
-      real ic(0:nb)
-
-      if (nid.eq.0) then
-         open (unit=50,file='ic')
-
-         do i=0,nb
-            write (50,*) ic(i)
-         enddo
-
-         close (unit=50)
-      endif
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine dumpcoef(uuu,nb,k)
-
-      include 'SIZE'
-
-      parameter (lt=lx1*ly1*lz1*lelt)
-      real uuu(0:nb)
-      character*8 fname
-
-      if (nid .eq. 0) then
-
-         write(fname,22) k
-   22 format(i4.4,".out")
-         open(unit=33,file=fname)
-
-         do i=1,nb
-            write(33,*) uuu(i)
-         enddo
-
-         close(33)
-      endif
-
-      return
-      end
-
-c-----------------------------------------------------------------------
-      subroutine dumpeig(lmbda)
-      include 'SIZE'
+      include 'TOTAL'
       include 'MOR'
 
-      real eig(ls),lmbda(ls)
+      common /dumpglobal/ wk1(lcloc),wk2(lcloc)
 
-      if (nio.eq.0) write (6,*) 'inside dumpeig'
+      call dump_serial(uu,ls*ls,'ops/g ',nid)
+      call dump_serial(a0,(nb+1)**2,'ops/a ',nid)
+      call dump_serial(b0,(nb+1)**2,'ops/b ',nid)
+      call dump_serial(u,(nb+1)*3,'ops/u ',nid)
+      call dump_global(clocal,ncloc,'ops/c ',wk1,wk2,nid)
 
-      if (nio.eq.0) write(6,*)'number of mode:',nb
-      if (nid.eq.0) then
-         open (unit=50,file='./gram_eig')
-
-         do l = 1,ls
-            eig(l)=lmbda(ls-l+1) ! reverse order of eigvalues
-            write (50,*) eig(l)
-         enddo
-
-         close (unit=50)
-      endif
-
-
-      end
-c-----------------------------------------------------------------------
-      subroutine dumpusa(uuu,nb)
-
-      include 'SIZE'
-
-      parameter (lt=lx1*ly1*lz1*lelt)
-      real uuu(0:nb)
-      character*19 fname
-
-      if (nid .eq. 0) then
-
-         write(fname,22) 
-   22 format("./MOR_data/usa")
-         open(unit=33,file=fname)
-
-         do i=0,nb
-            write(33,*) uuu(i)
-         enddo
-
-         close(33)
-      endif
+      do i=0,nb
+         call outpost(ub(1,i),vb(1,i),wb(1,i),pr,t,'bas')
+      enddo
 
       return
       end
+c-----------------------------------------------------------------------

@@ -1,5 +1,5 @@
 cd $MOR_DIR/cases/baf
-$MOR_DIR/bin/linkc
+$MOR_DIR/bin/linkm
 
 echo 'baf'     > SESSION.NAME
 echo `pwd`'/' >> SESSION.NAME

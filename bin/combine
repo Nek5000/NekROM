@@ -1,0 +1,35 @@
+#!/bin/bash
+
+pretex << Z
+all_pre
+ 1  READ PREVIOUS PARAMETERS
+top
+ 1  BUILD FROM FILE
+top
+10  IMPORT MESH
+bot
+n
+10  IMPORT MESH
+tl
+n
+10  IMPORT MESH
+tr
+n
+ 1  END    ELEMENTS
+ 1  ACCEPT MATL,QVOL
+ 1  ACCEPT B.C.'s
+ 1  ACCEPT B.C.'s
+ 1  EXIT
+Z
+
+reatore2 << Z
+all_pre
+all_pre2
+Z
+
+cp all_pre2.re2 all.re2
+
+genmap << Z
+all
+.01
+Z

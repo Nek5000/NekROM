@@ -1,3 +1,4 @@
       ! MOR Parameters
       parameter (ls=100) ! number of snapshots
-      parameter (nb=20)  ! number of basis vectors
+      parameter (lmsk=1) ! number of partitions
+      parameter (nb=20) ! number of basis vectors

@@ -87,38 +87,7 @@ c     NOTE ::: This is not guaranteed to be called by every process
 c-----------------------------------------------------------------------
       subroutine userchk
 
-      include 'SIZE'
-      include 'TOTAL'
-      include 'MOR'
-
-      call opcopy(ub(1,0),vb(1,0),wb(1,0),vx,vy,vz) ! set zeroth mode
-      call gfldr('../../data/baf/baf0.f00100')    ! set initial state
-
-      call rom_init_params
-      call rom_init_fields
-
-      call gengram
-      call genevec
-      call dumpeig(gram_eig)
-      call genbases
-      call comp_hyperpar
-      call genops
-      call setops
-
-      call rom_setup
-
-      call dumptens(c0,nb)
-      call dumpmats(a0,b0,nb)
-
-      ifstep=.true.
-
-      do ad_step=1,ad_nsteps
-         if (ifstep) then
-            call rom_step
-         else
-            call rom_const
-         endif
-      enddo
+      call rom_update_v
 
       call exitt0
 

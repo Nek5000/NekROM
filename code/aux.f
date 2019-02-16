@@ -1,146 +1,4 @@
 c-----------------------------------------------------------------------
-      subroutine factor3(mq,mp,mr,m)
-
-      integer dmin,d
-
-      n=m
-      l=nint(real(n)**(1/3))
-
-      dmin=n
-      imin=-1
-
-      do i=1,n
-          d=abs(n-i**3)
-          if (d.lt.dmin.and.mod(n,i).eq.0) then
-              dmin=d
-              imin=i
-          endif
-      enddo
-
-      mp=imin
-      n=n/mp
-
-      dmin=n
-      imin=-1
-
-      do i=1,n
-          d=abs(n-i*i)
-          if (d.lt.dmin.and.mod(n,i).eq.0) then
-              dmin=d
-              imin=i
-          endif
-      enddo
-
-      mq=imin
-      mr=n/mq
-
-c     if (nio.eq.0) write (6,*) 'mp,mq,mr,mp*mq*mr',mp,mq,mr,mp*mq*mr
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine setpart(mps,mp,n)
-
-      integer mps(mp)
-
-      do i=0,mp-1
-         mps(i+1)=n/mp+max(mod(n,mp)-i,0)/max(mod(n,mp)-i,1)
-         mps(i+1)=mps(i+1)+mps(max(i,1))*max(i,0)/max(i,1)
-      enddo
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine setpart3(mps,mqs,mrs,mp,mq,mr,nb)
-
-      integer mps(mp),mqs(mq),mrs(mr)
-
-      call setpart(mps,mp,nb)
-      call setpart(mqs,mq,nb+1)
-      call setpart(mrs,mr,nb+1)
-
-      return
-      end
-c-----------------------------------------------------------------------
-      function i2p(i,mps)
-
-      integer mps(1)
-
-      i2p=0
-
-      do while (mps(i2p+1).ne.0)
-         i2p=i2p+1
-         if (i.le.mps(i2p)) return
-      enddo
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine ijk2pqr(ip,iq,ir,i,j,k,mps,mqs,mrs)
-
-      real mps(1),mqs(1),mrs(1)
-
-      ii=i
-      jj=j
-      kk=k
-
-      ip=i2p(i,mps)
-      iq=i2p(j+1,mqs)
-      ir=i2p(k+1,mrs)
-
-c     write (6,*) ip,iq,ir,ii,jj,kk,'i2p'
-
-      return
-      end
-c-----------------------------------------------------------------------
-      function ijk2pid(i,j,k,mps,mqs,mrs,mp,mq,mr)
-
-      real mps(1),mqs(1),mrs(1)
-
-      call ijk2pqr(ip,iq,ir,i,j,k,mps,mqs,mrs)
-      ijk2pid=(ip-1)+mp*(iq-1)+mp*mq*(ir-1)
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine setrange(mps,mqs,mrs,mp,mq,mr)
-
-      include 'SIZE'
-      include 'TOTAL'
-      include 'MOR'
-
-      integer mps(1),mqs(1),mrs(1)
-
-      ip=mod(nid,mp)
-      iq=mod(nid/mp,mq)
-      irr=   (nid/mp)/mq
-
-      i0=mps(max(ip,1))*max(ip,0)/max(ip,1)+1
-      i1=mps(ip+1)
-
-      j0=mqs(max(iq,1))*max(iq,0)/max(iq,1)
-      j1=mqs(iq+1)-1
-
-      k0=mrs(max(irr,1))*max(irr,0)/max(irr,1)
-      k1=mrs(irr+1)-1
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine ijk2l(l,i,j,k)
-      
-      include 'SIZE'
-      include 'MOR'
-
-      il=i-i0
-      jl=j-j0
-      kl=k-k0
-
-      l=il+jl*(i1-i0+1)+kl*(i1-i0+1)*(j1-j0+1)+1
-
-      return
-      end
-c-----------------------------------------------------------------------
       subroutine opadd3 (a1,a2,a3,b1,b2,b3,c1,c2,c3)
 
       include 'SIZE'
@@ -204,7 +62,7 @@ c-----------------------------------------------------------------------
 
          call gengram
          call genevec
-         call genbases
+c        call genbases
 
          do i=0,nb
             cmax(i) = -1e10
@@ -377,7 +235,7 @@ c-----------------------------------------------------------------------
       enddo
 
       ! ctke_rom is used to compute instantaneous TKE
-      call ctke_rom(tke,u)
+      call ctke_rom(tke,u,savg)
       if (nio.eq.0) write (6,*) istep,time,tke,'ctke'
 
       if (mod(ad_step,max(ad_iostep,1)).eq.0) then
@@ -425,19 +283,19 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine ctke_rom(tke,coef)
+      subroutine ctke_rom(tke,coef,acoef)
 
       include 'SIZE'
       include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real coef(0:nb), cdiff(0:nb)
+      real coef(0:nb), acoef(0:nb), cdiff(0:nb)
 
       tke=0.
 
       do i=0,nb
-         cdiff(i)=coef(i)-usa(i)
+         cdiff(i)=coef(i)-acoef(i)
       enddo
 
       do j=0,nb
@@ -493,153 +351,6 @@ c-----------------------------------------------------------------------
 
       e1n = h10prod(ud,vd,wd,ud,vd,wd,h1,h2)
      $    / h10prod(ua,va,wa,ua,va,wa,h1,h2)
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine get_saved_fields(usave,vsave,wsave,nsave,u0,ifvort)
-
-c     This routine reads files specificed in file.list
-
-      include 'SIZE'
-      include 'TOTAL'
-      include 'ZPER'
-
-      parameter (lt=lx1*ly1*lz1*lelt)
-      real usave(lt,nsave),vsave(lt,nsave),wsave(lt,nsave)
-      real u0(lt,3) ! Initial condtion
-      logical ifvort
-
-      common /scrk5/ uu(lt),vv(lt),ww(lt),t1(lt),t2(lt),t3(lt)
-
-      ierr = 0
-      if (nid.eq.0) open(77,file='file.list',status='old',err=199)
-      ierr = iglmax(ierr,1)
-      if (ierr.gt.0) goto 199
-      n = lx1*ly1*lz1*nelt
-      n2= lx2*ly2*lz2*nelt
-
-      call opcopy(uu,vv,ww,vx,vy,vz)
-
-      icount = 0
-      do ipass=1,nsave
-
-         call blank(initc,127)
-         initc(1) = 'done '
-         if (nid.eq.0) read(77,127,end=998) initc(1)
-  998    call bcast(initc,127)
-  127    format(a127)
-
-         if (indx1(initc,'done ',5).eq.0) then ! We're not done
-            nfiles = 1
-            call restart(nfiles)  ! Note -- time is reset.
-
-!           Usave = U_snapshot - U_0:
-
-            if (ifvort) then
-               call comp_vort3(t1,t2,t3,vx,vy,vz)
-               call sub3(usave(1,ipass),t1,u0,n)
-            else
-               call opsub3(usave(1,ipass),vsave(1,ipass),wsave(1,ipass),
-     $                     vx,vy,vz,u0(1,1),u0(1,2),u0(1,3))
-            endif
-            icount = icount+1
-         else
-            goto 999
-         endif
-
-      enddo
-
-      call opcopy(vx,vy,vz,uu,vv,ww)
-
-  999 continue  ! clean up averages
-      if (nid.eq.0) close(77)
-
-      nsave = icount ! Actual number of files read
-
-      return
-
-  199 continue ! exception handle for file not found
-      ierr = 1
-      if (nid.eq.0) ierr = iglmax(ierr,1)
-      call exitti('Auto averager did not find list file.$',ierr)
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine load_avg
-
-c     This routine reads average files specificed in avg.list
-
-      include 'SIZE'
-      include 'MOR'
-      include 'TOTAL'
-      include 'ZPER'
-
-      parameter (lt=lx1*ly1*lz1*lelt)
-
-      common /scrk5/ t1(lt),t2(lt),t3(lt)
-
-      if (nio.eq.0) write (6,*) 'inside load_avg'
-
-      ierr = 0
-
-      if (nid.eq.0) open(77,file='avg.list',status='old',err=199)
-
-      ierr = iglmax(ierr,1)
-
-      if (ierr.gt.0) goto 199
-
-      n = lx1*ly1*lz1*nelt
-
-      call opcopy(t1,t2,t3,vx,vy,vz)
-      call opzero(ua,va,wa)
-
-      tmp=time
-
-      ttime=0.
-
-      icount = 0
-
-      do ipass=1,10000
-         call blank(initc,127)
-         initc(1) = 'done '
-         if (nid.eq.0) read(77,127,end=998) initc(1)
-  998    call bcast(initc,127)
-  127    format(a127)
-
-         if (indx1(initc,'done ',5).eq.0) then ! We're not done
-
-            nfiles = 1
-
-            call restart(nfiles)  ! Note -- time is reset.
-            ttime=ttime+time
-
-            call opadds(ua,va,wa,vx,vy,vz,time,n,2)
-
-            icount = icount+1
-         else
-            goto 999
-         endif
-      enddo
-
-      s=1./ttime
-      call opcmult(ua,va,wa,s)
-      call opcopy(vx,vy,vz,t1,t2,t3)
-
-      time=tmp
-
-  999 continue  ! clean up averages
-      if (nid.eq.0) close(77)
-
-      nsave = icount ! Actual number of files read
-
-      return
-
-  199 continue ! exception handle for file not found
-      ierr = 1
-      if (nid.eq.0) ierr = iglmax(ierr,1)
-      call exitti('load_avg did not find avg.list$',ierr)
 
       return
       end
@@ -707,31 +418,148 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine partialc(vr,n,nmax)
+      subroutine csparsity
 
-      ! fills vr with contents of c0
+      include 'SIZE'
+      include 'MOR'
+      include 'TOTAL'
 
-      ! TODO: support for loading ctens
+      real tmp(1),tmpp(1)
+
+      if (nid.eq.0) open (unit=50,file='ops/cloc')
+
+      tmp(1)=ncloc
+      ncmax=glmax(tmp,1)
+
+      nlocmin = lcglo/np
+      npmin = np-lcglo+(lcglo/np)*np
+
+      eps=1.e-16
+
+      tmpp(1)=vlamax(clocal,ncloc)
+
+      tol=glamax(tmpp,1)
+
+      ec=eps*tol
+
+      nc=100
+
+      faci=eps**(1./real(nc))
+
+      do ie=1,nc
+         nnz=0
+         do i=0,np-1
+            mcloc = nlocmin + i / npmin
+            if (nid.eq.i) then
+               call copy(cltmp,clocal,mcloc)
+            else
+               call rzero(cltmp,mcloc)
+            endif
+
+            call gop(cltmp,ctmp,'+  ',mcloc)
+
+            do j=1,mcloc
+               if (abs(cltmp(j)).gt.tol) nnz=nnz+1
+            enddo
+         enddo
+         tol=tol*faci
+         pnz=real(nnz)/real(nb*(nb+1)**2)
+         write (6,*) ie,tol,nnz,pnz,'nonzero'
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      function ltruncr(string,l)
+
+      character*1 string(l)
+      character*1   blnk
+      data blnk/' '/
+
+      do i=1,l
+         l1=i-1
+         if (string(i).eq.blnk) goto 200
+      enddo
+      l1=0
+
+  200 continue
+      ltruncr=l1
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine comp_rms
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+      include 'AVG'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /scrkk/ ux(lt),uy(lt),uz(lt)
+
+      if (ad_step.eq.0) then
+         call rzero(u2,(nb+1)**2)
+      else
+         do j=0,nb
+         do i=0,nb
+            uvw2(i,j)=uvw2(i,j)+u(i,1)*u(j,1)
+         enddo
+         enddo
+      endif
+
+      if (ad_step.eq.ad_nsteps) then
+         n=lx1*ly1*lz1*nelv
+         s=1./real(ad_nsteps)
+         call cmult(uvw2,s,(nb+1)**2)
+         call opzero(urms,vrms,wrms)
+         do j=0,nb
+         do i=0,nb
+            call col3(ux,ub(1,i),ub(1,j),n)
+            call col3(uy,vb(1,i),vb(1,j),n)
+            if (ldim.eq.3) call col3(uz,wb(1,i),wb(1,j),n)
+            call opadds(urms,vrms,wrms,ux,uy,uz,uvw2(i,j),n,2)
+         enddo
+         enddo
+         call outpost(urms,vrms,wrms,pr,t,'rrr')
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine drago
+
+      include 'SIZE'
+      include 'TSTEP'
+      include 'MOR'
+
+      if (ifdrago) then
+         if (nio.eq.0) then
+            dx=vlsc2(rdgx,u,nb+1)
+            dy=vlsc2(rdgy,u,nb+1)
+            write (6,*) ad_step*dt,dx,'dragx'
+            write (6,*) ad_step*dt,dy,'dragy'
+            if (ldim.eq.3) then
+               dz=vlsc2(rdgz,u,nb+1)
+               write (6,*) ad_step*dt,dz,'dragz'
+            endif
+         endif
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine shiftu(v)
 
       include 'SIZE'
       include 'MOR'
 
-      integer ii
-      save    ii
-      data    ii /0/
+      real v(nb)
 
-      real vr(nmax)
-
-      imax = nb*(nb+1)**2
-
-      n=nmax
-      if (ii+n.gt.imax) n = imax-ii
-
-      do j=1,n
-         ii=ii+1
-         vr(j)=c(ii,0,0)
-c        write (6,*) j,ii,vr(j),imax,n,nmax,'partialc'
-      enddo
+      call copy(u(1,3),u(1,2),nb)
+      call copy(u(1,2),u(1,1),nb)
+      call copy(u(1,1),v,nb)
 
       return
       end
