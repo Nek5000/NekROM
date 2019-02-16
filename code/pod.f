@@ -85,7 +85,7 @@ c-----------------------------------------------------------------------
       call opsub3(t1,t2,t3,u1,u2,u3,ub,vb,wb)
 
       coef(0) = 1.
-      if (nio.eq.0) write (6,*) 'h10coef', coef(0),coef(0),1
+      if (nio.eq.0) write (6,1) coef(0),coef(0),1.
 
       do i=1,nb
          call axhelm(t4,ub(1,i),h1,h2,1,1)
@@ -101,10 +101,12 @@ c-----------------------------------------------------------------------
          endif
 
          coef(i) = vv/ww
-         if (nio.eq.0) write (6,*) 'h10coef', coef(i),vv,ww
+         if (nio.eq.0) write (6,1) coef(i),vv,ww
       enddo
 
       if (nio.eq.0) write (6,*) 'exiting h10proj'
+
+    1 format(' h10coef',1p3e16.8)
 
       return
       end
@@ -134,7 +136,7 @@ c-----------------------------------------------------------------------
 
       coef(0) = 1.
 
-      if (nio.eq.0) write (6,*) 'wl2coef', coef(0),coef(0),1
+      if (nio.eq.0) write (6,1) coef(0),coef(0),1.0
 
       if (ifvort) then
          do i=1,nb
@@ -142,7 +144,7 @@ c-----------------------------------------------------------------------
             vv = glsc3(ub(1,i),t1,bwm1,n)
 
             coef(i) = vv/ww
-            if (nio.eq.0) write (6,*) 'wl2coef', coef(i),vv,ww
+            if (nio.eq.0) write (6,1) coef(i),vv,ww
          enddo
       else
          do i=1,nb
@@ -151,11 +153,14 @@ c-----------------------------------------------------------------------
             vv = op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),t1,t2,t3,bwm1)
 
             coef(i) = vv/ww
-            if (nio.eq.0) write (6,*) 'wl2coef', coef(i),vv,ww
+            if (nio.eq.0) write (6,1) coef(i),vv,ww
          enddo
       endif
 
       if (nio.eq.0) write (6,*) 'exiting wl2proj'
+      call exitt0
+
+    1 format(' wl2coef',1p3e16.8)
 
       return
       end
@@ -272,10 +277,11 @@ c-----------------------------------------------------------------------
             if (ldim.eq.3) uu(i,j) = uu(i,j)+glsc2(wst(1,i),ww,n)
             if (nio.eq.0) write (99,*) uu(i,j)
          enddo
-         if (nio.eq.0) write(6,*) j,uu(1,j),' uu'
+         if (nio.eq.0) write(6,1) j,uu(1,j),' uu'
       enddo
 
       if (nio.eq.0) write (6,*) 'exiting gengramh10'
+    1 format (' uu',i5,1p1e16.6)
 
       return
       end
@@ -309,10 +315,12 @@ c-----------------------------------------------------------------------
      $                            ust(1,j),vst(1,j),wst(1,j),bwm1)
          endif
       enddo
-         if (nio.eq.0) write (6,*) 'uu',uu(1,j)
+         if (nio.eq.0) write (6,1) j,uu(1,j)
       enddo
 
       if (nio.eq.0) write (6,*) 'exiting gengraml2'
+
+    1 format (' uu',i5,' ',1p1e16.6)
 
       return
       end
@@ -350,9 +358,9 @@ c-----------------------------------------------------------------------
       enddo
 
       do i=1,ns
-         if (nio.eq.0) write (6,*) istep,i,eval(ns-i+1),'eval'
+         if (nio.eq.0) write (6,'(i5,1p1e16.6,3x,a)')
+     $      i,eval(ns-i+1),'eval'
       enddo
-
 
       if (nio.eq.0) write (6,*) 'exiting genevec'
 
