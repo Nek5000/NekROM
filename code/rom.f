@@ -253,10 +253,12 @@ c-----------------------------------------------------------------------
                icltmp(3,l) = k
                mcloc = nlocmin + mid / npmin
                if (l.eq.mcloc) then
-                  if (ifread.and.nid.eq.0) then
-                     read (12,*) (cltmp(kk),kk=1,mcloc)
-                  else
-                     call rzero(cltmp,mcloc)
+                  if (ifread) then
+                     if (nid.eq.0) then
+                        read (12,*) (cltmp(kk),kk=1,mcloc)
+                     else
+                        call rzero(cltmp,mcloc)
+                     endif
                   endif
                   if (ifread) call gop(cltmp,wk,'+  ',mcloc)
                   if (nid.eq.mid) then
