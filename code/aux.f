@@ -506,7 +506,7 @@ c-----------------------------------------------------------------------
       else
          do j=0,nb
          do i=0,nb
-            uvw2(i,j)=uvw2(i,j)+u(i,1)*u(j,1)
+            ur(i,j)=ur(i,j)+u(i,1)*u(j,1)
          enddo
          enddo
       endif
@@ -514,14 +514,14 @@ c-----------------------------------------------------------------------
       if (ad_step.eq.ad_nsteps) then
          n=lx1*ly1*lz1*nelv
          s=1./real(ad_nsteps)
-         call cmult(uvw2,s,(nb+1)**2)
+         call cmult(ur,s,(nb+1)**2)
          call opzero(urms,vrms,wrms)
          do j=0,nb
          do i=0,nb
             call col3(ux,ub(1,i),ub(1,j),n)
             call col3(uy,vb(1,i),vb(1,j),n)
             if (ldim.eq.3) call col3(uz,wb(1,i),wb(1,j),n)
-            call opadds(urms,vrms,wrms,ux,uy,uz,uvw2(i,j),n,2)
+            call opadds(urms,vrms,wrms,ux,uy,uz,ur(i,j),n,2)
          enddo
          enddo
          call outpost(urms,vrms,wrms,pr,t,'rrr')
