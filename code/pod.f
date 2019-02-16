@@ -343,8 +343,6 @@ c-----------------------------------------------------------------------
       call generalev(vv,identity,gram_eig,ls,w)
       call copy(eigv,vv,ls*ls)
 
-c     eig = eig(ls:1:-1)
-
       if (nio.eq.0) write (6,*)'number of modes:',nb
 
       do l = 1,nb
