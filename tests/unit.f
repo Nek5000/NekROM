@@ -9,6 +9,8 @@ c-----------------------------------------------------------------------
       include 'INPUT'
       include 'MOR'
 
+      common /scrtest/ wk(ls*ls)
+
       parameter (lt=lx1*ly1*lz1*lelt)
 
       logical iflag
@@ -17,14 +19,12 @@ c-----------------------------------------------------------------------
       param(33) = 1
       if (iflag) param(33) = 0
       param(34) = 1
-      param(35) = 2
+      param(35) = 0
 
       call rom_setup
+      call read_serial(vv,ls*ls,'ops/g ',wk,nid)
 
       iexit=0
-
-      call copy(vv,uu,ls*ls)
-      call gengram
 
       s1=0.
       s2=0.
@@ -60,18 +60,18 @@ c-----------------------------------------------------------------------
       include 'INPUT'
       include 'MOR'
 
+      common /scrtest/ wk(nb+1)
+
       logical iflag
       real u0(0:nb)
 
       param(33) = 1
       if (iflag) param(33) = 0
       param(34) = 1
-      param(35) = 2
+      param(35) = 0
 
       call rom_setup
-
-      call copy(u0,u,nb+1)
-      call setu
+      call read_serial(u0,nb+1,'ops/u ',wk,nid)
 
       s1=0.
       s2=0.
@@ -102,6 +102,8 @@ c-----------------------------------------------------------------------
       include 'INPUT'
       include 'MOR'
 
+      common /scrtest/ wk(nb+1,nb+1)
+
       logical iflag
 
       real aa(0:nb,0:nb)
@@ -109,14 +111,12 @@ c-----------------------------------------------------------------------
       param(33) = 1
       if (iflag) param(33) = 0
       param(34) = 1
-      param(35) = 2
+      param(35) = 0
 
       call rom_setup
+      call read_serial(aa,(nb+1)**2,'ops/a ',wk,nid)
 
       iexit=0
-
-      call copy(aa,a0,(nb+1)**2)
-      call seta
 
       s1=0.
       s2=0.
@@ -177,6 +177,8 @@ c-----------------------------------------------------------------------
       include 'INPUT'
       include 'MOR'
 
+      common /scrtest/ wk(nb+1,nb+1)
+
       logical iflag
 
       real bb(0:nb,0:nb)
@@ -184,14 +186,12 @@ c-----------------------------------------------------------------------
       param(33) = 1
       if (iflag) param(33) = 0
       param(34) = 1
-      param(35) = 2
+      param(35) = 0
 
       call rom_setup
+      call read_serial(bb,(nb+1)**2,'ops/b ',wk,nid)
 
       iexit=0
-
-      call copy(bb,b0,(nb+1)**2)
-      call setb
 
       s1=0.
       s2=0.
@@ -252,6 +252,8 @@ c-----------------------------------------------------------------------
       include 'INPUT'
       include 'MOR'
 
+      common /scrtest/ wk(nb+1,nb+1,nb+1)
+
       logical iflag
 
       real cc(lcloc), cglob(nb,nb+1,nb+1)
@@ -259,14 +261,12 @@ c-----------------------------------------------------------------------
       param(33) = 1
       if (iflag) param(33) = 0
       param(34) = 1
-      param(35) = 2
+      param(35) = 0
 
       call rom_setup
+      call read_serial(cc,nb*(nb+1)**2,'ops/c ',wk,nid)
 
       iexit=0
-
-      call copy(cc,clocal,nb*(nb+1)**2)
-      call setc
 
       s1=0.
       s2=0.
