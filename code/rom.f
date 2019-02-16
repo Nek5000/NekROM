@@ -166,7 +166,7 @@ c-----------------------------------------------------------------------
 
       fname1='avg.list'
 
-      if (ifavgic) then
+      if (ifavgic.and..not.ifread) then
          call opcopy(t1,t2,t3,vx,vy,vz)
 
          inquire (file=fname1,exist=alist)
