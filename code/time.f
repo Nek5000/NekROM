@@ -97,6 +97,7 @@ c     endif
                do j=1,nb
                   write(6,*) j,u(j,1),'final'
                enddo
+               write (6,*) 'step_time: ',step_time
             else
                do j=1,nb
                   write(6,*) j,u(j,1)
