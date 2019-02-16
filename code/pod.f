@@ -158,7 +158,6 @@ c-----------------------------------------------------------------------
       endif
 
       if (nio.eq.0) write (6,*) 'exiting wl2proj'
-      call exitt0
 
     1 format(' wl2coef',1p3e16.8)
 
