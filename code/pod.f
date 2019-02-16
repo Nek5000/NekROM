@@ -349,7 +349,6 @@ c     eig = eig(ls:1:-1)
 
       do l = 1,nb
          call copy(evec(1,l),eigv(1,ls-l+1),ls) ! reverse order of eigv
-         if (nio.eq.0) write (6,*) 'eigenvalue',l,gram_eig(l)
       enddo
 
       do i=1,ns
