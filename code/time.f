@@ -58,13 +58,6 @@ c     call add2s2(rhs,a0,s,nb+1) ! not working...
       call copy(conv(1,3),conv(1,2),nb)
       call copy(conv(1,2),conv(1,1),nb)
 
-c     if (np.eq.1) then
-c        call mxm(c,nb*(nb+1),u,nb+1,tmat,1)
-c        call mxm(tmat,nb,u,nb+1,conv,1)
-c     else
-c        call evalc(conv)
-c     endif
-
       call evalc(conv)
 
       call mxm(conv,nb,ad_alpha(1,count),3,tmp(1),1)
