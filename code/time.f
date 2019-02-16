@@ -159,7 +159,18 @@ c-----------------------------------------------------------------------
 
       real cu(nb)
 
+      integer icalld
+      save    icalld
+      data    icalld /0/
+
       common /scrk4/ work(lx1*ly1*lz1*lelt)
+
+      if (icalld.eq.0) then
+         evalc_time=0.
+         icalld=1
+      endif
+
+      stime=dnekclock()
 
       l=1
 
@@ -173,6 +184,8 @@ c-----------------------------------------------------------------------
       enddo
 
       call gop(cu,work,'+  ',nb)
+
+      evalc_time=evalc_time+dnekclock()-stime
 
       return
       end

@@ -71,9 +71,9 @@ c     parameters and common blocks for MOR
      $                  ifavgic,ifdumpops,ifdrago,ifrms,ifread
 
       real last_time,misc_time
-      common /mortime/ step_time,last_time,misc_time
+      common /mortime/ step_time,last_time,misc_time,evalc_time
 
       real mtke
-      common /morstat/  mtke
+      common /morstat/ mtke
 
       common /mortest/ ul2(nb),uh10(nb)
