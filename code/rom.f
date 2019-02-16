@@ -227,6 +227,8 @@ c-----------------------------------------------------------------------
       common /scrk1/ t1(lt), binv(lt)
       common /scrcwk/ wk(lcloc)
 
+      conv_time=dnekclock()
+
       call invers2(binv,bm1,lx1*ly1*lz1*nelv)
       call rone(binv,lx1*ly1*lz1*nelv)
 
@@ -240,6 +242,7 @@ c-----------------------------------------------------------------------
       if (ifread.and.nid.eq.0) open (unit=12,file='ops/c')
 
       do k=0,nb
+         if (nio.eq.0) write (6,*) 'k=',k
          if (.not.ifread) call setcnv_c(ub(1,k),vb(1,k),wb(1,k))
          do j=0,nb
             if (.not.ifread) call setcnv_u(ub(1,j),vb(1,j),wb(1,j))
@@ -274,6 +277,8 @@ c-----------------------------------------------------------------------
       enddo
 
       if (ifread.and.nid.eq.0) close (unit=12)
+
+      if (nio.eq.0) write (6,*) 'conv_time: ',dnekclock()-conv_time
 
       if (nio.eq.0) write (6,*) 'exiting setc'
 
