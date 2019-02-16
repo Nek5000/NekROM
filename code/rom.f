@@ -12,6 +12,8 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
+      stime=dnekclock()
+
       ad_step = istep
       jfield=ifield
       ifield=1
@@ -40,6 +42,8 @@ c-----------------------------------------------------------------------
       endif
 
       ifield=jfield
+
+      if (nio.eq.0) write (6,*) 'rom_time: ',dnekclock()-stime
 
       return
       end
