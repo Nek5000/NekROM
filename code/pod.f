@@ -276,7 +276,7 @@ c-----------------------------------------------------------------------
             if (ldim.eq.3) uu(i,j) = uu(i,j)+glsc2(wst(1,i),ww,n)
             if (nio.eq.0) write (99,*) uu(i,j)
          enddo
-         if (nio.eq.0) write(6,1) j,uu(1,j),' uu'
+         if (nio.eq.0) write(6,1) j,uu(1,j)
       enddo
 
       if (nio.eq.0) write (6,*) 'exiting gengramh10'
