@@ -340,7 +340,7 @@ c-----------------------------------------------------------------------
 
       call copy(vv,uu,ls*ls)
 
-      call generalev(vv,identity,gram_eig,ls,w)
+      call generalev(vv,identity,eval,ls,w)
       call copy(eigv,vv,ls*ls)
 
       if (nio.eq.0) write (6,*)'number of modes:',nb
@@ -350,7 +350,7 @@ c-----------------------------------------------------------------------
       enddo
 
       do i=1,ns
-         if (nio.eq.0) write (6,*) istep,i,gram_eig(ns-i+1),'eval'
+         if (nio.eq.0) write (6,*) istep,i,eval(ns-i+1),'eval'
       enddo
 
 

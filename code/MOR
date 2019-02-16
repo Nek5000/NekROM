@@ -3,7 +3,7 @@ c     parameters and common blocks for MOR
       include 'LMOR'
 
       common /morgram/ uu(ls,ls)
-      common /moreig/ evec(ls,nb), gram_eig(ls)
+      common /moreig/ evec(ls,nb),eval(ls)
 
       common /morbasis/ ub(lx1*ly1*lz1*lelt,0:nb),
      $                  vb(lx1*ly1*lz1*lelt,0:nb),
