@@ -156,8 +156,6 @@ c-----------------------------------------------------------------------
       character*127 fname127
 
       parameter (lt=lx1*ly1*lz1*lelt)
-      common /scravg/ ua(lt),va(lt),wa(lt),pa(lt)
-      common /scrsf/  ta(lt,ldimt)
 
       character*1 s1(127)
       equivalence (s1,initc) ! equivalence to initial condition

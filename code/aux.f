@@ -270,6 +270,7 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
       include 'MASS'
+      include 'AVG'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
@@ -277,7 +278,7 @@ c-----------------------------------------------------------------------
 
       real u1(lt),u2(lt),u3(lt)
 
-      call opsub3(ud,vd,wd,u1,u2,u3,ua,va,wa)
+      call opsub3(ud,vd,wd,u1,u2,u3,uavg,vavg,wavg)
       tke = op_glsc2_wt(ud,vd,wd,ud,vd,wd,bm1)
 
       return
@@ -311,12 +312,13 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'
       include 'MOR'
+      include 'AVG'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
       common /scrns/ ud(lt),vd(lt),wd(lt)
 
-      call opcopy(ud,vd,wd,ua,va,wa)
+      call opcopy(ud,vd,wd,uavg,vavg,wavg)
 
       n=lx1*ly1*lz1*nelv
 
@@ -326,7 +328,7 @@ c-----------------------------------------------------------------------
       enddo
 
       e0n = op_glsc2_wt(ud,vd,wd,ud,vd,wd,bm1)
-     $    / op_glsc2_wt(ua,va,wa,ua,va,wa,bm1)
+     $    / op_glsc2_wt(uavg,vavg,wavg,uavg,vavg,wavg,bm1)
 
       return
       end
@@ -350,7 +352,7 @@ c-----------------------------------------------------------------------
       enddo
 
       e1n = h10prod(ud,vd,wd,ud,vd,wd,h1,h2)
-     $    / h10prod(ua,va,wa,ua,va,wa,h1,h2)
+     $    / h10prod(uavg,vavg,wavg,uavg,vavg,wavg,h1,h2)
 
       return
       end
