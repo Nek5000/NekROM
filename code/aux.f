@@ -671,7 +671,7 @@ c     This subroutine computes the reduced space coefficient of the long-time av
             do i=0,nb
                write(6,*)i,usa(i)
             enddo
-            call dumpusa(usa,nb)
+c call dumpusa(usa,nb) <- deprecated subroutine
          endif
       endif
 
@@ -707,7 +707,7 @@ c     projecting on to the reduce space
          call opadd3(t1,t2,t3,us(1,i),vs(1,i),ws(1,i),ub,vb,wb)
          nio = -1
          call proj2bases(utmp,t1,t2,t3)
-         call dumpcoef(utmp,nb,i)
+c call dumpcoef(utmp,nb,i) <- deprecated subroutine
          nio = nid
          call add2(savg,utmp,nb+1)
       enddo
