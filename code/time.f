@@ -75,6 +75,8 @@ c     call add2s2(rhs,a0,s,nb+1) ! not working...
 
       step_time=step_time+dnekclock()-last_time
 
+      if (ifheat) call recon(vx,vy,vz,u)
+
       if (ifravg) then
          call recon(vx,vy,vz,u)
          call avg_all
