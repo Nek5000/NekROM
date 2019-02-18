@@ -109,6 +109,7 @@ c     call add2s2(rhs,a0,s,nb+1) ! not working...
             call comp_vort3(vort,work1,work2,t1,t2,t3)
             ifto = .true. ! turn on temp in fld file
             call outpost(vx,vy,vz,pr,vort,'rom')
+c           call outpost(vx,vy,vz,pr,t,'rms')
          endif
       endif
 
