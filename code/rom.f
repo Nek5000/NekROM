@@ -12,6 +12,17 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
+      integer icalld
+      save    icalld
+      data    icalld /0/
+
+      common /rom_update/ rom_time
+
+      if (icalld.eq.0) then
+         rom_time=0.
+         icalld=1
+      endif
+
       stime=dnekclock()
 
       ad_step = istep
@@ -43,7 +54,11 @@ c-----------------------------------------------------------------------
 
       ifield=jfield
 
-      if (nio.eq.0) write (6,*) 'rom_time: ',dnekclock()-stime
+      dtime=dnekclock()-stime
+      rom_time=rom_time+dtime
+
+      if (nio.eq.0) write (6,*) 'rom_time: ',dtime
+      if (nio.eq.0) write (6,*) 'romc_time: ',rom_time
 
       return
       end
