@@ -146,6 +146,7 @@ c-----------------------------------------------------------------------
       ifvort=.false. ! default to false for now
       ifdump=.true.
       ifrecon=.true.
+      if (ifread) ifrecon=.false.
       ifpart=.false.
       ifravg=.false.
 
