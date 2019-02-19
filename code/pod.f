@@ -10,6 +10,7 @@ c-----------------------------------------------------------------------
       real u0(lt,3)
       common /scrk3/ t4(lt),t5(lt),t6(lt)
       common /scrk4/ h1(lt),h2(lt),bwm1(lt)
+      common /scrk5/ au(lt),av(lt),aw(lt)
 
       if (nio.eq.0) write (6,*) 'inside setbases'
 
@@ -36,6 +37,25 @@ c-----------------------------------------------------------------------
 
          call scale_bases
       endif
+
+      if (ifdrago) then
+         n=lx1*ly1*lz1*nelt
+         call copy(h1,vdiff,n)
+         call rzero(h2,n)
+         do i=0,nb
+            call axhelm(au,ub(1,i),h1,h2,1,1)
+            call axhelm(av,vb(1,i),h1,h2,1,1)
+            if (ldim.eq.3) call axhelm(aw,wb(1,i),h1,h2,1,1)
+            call opbinv1_nom(au,av,aw,au,av,aw,1.)
+            call outpost(au,av,aw,pr,t,'aaa')
+            call comp_pdrag(fd1(1,i),ub(1,i),vb(1,i),wb(1,i))
+            call comp_pdrag(fd3(1,i),au,av,aw)
+         enddo
+      endif
+
+      do i=0,nb
+         write (6,*) 'fd3',fd3(1,i)
+      enddo
 
       if (nio.eq.0) write (6,*) 'exiting setbases'
 
@@ -460,3 +480,64 @@ c-----------------------------------------------------------------------
 
       return
       end
+c-----------------------------------------------------------------------
+      subroutine opbinv1_nom(out1,out2,out3,inp1,inp2,inp3,SCALE)
+C--------------------------------------------------------------------
+C
+C     Compute OUT = (B)-1 * INP   (explicit)
+C
+C--------------------------------------------------------------------
+      include 'SIZE'
+      include 'INPUT'
+      include 'MASS'
+      include 'SOLN'
+C
+      REAL OUT1  (1)
+      REAL OUT2  (1)
+      REAL OUT3  (1)
+      REAL INP1  (1)
+      REAL INP2  (1)
+      REAL INP3  (1)
+C
+
+      include 'OPCTR'
+C
+#ifdef TIMER
+      if (isclld.eq.0) then
+          isclld=1
+          nrout=nrout+1
+          myrout=nrout
+          rname(myrout) = 'opbnv1'
+      endif
+#endif
+C
+c     CALL OPMASK  (INP1,INP2,INP3)
+      CALL OPDSSUM (INP1,INP2,INP3)
+C
+      NTOT=lx1*ly1*lz1*NELV
+C
+#ifdef TIMER
+      isbcnt = ntot*(1+ldim)
+      dct(myrout) = dct(myrout) + (isbcnt)
+      ncall(myrout) = ncall(myrout) + 1
+      dcount      =      dcount + (isbcnt)
+#endif
+C
+      IF (IF3D) THEN
+         DO 100 I=1,NTOT
+            TMP    =BINVM1(I,1,1,1)*scale
+            OUT1(I)=INP1(I)*TMP
+            OUT2(I)=INP2(I)*TMP
+            OUT3(I)=INP3(I)*TMP
+  100    CONTINUE
+      ELSE
+         DO 200 I=1,NTOT
+            TMP    =BINVM1(I,1,1,1)*scale
+            OUT1(I)=INP1(I)*TMP
+            OUT2(I)=INP2(I)*TMP
+  200    CONTINUE
+      ENDIF
+C
+      return
+      END
+c-----------------------------------------------------------------------

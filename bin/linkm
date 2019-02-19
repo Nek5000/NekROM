@@ -14,6 +14,7 @@ rm test.usr &> /dev/null
 rm part.f  &> /dev/null
 rm conv.f  &> /dev/null
 rm time.f  &> /dev/null
+rm qoi.f  &> /dev/null
 rm MOR      &> /dev/null
 
 ln -s {$MOR_DIR/code,$cwd}/rom.f
@@ -24,6 +25,7 @@ ln -s {$MOR_DIR/code,$cwd}/dump.f
 ln -s {$MOR_DIR/code,$cwd}/part.f
 ln -s {$MOR_DIR/code,$cwd}/conv.f
 ln -s {$MOR_DIR/code,$cwd}/time.f
+ln -s {$MOR_DIR/code,$cwd}/qoi.f
 
 ln -s {$MOR_DIR/tests,$cwd}/usr.f
 ln -s {$MOR_DIR/tests,$cwd}/unit.f

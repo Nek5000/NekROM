@@ -5,6 +5,7 @@ c-----------------------------------------------------------------------
       include 'dump.f'
       include 'time.f'
       include 'conv.f'
+      include 'qoi.f'
 c-----------------------------------------------------------------------
       subroutine rom_update_v
 
@@ -251,7 +252,7 @@ c-----------------------------------------------------------------------
 
       real cux(lt), cuy(lt), cuz(lt)
 
-      common /scrk1/ t1(lt), binv(lt)
+      common /scrk1/ t1(lt), binv(lt),wk1(lt),wk2(lt),wk3(lt)
       common /scrcwk/ wk(lcloc)
 
       conv_time=dnekclock()
@@ -265,6 +266,7 @@ c-----------------------------------------------------------------------
       mid = 0
       nlocmin = lcglo/np
       npmin = np-lcglo+(lcglo/np)*np
+      n=lx1*ly1*lz1*nelv
 
       if (ifread.and.nid.eq.0) open (unit=12,file='ops/c')
 
@@ -272,8 +274,16 @@ c-----------------------------------------------------------------------
          if (nio.eq.0) write (6,*) 'k=',k
          if (.not.ifread) call setcnv_c(ub(1,k),vb(1,k),wb(1,k))
          do j=0,nb
-            if (.not.ifread) call setcnv_u(ub(1,j),vb(1,j),wb(1,j))
-            if (.not.ifread) call ccu(cux,cuy,cuz)
+            if (.not.ifread) then
+               call setcnv_u(ub(1,j),vb(1,j),wb(1,j))
+               call ccu(cux,cuy,cuz)
+               if (ifdrago) then
+                  call opbinv1(wk1,wk2,wk3,cux,cuy,cuz,1.)
+                  call outpost(cux,cuy,cuz,pr,t,'ccc')
+                  call outpost(wk1,wk2,wk3,pr,t,'ccc')
+                  call comp_pdrag(fd2(1,j,k),wk1,wk2,wk3)
+               endif
+            endif
             do i=1,nb
                l=l+1
                if (.not.ifread) cltmp(l) = 
