@@ -109,8 +109,8 @@ c     This routine reads files specificed in fname
       common /scrk5/ uu(lt),vv(lt),ww(lt),t1(lt),t2(lt),t3(lt)
 
       ierr = 0
-      if (nid.eq.0) open(77,file=fname,status='old',err=199)
       call lints(fnlint,fname,128)
+      if (nid.eq.0) open(77,file=fnlint,status='old',err=199)
       ierr = iglmax(ierr,1)
       if (ierr.gt.0) goto 199
       n = lx1*ly1*lz1*nelt
