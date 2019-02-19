@@ -182,7 +182,7 @@ c-----------------------------------------------------------------------
 
       if (ifrecon.and..not.ifread) then
          call opzero(u0,u0(1,2),u0(1,3))
-         call get_saved_fields(us,vs,ws,ns,u0,ifvort)
+         call get_saved_fields(us,vs,ws,ns,u0,ifvort,'file.list ')
       endif
 
       fname1='avg.list'
