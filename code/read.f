@@ -76,9 +76,10 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine get_saved_fields(usave,vsave,wsave,nsave,u0,ifvort)
+      subroutine get_saved_fields(usave,vsave,wsave,nsave,
+     $                            u0,ifvort,fname)
 
-c     This routine reads files specificed in file.list
+c     This routine reads files specificed in fname
 
       include 'SIZE'
       include 'TOTAL'
@@ -87,12 +88,14 @@ c     This routine reads files specificed in file.list
       parameter (lt=lx1*ly1*lz1*lelt)
       real usave(lt,nsave),vsave(lt,nsave),wsave(lt,nsave)
       real u0(lt,3) ! Initial condtion
+      character*128 fname
       logical ifvort
 
       common /scrk5/ uu(lt),vv(lt),ww(lt),t1(lt),t2(lt),t3(lt)
 
       ierr = 0
-      if (nid.eq.0) open(77,file='file.list',status='old',err=199)
+      call lints(fname,128)
+      if (nid.eq.0) open(77,file=fname,status='old',err=199)
       ierr = iglmax(ierr,1)
       if (ierr.gt.0) goto 199
       n = lx1*ly1*lz1*nelt
