@@ -472,6 +472,16 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine lints(string,l)
+
+      character*1 string(l)
+
+      len=ltruncr(string,l)
+      call blank(string(len+1),l-len)
+
+      return
+      end
+c-----------------------------------------------------------------------
       function ltruncr(string,l)
 
       character*1 string(l)
