@@ -37,12 +37,16 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /scrk1/ tmp1(lt),tmp2(lt),tmp3(lt),tmp4(lt),tmp5(lt)
+      common /scrk1/ tmp1(lt),tmp2(lt),tmp3(lt),
+     $               tmp4(lt),tmp5(lt),tmp6(lt,3)
+
       real ub(lt,0:nb), vb(lt,0:nb), wb(lt,0:nb)
 
       character*128 fname
       character*1   fn1(128)
       character*5   fnum
+
+      logical ifexist
 
       equivalence (fname,fn1)
 
@@ -55,17 +59,27 @@ c-----------------------------------------------------------------------
       call copy(tmp4,pr,n2)
       call copy(tmp5,t,n)
 
-      do i=0,nb
-         len=ltrunc(session,132)
-         call chcopy(fn1,'bas',3)
-         call chcopy(fn1(4),session,len)
-         call chcopy(fn1(4+len),'0.f',3)
-         write (fnum,'(i5.5)') i+1
-         call chcopy(fn1(7+len),fnum,5)
+      inquire (file='bas.list',exist=ifexist)
 
-         call restart_filen(fname,11+len)
-         call opcopy(ub(1,i),vb(1,i),wb(1,i),vx,vy,vz)
-      enddo
+      if (ifexist) then
+         call opzero(tmp6,tmp6(1,2),tmp6(1,3))
+         nn=nb
+         call get_saved_fields(ub,vb,wb,nn,tmp6,.false.,'bas.list ')
+         if (nn.lt.nb) call exitti(
+     $   'number of files in bas.list fewer than nb',nb-nn)
+      else
+         do i=0,nb 
+            len=ltrunc(session,132)
+            call chcopy(fn1,'bas',3)
+            call chcopy(fn1(4),session,len)
+            call chcopy(fn1(4+len),'0.f',3)
+            write (fnum,'(i5.5)') i+1
+            call chcopy(fn1(7+len),fnum,5)
+
+            call restart_filen(fname,11+len)
+            call opcopy(ub(1,i),vb(1,i),wb(1,i),vx,vy,vz)
+         enddo
+      endif
 
       call opcopy(vx,vy,vz,tmp1,tmp2,tmp3)
       call copy(pr,tmp4,n2)
