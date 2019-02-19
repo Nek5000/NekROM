@@ -472,12 +472,14 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine lints(string,l)
+      subroutine lints(s1,s2,l)
 
-      character*1 string(l)
+      character*1 s1(1)
+      character*1 s2(1)
 
-      len=ltruncr(string,l)
-      call blank(string(len+1),l-len)
+      len=ltruncr(s2,l)
+      call blank(s1,l)
+      call chcopy(s1,s2,len)
 
       return
       end
