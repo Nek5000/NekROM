@@ -103,13 +103,14 @@ c     This routine reads files specificed in fname
       real usave(lt,nsave),vsave(lt,nsave),wsave(lt,nsave)
       real u0(lt,3) ! Initial condtion
       character*128 fname
+      character*128 fnlint
       logical ifvort
 
       common /scrk5/ uu(lt),vv(lt),ww(lt),t1(lt),t2(lt),t3(lt)
 
       ierr = 0
-      call lints(fname,128)
       if (nid.eq.0) open(77,file=fname,status='old',err=199)
+      call lints(fnlint,fname,128)
       ierr = iglmax(ierr,1)
       if (ierr.gt.0) goto 199
       n = lx1*ly1*lz1*nelt
@@ -159,6 +160,7 @@ c     This routine reads files specificed in fname
   199 continue ! exception handle for file not found
       ierr = 1
       if (nid.eq.0) ierr = iglmax(ierr,1)
+      write (6,*) fnlint
       call exitti('get_saved_fields did not find list file.$',ierr)
 
       return
