@@ -512,7 +512,7 @@ c-----------------------------------------------------------------------
             ur(i,j)=ur(i,j)+u(i,1)*u(j,1)
             f1ij=f1ij+u(i,1)*u(j,1)*fd2(1,i,j)
             f2ij=f2ij+u(i,1)*u(j,1)*fd2(2,i,j)
-            write (6,*) 'fd2',fd2(1,i,j),fd2(2,i,j)
+c           write (6,*) 'fd2',fd2(1,i,j),fd2(2,i,j)
          enddo
          enddo
       endif
