@@ -178,12 +178,16 @@ c-----------------------------------------------------------------------
 
       ns = ls
 
+      if (nio.eq.0) write (6,*) 'call get_saved_fields'
+
       if (ifrecon.and..not.ifread) then
          call opzero(u0,u0(1,2),u0(1,3))
          call get_saved_fields(us,vs,ws,ns,u0,ifvort)
       endif
 
       fname1='avg.list'
+
+      if (nio.eq.0) write (6,*) 'setting initial conditions'
 
       if (ifavgic.and..not.ifread) then
          call opcopy(t1,t2,t3,vx,vy,vz)
@@ -205,6 +209,8 @@ c-----------------------------------------------------------------------
          call opcopy(ub,vb,wb,vx,vy,vz)
       endif
 
+      if (nio.eq.0) write (6,*) 'copy ic'
+
       if (ifvort) then
          call comp_vort3(u0,t1,t2,ub,vb,wb)
          call comp_vort3(t1,t2,t3,vx,vy,vz)
@@ -220,6 +226,8 @@ c-----------------------------------------------------------------------
          ! copy zero mode to u0(1,1:3)
          call opcopy(u0,u0(1,2),u0(1,3),ub,vb,wb)
       endif
+
+      if (nio.eq.0) write (6,*) 'copying us to ust'
 
       if (ifrecon) then
          do i=1,ns
