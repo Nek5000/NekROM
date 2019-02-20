@@ -63,7 +63,7 @@ c-----------------------------------------------------------------------
 
       if (ifexist) then
          call opzero(tmp6,tmp6(1,2),tmp6(1,3))
-         nn=nb
+         nn=nb+1
          call get_saved_fields(ub,vb,wb,nn,tmp6,.false.,'bas.list ')
          if (nn.lt.nb) call exitti(
      $   'number of files in bas.list fewer than nb',nb-nn)
