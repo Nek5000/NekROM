@@ -19,6 +19,7 @@ c-----------------------------------------------------------------------
       common /rom_update/ rom_time
 
       if (icalld.eq.0) then
+         call opcopy(uic,vic,wic,vx,vy,vz)
          rom_time=0.
          icalld=1
       endif
