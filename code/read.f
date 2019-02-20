@@ -130,7 +130,9 @@ c     This routine reads files specificed in fname
 
          if (indx1(initc,'done ',5).eq.0) then ! We're not done
             nfiles = 1
+            ttmp=time
             call restart(nfiles)  ! Note -- time is reset.
+            time=ttmp
 
 !           Usave = U_snapshot - U_0:
 
@@ -192,7 +194,9 @@ c-----------------------------------------------------------------------
 
       if (iffexist) then
          nfiles = 1
+         ttmp=time
          call restart(nfiles)
+         time=ttmp
       else
          if (nio.eq.0) write (6,*) initc(1),'did not exist...'
          call exitt0
@@ -228,7 +232,9 @@ c-----------------------------------------------------------------------
 
       if (iffexist) then
          nfiles = 1
+         ttmp=time
          call restart(nfiles)
+         time=ttmp
       else
          if (nio.eq.0) write (6,*) fname127,'did not exist...'
          call exitt0
