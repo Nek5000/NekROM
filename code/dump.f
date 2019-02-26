@@ -107,9 +107,15 @@ c-----------------------------------------------------------------------
       call dump_serial(u,(nb+1)*3,'ops/u ',nid)
       call dump_global(clocal,ncloc,'ops/c ',wk1,wk2,nid)
 
+      ttmp=time
+      itmp=istep
       do i=0,nb
+         time=i
+         itmp=i
          call outpost(ub(1,i),vb(1,i),wb(1,i),pr,t,'bas')
       enddo
+      istep=itmp
+      time=ttmp
 
       return
       end

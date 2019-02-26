@@ -243,3 +243,39 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine restart_time_file(fname127)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'ZPER'
+
+      character*127 fname127
+
+      character*1 s1(127)
+      equivalence (s1,initc) ! equivalence to initial condition
+
+      logical iffexist
+
+      call blank(initc,127)
+      nch=ltruncr(fname127,127)
+      write (6,*) 'nch=',nch
+
+      call chcopy(initc,fname127,nch)
+
+      iblank = indx1(initc,' ',1)-1
+      if (nio.eq.0) write(6,1) ipass,(s1(k),k=1,iblank)
+    1 format(i8,'Reading: ',127a1)
+
+      inquire (file=initc(1),exist=iffexist)
+
+      if (iffexist) then
+         nfiles = 1
+         call restart(nfiles)
+      else
+         if (nio.eq.0) write (6,*) fname127,'did not exist...'
+         call exitt0
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------

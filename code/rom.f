@@ -394,11 +394,14 @@ c-----------------------------------------------------------------------
       subroutine setu
 
       include 'SIZE'
+      include 'SOLN'
       include 'MOR'
 
       if (nio.eq.0) write (6,*) 'inside setu'
 
       call proj2bases(u,uic,vic,wic)
+
+      call outpost(uic,vic,wic,pr,t,'uic')
 
       if (nio.eq.0) write (6,*) 'exiting setu'
 

@@ -98,6 +98,8 @@ c     call add2s2(rhs,a0,s,nb+1) ! not working...
             endif
          endif
 
+         write (6,*) 'ifdump',ifdump
+
          if (ifdump) then
             idump=ad_step/ad_iostep
             if (.not.ifravg) call recon(vx,vy,vz,u)
@@ -107,8 +109,11 @@ c     call add2s2(rhs,a0,s,nb+1) ! not working...
             call comp_vort3(vort,work1,work2,t1,t2,t3)
             ifto = .true. ! turn on temp in fld file
             call outpost(vx,vy,vz,pr,vort,'rom')
+            write (6,*) 'inside ifdump'
+c           call exitt0
 c           call outpost(vx,vy,vz,pr,t,'rms')
          endif
+c        call exitt0
       endif
 
       return
