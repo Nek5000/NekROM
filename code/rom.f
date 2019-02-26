@@ -38,7 +38,6 @@ c-----------------------------------------------------------------------
          else
             call rom_step
             call recon(vx,vy,vz,u) ! reconstruct velocity to be used in h-t
-            time=time+dt
          endif
       else
          call rom_setup
