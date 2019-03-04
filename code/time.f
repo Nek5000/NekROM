@@ -108,10 +108,7 @@ c     call add2s2(rhs,a0,s,nb+1) ! not working...
             ifto = .true. ! turn on temp in fld file
             call outpost(vx,vy,vz,pr,vort,'rom')
             write (6,*) 'inside ifdump'
-c           call exitt0
-c           call outpost(vx,vy,vz,pr,t,'rms')
          endif
-c        call exitt0
       endif
 
       return
