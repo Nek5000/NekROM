@@ -98,7 +98,7 @@ c     call add2s2(rhs,a0,s,nb+1) ! not working...
             endif
          endif
 
-         if (ifdump) then
+         if (.true.) then
             idump=ad_step/ad_iostep
             if (.not.ifravg) call recon(vx,vy,vz,u)
 
