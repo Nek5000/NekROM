@@ -63,6 +63,33 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine rom_setup_heat
+
+      include 'SIZE'
+      include 'MOR'
+
+      if (nio.eq.0) write (6,*) 'inside rom_setup'
+
+      setup_start=dnekclock()
+
+      call rom_init_params
+      call rom_init_fields
+
+      call setbases_heat
+      call setops
+
+      if (ifdumpops) call dump_all
+
+      call qoisetup
+
+      setup_end=dnekclock()
+
+      if (nio.eq.0) write (6,*) 'exiting rom_setup'
+      if (nio.eq.0) write (6,*) 'setup_time:', setup_end-setup_start
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine rom_setup
 
       include 'SIZE'
