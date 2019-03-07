@@ -19,8 +19,6 @@ c-----------------------------------------------------------------------
 
       call setup_pdrag(px,py,pz)
 
-      call outpost(px,py,pz,pr,t,'ppp')
-
       do k=1,lk
          write (6,*) abveck(1,1,k),abveck(1,2,k),'avec'
       enddo
