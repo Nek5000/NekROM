@@ -881,3 +881,28 @@ c         mtke=mtke-(tmp/2)
 
       return
       end
+c-----------------------------------------------------------------------
+      subroutine lap2d(d2u,u)
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real d2u(1),u(1)
+
+      common /scrl2d/ ux(lt),uy(lt),uxx(lt),uyy(lt),t1(lt),t2(lt)
+
+      call gradm1(ux,uy,t1,u)
+      call dsavg(ux)
+      call dsavg(uy)
+
+      call gradm1(uxx,t1,t1,ux)
+      call gradm1(t1,uyy,t2,uy)
+
+      call add3(d2u,uxx,uyy,lx1*ly1*lz1*nelv)
+      call dsavg(d2u)
+
+      return
+      end
+c-----------------------------------------------------------------------
