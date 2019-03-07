@@ -42,8 +42,8 @@ c-----------------------------------------------------------------------
          ak=glsc2(wsck(1,2,k),g,n) ! cosine coefficients
          bk=glsc2(wsck(1,1,k),g,n) ! sine coefficients
 
-         fd(1)=fd(1)+(ak*abveck(1,1,k)+bk*abveck(2,1,k))/(twopi*k)
-         fd(2)=fd(2)+(ak*abveck(1,2,k)+bk*abveck(2,2,k))/(twopi*k)
+         fd(1)=fd(1)-(ak*abveck(1,1,k)+bk*abveck(2,1,k))/real(2*k)
+         fd(2)=fd(2)+(ak*abveck(1,2,k)+bk*abveck(2,2,k))/real(2*k)
          write (6,*) 'ak pdrag',k,ak,bk,fd(1),fd(2)
       enddo
 
