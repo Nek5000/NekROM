@@ -43,11 +43,10 @@ c-----------------------------------------------------------------------
          call copy(h1,vdiff,n)
          call rzero(h2,n)
          do i=0,nb
-            call axhelm(au,ub(1,i),h1,h2,1,1)
-            call axhelm(av,vb(1,i),h1,h2,1,1)
-            if (ldim.eq.3) call axhelm(aw,wb(1,i),h1,h2,1,1)
-            call opbinv1_nom(au,av,aw,au,av,aw,1.)
-            call outpost(au,av,aw,pr,t,'aaa')
+            call lap2d(au,ub(1,i))
+            call lap2d(av,vb(1,i))
+            if (ldim.eq.3) call lap2d(aw,wb(1,i))
+            call opcmult(au,av,aw,param(2))
             call comp_pdrag(fd1(1,i),ub(1,i),vb(1,i),wb(1,i))
             call comp_pdrag(fd3(1,i),au,av,aw)
          enddo
