@@ -53,10 +53,6 @@ c-----------------------------------------------------------------------
          enddo
       endif
 
-      do i=0,nb
-         write (6,*) 'fd3',fd3(1,i)
-      enddo
-
       if (nio.eq.0) write (6,*) 'exiting setbases'
 
       return
