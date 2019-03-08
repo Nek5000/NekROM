@@ -37,6 +37,7 @@ c
       parameter (lpelt=1)              ! linear stability
       parameter (lcvelt=1)             ! cvode
       parameter (lfdm=0)               ! == 1 for fast diagonalization method
+      parameter (lk=1)
 
       ! INTERNALS
       include 'SIZE.inc'
