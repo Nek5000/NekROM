@@ -191,7 +191,7 @@ c     call add2s2(rhs,a0,s,nb+1) ! not working...
 
       call shiftu(rhs(1))
 
-      call drago
+      call comp_drag
       call comp_rms
 
       step_time=step_time+dnekclock()-last_time

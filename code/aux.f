@@ -513,15 +513,23 @@ c-----------------------------------------------------------------------
 
       common /scrkk/ ux(lt),uy(lt),uz(lt)
 
+      f1ij=0.
+      f2ij=0.
+
       if (ad_step.eq.0) then
          call rzero(u2,(nb+1)**2)
       else
          do j=0,nb
          do i=0,nb
             ur(i,j)=ur(i,j)+u(i,1)*u(j,1)
+            f1ij=f1ij+u(i,1)*u(j,1)*fd2(1,i,j)
+            f2ij=f2ij+u(i,1)*u(j,1)*fd2(2,i,j)
+c           write (6,*) 'fd2',fd2(1,i,j),fd2(2,i,j)
          enddo
          enddo
       endif
+
+      write (6,*) 'pdrag',f1ij,f2ij
 
       if (ad_step.eq.ad_nsteps) then
          n=lx1*ly1*lz1*nelv
@@ -542,21 +550,39 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine drago
+      subroutine comp_drag
 
       include 'SIZE'
       include 'TSTEP'
       include 'MOR'
 
+      real tmp(0:nb)
+
       if (ifdrago) then
          if (nio.eq.0) then
-            dx=vlsc2(rdgx,u,nb+1)
-            dy=vlsc2(rdgy,u,nb+1)
-            write (6,*) ad_step*dt,dx,'dragx'
-            write (6,*) ad_step*dt,dy,'dragy'
+            vdx=vlsc2(rdgx,u,nb+1)
+            vdy=vlsc2(rdgy,u,nb+1)
+            pdx1=0.
+            pdx2=0.
+            pdx3=0.
+            call mxm(u,nb+1,ad_beta(2,count),3,tmp,1)
+            do j=0,nb
+               pdx1=pdx1+fd1(1,j)*tmp(j)
+               pdy1=pdy1+fd1(2,j)*tmp(j)
+               do i=0,nb
+                  pdx2=pdx2+fd2(1,i,j)*u(j,1)*u(i,1)
+                  pdy2=pdy2+fd2(2,i,j)*u(j,1)*u(i,1)
+               enddo
+               pdx3=pdx3+fd3(1,j)*u(j,1)
+               pdy3=pdy3+fd3(2,j)*u(j,1)
+            enddo
+            dx=pdx1+pdx2+pdx3+vdx
+            dy=pdy1+pdy2+pdy3+vdy
+            write (6,*) ad_step*dt,vdx,pdx1,pdx2,pdx3,dx,'dragx'
+            write (6,*) ad_step*dt,vdy,pdy1,pdy2,pdy3,dy,'dragy'
             if (ldim.eq.3) then
                dz=vlsc2(rdgz,u,nb+1)
-               write (6,*) ad_step*dt,dz,'dragz'
+               write (6,*) ad_step*dt,vdz,'dragz'
             endif
          endif
       endif
@@ -867,3 +893,28 @@ c         mtke=mtke-(tmp/2)
 
       return
       end
+c-----------------------------------------------------------------------
+      subroutine lap2d(d2u,u)
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real d2u(1),u(1)
+
+      common /scrl2d/ ux(lt),uy(lt),uxx(lt),uyy(lt),t1(lt),t2(lt)
+
+      call gradm1(ux,uy,t1,u)
+      call dsavg(ux)
+      call dsavg(uy)
+
+      call gradm1(uxx,t1,t1,ux)
+      call gradm1(t1,uyy,t2,uy)
+
+      call add3(d2u,uxx,uyy,lx1*ly1*lz1*nelv)
+      call dsavg(d2u)
+
+      return
+      end
+c-----------------------------------------------------------------------

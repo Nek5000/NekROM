@@ -19,8 +19,6 @@ c-----------------------------------------------------------------------
 
       call setup_pdrag(px,py,pz)
 
-c     call outpost(px,py,pz,pr,t,'ppp')
-
       do k=1,lk
          write (6,*) abveck(1,1,k),abveck(1,2,k),'avec'
       enddo
@@ -41,16 +39,13 @@ c     call outpost(px,py,pz,pr,t,'ppp')
       twopi=8.*atan(one)
 
       do k=1,lk
-         ak=glsc2(wsck(1,1,k),g,n) ! cosine coefficients
-         bk=glsc2(wsck(1,2,k),g,n) ! sine coefficients
+         ak=glsc2(wsck(1,2,k),g,n) ! cosine coefficients
+         bk=glsc2(wsck(1,1,k),g,n) ! sine coefficients
 
-         fd(1)=fd(1)+(ak*abveck(1,1,k)+bk*abveck(2,1,k))/(twopi*k)
-         fd(2)=fd(2)+(ak*abveck(1,2,k)+bk*abveck(2,2,k))/(twopi*k)
-c        write (6,*) 'ak pdrag',k,ak,bk,fd(1),fd(2)
+         fd(1)=fd(1)-(ak*abveck(1,1,k)+bk*abveck(2,1,k))/real(2*k)
+         fd(2)=fd(2)+(ak*abveck(1,2,k)+bk*abveck(2,2,k))/real(2*k)
+         write (6,*) 'ak pdrag',k,ak,bk,fd(1),fd(2)
       enddo
-
-      fd(1)=fd(1)/30.
-      fd(2)=fd(2)/30.
 
       return
       end
@@ -124,13 +119,13 @@ c-----------------------------------------------------------------------
             wsk=sin(stwopi*k)*aa
             wck=cos(stwopi*k)*aa
 
-            abveck(1,1,k)=abveck(1,1,k)+ux*wck/real(k)
-            abveck(1,2,k)=abveck(1,2,k)+uy*wck
+            abveck(1,1,k)=abveck(1,1,k)+ux*wsk/real(k)
+            abveck(1,2,k)=abveck(1,2,k)+uy*wsk
 
-            abveck(2,1,k)=abveck(2,1,k)+ux*wsk
-            abveck(2,2,k)=abveck(2,2,k)+uy*wsk
+            abveck(2,1,k)=abveck(2,1,k)+ux*wck
+            abveck(2,2,k)=abveck(2,2,k)+uy*wck
 
-            wsck(ix,iy,iz,ie,1,k)=-2.*wsk/real(k*pi)
+            wsck(ix,iy,iz,ie,1,k)=2.*wsk/real(k*pi)
             wsck(ix,iy,iz,ie,2,k)=2.*wck/real(k*pi)
          enddo
          ia=ia+1
