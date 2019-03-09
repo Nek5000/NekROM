@@ -43,7 +43,7 @@ c-----------------------------------------------------------------------
          if (ldim.eq.3) call axhelm(g3,wb(1,j),h1,h2,1,1)
          siga(j)=csig(g1,g2,g3,h1,h2)
 
-         call setcnv_c(ub(1,j),vb(1,j),wb(1,j)
+         call setcnv_c(ub(1,j),vb(1,j),wb(1,j))
          do i=0,nb
             call setcnv_u(ub(1,i),vb(1,i),wb(1,i))
             call ccu(g1,g2,g3)
