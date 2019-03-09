@@ -19,14 +19,6 @@ c-----------------------------------------------------------------------
 
       call setup_pdrag(px,py,pz)
 
-      do k=1,lk
-         write (6,*) abveck(1,1,k),abveck(1,2,k),'avec'
-      enddo
-
-      do k=1,lk
-         write (6,*) abveck(2,1,k),abveck(2,2,k),'bvec'
-      enddo
-
       n=lx1*ly1*lz1*nelt
 
       if (ldim.eq.3) 
@@ -44,7 +36,7 @@ c-----------------------------------------------------------------------
 
          fd(1)=fd(1)-(ak*abveck(1,1,k)+bk*abveck(2,1,k))/real(2*k)
          fd(2)=fd(2)+(ak*abveck(1,2,k)+bk*abveck(2,2,k))/real(2*k)
-         write (6,*) 'ak pdrag',k,ak,bk,fd(1),fd(2)
+c        write (6,*) 'ak pdrag',k,ak,bk,fd(1),fd(2)
       enddo
 
       return
