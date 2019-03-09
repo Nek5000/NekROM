@@ -41,6 +41,8 @@ c     parameters and common blocks for MOR
      $                u2(0:nb,0:nb),u2j(0:nb,0:nb,6)
       common /morrhs/ conv(nb,3),usa(0:nb)
 
+      common /morsig/ siga(0:nb),sigb(0:nb),sigc(0:nb,0:nb)
+
       common /mortmp/ ctmp((nb*(nb+1)*(nb+1))/lpmin+1)
       common /morfld/ wm1(lx1*ly1*lz1*lelt)
       common /morqoi/ rnus,rdgx(0:nb),rdgy(0:nb),rdgz(0:nb)
