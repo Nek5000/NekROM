@@ -144,6 +144,8 @@ c     Variable for vorticity
 
       if (ad_step.eq.1) then
          step_time = 0.
+         call rzero(ua,nb+1)
+         call rzero(u2a,(nb+1)**2)
       endif
 
       last_time = dnekclock()
@@ -190,6 +192,13 @@ c     call add2s2(rhs,a0,s,nb+1) ! not working...
       call solve(rhs(1),flu,1,nb,nb,ir,ic)
 
       call shiftu(rhs(1))
+      call add2(ua,u,nb+1)
+
+      do j=0,nb
+      do i=0,nb
+         u2a(i,j)=u2a(i,j)+u(i,1)*u(j,1)
+      enddo
+      enddo
 
       if (ad_step.eq.3) call copy(uj,u,3*(nb+1))
       if (ad_step.eq.ad_nsteps) then
@@ -201,10 +210,13 @@ c     call add2s2(rhs,a0,s,nb+1) ! not working...
          enddo
          enddo
          enddo
+         rinsteps=1./real(ad_nsteps)
+         call cmult(ua,rinsteps,nb+1)
+         call cmult(u2a,rinsteps,(nb+1)**2)
       endif
 
       call comp_drag
-      call comp_rms
+c     call comp_rms ! old
 
       step_time=step_time+dnekclock()-last_time
 
