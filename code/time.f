@@ -191,6 +191,18 @@ c     call add2s2(rhs,a0,s,nb+1) ! not working...
 
       call shiftu(rhs(1))
 
+      if (ad_step.eq.3) call copy(uj,u,3*(nb+1))
+      if (ad_step.eq.ad_nsteps) then
+         call copy(uj(0,4),u,3*(nb+1))
+         do k=1,6
+         do j=0,nb
+         do i=0,nb
+            u2j(i,j,k)=uj(i,k)*uj(j,k)
+         enddo
+         enddo
+         enddo
+      endif
+
       call comp_drag
       call comp_rms
 
