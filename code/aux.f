@@ -265,7 +265,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine ctke_fom(tke,u1,u2,u3)
+      subroutine ctke_fom(tke,ux,uy,uz)
 
       include 'SIZE'
       include 'MOR'
@@ -276,9 +276,9 @@ c-----------------------------------------------------------------------
 
       common /scrns/ ud(lt),vd(lt),wd(lt)
 
-      real u1(lt),u2(lt),u3(lt)
+      real ux(lt),uy(lt),uz(lt)
 
-      call opsub3(ud,vd,wd,u1,u2,u3,uavg,vavg,wavg)
+      call opsub3(ud,vd,wd,ux,uy,uz,uavg,vavg,wavg)
       tke = op_glsc2_wt(ud,vd,wd,ud,vd,wd,bm1)
 
       return

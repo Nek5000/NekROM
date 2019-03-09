@@ -86,25 +86,25 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine proj2bases(coef,u1,u2,u3)
+      subroutine proj2bases(coef,ux,uy,uz)
 
       include 'SIZE'
       include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real coef(0:nb),u1(lt),u2(lt),u3(lt)
+      real coef(0:nb),ux(lt),uy(lt),uz(lt)
 
       if (ifl2) then
-         call wl2proj(coef,u1,u2,u3)
+         call wl2proj(coef,ux,uy,uz)
       else
-         call h10proj(coef,u1,u2,u3)
+         call h10proj(coef,ux,uy,uz)
       endif
 
       return
       end
 c-----------------------------------------------------------------------
-      subroutine h10proj(coef,u1,u2,u3)
+      subroutine h10proj(coef,ux,uy,uz)
 
       include 'SIZE'
       include 'SOLN'
@@ -113,7 +113,7 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real u1(lt),u2(lt),u3(lt)
+      real ux(lt),uy(lt),uz(lt)
 
       common /scrk3/ t1(lt),t2(lt),t3(lt),t4(lt),t5(lt),t6(lt)
       common /scrk4/ h1(lt),h2(lt)
@@ -126,7 +126,7 @@ c-----------------------------------------------------------------------
 
       call rone(h1,n)
       call rzero(h2,n)
-      call opsub3(t1,t2,t3,u1,u2,u3,ub,vb,wb)
+      call opsub3(t1,t2,t3,ux,uy,uz,ub,vb,wb)
 
       coef(0) = 1.
       if (nio.eq.0) write (6,1) coef(0),coef(0),1.
@@ -155,7 +155,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine wl2proj(coef,u1,u2,u3)
+      subroutine wl2proj(coef,ux,uy,uz)
 
       include 'SIZE'
       include 'SOLN'
@@ -164,7 +164,7 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real u1(lt),u2(lt),u3(lt)
+      real ux(lt),uy(lt),uz(lt)
 
       common /scrk3/ t1(lt),t2(lt),t3(lt),t4(lt),t5(lt),t6(lt)
       common /scrk4/ h1(lt),h2(lt),bwm1(lt)
@@ -176,7 +176,7 @@ c-----------------------------------------------------------------------
       n=lx1*ly1*lz1*nelt
 
       call col3(bwm1,bm1,wm1,n)
-      call opsub3(t1,t2,t3,u1,u2,u3,ub,vb,wb)
+      call opsub3(t1,t2,t3,ux,uy,uz,ub,vb,wb)
 
       coef(0) = 1.
 
