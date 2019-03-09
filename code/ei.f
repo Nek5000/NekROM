@@ -15,7 +15,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine crome() ! compute rom error
+      subroutine sets() ! set sigmas
 
       include 'SIZE'
       include 'MOR'
@@ -23,9 +23,7 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /scrcrome/ g1(lt),g2(lt),g3(lt),h1(lt),h2(lt)
-
-      real siga(0:nb),sigb(0:nb),sigc(0:nb,0:nb)
+      common /scrsets/ g1(lt),g2(lt),g3(lt),h1(lt),h2(lt)
 
       esum=0.
 
