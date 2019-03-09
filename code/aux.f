@@ -517,11 +517,11 @@ c-----------------------------------------------------------------------
       f2ij=0.
 
       if (ad_step.eq.0) then
-         call rzero(u2,(nb+1)**2)
+         call rzero(u2a,(nb+1)**2)
       else
          do j=0,nb
          do i=0,nb
-            ur(i,j)=ur(i,j)+u(i,1)*u(j,1)
+            u2(i,j)=u2a(i,j)+u(i,1)*u(j,1)
             f1ij=f1ij+u(i,1)*u(j,1)*fd2(1,i,j)
             f2ij=f2ij+u(i,1)*u(j,1)*fd2(2,i,j)
 c           write (6,*) 'fd2',fd2(1,i,j),fd2(2,i,j)
@@ -541,7 +541,7 @@ c           write (6,*) 'fd2',fd2(1,i,j),fd2(2,i,j)
             call col3(ux,ub(1,i),ub(1,j),n)
             call col3(uy,vb(1,i),vb(1,j),n)
             if (ldim.eq.3) call col3(uz,wb(1,i),wb(1,j),n)
-            call opadds(urms,vrms,wrms,ux,uy,uz,ur(i,j),n,2)
+            call opadds(urms,vrms,wrms,ux,uy,uz,u2a(i,j),n,2)
          enddo
          enddo
          call outpost(urms,vrms,wrms,pr,t,'rrr')

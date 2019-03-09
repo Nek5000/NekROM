@@ -25,7 +25,7 @@ c     parameters and common blocks for MOR
      $                 vst(lx1*ly1*lz1*lelt,ls),
      $                 wst(lx1*ly1*lz1*lelt,ls)
 
-      common /moravg/ ua(0:nb),ur(0:nb,0:nb)
+      common /moravg/ ua(0:nb),u2a(0:nb,0:nb)
 
       common /mormsk/ dmask(lx1,ly1,lz1,lelt,lmsk+1)
 
