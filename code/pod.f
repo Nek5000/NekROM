@@ -515,53 +515,36 @@ C--------------------------------------------------------------------
       include 'INPUT'
       include 'MASS'
       include 'SOLN'
-C
-      REAL OUT1  (1)
-      REAL OUT2  (1)
-      REAL OUT3  (1)
-      REAL INP1  (1)
-      REAL INP2  (1)
-      REAL INP3  (1)
-C
+
+      real out1  (1)
+      real out2  (1)
+      real out3  (1)
+      real inp1  (1)
+      real inp2  (1)
+      real inp3  (1)
 
       include 'OPCTR'
-C
-#ifdef TIMER
-      if (isclld.eq.0) then
-          isclld=1
-          nrout=nrout+1
-          myrout=nrout
-          rname(myrout) = 'opbnv1'
+
+c     call opmask  (inp1,inp2,inp3)
+      call opdssum (inp1,inp2,inp3)
+
+      ntot=lx1*ly1*lz1*nelv
+
+      if (if3d) then
+         do 100 i=1,ntot
+            tmp    =binvm1(i,1,1,1)*scale
+            out1(i)=inp1(i)*tmp
+            out2(i)=inp2(i)*tmp
+            out3(i)=inp3(i)*tmp
+  100    continue
+      else
+         do 200 i=1,ntot
+            tmp    =binvm1(i,1,1,1)*scale
+            out1(i)=inp1(i)*tmp
+            out2(i)=inp2(i)*tmp
+  200    continue
       endif
-#endif
-C
-c     CALL OPMASK  (INP1,INP2,INP3)
-      CALL OPDSSUM (INP1,INP2,INP3)
-C
-      NTOT=lx1*ly1*lz1*NELV
-C
-#ifdef TIMER
-      isbcnt = ntot*(1+ldim)
-      dct(myrout) = dct(myrout) + (isbcnt)
-      ncall(myrout) = ncall(myrout) + 1
-      dcount      =      dcount + (isbcnt)
-#endif
-C
-      IF (IF3D) THEN
-         DO 100 I=1,NTOT
-            TMP    =BINVM1(I,1,1,1)*scale
-            OUT1(I)=INP1(I)*TMP
-            OUT2(I)=INP2(I)*TMP
-            OUT3(I)=INP3(I)*TMP
-  100    CONTINUE
-      ELSE
-         DO 200 I=1,NTOT
-            TMP    =BINVM1(I,1,1,1)*scale
-            OUT1(I)=INP1(I)*TMP
-            OUT2(I)=INP2(I)*TMP
-  200    CONTINUE
-      ENDIF
-C
+
       return
-      END
+      end
 c-----------------------------------------------------------------------
