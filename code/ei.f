@@ -25,8 +25,6 @@ c-----------------------------------------------------------------------
 
       common /scrsets/ g1(lt),g2(lt),g3(lt),h1(lt),h2(lt)
 
-      esum=0.
-
       n=lx1*ly1*lz1*nelt
 
       call rone(h1,n)
