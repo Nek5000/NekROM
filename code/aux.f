@@ -578,8 +578,8 @@ c-----------------------------------------------------------------------
             enddo
             dx=pdx1+pdx2+pdx3+vdx
             dy=pdy1+pdy2+pdy3+vdy
-            write (6,*) ad_step*dt,vdx,pdx1,pdx2,pdx3,dx,'dragx'
-            write (6,*) ad_step*dt,vdy,pdy1,pdy2,pdy3,dy,'dragy'
+c           if (nio.eq.0) write (6,*) ad_step*dt,vdx,pdx1,pdx2,pdx3,dx,'dragx'
+c           if (nio.eq.0) write (6,*) ad_step*dt,vdy,pdy1,pdy2,pdy3,dy,'dragy'
             if (ldim.eq.3) then
                dz=vlsc2(rdgz,u,nb+1)
                write (6,*) ad_step*dt,vdz,'dragz'
