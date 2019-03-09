@@ -21,7 +21,7 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real ux(lt),uy(lt),uz(lt), coef(0:nb)
+      real ux(lt),uy(lt),uz(lt),coef(0:nb)
 
       n=lx1*ly1*lz1*nelv
 
@@ -534,7 +534,7 @@ c           write (6,*) 'fd2',fd2(1,i,j),fd2(2,i,j)
       if (ad_step.eq.ad_nsteps) then
          n=lx1*ly1*lz1*nelv
          s=1./real(ad_nsteps)
-         call cmult(ur,s,(nb+1)**2)
+         call cmult(u2a,s,(nb+1)**2)
          call opzero(urms,vrms,wrms)
          do j=0,nb
          do i=0,nb
