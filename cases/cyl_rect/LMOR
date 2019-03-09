@@ -1,0 +1,3 @@
+      parameter (nb=20)  ! number of basis vectors
+      parameter (ls=200) ! number of snapshots
+      parameter (lmsk=1)
