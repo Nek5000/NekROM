@@ -208,6 +208,24 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      function vecprod(t1,t2,t3,t4,t5,t6,h1,h2,space)
+
+      real t1(1),t2(1),t3(1),t4(1),t5(1),t6(1)
+      real h1(1),h2(1)
+
+      character*3 space
+
+      if (space.eq.'L2 ') then
+         vecprod=wl2prod(t1,t2,t3,t4,t5,t6,h1,h2)
+      else if (space.eq.'H10') then
+         vecprod=h10prod(t1,t2,t3,t4,t5,t6,h1,h2)
+      else
+         call exitti('did not provide supported inner product space$')
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
       function h10prod(t1,t2,t3,t4,t5,t6,h1,h2)
 
       include 'SIZE'
