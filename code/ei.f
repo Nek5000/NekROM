@@ -13,7 +13,10 @@ c-----------------------------------------------------------------------
 
       call ophinv(r1,r2,r3,g1,g2,g3,h1,h2,tolh,nmxhi)
 
+      mio=nio
+      nio=-1
       csig=h10prod(r1,r2,r3,r1,r2,r3,h1,h2)
+      nio=mio
 
       return
       end
@@ -23,6 +26,7 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
       include 'MASS'
+      include 'INPUT'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
@@ -33,6 +37,7 @@ c-----------------------------------------------------------------------
       call rone(h1,n)
       call rzero(h2,n)
 
+      ifprojfld(1)=.false.
       do j=0,nb
          call col3(g1,ub(1,j),bm1,n)
          call col3(g2,vb(1,j),bm1,n)
@@ -51,6 +56,7 @@ c-----------------------------------------------------------------------
             sigc(i,j)=csig(g1,g2,g3,h1,h2)
          enddo
       enddo
+      ifprojfld(1)=param(94)
 
       return
       end
