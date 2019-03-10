@@ -115,7 +115,7 @@ c     call comp_rms
             call comp_vort3(vort,work1,work2,t1,t2,t3)
             ifto = .true. ! turn on temp in fld file
             call outpost(vx,vy,vz,pr,vort,'rom')
-            write (6,*) 'inside ifdump'
+            if (nio.eq.0) write (6,*) 'inside ifdump'
          endif
       endif
 
