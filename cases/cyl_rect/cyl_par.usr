@@ -71,7 +71,6 @@ c-----------------------------------------------------------------------
             ad_step = 1
             param(2)=1./real(ire*10)
             call rom_init_params
-            call setu
             time=0.
             do i=1,ad_nsteps
                call rom_step
