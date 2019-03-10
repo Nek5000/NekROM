@@ -106,7 +106,7 @@ c     call comp_rms
             endif
          endif
 
-         if (.true.) then
+         if (ifdump) then
             idump=ad_step/ad_iostep
             if (.not.ifravg) call recon(vx,vy,vz,u)
 
