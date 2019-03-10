@@ -56,7 +56,7 @@ c-----------------------------------------------------------------------
             sigc(i,j)=csig(g1,g2,g3,h1,h2)
          enddo
       enddo
-      ifprojfld(1)=param(94)
+      if (param(94).gt.0) ifprojfld(1)=.true.
 
       return
       end
