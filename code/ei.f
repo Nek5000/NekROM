@@ -8,6 +8,9 @@ c-----------------------------------------------------------------------
       common /scrsig/ r1(lt),r2(lt),r3(lt)
       real g1(1),g2(1),g3(1),h1(1),h2(1)
 
+      tolh=1.e-5
+      nmxhi=1000
+
       call ophinv(r1,r2,r3,g1,g2,g3,h1,h2,tolh,nmxhi)
 
       csig=h10prod(r1,r2,r3,r1,r2,r3,h1,h2)
