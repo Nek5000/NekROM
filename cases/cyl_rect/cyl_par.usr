@@ -71,6 +71,8 @@ c-----------------------------------------------------------------------
             ad_step = 1
             param(2)=1./real(ire*10)
             call rom_init_params
+            call setu
+            time=0.
             do i=1,ad_nsteps
                call rom_step
                time=time+dt
@@ -79,6 +81,7 @@ c-----------------------------------------------------------------------
             call sett
             if (nio.eq.0) write (6,*) jre,ire*10,eest(),'eest'
          enddo
+         call exitt0
       endif
 
       return
