@@ -62,24 +62,22 @@ c     call add2s2(rhs,a0,s,nb+1) ! not working...
 c        write (6,*) 'rhs',i,rhs(i)
       enddo
 
-c     call copy(conv(1,3),conv(1,2),nb)
-c     call copy(conv(1,2),conv(1,1),nb)
+      call copy(conv(1,3),conv(1,2),nb)
+      call copy(conv(1,2),conv(1,1),nb)
 
-c     call evalc(conv)
+      call evalc(conv)
 
-c     call mxm(conv,nb,ad_alpha(1,count),3,tmp(1),1)
+      call mxm(conv,nb,ad_alpha(1,count),3,tmp(1),1)
+c     do i=0,nb
+c        write (6,*) 'evalc',tmp(i)
+c     enddo
 
-c     call sub2(rhs,tmp,nb+1)
+      call sub2(rhs,tmp,nb+1)
 
       if (ad_step.le.3) call lu(flu,nb,nb,ir,ic)
 
       call solve(rhs(1),flu,1,nb,nb,ir,ic)
       call shiftu(rhs(1))
-
-c     call drago
-c     call comp_rms
-
-      step_time=step_time+dnekclock()-last_time
 
       if (ifheat) call recon(vx,vy,vz,u)
 
@@ -106,6 +104,7 @@ c     call comp_rms
             endif
          endif
 
+         ifdump=.true.
          if (ifdump) then
             idump=ad_step/ad_iostep
             if (.not.ifravg) call recon(vx,vy,vz,u)
