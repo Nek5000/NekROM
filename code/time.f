@@ -636,3 +636,45 @@ c     currently can only come up with this way to compute log for an array
       return
       end
 c-----------------------------------------------------------------------
+      subroutine evalc_const(cu)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      real cu(nb)
+
+      integer icalld
+      save    icalld
+      data    icalld /0/
+
+      common /scrk4/ work(lx1*ly1*lz1*lelt)
+
+      if (icalld.eq.0) then
+         evalc_time=0.
+         icalld=1
+      endif
+
+      stime=dnekclock()
+
+      l=1
+
+      call rzero(cu,nb)
+
+      do l=1,ncloc
+         i=icloc(1,l)
+         j=icloc(2,l)
+         k=icloc(3,l)
+         cu(i)=cu(i)+clocal(l)*u(j,1)*u(k,1)
+         write (6,*) i,j,k,u(j,1),u(k,1)
+      enddo
+
+      call exitt0
+
+      call gop(cu,work,'+  ',nb)
+
+      evalc_time=evalc_time+dnekclock()-stime
+
+      return
+      end
+c-----------------------------------------------------------------------
