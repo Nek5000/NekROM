@@ -9,9 +9,10 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelv
 
-      call rzero(ub,n)
       do ib=0,nb
+         call rzero(ub(1,ib),n)
          call rzero(vb(1,ib),n)
+         call rzero(wb(1,ib),n)
       enddo
 
       one=1.
