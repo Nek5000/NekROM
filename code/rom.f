@@ -380,16 +380,6 @@ c-----------------------------------------------------------------------
       else
          do j=0,nb ! Form the A matrix for basis function
             call axhelm(usave,ub(1,j),h1,h2,1,1)
-c           if (j.eq.1) then
-c              call outpost(bm1,bm1,bm1,pr,t,'aaa')
-c              call outpost(ub(1,1),vb(1,1),wb(1,1),pr,t,'aaa')
-c              call outpost(usave,vsave,usave,pr,t,'aaa')
-c              call opbinv1(usave,vsave,wsave,usave,vsave,wsave,1.)
-c              call outpost(usave,vsave,usave,pr,t,'aaa')
-c              call exitt0
-c           endif
-c           call axhelm(vsave,vb(1,j),h1,h2,1,1)
-c           if (ldim.eq.3) call axhelm(wsave,wb(1,j),h1,h2,1,1)
             do i=0,nb
                a0(i,j) = glsc2(ub(1,i),usave,n)+glsc2(vb(1,i),vsave,n)
                if (ldim.eq.3) a0(i,j) = a0(i,j)+glsc2(wb(1,i),wsave,n)
