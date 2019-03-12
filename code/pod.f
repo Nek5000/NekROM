@@ -18,12 +18,16 @@ c-----------------------------------------------------------------------
       one=1.
       pi=4.*atan(one)
 
-      do ib=1,nb
       do i=1,n
          x=xm1(i,1,1,1)
          y=ym1(i,1,1,1)
-         ub(i,ib)=sin(ib*pi*x)*sin(ib*pi*y)
-      enddo
+         ub(i,0)=1.
+         k=2
+         ub(i,1)=sin(k*pi*x)*sin(k*pi*y)
+         if (nb.ge.2) ub(i,2)=cos(k*pi*x)*sin(k*pi*y)
+         if (nb.ge.3) ub(i,3)=sin(k*pi*x)*cos(k*pi*y)
+         if (nb.ge.4) ub(i,4)=cos(k*pi*x)*cos(k*pi*y)
+         if (nb.ge.4) vb(i,0)=0.5
       enddo
 
       return
