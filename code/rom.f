@@ -380,6 +380,8 @@ c-----------------------------------------------------------------------
       else
          do j=0,nb ! Form the A matrix for basis function
             call axhelm(usave,ub(1,j),h1,h2,1,1)
+            call axhelm(vsave,vb(1,j),h1,h2,1,1)
+            if (ldim.eq.3) call axhelm(wsave,wb(1,j),h1,h2,1,1)
             do i=0,nb
                a0(i,j) = glsc2(ub(1,i),usave,n)+glsc2(vb(1,i),vsave,n)
                if (ldim.eq.3) a0(i,j) = a0(i,j)+glsc2(wb(1,i),wsave,n)
