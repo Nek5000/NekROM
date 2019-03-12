@@ -78,7 +78,12 @@ c-----------------------------------------------------------------------
       call rom_init_fields
 
       call setbases_heat
-      call setops
+
+      call seta
+      call setb
+      call setc_const
+      call setu
+c     call setops
 
       if (ifdumpops) call dump_all
 
