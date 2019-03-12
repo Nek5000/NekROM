@@ -366,7 +366,7 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       common /scrvh/ h1(lt),h2(lt)
-      common /scrns/ usave(lt),vsave(lt),wsave(lt),wk1(lt)
+      common /scrseta/ usave(lt),vsave(lt),wsave(lt),wk1(lt)
       common /scrread/ tab((nb+1)**2)
 
       if (nio.eq.0) write (6,*) 'inside seta'
