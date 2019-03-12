@@ -54,7 +54,7 @@ c-----------------------------------------------------------------------
 
       common /scrsets/ g1(lt),g2(lt),g3(lt),h1(lt),h2(lt)
 
-      character *3 op
+      character*3 op
 
       n=lx1*ly1*lz1*nelt
       op='L2 '
@@ -63,6 +63,7 @@ c-----------------------------------------------------------------------
       call rzero(h2,n)
 
       ifprojfld(1)=.false.
+
       do j=0,nb
          call col3(g1,ub(1,j),bm1,n)
          call col3(g2,vb(1,j),bm1,n)
@@ -81,6 +82,7 @@ c-----------------------------------------------------------------------
             sigc(i,j)=csig(g1,g2,g3,h1,h2,op)
          enddo
       enddo
+
       if (param(94).gt.0) ifprojfld(1)=.true.
 
       return
