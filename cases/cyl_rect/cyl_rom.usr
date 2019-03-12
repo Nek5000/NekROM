@@ -64,18 +64,18 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'starting rom_step loop',ad_nsteps
 
-      do ire=5,14
-         ad_step = 1
-         param(2)=1./real(ire*10)
-         call rom_init_params
-         do i=1,ad_nsteps
-            call rom_step
-            time=time+dt
-            ad_step=ad_step+1
-         enddo
-         call sett
-         if (nio.eq.0) write (6,*) 'eest:',eest(),ad_re
+c     do ire=5,14
+      ad_step = 1
+c     param(2)=1./real(ire*10)
+      call rom_init_params
+      do i=1,ad_nsteps
+         call rom_step
+         time=time+dt
+         ad_step=ad_step+1
       enddo
+      call sett
+      if (nio.eq.0) write (6,*) 'eest:',eest(),nint(ad_re)
+c     enddo
 
       call exitt0
 
