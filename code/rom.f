@@ -481,3 +481,48 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine setc_const
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real cux(lt), cuy(lt), cuz(lt)
+
+      common /scrk1/ t1(lt), binv(lt),wk1(lt),wk2(lt),wk3(lt)
+      common /scrcwk/ wk(lcloc)
+
+      conv_time=dnekclock()
+
+      call invers2(binv,bm1,lx1*ly1*lz1*nelv)
+      call rone(binv,lx1*ly1*lz1*nelv)
+
+      if (nio.eq.0) write (6,*) 'inside setc'
+
+      l=0
+      n=lx1*ly1*lz1*nelv
+
+      do k=0,0
+         call setcnv_c(ub(1,k),vb(1,k),wb(1,k))
+         do j=0,nb
+            call setcnv_u(ub(1,j),vb(1,j),wb(1,j))
+            call ccu(cux,cuy,cuz)
+            do i=1,nb
+               l=l+1
+               clocal(l) = 
+     $            op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),cux,cuy,cuz,binv)
+               icloc(1,l) = i
+               icloc(2,l) = j
+               icloc(3,l) = k
+            enddo
+         enddo
+      enddo
+      ncloc=l
+
+      if (nio.eq.0) write (6,*) 'exiting setc'
+
+      return
+      end
+c-----------------------------------------------------------------------
