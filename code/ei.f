@@ -92,20 +92,6 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'
       include 'MOR'
-      include 'MASS'
-
-      parameter (lt=lx1*ly1*lz1*lelt)
-
-      common /scrsets/ g1(lt),g2(lt),g3(lt),h1(lt),h2(lt)
-
-      esum=0.
-
-      n=lx1*ly1*lz1*nelt
-
-      call rone(h1,n)
-      call rzero(h2,n)
-
-      rinstep=1./real(ad_nsteps)
 
       call rzero(thb,nb+1)
       call add2s2(thb,uj(0,1),-5./6,nb+1)
@@ -114,13 +100,15 @@ c-----------------------------------------------------------------------
       call add2s2(thb,uj(0,4), 1./3,nb+1)
       call add2s2(thb,uj(0,5),-7./6,nb+1)
       call add2s2(thb,uj(0,6),11./6,nb+1)
-      s=ad_dt*rinstep
+
+      s=1./(ad_dt*ad_nsteps)
       call cmult(thb,s,nb+1)
 
       s=1./ad_re
       call cmult2(tha,ua,s,nb+1)
 
       call copy(thc,u2a,(nb+1)**2)
+c     call chsign(thc,(nb+1)**2)
 
       call add2s2(thc,u2j(0,0,2),-1.*rinstep,(nb+1)**2)
       call add2s2(thc,u2j(0,0,5),-1.*rinstep,(nb+1)**2)
