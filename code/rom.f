@@ -235,7 +235,8 @@ c-----------------------------------------------------------------------
             call opzero(t4,t5,t6)
             s=1./real(ns)
             do i=1,ns
-               call opadds(t4,t5,t6,us(1,1,i),us(1,2,i),us(1,3,i),s,n,2)
+               call opadds(t4,t5,t6,
+     $            us(1,1,i),us(1,2,i),us(1,ldim,i),s,n,2)
             enddo
             call opcopy(ub,vb,wb,t4,t5,t6)
          endif
@@ -268,7 +269,7 @@ c-----------------------------------------------------------------------
          do i=1,ns
             call sub3(us0(1,1,i),us(1,1,i),ub,n)
             call sub3(us0(1,2,i),us(1,2,i),vb,n)
-            if (ldim.eq.3) call sub3(us0(1,3,i),us(1,3,i),wb,n)
+            if (ldim.eq.3) call sub3(us0(1,ldim,i),us(1,ldim,i),wb,n)
          enddo
       endif
 
