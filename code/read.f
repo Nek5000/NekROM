@@ -101,6 +101,7 @@ c     This routine reads files specificed in fname
       include 'SIZE'
       include 'TOTAL'
       include 'ZPER'
+      include 'AVG'
 
       parameter (lt=lx1*ly1*lz1*lelt)
       parameter (lt2=lx2*ly2*lz2*lelt)
@@ -116,14 +117,15 @@ c     This routine reads files specificed in fname
       if (nid.eq.0) open(77,file=fnlint,status='old',err=199)
       ierr = iglmax(ierr,1)
       if (ierr.gt.0) goto 199
+
       n = lx1*ly1*lz1*nelt
       n2= lx2*ly2*lz2*nelt
 
       call push_sol(vx,vy,vz,pr,t)
+      call zero_sol(uavg,vavg,wavg,pavg,tavg)
 
       icount = 0
       do ipass=1,nsave
-
          call blank(initc,127)
          initc(1) = 'done '
          if (nid.eq.0) read(77,127,end=998) initc(1)
@@ -138,6 +140,7 @@ c     This routine reads files specificed in fname
             time=ttmp
 
             ip=ipass
+            call add_sol(uavg,vavg,wavg,pavg,tavg,vx,vy,vz,pr,t)
             call copy_sol(usave(1,1,ip),usave(1,2,ip),usave(1,ldim,ip),
      $                    psave(1,ip),tsave(1,1,ip),vx,vy,vz,pr,t)
             icount = icount+1
@@ -152,6 +155,10 @@ c     This routine reads files specificed in fname
       nsave = icount ! Actual number of files read
 
       call pop_sol(vx,vy,vz,pr,t)
+
+      s=1./real(nsave)
+      call scale_sol(uavg,vavg,wavg,pavg,tavg,s)
+
       return
 
   199 continue ! exception handle for file not found
