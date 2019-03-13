@@ -4,6 +4,8 @@ c-----------------------------------------------------------------------
       character*128 fname
       character*128 fntrunc
 
+      real a(n)
+
       if (nid.eq.0) then
          call blank(fntrunc,128)
          len=ltruncr(fname,128)
