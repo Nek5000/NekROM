@@ -217,7 +217,8 @@ c-----------------------------------------------------------------------
       if (nio.eq.0) write (6,*) 'call get_saved_fields'
 
       if (ifrecon.and..not.ifread) then
-         call get_saved_fields(us,ps,ts,ns,'file.list ')
+         fname1='file.list '
+         call get_saved_fields(us,ps,ts,ns,fname1)
       endif
 
       fname1='avg.list'
