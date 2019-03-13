@@ -894,3 +894,123 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine push_sol(vx,vy,vz,pr,t)
+
+      include 'SIZE'
+
+      parameter (lt1=lx1*ly1*lz1*lelt)
+      parameter (lt2=lx2*ly2*lz2*lelt)
+
+      common /pushpop/ ux(lt1),uy(lt1),uz(lt1),pp(lt2),tt(lt1,ldimt)
+
+      real vx(lt1),vy(lt1),vz(lt1),pr(lt2),t(lt1,ldimt)
+
+      call opcopy(ux,uy,uz,vx,vy,vz)
+      call copy(pp,pr,lx2*ly2*lz2*nelv)
+
+      do idim=1,ldimt
+         call copy(tt(1,idim),t(1,idim),lx1*ly1*lz1*nelt)
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine pop_sol(vx,vy,vz,pr,t)
+
+      include 'SIZE'
+
+      parameter (lt1=lx1*ly1*lz1*lelt)
+      parameter (lt2=lx2*ly2*lz2*lelt)
+
+      common /pushpop/ ux(lt1),uy(lt1),uz(lt1),pp(lt2),tt(lt1,ldimt)
+
+      real vx(lt1),vy(lt1),vz(lt1),pr(lt2),t(lt1,ldimt)
+
+      call opcopy(vx,vy,vz,ux,uy,uz)
+      call copy(pr,pp,lx2*ly2*lz2*nelv)
+
+      do idim=1,ldimt
+         call copy(t(1,idim),tt(1,idim),lx1*ly1*lz1*nelt)
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine zero_sol(vx,vy,vz,pr,t)
+
+      include 'SIZE'
+
+      parameter (lt1=lx1*ly1*lz1*lelt)
+      parameter (lt2=lx2*ly2*lz2*lelt)
+
+      real vx(lt1),vy(lt1),vz(lt1),pr(lt2),t(lt1,ldimt)
+
+      call opzero(vx,vy,vz)
+      call rzero(pr,lx2*ly2*lz2*nelv)
+
+      do idim=1,ldimt
+         call rzero(t(1,idim),lx1*ly1*lz1*nelt)
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine add_sol(vx,vy,vz,pr,t,ux,uy,uz,pp,tt)
+
+      include 'SIZE'
+
+      parameter (lt1=lx1*ly1*lz1*lelt)
+      parameter (lt2=lx2*ly2*lz2*lelt)
+
+      real vx(lt1),vy(lt1),vz(lt1),pr(lt2),t(lt1,ldimt)
+      real ux(lt1),uy(lt1),uz(lt1),pp(lt2),tt(lt1,ldimt)
+
+      call opadd2(vx,vy,vz,ux,uy,uz)
+      call add2(pr,pp,lx2*ly2*lz2*nelv)
+
+      do idim=1,ldimt
+         call add2(t(1,idim),tt(1,idim),lx1*ly1*lz1*nelt)
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine scale_sol(vx,vy,vz,pr,t,s)
+
+      include 'SIZE'
+
+      parameter (lt1=lx1*ly1*lz1*lelt)
+      parameter (lt2=lx2*ly2*lz2*lelt)
+
+      real vx(lt1),vy(lt1),vz(lt1),pr(lt2),t(lt1,ldimt)
+
+      call opcmult(vx,vy,vz,s)
+      call cmult(pr,s,lx2*ly2*lz2*nelv)
+
+      do idim=1,ldimt
+         call cmult(t(1,idim),s,lx1*ly1*lz1*nelt)
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine copy_sol(vx,vy,vz,pr,t,ux,uy,uz,pp,tt)
+
+      include 'SIZE'
+
+      parameter (lt1=lx1*ly1*lz1*lelt)
+      parameter (lt2=lx2*ly2*lz2*lelt)
+
+      real vx(lt1),vy(lt1),vz(lt1),pr(lt2),t(lt1,ldimt)
+      real ux(lt1),uy(lt1),uz(lt1),pp(lt2),tt(lt1,ldimt)
+
+      call opcopy(vx,vy,vz,ux,uy,uz)
+      call copy(pr,pp,lx2*ly2*lz2*nelv)
+
+      do idim=1,ldimt
+         call copy(t(1,idim),tt(1,idim),lx1*ly1*lz1*nelt)
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
