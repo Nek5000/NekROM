@@ -209,7 +209,7 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'inside rom_init_fields'
 
-      n=lx1*ly1*lz1*nelv
+      n=lx1*ly1*lz1*nelt
       call rone(wm1,n)
 
       ns = ls
