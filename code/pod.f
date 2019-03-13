@@ -443,25 +443,23 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       common /scruz/ h1(lt),h2(lt)
+      character*3 op
 
       nio=-1
-      if (ifl2) then
-         do i=1,nb
-            p=wl2prod(ub(1,i),vb(1,i),wb(1,i),ub(1,i),vb(1,i),wb(1,i))
-            s=1./sqrt(p)
-            call opcmult(ub(1,i),vb(1,i),wb(1,i),s)
-         enddo
-      else
+      op='L2 '
+      if (.not.ifl2) then
+         op='H10'
          n=lx1*ly1*lz1*nelv
          call rone(h1,n)
          call rzero(h2,n)
-         do i=1,nb
-            p=h10prod(ub(1,i),vb(1,i),wb(1,i),
-     $                ub(1,i),vb(1,i),wb(1,i),h1,h2)
-            s=1./sqrt(p)
-            call opcmult(ub(1,i),vb(1,i),wb(1,i),s)
-         enddo
       endif
+
+      do i=1,nb
+         p=vecprod(ub(1,i),vb(1,i),wb(1,i),
+     $             ub(1,i),vb(1,i),wb(1,i),h1,h2,op)
+         s=1./sqrt(p)
+         call opcmult(ub(1,i),vb(1,i),wb(1,i),s)
+      enddo
       nio=nid
 
       return
