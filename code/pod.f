@@ -63,10 +63,12 @@ c-----------------------------------------------------------------------
          call opcopy(u0(1,1),u0(1,2),u0(1,3),ub(1,0),vb(1,0),wb(1,0))
 
          ! ub, vb, wb, are the modes
+         call opzero(ub,vb,wb)
+         do j=1,ns
          do i=1,nb
-            call col3(ub(1,i),evec(1,i),us0(1,1,i))
-            call col3(vb(1,i),evec(1,i),us0(1,2,i))
-            if (ldim.eq.3) call col3(wb(1,i),evec(1,i),us0(1,ldim,i))
+            call opadds(ub(1,i),vb(1,i),wb(1,i),
+     $         us0(1,1,j),us0(1,2,j),us0(1,ldim,j),evec(j,i),n,2)
+         enddo
          enddo
 c        call dgemm( 'N','N',n,nb,ls,one,ust,lt,evec,ls,zero,ub(1,1),lt)
 c        call dgemm( 'N','N',n,nb,ls,one,vst,lt,evec,ls,zero,vb(1,1),lt)
