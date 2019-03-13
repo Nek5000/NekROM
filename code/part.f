@@ -177,7 +177,7 @@ c           call opcolv(ust(1,i),vst(1,i),wst(1,i),dmask(1,1,1,1,ip))
             call opcolv(ust(1,i),vst(1,i),wst(1,i),tmp1)
             call incomprn(ust,vst,wst,pr)
          enddo
-         call gengram
+c        call gengram
 
          call genevec
 c        call genbases

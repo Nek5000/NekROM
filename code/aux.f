@@ -60,7 +60,7 @@ c-----------------------------------------------------------------------
          call rom_init_params
          call rom_init_fields
 
-         call gengram
+c        call gengram
          call genevec
 c        call genbases
 
