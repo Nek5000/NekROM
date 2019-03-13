@@ -217,7 +217,7 @@ c-----------------------------------------------------------------------
       if (nio.eq.0) write (6,*) 'call get_saved_fields'
 
       if (ifrecon.and..not.ifread) then
-         call get_saved_fields(us,ns,'file.list ')
+         call get_saved_fields(us,ps,ts,ns,'file.list ')
       endif
 
       fname1='avg.list'
@@ -235,7 +235,7 @@ c-----------------------------------------------------------------------
             call opzero(t4,t5,t6)
             s=1./real(ns)
             do i=1,ns
-               call opadds(t4,t5,t6,us(1,i),vs(1,i),ws(1,i),s,n,2)
+               call opadds(t4,t5,t6,us(1,1,i),us(1,2,i),us(1,3,i),s,n,2)
             enddo
             call opcopy(ub,vb,wb,t4,t5,t6)
          endif
@@ -266,8 +266,9 @@ c-----------------------------------------------------------------------
 
       if (ifrecon) then
          do i=1,ns
-            call opsub3(ust(1,i),vst(1,i),wst(1,i),
-     $                  us(1,i),vs(1,i),ws(1,i),ub,vb,wb)
+            call sub3(us0(1,1,i),us(1,1,i),ub,n)
+            call sub3(us0(1,2,i),us(1,2,i),vb,n)
+            if (ldim.eq.3) call sub3(us0(1,3,i),us(1,3,i),wb,n)
          enddo
       endif
 
