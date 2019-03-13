@@ -36,13 +36,13 @@ c-----------------------------------------------------------------------
          if (ifflow) call exitti(
      $   'error: running rom_update_v with ifflow = .true.$',nelv)
          if (istep.eq.0) then
-            call rom_setup
+            call rom_setup_v
          else
             call rom_step
             call recon(vx,vy,vz,u) ! reconstruct velocity to be used in h-t
          endif
       else
-         call rom_setup
+         call rom_setup_v
 
          if (nio.eq.0) write (6,*) 'starting rom_step loop',ad_nsteps
 
@@ -98,7 +98,7 @@ c     call setops
       return
       end
 c-----------------------------------------------------------------------
-      subroutine rom_setup
+      subroutine rom_setup_v
 
       include 'SIZE'
       include 'MOR'
