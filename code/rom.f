@@ -200,8 +200,7 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /scrk0/ t1(lt),t2(lt),t3(lt),t4(lt),t5(lt),t6(lt),
-     $               u0(lx1*ly1*lz1*lelt,3)
+      common /scrk0/ t1(lt),t2(lt),t3(lt),u0(lx1*ly1*lz1*lelt,3)
 
       logical alist
 
