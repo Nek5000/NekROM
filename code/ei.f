@@ -8,7 +8,7 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       common /scrsig/ r1(lt),r2(lt),r3(lt)
-      real g1(1),g2(1),g3(1),h1(1),h2(1)
+      real g1(lt),g2(lt),g3(lt),h1(lt),h2(lt)
 
       tolh=1.e-5
       nmxhi=1000
