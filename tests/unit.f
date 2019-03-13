@@ -89,7 +89,7 @@ c-----------------------------------------------------------------------
       if (nio.eq.0) write (6,*) 'edif',edif,s1,s2
 
       iexit=1
-      if (edif.lt.1.e-16) iexit=0
+      if (edif.lt.1.e-13) iexit=0
 
       call exit(iexit)
 
@@ -136,8 +136,8 @@ c-----------------------------------------------------------------------
       if (nio.eq.0) write (6,*) 'edif',edif,s1,s3
       if (nio.eq.0) write (6,*) 'esym',esym,s2,s3
 
-      if (edif.gt.1.e-16) iexit=iexit+1
-      if (esym.gt.2.e-15) iexit=iexit+2
+      if (edif.gt.1.e-13) iexit=iexit+1
+      if (esym.gt.2.e-14) iexit=iexit+2
 
       s1=0.
       s2=0.
@@ -208,7 +208,7 @@ c-----------------------------------------------------------------------
       edif=sqrt(s1/s3)
       esym=sqrt(s2/s3)
 
-      if (edif.gt.1.e-16) iexit=iexit+1
+      if (edif.gt.1.e-14) iexit=iexit+1
       if (esym.gt.1.e-16) iexit=iexit+2
 
       if (nio.eq.0) write (6,*) 'edif',edif,s1,s3
@@ -290,18 +290,18 @@ c-----------------------------------------------------------------------
       do k=1,nb
       do j=1,nb
       do i=1,nb
-         s2=s2+(cglob(i,j,k)+cglob(k,j,i))**2
+         s2=s2+(cglob(i,j,k)+cglob(j,i,k))**2
       enddo
       enddo
       enddo
 
       edif=sqrt(s1/s3)
-      if (edif.gt.1.e-16) iexit=iexit+1
+      if (edif.gt.1.e-13) iexit=iexit+1
       if (nio.eq.0) write (6,*) 'edif',edif,s1,s3
 
       eskew=sqrt(s2/s3)
 c     if (eskew.gt.1.e-16) iexit=iexit+2
-      if (nio.eq.0) write (6,*) 'eskew',eskew,s1,s2
+      if (nio.eq.0) write (6,*) 'eskew',eskew,s2,s3
 
       call exit(iexit)
 
