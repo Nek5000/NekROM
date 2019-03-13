@@ -11,8 +11,7 @@ c     Matrices and vectors for advance
       real tmp(0:nb),tmat(nb,nb+1),rhs(0:nb)
       real coef(1:nb), e0(0:nb)
 
-      common /scrk3/ work(lt)
-      common /scrk1/ t1(lt),t2(lt),t3(lt)
+      common /scrkrstep/ t1(lt),t2(lt),t3(lt),work(lt)
 
 c     Variable for vorticity
       real vort(lt,3)
@@ -133,8 +132,7 @@ c     Matrices and vectors for advance
       real tmp(0:nb),tmat(nb,nb+1),rhs(0:nb)
       real coef(1:nb), e0(0:nb)
 
-      common /scrk3/ work(lt)
-      common /scrk1/ t1(lt),t2(lt),t3(lt)
+      common /scrrstep/ t1(lt),t2(lt),t3(lt),work(lt)
 
 c     Variable for vorticity
       real vort(lt,3)
@@ -345,8 +343,7 @@ c     Matrices and vectors for advance
       real tmp(0:nb),tmat(nb,nb+1)
       real coef(1:nb)
 
-      common /scrk3/ work(lt)
-      common /scrk1/ t1(lt),t2(lt),t3(lt)
+      common /scrrstep/ t1(lt),t2(lt),t3(lt),work(lt)
 
 c     Variable for vorticity
       real vort(lt,3)
@@ -647,7 +644,7 @@ c-----------------------------------------------------------------------
       save    icalld
       data    icalld /0/
 
-      common /scrk4/ work(lx1*ly1*lz1*lelt)
+      common /screvalc/ work(lx1*ly1*lz1*lelt)
 
       if (icalld.eq.0) then
          evalc_time=0.
