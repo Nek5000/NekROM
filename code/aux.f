@@ -143,7 +143,8 @@ c-----------------------------------------------------------------------
 
       do i=1,ns
          if (nio.eq.0) write (6,*) i,'th snapshot:'
-         call opadd3(t1,t2,t3,us(1,1,i),us(1,2,i),us(1,3,i),ub,vb,wb)
+         call opadd3(t1,t2,t3,
+     $      us(1,1,i),us(1,2,i),us(1,ldim,i),ub,vb,wb)
          nio = -1
          call proj2bases(utmp,t1,t2,t3)
          nio = nid
@@ -155,7 +156,7 @@ c-----------------------------------------------------------------------
          enddo
 
          ! ctke_fom is used to compute mean TKE
-         call ctke_fom(tmp,us(1,1,i),us(1,2,i),us(1,3,i))
+         call ctke_fom(tmp,us(1,1,i),us(1,2,i),us(1,ldim,i))
          tkes=tkes+tmp
       enddo
 
@@ -165,7 +166,7 @@ c-----------------------------------------------------------------------
       call cmult(savg,s,nb+1)
 
       do i=1,ns
-         call opadd3(t1,t2,t3,us(1,1,i),us(1,2,i),us(1,3,i),ub,vb,wb)
+         call opadd3(t1,t2,t3,us(1,1,i),us(1,2,i),us(1,ldim,i),ub,vb,wb)
          nio = -1
          call proj2bases(utmp,t1,t2,t3)
          nio = nid
@@ -729,8 +730,7 @@ c     projecting on to the reduce space
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /scrk5/ t1(lt),t2(lt),t3(lt)
-      common /scrk9/ utmp(0:nb)
+      common /scrksnaps/ t1(lt),t2(lt),t3(lt),utmp(0:nb)
 
       real savg(0:nb), svar(0:nb)
 
