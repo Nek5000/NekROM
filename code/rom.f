@@ -205,7 +205,7 @@ c-----------------------------------------------------------------------
 
       logical alist
 
-      character*127 fname1
+      character*128 fname1
 
       if (nio.eq.0) write (6,*) 'inside rom_init_fields'
 
