@@ -491,8 +491,8 @@ c-----------------------------------------------------------------------
          call axhelm(vw,vb(1,j),h1,h2,1,1)
          if (ldim.eq.3) call axhelm(ww,wb(1,j),h1,h2,1,1)
          do i=1,ls
-            work(i,j) = glsc2(us(1,i),uw,n)+glsc2(vs(1,i),vw,n)
-            if (ldim.eq.3) work(i,j) = work(i,j)+glsc2(ws(1,i),ww,n)
+            work(i,j) = glsc2(us(1,1,i),uw,n)+glsc2(us(1,2,i),vw,n)
+            if (ldim.eq.3) work(i,j)=work(i,j)+glsc2(us(1,ldim,i),ww,n)
          enddo
          tmp1(j) = vlmin(work(:,j),ls)
          tmp2(j) = vlmax(work(:,j),ls)

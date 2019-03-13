@@ -141,7 +141,7 @@ c     This routine reads files specificed in fname
             time=ttmp
 
             ip=ipass
-            call opcopy(usave(1,1,ip),usave(1,2,ip),usave(1,3,ip),
+            call opcopy(usave(1,1,ip),usave(1,2,ip),usave(1,ldim,ip),
      $                  vx,vy,vz)
             call copy(psave(1,ip),pr,n2)
             do idim=1,ldimt
