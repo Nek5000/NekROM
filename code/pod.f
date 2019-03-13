@@ -63,10 +63,15 @@ c-----------------------------------------------------------------------
          call opcopy(u0(1,1),u0(1,2),u0(1,3),ub(1,0),vb(1,0),wb(1,0))
 
          ! ub, vb, wb, are the modes
-         call dgemm( 'N','N',n,nb,ls,one,ust,lt,evec,ls,zero,ub(1,1),lt)
-         call dgemm( 'N','N',n,nb,ls,one,vst,lt,evec,ls,zero,vb(1,1),lt)
-         if (ldim.eq.3)
-     $   call dgemm( 'N','N',n,nb,ls,one,wst,lt,evec,ls,zero,wb(1,1),lt)
+         do i=1,nb
+            call col3(ub(1,i),evec(1,i),us0(1,1,i))
+            call col3(vb(1,i),evec(1,i),us0(1,2,i))
+            if (ldim.eq.3) call col3(wb(1,i),evec(1,i),us0(1,ldim,i))
+         enddo
+c        call dgemm( 'N','N',n,nb,ls,one,ust,lt,evec,ls,zero,ub(1,1),lt)
+c        call dgemm( 'N','N',n,nb,ls,one,vst,lt,evec,ls,zero,vb(1,1),lt)
+c        if (ldim.eq.3)
+c    $   call dgemm( 'N','N',n,nb,ls,one,wst,lt,evec,ls,zero,wb(1,1),lt)
 
          call scale_bases
       endif
