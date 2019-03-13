@@ -60,10 +60,14 @@ c-----------------------------------------------------------------------
          zero= 0.
 
          ns = ls ! REQUIRED: get_saved_fields overwrites ns argument
-         call opcopy(u0(1,1),u0(1,2),u0(1,3),ub(1,0),vb(1,0),wb(1,0))
+
+         do i=1,nb
+            call rzero(ub(1,i),n)
+            call rzero(vb(1,i),n)
+            if (ldim.eq.3) call rzero(wb(1,i),n)
+         enddo
 
          ! ub, vb, wb, are the modes
-         call opzero(ub,vb,wb)
          do j=1,ns
          do i=1,nb
             call opadds(ub(1,i),vb(1,i),wb(1,i),
