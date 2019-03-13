@@ -90,8 +90,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine get_saved_fields(usave,vsave,wsave,nsave,
-     $                            u0,ifvort,fname)
+      subroutine get_saved_fields(usave,psave,tsave,nsave,fname)
 
 c     This routine reads files specificed in fname
 
@@ -100,13 +99,13 @@ c     This routine reads files specificed in fname
       include 'ZPER'
 
       parameter (lt=lx1*ly1*lz1*lelt)
-      real usave(lt,nsave),vsave(lt,nsave),wsave(lt,nsave)
-      real u0(lt,3) ! Initial condtion
+      parameter (lt2=lx2*ly2*lz2*lelt)
+
+      real usave(lt,ldim,nsave),psave(lt2,nsave),tsave(lt,ldimt,nsave)
       character*128 fname
       character*128 fnlint
-      logical ifvort
 
-      common /scrk5/ uu(lt),vv(lt),ww(lt),t1(lt),t2(lt),t3(lt)
+      common /scrk5/ uu(lt),vv(lt),ww(lt),t1(lt),t2(lt,ldimt),t3(lt)
 
       ierr = 0
       call lints(fnlint,fname,128)
@@ -117,6 +116,11 @@ c     This routine reads files specificed in fname
       n2= lx2*ly2*lz2*nelt
 
       call opcopy(uu,vv,ww,vx,vy,vz)
+      call copy(t1,pr,n2)
+
+      do i=1,ldimt
+         call copy(t2(1,i),t(1,1,1,1,i),n)
+      enddo
 
       icount = 0
       do ipass=1,nsave
@@ -134,15 +138,13 @@ c     This routine reads files specificed in fname
             call restart(nfiles)  ! Note -- time is reset.
             time=ttmp
 
-!           Usave = U_snapshot - U_0:
-
-            if (ifvort) then
-               call comp_vort3(t1,t2,t3,vx,vy,vz)
-               call sub3(usave(1,ipass),t1,u0,n)
-            else
-               call opsub3(usave(1,ipass),vsave(1,ipass),wsave(1,ipass),
-     $                     vx,vy,vz,u0(1,1),u0(1,2),u0(1,3))
-            endif
+            ip=ipass
+            call opcopy(usave(1,1,ip),usave(1,2,ip),usave(1,3,ip),
+     $                  vx,vy,vz)
+            call copy(psave(1,ip),pr,n2)
+            do idim=1,ldimt
+               call copy(tsave(1,idim,ip),t(1,1,1,1,idim),n)
+            enddo
             icount = icount+1
          else
             goto 999
@@ -151,6 +153,10 @@ c     This routine reads files specificed in fname
       enddo
 
       call opcopy(vx,vy,vz,uu,vv,ww)
+      call copy(pr,t1,n2)
+      do i=1,ldimt
+         call copy(t(1,1,1,1,i),t2(1,i),n)
+      enddo
 
   999 continue  ! clean up averages
       if (nid.eq.0) close(77)
