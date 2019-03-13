@@ -492,9 +492,9 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real cux(lt), cuy(lt), cuz(lt)
+      real cux(lt),cuy(lt),cuz(lt)
 
-      common /scrk1/ t1(lt), binv(lt),wk1(lt),wk2(lt),wk3(lt)
+      common /scrk1/ t1(lt),binv(lt),wk1(lt),wk2(lt),wk3(lt)
       common /scrcwk/ wk(lcloc)
 
       conv_time=dnekclock()
