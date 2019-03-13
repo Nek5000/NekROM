@@ -237,7 +237,7 @@ c-----------------------------------------------------------------------
             call copy_sol(ub,vb,wb,pb,tb,uavg,vavg,wavg,pavg,tavg)
          endif
       else
-         call opcopy(ub,vb,wb,vx,vy,vz)
+         call copy_sol(ub,vb,wb,pb,tb,vx,vy,vz,pr,t)
       endif
 
       if (nio.eq.0) write (6,*) 'copy ic'
