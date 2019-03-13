@@ -226,12 +226,13 @@ c-----------------------------------------------------------------------
       if (nio.eq.0) write (6,*) 'setting initial conditions'
 
       if (ifavgic.and..not.ifread) then
-         call opcopy(t1,t2,t3,vx,vy,vz)
 
          inquire (file=fname1,exist=alist)
          if (alist) then
+            call push_sol(vx,vy,vz,pr,t)
             call auto_averager(fname1)
             call opcopy(ub,vb,wb,vx,vy,vz)
+            call pop_sol(vx,vy,vz,pr,t)
          else
             call opzero(t4,t5,t6)
             s=1./real(ns)
@@ -241,7 +242,6 @@ c-----------------------------------------------------------------------
             enddo
             call opcopy(ub,vb,wb,t4,t5,t6)
          endif
-         call opcopy(vx,vy,vz,t1,t2,t3)
       else
          call opcopy(ub,vb,wb,vx,vy,vz)
       endif

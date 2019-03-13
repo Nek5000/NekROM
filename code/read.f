@@ -119,12 +119,7 @@ c     This routine reads files specificed in fname
       n = lx1*ly1*lz1*nelt
       n2= lx2*ly2*lz2*nelt
 
-      call opcopy(uu,vv,ww,vx,vy,vz)
-      call copy(t1,pr,n2)
-
-      do i=1,ldimt
-         call copy(t2(1,i),t(1,1,1,1,i),n)
-      enddo
+      call push_sol(vx,vy,vz,pr,t)
 
       icount = 0
       do ipass=1,nsave
@@ -143,23 +138,12 @@ c     This routine reads files specificed in fname
             time=ttmp
 
             ip=ipass
-            call opcopy(usave(1,1,ip),usave(1,2,ip),usave(1,ldim,ip),
-     $                  vx,vy,vz)
-            call copy(psave(1,ip),pr,n2)
-            do idim=1,ldimt
-               call copy(tsave(1,idim,ip),t(1,1,1,1,idim),n)
-            enddo
+            call copy_sol(usave(1,1,ip),usave(1,2,ip),usave(1,ldim,ip),
+     $                    psave(1,ip),tsave(1,1,ip),vx,vy,vz,pr,t)
             icount = icount+1
          else
             goto 999
          endif
-
-      enddo
-
-      call opcopy(vx,vy,vz,uu,vv,ww)
-      call copy(pr,t1,n2)
-      do i=1,ldimt
-         call copy(t(1,1,1,1,i),t2(1,i),n)
       enddo
 
   999 continue  ! clean up averages
@@ -167,6 +151,7 @@ c     This routine reads files specificed in fname
 
       nsave = icount ! Actual number of files read
 
+      call pop_sol(vx,vy,vz,pr,t)
       return
 
   199 continue ! exception handle for file not found
