@@ -215,8 +215,12 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       function vecprod(t1,t2,t3,t4,t5,t6,h1,h2,space)
 
-      real t1(1),t2(1),t3(1),t4(1),t5(1),t6(1)
-      real h1(1),h2(1)
+      include 'SIZE'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real t1(lt),t2(lt),t3(lt),t4(lt),t5(lt),t6(lt)
+      real h1(lt),h2(lt)
 
       character*3 space
 
