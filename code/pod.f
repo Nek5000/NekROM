@@ -298,21 +298,24 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine gengram
+      subroutine gengram(gram,s,ms,mdim)
 
       include 'SIZE'
       include 'MOR'
 
+      real s(1)
+      real gram(1)
+
       if (ifl2) then
-         call gengraml2
+         call gengraml2(gram,s,ms,mdim)
       else
-         call gengramh10
+         call gengramh10(gram,s,ms,mdim)
       endif
 
       return
       end
 c-----------------------------------------------------------------------
-      subroutine gengramh10
+      subroutine gengramh10(gram,s,ms,mdim)
 
       include 'SIZE'
       include 'TOTAL'
@@ -320,39 +323,38 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real uw(lt),vw(lt),ww(lt),h1(lt),h2(lt)
-      real u0(lt,3)
+      real gram(ms,ms)
+      real s(lt,mdim,ms)
+
+      common /scrgram/ uw(lt),vw(lt),ww(lt),h1(lt),h2(lt)
 
       if (nio.eq.0) write (6,*) 'inside gengramh10'
 
       n  = lx1*ly1*lz1*nelt
-      ns = ls
-
-      ! copy zero mode to u0(1,1:3)
-      call opcopy(u0(1,1),u0(1,2),u0(1,3),ub(1,0),vb(1,0),wb(1,0))
 
       call rone (h1,n)
       call rzero(h2,n)
 
-      do j=1,ns ! Form the Gramian, U=U_K^T A U_K using H^1_0 Norm
-         call axhelm(uw,ust(1,j),h1,h2,1,1)
-         call axhelm(vw,vst(1,j),h1,h2,1,1)
-         if (ldim.eq.3) call axhelm(ww,wst(1,j),h1,h2,1,1)
-         do i=1,ns
-            uu(i,j) = glsc2(ust(1,i),uw,n)+glsc2(vst(1,i),vw,n)
-            if (ldim.eq.3) uu(i,j) = uu(i,j)+glsc2(wst(1,i),ww,n)
-            if (nio.eq.0) write (99,*) uu(i,j)
+      do j=1,ms ! Form the Gramian, U=U_K^T A U_K using H^1_0 Norm
+         call axhelm(uw,s(1,1,j),h1,h2,1,1)
+         if (mdim.ge.2) call axhelm(vw,s(1,2,j),h1,h2,1,1)
+         if (mdim.ge.3) call axhelm(ww,s(1,3,j),h1,h2,1,1)
+         do i=1,ms
+            gram(i,j) = glsc2(s(1,1,i),uw,n)
+            if (mdim.ge.2) gram(i,j)=gram(i,j)+glsc2(s(1,2,i),vw,n)
+            if (mdim.eq.3) gram(i,j)=gram(i,j)+glsc2(s(1,3,i),ww,n)
+            if (nio.eq.0) write (99,*) gram(i,j)
          enddo
-         if (nio.eq.0) write(6,1) j,uu(1,j)
+         if (nio.eq.0) write(6,1) j,gram(1,j)
       enddo
 
       if (nio.eq.0) write (6,*) 'exiting gengramh10'
-    1 format (' uu',i5,1p1e16.6)
+    1 format (' gram',i5,1p1e16.6)
 
       return
       end
 c-----------------------------------------------------------------------
-      subroutine gengraml2
+      subroutine gengraml2(gram,s,ms,mdim)
 
       include 'SIZE'
       include 'TOTAL'
@@ -360,33 +362,28 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real uw(lt),vw(lt),ww(lt),h1(lt),h2(lt)
-      real u0(lt,3)
-      real bwm1(lt)
+      common /scrgram/ uw(lt),vw(lt),ww(lt),h1(lt),h2(lt)
+      real gram(ms,ms)
+      real s(lt,mdim,ms)
 
       if (nio.eq.0) write (6,*) 'inside gengraml2'
 
       n=lx1*ly1*lz1*nelv
 
-      call col3(bwm1,bm1,wm1,n)
-
-      if (nio.eq.0) write (6,*) 'ns',ns
-
-      do j=1,ns ! Form the Gramian, U=U_K^T A U_K using L2 Norm
-      do i=1,ns
-         if (ifvort) then
-            uu(i,j)=glsc3(us(1,i),us(1,j),bwm1,n)
-         else
-            uu(i,j) = op_glsc2_wt(ust(1,i),vst(1,i),wst(1,i),
-     $                            ust(1,j),vst(1,j),wst(1,j),bwm1)
-         endif
+      do j=1,ms ! Form the Gramian, U=U_K^T A U_K using L2 Norm
+      do i=1,ms
+         gram(i,j)=glsc3(s(1,1,i),s(1,1,j),bm1,n)
+         if (mdim.ge.2)
+     $      gram(i,j)=gram(i,j)+glsc3(s(1,2,i),s(1,2,j),bm1,n)
+         if (mdim.ge.3)
+     $      gram(i,j)=gram(i,j)+glsc3(s(1,3,i),s(1,3,j),bm1,n)
       enddo
-         if (nio.eq.0) write (6,1) j,uu(1,j)
+         if (nio.eq.0) write (6,1) j,gram(1,j)
       enddo
 
       if (nio.eq.0) write (6,*) 'exiting gengraml2'
 
-    1 format (' uu',i5,' ',1p1e16.6)
+    1 format (' gram',i5,' ',1p1e16.6)
 
       return
       end
