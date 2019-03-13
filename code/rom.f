@@ -111,7 +111,7 @@ c-----------------------------------------------------------------------
       call rom_init_fields
 
       if (.not.ifread) then
-         call gengram
+         call gengram(uu,us0,ns,ldim)
          call genevec
       endif
 
@@ -217,8 +217,7 @@ c-----------------------------------------------------------------------
       if (nio.eq.0) write (6,*) 'call get_saved_fields'
 
       if (ifrecon.and..not.ifread) then
-         call opzero(u0,u0(1,2),u0(1,3))
-         call get_saved_fields(us,vs,ws,ns,u0,ifvort,'file.list ')
+         call get_saved_fields(us,ns,'file.list ')
       endif
 
       fname1='avg.list'
