@@ -334,30 +334,6 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine ce1n(e1n)
-
-      include 'SIZE'
-      include 'MOR'
-
-      parameter (lt=lx1*ly1*lz1*lelt)
-
-      common /scrns/ ud(lt),vd(lt),wd(lt)
-
-      call opcopy(ud,vd,wd,uavg,vavg,wavg)
-
-      n=lx1*ly1*lz1*nelv
-
-      do i=0,nb
-         s=-usa(i)
-         call opadds(ud,vd,wd,ub(1,i),vb(1,i),wb(1,i),s,n,2)
-      enddo
-
-      e1n = h10prod(ud,vd,wd,ud,vd,wd,h1,h2)
-     $    / h10prod(uavg,vavg,wavg,uavg,vavg,wavg,h1,h2)
-
-      return
-      end
-c-----------------------------------------------------------------------
       subroutine bases_analysis
 
       include 'SIZE'
