@@ -143,7 +143,7 @@ c-----------------------------------------------------------------------
 
       do i=1,ns
          if (nio.eq.0) write (6,*) i,'th snapshot:'
-         call opadd3(t1,t2,t3,us(1,i),vs(1,i),ws(1,i),ub,vb,wb)
+         call opadd3(t1,t2,t3,us(1,1,i),us(1,2,i),us(1,3,i),ub,vb,wb)
          nio = -1
          call proj2bases(utmp,t1,t2,t3)
          nio = nid
@@ -155,7 +155,7 @@ c-----------------------------------------------------------------------
          enddo
 
          ! ctke_fom is used to compute mean TKE
-         call ctke_fom(tmp,us(1,i),vs(1,i),ws(1,i))
+         call ctke_fom(tmp,us(1,1,i),us(1,2,i),us(1,3,i))
          tkes=tkes+tmp
       enddo
 
@@ -165,7 +165,7 @@ c-----------------------------------------------------------------------
       call cmult(savg,s,nb+1)
 
       do i=1,ns
-         call opadd3(t1,t2,t3,us(1,i),vs(1,i),ws(1,i),ub,vb,wb)
+         call opadd3(t1,t2,t3,us(1,1,i),us(1,2,i),us(1,3,i),ub,vb,wb)
          nio = -1
          call proj2bases(utmp,t1,t2,t3)
          nio = nid
@@ -744,7 +744,7 @@ c     projecting on to the reduce space
 
       do i=1,ns
          if (nio.eq.0) write (6,*) i,'th snapshot:'
-         call opadd3(t1,t2,t3,us(1,i),vs(1,i),ws(1,i),ub,vb,wb)
+c        call opadd3(t1,t2,t3,us(1,i),vs(1,i),ws(1,i),ub,vb,wb)
          nio = -1
          call proj2bases(utmp,t1,t2,t3)
 c call dumpcoef(utmp,nb,i) <- deprecated subroutine
@@ -756,7 +756,7 @@ c call dumpcoef(utmp,nb,i) <- deprecated subroutine
       call cmult(savg,s,nb+1)
 
       do i=1,ns
-         call opadd3(t1,t2,t3,us(1,i),vs(1,i),ws(1,i),ub,vb,wb)
+c        call opadd3(t1,t2,t3,us(1,i),vs(1,i),ws(1,i),ub,vb,wb)
          nio = -1
          call proj2bases(utmp,t1,t2,t3)
          nio = nid
