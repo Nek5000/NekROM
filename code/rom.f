@@ -234,13 +234,7 @@ c-----------------------------------------------------------------------
             call opcopy(ub,vb,wb,vx,vy,vz)
             call pop_sol(vx,vy,vz,pr,t)
          else
-            call opzero(t4,t5,t6)
-            s=1./real(ns)
-            do i=1,ns
-               call opadds(t4,t5,t6,
-     $            us(1,1,i),us(1,2,i),us(1,ldim,i),s,n,2)
-            enddo
-            call opcopy(ub,vb,wb,t4,t5,t6)
+            call copy_sol(ub,vb,wb,pb,tb,uavg,vavg,wavg,pavg,tavg)
          endif
       else
          call opcopy(ub,vb,wb,vx,vy,vz)
