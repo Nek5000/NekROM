@@ -43,7 +43,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine sets() ! set sigmas
+      subroutine sets ! set sigmas
 
       include 'SIZE'
       include 'MOR'
