@@ -197,6 +197,7 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
+      include 'AVG'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
