@@ -161,7 +161,11 @@ c-----------------------------------------------------------------------
       ad_re = 1/param(2)
 
       ifl2=.false.
-      if (param(33).eq.0) ifl2=.true.
+      ips='H10'
+      if (param(33).eq.0) then
+         ifl2=.true.
+         ips='L2 '
+      endif
 
       ifavgic=.false.
       if (param(34).ne.0) ifavgic=.true.
@@ -210,7 +214,10 @@ c-----------------------------------------------------------------------
       if (nio.eq.0) write (6,*) 'inside rom_init_fields'
 
       n=lx1*ly1*lz1*nelt
+
       call rone(wm1,n)
+      call rone(ones,n)
+      call rzero(zeros,n)
 
       ns = ls
 
