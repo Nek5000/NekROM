@@ -1014,3 +1014,134 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine ctd_sol(ux,uy,uz,vx,vy,vz,pr,t) ! compute the time-derivative
+
+      include 'SIZE'
+      include 'INPUT'
+      include 'MASS'
+
+      parameter (lt1=lx1*ly1*lz1*lelt)
+      parameter (lt2=lx2*ly2*lz2*lelt)
+
+      real vx(lt1),vy(lt1),vz(lt1),pr(lt2),t(lt1,ldimt)
+      real ux(lt1),uy(lt1),uz(lt1)
+      common /scrctd/ t1(lt1),t2(lt1),t3(lt1),h1(lt1),h2(lt1)
+
+      n1=lx1*ly1*lz1*nelt
+      n2=lx2*ly2*lz2*nelt
+
+      call gradp(ux,uy,uz,pr)
+      call opchsgn(ux,uy,uz)
+
+c     call outpost(ux,uy,uz,pr,t,'ctd')
+
+      call setcnv_c(vx,vy,vz)
+      call setcnv_u(vx,vy,vz)
+      call ccu(t1,t2,t3)
+      call opbinv1(t1,t2,t3,t1,t2,t3,1.)
+      call opchsgn(t1,t2,t3)
+
+c     call outpost(t1,t2,t3,pr,t,'ctd')
+
+      call opadd2(ux,uy,uz,t1,t2,t3)
+
+      call rone(h1,n1)
+      call rzero(h2,n1)
+
+      call lap2d(t1,vx)
+      call lap2d(t2,vy)
+      if (ldim.eq.3) call lap2d(t3,vz)
+      s=-param(2)
+      call opcmult(t1,t2,t3,s)
+
+c     call outpost(t1,t2,t3,pr,t,'ctd')
+
+      call opadd2(ux,uy,uz,t1,t2,t3)
+
+c     call outpost(ux,uy,uz,pr,t,'ctd')
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine gradp(px,py,pz,pr)
+
+      include 'SIZE'
+
+      parameter (lt1=lx1*ly1*lz1*lelt)
+      parameter (lt2=lx2*ly2*lz2*lelt)
+
+      real pr(lt2),px(lt1),py(lt1),pz(lt1)
+
+      call opgradt(px,py,pz,pr)
+      call opbinv1(px,py,pz,px,py,pz,1.)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine setpbases ! set pressure bases according to gradient
+
+      include 'SIZE'
+      include 'MOR'
+      include 'SOLN'
+      include 'AVG'
+
+      n2=lx2*ly2*lz2*nelv
+
+      call gradp(us(1,1,i),us(1,2,i),us(1,ldim,i),ps(1,i))
+
+      do i=1,ns
+         call gradp(us(1,1,i),us(1,2,i),us(1,ldim,i),ps(1,i))
+      enddo
+
+      call gengram(uu,us,ns,ldim)
+      call genevec
+
+      do i=0,nb
+         call rzero(pb(1,i),n2)
+      enddo
+
+      ! ub, vb, wb, are the modes
+      do j=1,ns
+      do i=1,nb
+         call add2s2(pb(1,i),ps(1,j),evec(j,i),n2)
+      enddo
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine setdtbases
+
+      include 'SIZE'
+      include 'MOR'
+      include 'AVG'
+
+      n=lx1*ly1*lz1*nelt
+
+      do i=1,ns
+         call ctd_sol(us0(1,1,i),us0(1,2,i),us0(1,ldim,i),
+     $      us(1,1,i),us(1,2,i),us(1,ldim,i),ps(1,i),ts(1,1,i))
+      enddo
+
+      call gengram(uu,us0,ns,ldim)
+      call genevec
+
+      do i=1,nb
+         call opzero(ub(1,i),vb(1,i),wb(1,i),n)
+      enddo
+
+      ! ub, vb, wb, are the modes
+      do j=1,ns
+      do i=1,nb
+         call opadds(ub(1,i),vb(1,i),wb(1,i),
+     $      us0(1,1,j),us0(1,2,j),us0(1,ldim,j),evec(j,i),n,2)
+      enddo
+      enddo
+
+      do i=1,nb
+         call outpost(ub(1,i),vb(1,i),wb(1,i),pavg,tavg,'bs3')
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
