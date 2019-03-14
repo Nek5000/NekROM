@@ -61,7 +61,7 @@ c-----------------------------------------------------------------------
          call rom_init_fields
 
 c        call gengram
-         call genevec
+c        call genevec
 c        call genbases
 
          do i=0,nb
@@ -1078,6 +1078,22 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine setpgram(vv)
+
+      include 'SIZE'
+      include 'MOR'
+
+      real vv(ls,ls)
+
+      do i=1,ns
+         call gradp(dps(1,1,i),dps(1,2,i),dps(1,ldim,i),ps(1,i))
+      enddo
+
+      call gengram(vv,dps,ns,ldim)
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine setpbases ! set pressure bases according to gradient
 
       include 'SIZE'
@@ -1087,14 +1103,8 @@ c-----------------------------------------------------------------------
 
       n2=lx2*ly2*lz2*nelv
 
-      call gradp(us(1,1,i),us(1,2,i),us(1,ldim,i),ps(1,i))
-
-      do i=1,ns
-         call gradp(us(1,1,i),us(1,2,i),us(1,ldim,i),ps(1,i))
-      enddo
-
-      call gengram(uu,us,ns,ldim)
-      call genevec
+      call setpgram(pg)
+      call genevec(pg)
 
       do i=0,nb
          call rzero(pb(1,i),n2)
@@ -1123,8 +1133,8 @@ c-----------------------------------------------------------------------
      $      us(1,1,i),us(1,2,i),us(1,ldim,i),ps(1,i),ts(1,1,i))
       enddo
 
-      call gengram(uu,us0,ns,ldim)
-      call genevec
+      call gengram(dug,us0,ns,ldim)
+      call genevec(dug)
 
       do i=1,nb
          call opzero(ub(1,i),vb(1,i),wb(1,i),n)

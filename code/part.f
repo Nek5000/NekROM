@@ -179,7 +179,7 @@ c           call opcolv(ust(1,i),vst(1,i),wst(1,i),dmask(1,1,1,1,ip))
          enddo
 c        call gengram
 
-         call genevec
+c        call genevec
 c        call genbases
          do i=1,npb
             k=(ip-1)*npb+i

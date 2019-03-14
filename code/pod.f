@@ -400,7 +400,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine genevec
+      subroutine genevec(gg)
 
       !!! does not work if ns.lt.ls !!!
 
@@ -410,8 +410,7 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real identity(ls,ls),eigv(ls,ls),w(ls,ls)
-      real vv(ls,ls)
+      real hh(ls,ls),gg(ls,ls),identity(ls,ls),eigv(ls,ls),w(ls,ls)
 
       if (nio.eq.0) write (6,*) 'inside genevec'
 
@@ -421,10 +420,10 @@ c-----------------------------------------------------------------------
          identity(j,j) = 1
       enddo
 
-      call copy(vv,uu,ls*ls)
+      call copy(hh,gg,ls*ls)
 
-      call generalev(vv,identity,eval,ls,w)
-      call copy(eigv,vv,ls*ls)
+      call generalev(hh,identity,eval,ls,w)
+      call copy(eigv,hh,ls*ls)
 
       if (nio.eq.0) write (6,*)'number of modes:',nb
 

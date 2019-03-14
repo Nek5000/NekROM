@@ -111,8 +111,8 @@ c-----------------------------------------------------------------------
       call rom_init_fields
 
       if (.not.ifread) then
-         call gengram(uu,us0,ns,ldim)
-         call genevec
+         call gengram(ug,us0,ns,ldim)
+         call genevec(ug)
       endif
 
       call setbases
