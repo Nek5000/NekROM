@@ -225,49 +225,25 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'call get_saved_fields'
 
-      if (ifrecon.and..not.ifread) then
+      if (.not.ifread) then
          fname1='file.list '
          call get_saved_fields(us,ps,ts,ns,fname1)
-      endif
 
-      fname1='avg.list'
-
-      if (nio.eq.0) write (6,*) 'setting initial conditions'
-
-      if (ifavgic.and..not.ifread) then
-
+         fname1='avg.list'
          inquire (file=fname1,exist=alist)
          if (alist) then
             call push_sol(vx,vy,vz,pr,t)
             call auto_averager(fname1)
-            call opcopy(ub,vb,wb,vx,vy,vz)
+            call copy_sol(uavg,vavg,wavg,pavg,tavg,vx,vy,vz,pr,t)
             call pop_sol(vx,vy,vz,pr,t)
-         else
-            call copy_sol(ub,vb,wb,pb,tb,uavg,vavg,wavg,pavg,tavg)
          endif
-      else
-         call copy_sol(ub,vb,wb,pb,tb,vx,vy,vz,pr,t)
+         if (ifavgic) then
+            call copy_sol(ub,vb,wb,pb,tb,uavg,vavg,wavg,pavg,tavg)
+         else
+            call copy_sol(ub,vb,wb,pb,tb,uic,vic,wic,pic,tic)
+         endif
       endif
 
-      if (nio.eq.0) write (6,*) 'copy ic'
-
-      if (ifvort) then
-         call comp_vort3(u0,t1,t2,ub,vb,wb)
-         call comp_vort3(t1,t2,t3,vx,vy,vz)
-
-         call copy(ub,u0,n)
-         call rzero(vb,n)
-         call rzero(wb,n)
-
-         call copy(vx,t1,n)
-         call rzero(vy,n)
-         call rzero(vz,n)
-      else
-         ! copy zero mode to u0(1,1:3)
-         call opcopy(u0,u0(1,2),u0(1,3),ub,vb,wb)
-      endif
-
-      if (nio.eq.0) write (6,*) 'copying us to ust'
       if (ifforce) call gradp(bgx,bgy,bgz,pavg)
 
       if (ifrecon) then
