@@ -8,7 +8,7 @@ c     parameters and common blocks for MOR
       common /morbasis/ ub(lx1*ly1*lz1*lelt,0:nb),
      $                  vb(lx1*ly1*lz1*lelt,0:nb),
      $                  wb(lx1*ly1*lz1*lelt,0:nb),
-     $                  pb(lx1*ly1*lz1*lelt,0:nb),
+     $                  pb(lx2*ly2*lz2*lelt,0:nb),
      $                  tb(lx1*ly1*lz1*lelt,ldimt,0:nb)
 
       common /moric/ uic(lx1*ly1*lz1*lelt),
