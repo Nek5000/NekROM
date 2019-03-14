@@ -13,10 +13,10 @@
    0.00000         QVOL
    0.00000         FINTIME
    1.00000E+05     NSTEPS
-  -5.00000E-03     DT
+  -1.00000E-03     DT
    0.00000         IOCOMM
    0.00000         IOTIME
-   2.00000E+02      IOSTEP
+   1.00000E+03      IOSTEP
    0.00000         EQTYPE
    1.00000         AXIS
   0.500000E-01     GRID
@@ -34,8 +34,8 @@
    0.00000
    0.00000
    0.00000
-   0.00000     p033 MOR: 0 -> L2prod, else -> H10prod
-   0.00000     p034 MOR: 0 -> mode 0 = IC, else -> mode 0 = average of avg.list
+   1.00000     p033 MOR: 0 -> L2prod, else -> H10prod
+   1.00000     p034 MOR: 0 -> mode 0 = IC, else -> mode 0 = average of avg.list
    1.00000     p035 MOR: 0 -> gen ops, 1 -> dump ops, 2 -> read ops
    0.00000         XMAGNET
    0.00000         NGRIDS
@@ -69,7 +69,7 @@
    1.00000         =separate .fld file for each dump.
    4.00000         ormat for output .fld file
    4.00000         ormat for input file
-   2.00000E+04 p068 iastep: freq for avg_all (0=iostep)
+   2.00000E+99 p068 iastep: freq for avg_all (0=iostep)
 0  5000.00                   frequency of srf dump
    0.00000
    0.00000
