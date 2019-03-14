@@ -140,6 +140,7 @@ c-----------------------------------------------------------------------
       call setb
       call setc
       call setu
+      call setg
 
       if (nio.eq.0) write (6,*) 'exiting setops'
 
@@ -447,6 +448,25 @@ c-----------------------------------------------------------------------
       call outpost(uic,vic,wic,pr,t,'uic')
 
       if (nio.eq.0) write (6,*) 'exiting setu'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine setg
+
+      include 'SIZE'
+      include 'SOLN'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      if (nio.eq.0) write (6,*) 'inside setg'
+
+      do i=1,nb
+         bg(i)=-vecprod(bgx,bgy,bgz,ub(1,i),vb(1,i),wb(1,i))
+      enddo
+
+      if (nio.eq.0) write (6,*) 'exiting setg'
 
       return
       end
