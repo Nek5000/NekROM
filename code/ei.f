@@ -17,7 +17,7 @@ c-----------------------------------------------------------------------
 
       mio=nio
       nio=-1
-      csig=vecprod(r1,r2,r3,r1,r2,r3,h1,h2,op)
+      csig=vecprod(r1,r2,r3,r1,r2,r3)
       nio=mio
 
       return
@@ -52,15 +52,9 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /scrsets/ g1(lt),g2(lt),g3(lt),h1(lt),h2(lt)
-
-      character*3 op
+      common /scrsets/ g1(lt),g2(lt),g3(lt)
 
       n=lx1*ly1*lz1*nelt
-      op='L2 '
-
-      call rone(h1,n)
-      call rzero(h2,n)
 
       ifprojfld(1)=.false.
 
@@ -68,18 +62,18 @@ c-----------------------------------------------------------------------
          call col3(g1,ub(1,j),bm1,n)
          call col3(g2,vb(1,j),bm1,n)
          if (ldim.eq.3) call col3(g3,wb(1,j),bm1,n)
-         sigb(j)=csig(g1,g2,g3,h1,h2,op)
+         sigb(j)=csig(g1,g2,g3,ones,zeros,ips)
 
-         call axhelm(g1,ub(1,j),h1,h2,1,1)
-         call axhelm(g2,vb(1,j),h1,h2,1,1)
-         if (ldim.eq.3) call axhelm(g3,wb(1,j),h1,h2,1,1)
-         siga(j)=csig(g1,g2,g3,h1,h2,op)
+         call axhelm(g1,ub(1,j),ones,zeros,1,1)
+         call axhelm(g2,vb(1,j),ones,zeros,1,1)
+         if (ldim.eq.3) call axhelm(g3,wb(1,j),ones,zeros,1,1)
+         siga(j)=csig(g1,g2,g3,ones,zeros,ipsp)
 
          call setcnv_c(ub(1,j),vb(1,j),wb(1,j))
          do i=0,nb
             call setcnv_u(ub(1,i),vb(1,i),wb(1,i))
             call ccu(g1,g2,g3)
-            sigc(i,j)=csig(g1,g2,g3,h1,h2,op)
+            sigc(i,j)=csig(g1,g2,g3,ones,zeros,ipsp)
          enddo
       enddo
 

@@ -368,23 +368,20 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /scrvh/ h1(lt),h2(lt)
       common /scrseta/ usave(lt),vsave(lt),wsave(lt),wk1(lt)
       common /scrread/ tab((nb+1)**2)
 
       if (nio.eq.0) write (6,*) 'inside seta'
 
       n=lx1*ly1*lz1*nelt
-      call rone (h1,n)
-      call rzero(h2,n)
 
       if (ifread) then
          call read_serial(a0,(nb+1)**2,'ops/a ',wk1,nid)
       else
          do j=0,nb ! Form the A matrix for basis function
-            call axhelm(usave,ub(1,j),h1,h2,1,1)
-            call axhelm(vsave,vb(1,j),h1,h2,1,1)
-            if (ldim.eq.3) call axhelm(wsave,wb(1,j),h1,h2,1,1)
+            call axhelm(usave,ub(1,j),ones,zeros,1,1)
+            call axhelm(vsave,vb(1,j),ones,zeros,1,1)
+            if (ldim.eq.3) call axhelm(wsave,wb(1,j),ones,zeros,1,1)
             do i=0,nb
                a0(i,j) = glsc2(ub(1,i),usave,n)+glsc2(vb(1,i),vsave,n)
                if (ldim.eq.3) a0(i,j) = a0(i,j)+glsc2(wb(1,i),wsave,n)

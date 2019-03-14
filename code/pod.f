@@ -43,7 +43,7 @@ c-----------------------------------------------------------------------
 
       real u0(lt,3)
       common /scrk3/ t4(lt),t5(lt),t6(lt)
-      common /scrk4/ h1(lt),h2(lt),bwm1(lt)
+      common /scrk4/ bwm1(lt)
       common /scrk5/ au(lt),av(lt),aw(lt)
 
       if (nio.eq.0) write (6,*) 'inside setbases'
@@ -52,12 +52,6 @@ c-----------------------------------------------------------------------
          call loadbases(ub,vb,wb,nb)
       else
          n=lx1*ly1*lz1*nelt
-
-         call rone(h1,n)
-         call rzero(h2,n)
-
-         one = 1.
-         zero= 0.
 
          do i=1,nb
             call rzero(ub(1,i),n)
@@ -81,9 +75,6 @@ c    $   call dgemm( 'N','N',n,nb,ls,one,wst,lt,evec,ls,zero,wb(1,1),lt)
       endif
 
       if (ifdrago) then
-         n=lx1*ly1*lz1*nelt
-         call copy(h1,vdiff,n)
-         call rzero(h2,n)
          do i=0,nb
             call lap2d(au,ub(1,i))
             call lap2d(av,vb(1,i))
@@ -129,7 +120,6 @@ c-----------------------------------------------------------------------
       real ux(lt),uy(lt),uz(lt)
 
       common /scrk3/ t1(lt),t2(lt),t3(lt),t4(lt),t5(lt),t6(lt)
-      common /scrk4/ h1(lt),h2(lt)
 
       real coef(0:nb)
 
@@ -137,22 +127,20 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelt
 
-      call rone(h1,n)
-      call rzero(h2,n)
       call opsub3(t1,t2,t3,ux,uy,uz,ub,vb,wb)
 
       coef(0) = 1.
       if (nio.eq.0) write (6,1) coef(0),coef(0),1.
 
       do i=1,nb
-         call axhelm(t4,ub(1,i),h1,h2,1,1)
-         call axhelm(t5,vb(1,i),h1,h2,1,1)
+         call axhelm(t4,ub(1,i),ones,zeros,1,1)
+         call axhelm(t5,vb(1,i),ones,zeros,1,1)
 
          ww = glsc2(t4,ub(1,i),n)+glsc2(t5,vb(1,i),n)
          vv = glsc2(t4,t1,n)+glsc2(t5,t2,n)
 
          if (ldim.eq.3) then
-            call axhelm(t6,wb(1,i),h1,h2,1,1)
+            call axhelm(t6,wb(1,i),ones,zeros,1,1)
             ww = ww + glsc2(t6,wb(1,i),n)
             vv = vv + glsc2(t6,t3,n)
          endif
@@ -180,7 +168,7 @@ c-----------------------------------------------------------------------
       real ux(lt),uy(lt),uz(lt)
 
       common /scrk3/ t1(lt),t2(lt),t3(lt),t4(lt),t5(lt),t6(lt)
-      common /scrk4/ h1(lt),h2(lt),bwm1(lt)
+      common /scrk4/ bwm1(lt)
 
       real coef(0:nb)
 
@@ -221,21 +209,19 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      function vecprod(t1,t2,t3,t4,t5,t6,h1,h2,space)
+      function vecprod(t1,t2,t3,t4,t5,t6)
 
       include 'SIZE'
+      include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
       real t1(lt),t2(lt),t3(lt),t4(lt),t5(lt),t6(lt)
-      real h1(lt),h2(lt)
 
-      character*3 space
-
-      if (space.eq.'L2 ') then
-         vecprod=wl2prod(t1,t2,t3,t4,t5,t6,h1,h2)
-      else if (space.eq.'H10') then
-         vecprod=h10prod(t1,t2,t3,t4,t5,t6,h1,h2)
+      if (ips.eq.'L2 ') then
+         vecprod=wl2prod(t1,t2,t3,t4,t5,t6)
+      else if (ips.eq.'H10') then
+         vecprod=h10prod(t1,t2,t3,t4,t5,t6)
       else
          call exitti('did not provide supported inner product space$')
       endif
@@ -243,7 +229,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      function h10prod(t1,t2,t3,t4,t5,t6,h1,h2)
+      function h10prod(t1,t2,t3,t4,t5,t6)
 
       include 'SIZE'
       include 'SOLN'
@@ -253,7 +239,6 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       real t1(lt),t2(lt),t3(lt),t4(lt),t5(lt),t6(lt)
-      real h1(lt),h2(lt)
 
       common /scrk3/ t7(lt),t8(lt),t9(lt)
 
@@ -261,15 +246,15 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelt
 
-      call axhelm(t7,t1,h1,h2,1,1)
+      call axhelm(t7,t1,ones,zeros,1,1)
       h10prod=glsc2(t7,t4,n)
 
       if (.not.ifvort) then
-         call axhelm(t8,t2,h1,h2,1,1)
+         call axhelm(t8,t2,ones,zeros,1,1)
          h10prod=h10prod+glsc2(t8,t5,n)
 
          if (ldim.eq.3) then
-            call axhelm(t9,t3,h1,h2,1,1)
+            call axhelm(t9,t3,ones,zeros,1,1)
             h10prod = h10prod + glsc2(t9,t6,n)
          endif
       endif
@@ -279,7 +264,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      function wl2prod(t1,t2,t3,t4,t5,t6,h1,h2)
+      function wl2prod(t1,t2,t3,t4,t5,t6)
 
       include 'SIZE'
       include 'SOLN'
@@ -289,7 +274,6 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       real t1(lt),t2(lt),t3(lt),t4(lt),t5(lt),t6(lt)
-      real h1(lt),h2(lt)
 
       common /scrk3/ bwm1(lt),t8(lt),t9(lt)
 
@@ -338,19 +322,16 @@ c-----------------------------------------------------------------------
       real gram(ms,ms)
       real s(lt,mdim,ms)
 
-      common /scrgram/ uw(lt),vw(lt),ww(lt),h1(lt),h2(lt)
+      common /scrgram/ uw(lt),vw(lt),ww(lt)
 
       if (nio.eq.0) write (6,*) 'inside gengramh10'
 
       n  = lx1*ly1*lz1*nelt
 
-      call rone (h1,n)
-      call rzero(h2,n)
-
       do j=1,ms ! Form the Gramian, U=U_K^T A U_K using H^1_0 Norm
-         call axhelm(uw,s(1,1,j),h1,h2,1,1)
-         if (mdim.ge.2) call axhelm(vw,s(1,2,j),h1,h2,1,1)
-         if (mdim.ge.3) call axhelm(ww,s(1,3,j),h1,h2,1,1)
+         call axhelm(uw,s(1,1,j),ones,zeros,1,1)
+         if (mdim.ge.2) call axhelm(vw,s(1,2,j),ones,zeros,1,1)
+         if (mdim.ge.3) call axhelm(ww,s(1,3,j),ones,zeros,1,1)
          do i=1,ms
             gram(i,j) = glsc2(s(1,1,i),uw,n)
             if (mdim.ge.2) gram(i,j)=gram(i,j)+glsc2(s(1,2,i),vw,n)
@@ -374,7 +355,7 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /scrgram/ uw(lt),vw(lt),ww(lt),h1(lt),h2(lt)
+      common /scrgram/ uw(lt),vw(lt),ww(lt)
       real gram(ms,ms)
       real s(lt,mdim,ms)
 
@@ -449,21 +430,11 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /scruz/ h1(lt),h2(lt)
       character*3 op
 
       nio=-1
-      op='L2 '
-      if (.not.ifl2) then
-         op='H10'
-         n=lx1*ly1*lz1*nelv
-         call rone(h1,n)
-         call rzero(h2,n)
-      endif
-
       do i=1,nb
-         p=vecprod(ub(1,i),vb(1,i),wb(1,i),
-     $             ub(1,i),vb(1,i),wb(1,i),h1,h2,op)
+         p=vecprod(ub(1,i),vb(1,i),wb(1,i),ub(1,i),vb(1,i),wb(1,i))
          s=1./sqrt(p)
          call opcmult(ub(1,i),vb(1,i),wb(1,i),s)
       enddo
@@ -480,7 +451,7 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       real ep
-      real uw(lt),vw(lt),ww(lt),h1(lt),h2(lt)
+      real uw(lt),vw(lt),ww(lt)
       real tmp1(nb),tmp2(nb),delta(nb)
       real work(ls,nb)
 
@@ -490,13 +461,10 @@ c-----------------------------------------------------------------------
 
       n  = lx1*ly1*lz1*nelt
 
-      call rone (h1,n)
-      call rzero(h2,n)
-
       do j=1,nb                    ! compute hyper-parameter
-         call axhelm(uw,ub(1,j),h1,h2,1,1)
-         call axhelm(vw,vb(1,j),h1,h2,1,1)
-         if (ldim.eq.3) call axhelm(ww,wb(1,j),h1,h2,1,1)
+         call axhelm(uw,ub(1,j),ones,zeros,1,1)
+         call axhelm(vw,vb(1,j),ones,zeros,1,1)
+         if (ldim.eq.3) call axhelm(ww,wb(1,j),ones,zeros,1,1)
          do i=1,ls
             work(i,j) = glsc2(us(1,1,i),uw,n)+glsc2(us(1,2,i),vw,n)
             if (ldim.eq.3) work(i,j)=work(i,j)+glsc2(us(1,ldim,i),ww,n)
