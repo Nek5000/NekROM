@@ -2,7 +2,7 @@ c     parameters and common blocks for MOR
 
       include 'LMOR'
 
-      common /morgram/ uu(ls,ls)
+      common /morgram/ ug(ls,ls),pg(ls,ls),dug(ls,ls),vg(ls,ls)
       common /moreig/ evec(ls,nb),eval(ls)
 
       common /morbasis/ ub(lx1*ly1*lz1*lelt,0:nb),
@@ -24,6 +24,7 @@ c     parameters and common blocks for MOR
       common /morsave/ us(lx1*ly1*lz1*lelt,ldim,ls),
      $                 us0(lx1*ly1*lz1*lelt,ldim,ls),
      $                 ps(lx2*ly2*lz2*lelt,ls),
+     $                 dps(lx1*ly1*lz1*lelt,ldim,ls),
      $                 ts(lx1*ly1*lz1*lelt,ldimt,ls)
 
       common /moravg/ ua(0:nb),u2a(0:nb,0:nb)
