@@ -183,6 +183,7 @@ c     call add2s2(rhs,a0,s,nb+1) ! not working...
       call mxm(conv,nb,ad_alpha(1,count),3,tmp(1),1)
 
       call sub2(rhs,tmp,nb+1)
+      if (ifforce) call add2(rhs(1),bg(1),nb)
 
       if (ad_step.le.3) call lu(flu,nb,nb,ir,ic)
 

@@ -189,6 +189,7 @@ c-----------------------------------------------------------------------
       if (ifread) ifrecon=.false.
       ifpart=.false.
       ifravg=.false.
+      ifforce=.false.
 
       call compute_BDF_coef(ad_alpha,ad_beta)
 
@@ -267,6 +268,7 @@ c-----------------------------------------------------------------------
       endif
 
       if (nio.eq.0) write (6,*) 'copying us to ust'
+      if (ifforce) call gradp(bgx,bgy,bgz,pavg)
 
       if (ifrecon) then
          do i=1,ns
