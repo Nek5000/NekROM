@@ -80,3 +80,8 @@ c     parameters and common blocks for MOR
       common /morstat/ mtke
 
       common /mortest/ ul2(nb),uh10(nb)
+
+      character*3 ips
+      common /morchar/ ips
+
+      common /morid/ ones(lx1*ly1*lz1*lelt),zeros(lx1*ly1*lz1*lelt)
