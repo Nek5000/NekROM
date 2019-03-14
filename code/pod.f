@@ -59,8 +59,6 @@ c-----------------------------------------------------------------------
          one = 1.
          zero= 0.
 
-         ns = ls ! REQUIRED: get_saved_fields overwrites ns argument
-
          do i=1,nb
             call rzero(ub(1,i),n)
             call rzero(vb(1,i),n)
