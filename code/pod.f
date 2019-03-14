@@ -66,10 +66,6 @@ c-----------------------------------------------------------------------
      $         us0(1,1,j),us0(1,2,j),us0(1,ldim,j),evec(j,i),n,2)
          enddo
          enddo
-c        call dgemm( 'N','N',n,nb,ls,one,ust,lt,evec,ls,zero,ub(1,1),lt)
-c        call dgemm( 'N','N',n,nb,ls,one,vst,lt,evec,ls,zero,vb(1,1),lt)
-c        if (ldim.eq.3)
-c    $   call dgemm( 'N','N',n,nb,ls,one,wst,lt,evec,ls,zero,wb(1,1),lt)
 
          call scale_bases
       endif
