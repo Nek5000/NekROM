@@ -151,43 +151,17 @@ c     Variable for vorticity
 
       count = min0(ad_step,3)
 
+      call setrhs(rhs,count)
 
       if (ad_step.le.3) then
          call cmult2(flu,b,ad_beta(1,count)/ad_dt,nb*nb)
          call add2s2(flu,a,1/ad_re,nb*nb)
+         call lu(flu,nb,nb,ir,ic)
       endif
 
-      ONE = 1.
-      ZERO= 0.
+      call solve(rhs,flu,1,nb,nb,ir,ic)
 
-      call mxm(u,nb+1,ad_beta(2,count),3,tmp,1)
-c     call mxm(b0,nb+1,tmp,nb+1,rhs,1)
-      call mxm(b,nb,tmp(1),nb,rhs(1),1)
-
-      call cmult(rhs,-1.0/ad_dt,nb+1)
-
-      s=-1.0/ad_re
-
-c     call add2s2(rhs,a0,s,nb+1) ! not working...
-      do i=0,nb
-         rhs(i)=rhs(i)+s*a0(i,0)
-      enddo
-
-      call copy(conv(1,3),conv(1,2),nb)
-      call copy(conv(1,2),conv(1,1),nb)
-
-      call evalc(conv)
-
-      call mxm(conv,nb,ad_alpha(1,count),3,tmp(1),1)
-
-      call sub2(rhs,tmp,nb+1)
-      if (ifforce) call add2(rhs(1),bg(1),nb)
-
-      if (ad_step.le.3) call lu(flu,nb,nb,ir,ic)
-
-      call solve(rhs(1),flu,1,nb,nb,ir,ic)
-
-      call shiftu(rhs(1))
+      call shiftu(rhs)
       call add2(ua,u,nb+1)
 
       do j=0,nb
@@ -669,6 +643,41 @@ c-----------------------------------------------------------------------
       call gop(cu,work,'+  ',nb)
 
       evalc_time=evalc_time+dnekclock()-stime
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine setrhs(rhs,count)
+
+      include 'SIZE'
+      include 'MOR'
+
+      common /scrrhs/ tmp(0:nb)
+
+      real rhs(nb)
+
+      call mxm(u,nb+1,ad_beta(2,count),3,tmp,1)
+c     call mxm(b0,nb+1,tmp,nb+1,rhs,1)
+      call mxm(b,nb,tmp(1),nb,rhs,1)
+
+      call cmult(rhs,-1.0/ad_dt,nb)
+
+      s=-1.0/ad_re
+
+c     call add2s2(rhs,a0,s,nb+1) ! not working...
+      do i=1,nb
+         rhs(i)=rhs(i)+s*a0(i,0)
+      enddo
+
+      call copy(conv(1,3),conv(1,2),nb)
+      call copy(conv(1,2),conv(1,1),nb)
+
+      call evalc(conv)
+
+      call mxm(conv,nb,ad_alpha(1,count),3,tmp(1),1)
+
+      call sub2(rhs,tmp(1),nb)
+      if (ifforce) call add2(rhs,bg(1),nb)
 
       return
       end
