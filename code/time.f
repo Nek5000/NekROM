@@ -147,12 +147,12 @@ c     Variable for vorticity
 
       n  = lx1*ly1*lz1*nelt
 
-      count = min0(ad_step,3)
+      icount = min0(ad_step,3)
 
       call setrhs(rhs,count)
 
       if (ad_step.le.3) then
-         call cmult2(flu,b,ad_beta(1,count)/ad_dt,nb*nb)
+         call cmult2(flu,b,ad_beta(1,icount)/ad_dt,nb*nb)
          call add2s2(flu,a,1/ad_re,nb*nb)
          call lu(flu,nb,nb,ir,ic)
       endif
@@ -619,7 +619,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine setrhs(rhs,count)
+      subroutine setrhs(rhs,icount)
 
       include 'SIZE'
       include 'MOR'
@@ -628,7 +628,7 @@ c-----------------------------------------------------------------------
 
       real rhs(nb)
 
-      call mxm(u,nb+1,ad_beta(2,count),3,tmp,1)
+      call mxm(u,nb+1,ad_beta(2,icount),3,tmp,1)
 c     call mxm(b0,nb+1,tmp,nb+1,rhs,1)
       call mxm(b,nb,tmp(1),nb,rhs,1)
 
@@ -646,7 +646,7 @@ c     call add2s2(rhs,a0,s,nb+1) ! not working...
 
       call evalc(conv)
 
-      call mxm(conv,nb,ad_alpha(1,count),3,tmp(1),1)
+      call mxm(conv,nb,ad_alpha(1,icount),3,tmp(1),1)
 
       call sub2(rhs,tmp(1),nb)
       if (ifforce) call add2(rhs,bg(1),nb)
