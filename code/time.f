@@ -80,11 +80,6 @@ c     enddo
 
       if (ifheat) call recon(vx,vy,vz,u)
 
-      if (ifravg) then
-         call recon(vx,vy,vz,u)
-         call avg_all
-      endif
-
       if (mod(ad_step,ad_iostep).eq.0) then
 
 !        This output is to make sure the ceof matches with matlab code
@@ -106,7 +101,7 @@ c     enddo
          ifdump=.true.
          if (ifdump) then
             idump=ad_step/ad_iostep
-            if (.not.ifravg) call recon(vx,vy,vz,u)
+            call recon(vx,vy,vz,u)
 
             ! compute the vorticity of the ROM reconstructed field
             call opcopy(t1,t2,t3,vx,vy,vz)
@@ -189,7 +184,7 @@ c     call comp_rms ! old
 
          if (.true.) then
             idump=ad_step/ad_iostep
-            if (.not.ifravg) call recon(vx,vy,vz,u)
+            call recon(vx,vy,vz,u)
 
             ! compute the vorticity of the ROM reconstructed field
             call opcopy(t1,t2,t3,vx,vy,vz)
