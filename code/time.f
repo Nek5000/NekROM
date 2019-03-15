@@ -49,9 +49,6 @@ c     write (6,*) 'ad_beta',count,ad_beta(1,count)
 c     call mxm(b0,nb+1,tmp,nb+1,rhs,1)
       call mxm(b,nb,tmp(1),nb,rhs(1),1)
       call cmult(rhs,-1.0/ad_dt,nb+1)
-c     do i=0,nb
-c        write (6,*) 'rhs',i,rhs(i)
-c     enddo
 
       s=-1.0/ad_re
 
