@@ -192,13 +192,7 @@ c     call comp_rms ! old
 
       if (ifheat) call recon(vx,vy,vz,u)
 
-      if (ifravg) then
-         call recon(vx,vy,vz,u)
-         call avg_all
-      endif
-
       if (mod(ad_step,ad_iostep).eq.0) then
-
 !        This output is to make sure the ceof matches with matlab code
 
          if (nio.eq.0) then

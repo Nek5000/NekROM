@@ -72,10 +72,10 @@ c     parameters and common blocks for MOR
       common /moropt_par/ par
       common /morqn/ qngradf(nb), qns(nb), qny(nb), qnf
 
-      logical ifl2,ifvort,ifdump,ifrecon,ifstep,ifpart,ifravg,ifavgic,
+      logical ifl2,ifvort,ifdump,ifrecon,ifstep,ifpart,ifavgic,
      $        ifdumpops,ifdrago,ifrms,ifread,ifforce
 
-      common /morflags/ ifl2,ifvort,ifdumpeig,ifrecon,ifstep,ifravg,
+      common /morflags/ ifl2,ifvort,ifdumpeig,ifrecon,ifstep,
      $                  ifavgic,ifdumpops,ifdrago,ifrms,ifread,ifforce
 
       real last_time,misc_time
