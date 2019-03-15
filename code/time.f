@@ -141,8 +141,6 @@ c     Variable for vorticity
 
       if (ad_step.eq.1) then
          step_time = 0.
-         call rzero(ua,nb+1)
-         call rzero(u2a,(nb+1)**2)
       endif
 
       last_time = dnekclock()
@@ -162,28 +160,8 @@ c     Variable for vorticity
       call solve(rhs,flu,1,nb,nb,ir,ic)
 
       call shiftu(rhs)
-      call add2(ua,u,nb+1)
-
-      do j=0,nb
-      do i=0,nb
-         u2a(i,j)=u2a(i,j)+u(i,1)*u(j,1)
-      enddo
-      enddo
-
-      if (ad_step.eq.3) call copy(uj,u,3*(nb+1))
-      if (ad_step.eq.ad_nsteps) then
-         call copy(uj(0,4),u,3*(nb+1))
-         do k=1,6
-         do j=0,nb
-         do i=0,nb
-            u2j(i,j,k)=uj(i,k)*uj(j,k)
-         enddo
-         enddo
-         enddo
-         rinsteps=1./real(ad_nsteps)
-         call cmult(ua,rinsteps,nb+1)
-         call cmult(u2a,rinsteps,(nb+1)**2)
-      endif
+      call setavg
+      call setj
 
       call comp_drag
 c     call comp_rms ! old
@@ -676,3 +654,50 @@ c     call add2s2(rhs,a0,s,nb+1) ! not working...
       return
       end
 c-----------------------------------------------------------------------
+      subroutine setavg
+
+      include 'SIZE'
+      include 'MOR'
+
+      if (ad_step.eq.1) then
+         call rzero(ua,nb+1)
+         call rzero(u2a,(nb+1)**2)
+      endif
+
+      call add2(ua,u,nb+1)
+
+      do j=0,nb
+      do i=0,nb
+         u2a(i,j)=u2a(i,j)+u(i,1)*u(j,1)
+      enddo
+      enddo
+
+      if (ad_step.eq.ad_nsteps) then
+         s=1./real(ad_nsteps)
+         call cmult(ua,s,nb+1)
+         call cmult(u2a,s,(nb+1)**2)
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine setj
+
+      include 'SIZE'
+      include 'MOR'
+
+      if (ad_step.eq.3) call copy(uj,u,3*(nb+1))
+      if (ad_step.eq.ad_nsteps) then
+         call copy(uj(0,4),u,3*(nb+1))
+         do k=1,6
+         do j=0,nb
+         do i=0,nb
+            u2j(i,j,k)=uj(i,k)*uj(j,k)
+         enddo
+         enddo
+         enddo
+         s=1./real(ad_nsteps)
+      endif
+
+      return
+      end
