@@ -441,6 +441,7 @@ c-----------------------------------------------------------------------
 
       do i=1,nb
          bg(i)=-vecprod(bgx,bgy,bgz,ub(1,i),vb(1,i),wb(1,i))
+         if (nio.eq.0) write (6,*) bg(i),i,'bg'
       enddo
 
       if (nio.eq.0) write (6,*) 'exiting setg'
