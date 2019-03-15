@@ -144,7 +144,7 @@ c     Variable for vorticity
 
       icount = min0(ad_step,3)
 
-      call setrhs(rhs,count)
+      call setr(rhs,count)
 
       if (ad_step.le.3) then
          call cmult2(flu,b,ad_beta(1,icount)/ad_dt,nb*nb)
@@ -614,7 +614,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine setrhs(rhs,icount)
+      subroutine setr(rhs,icount)
 
       include 'SIZE'
       include 'MOR'
