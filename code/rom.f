@@ -188,7 +188,6 @@ c-----------------------------------------------------------------------
       ifrecon=.true.
       if (ifread) ifrecon=.false.
       ifpart=.false.
-      ifravg=.false.
       ifforce=.false.
 
       call compute_BDF_coef(ad_alpha,ad_beta)
