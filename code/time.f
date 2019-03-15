@@ -130,7 +130,7 @@ c-----------------------------------------------------------------------
 
 c     Matrices and vectors for advance
       real tmp(0:nb),tmat(nb,nb+1),rhs(0:nb)
-      real coef(1:nb), e0(0:nb)
+      real coef(1:nb)
 
       common /scrrstep/ t1(lt),t2(lt),t3(lt),work(lt)
 
@@ -151,8 +151,6 @@ c     Variable for vorticity
 
       count = min0(ad_step,3)
 
-      call rzero(e0,nb+1)
-      e0(0) = 1
 
       if (ad_step.le.3) then
          call cmult2(flu,b,ad_beta(1,count)/ad_dt,nb*nb)
