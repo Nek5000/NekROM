@@ -434,6 +434,7 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'SOLN'
       include 'MOR'
+      include 'AVG'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
@@ -443,6 +444,8 @@ c-----------------------------------------------------------------------
          bg(i)=-vecprod(bgx,bgy,bgz,ub(1,i),vb(1,i),wb(1,i))
          if (nio.eq.0) write (6,*) bg(i),i,'bg'
       enddo
+
+      call outpost(bgx,bgy,bz,pavg,tavg,'bgv')
 
       if (nio.eq.0) write (6,*) 'exiting setg'
 
