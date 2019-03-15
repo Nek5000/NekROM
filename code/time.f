@@ -152,7 +152,13 @@ c     Variable for vorticity
          call lu(flu,nb,nb,ir,ic)
       endif
 
-      call solve(rhs,flu,1,nb,nb,ir,ic)
+      if (isolve.eq.0) then ! standard matrix inversion
+         call solve(rhs,flu,1,nb,nb,ir,ic)
+      else if (isolve.eq.1) then ! constrained solve
+         !call csolve(rhs,flu,...
+      else
+         call exitti('incorrect isolve specified...')
+      endif
 
       call shiftu(rhs)
       call setavg
