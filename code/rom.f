@@ -241,6 +241,7 @@ c-----------------------------------------------------------------------
          else
             call copy_sol(ub,vb,wb,pb,tb,uic,vic,wic,pic,tic)
          endif
+         call outpost(uavg,vavg,wavg,pavg,tavg,'avg')
       endif
 
       if (ifforce) call gradp(bgx,bgy,bgz,pavg)
