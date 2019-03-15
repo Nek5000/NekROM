@@ -117,6 +117,7 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
+      include 'AVG'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
@@ -193,7 +194,7 @@ c     call comp_rms ! old
             call opcopy(t1,t2,t3,vx,vy,vz)
             call comp_vort3(vort,work1,work2,t1,t2,t3)
             ifto = .true. ! turn on temp in fld file
-            call outpost(vx,vy,vz,pr,vort,'rom')
+            call outpost(vx,vy,vz,pavg,vort,'rom')
             if (nio.eq.0) write (6,*) 'inside ifdump'
          endif
       endif
