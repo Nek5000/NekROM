@@ -324,15 +324,11 @@ c-----------------------------------------------------------------------
       call gradp(ux,uy,uz,pr)
       call opchsgn(ux,uy,uz)
 
-c     call outpost(ux,uy,uz,pr,t,'ctd')
-
       call setcnv_c(vx,vy,vz)
       call setcnv_u(vx,vy,vz)
       call ccu(t1,t2,t3)
       call opbinv1(t1,t2,t3,t1,t2,t3,1.)
       call opchsgn(t1,t2,t3)
-
-c     call outpost(t1,t2,t3,pr,t,'ctd')
 
       call opadd2(ux,uy,uz,t1,t2,t3)
 
@@ -345,11 +341,7 @@ c     call outpost(t1,t2,t3,pr,t,'ctd')
       s=-param(2)
       call opcmult(t1,t2,t3,s)
 
-c     call outpost(t1,t2,t3,pr,t,'ctd')
-
       call opadd2(ux,uy,uz,t1,t2,t3)
-
-c     call outpost(ux,uy,uz,pr,t,'ctd')
 
       return
       end
