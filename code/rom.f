@@ -62,7 +62,7 @@ c-----------------------------------------------------------------------
       if (ifheat) then
          if (nio.eq.0) write (6,*) 'rom_time: ',dtime
       else
-         if (.nio.eq.0) write (6,*) 'rom_time: ',rom_time
+         if (nio.eq.0) write (6,*) 'rom_time: ',rom_time
       endif
 
       return
