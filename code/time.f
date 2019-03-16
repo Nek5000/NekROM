@@ -122,8 +122,7 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
 c     Matrices and vectors for advance
-      real tmp(0:nb),tmat(nb,nb+1),rhs(nb)
-      real coef(1:nb)
+      real tmp(0:nb),rhs(nb)
 
       common /scrrstep/ t1(lt),t2(lt),t3(lt),work(lt)
 
