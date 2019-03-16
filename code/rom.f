@@ -59,8 +59,11 @@ c-----------------------------------------------------------------------
       dtime=dnekclock()-stime
       rom_time=rom_time+dtime
 
-      if (nio.eq.0) write (6,*) 'rom_time: ',dtime
-      if (nio.eq.0) write (6,*) 'romc_time: ',rom_time
+      if (ifheat) then
+         if (nio.eq.0) write (6,*) 'rom_time: ',dtime
+      else
+         if (.nio.eq.0) write (6,*) 'rom_time: ',rom_time
+      endif
 
       return
       end
