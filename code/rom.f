@@ -268,8 +268,6 @@ c-----------------------------------------------------------------------
                call ccu(cux,cuy,cuz)
                if (ifdrago) then
                   call opbinv1(wk1,wk2,wk3,cux,cuy,cuz,1.)
-c                 call outpost(cux,cuy,cuz,pr,t,'ccc')
-c                 call outpost(wk1,wk2,wk3,pr,t,'ccc')
                   call comp_pdrag(fd2(1,j,k),wk1,wk2,wk3)
                endif
             endif
