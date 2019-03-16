@@ -1,38 +1,4 @@
 c-----------------------------------------------------------------------
-      subroutine setbases_heat
-
-      include 'SIZE'
-      include 'TOTAL'
-      include 'MOR'
-
-      parameter (lt=lx1*ly1*lz1*lelt)
-
-      n=lx1*ly1*lz1*nelv
-
-      do ib=0,nb
-         call rzero(ub(1,ib),n)
-         call rzero(vb(1,ib),n)
-         call rzero(wb(1,ib),n)
-      enddo
-
-      one=1.
-      pi=4.*atan(one)
-
-      do i=1,n
-         x=xm1(i,1,1,1)
-         y=ym1(i,1,1,1)
-         ub(i,0)=1.
-         k=2
-         ub(i,1)=sin(k*pi*x)*sin(k*pi*y)
-         if (nb.ge.2) ub(i,2)=cos(k*pi*x)*sin(k*pi*y)
-         if (nb.ge.3) ub(i,3)=sin(k*pi*x)*cos(k*pi*y)
-         if (nb.ge.4) ub(i,4)=cos(k*pi*x)*cos(k*pi*y)
-         if (nb.ge.4) vb(i,0)=0.5
-      enddo
-
-      return
-      end
-c-----------------------------------------------------------------------
       subroutine setbases
 
       include 'SIZE'

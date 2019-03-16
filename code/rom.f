@@ -68,39 +68,6 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine rom_setup_heat
-
-      include 'SIZE'
-      include 'MOR'
-
-      if (nio.eq.0) write (6,*) 'inside rom_setup'
-
-      setup_start=dnekclock()
-
-      call rom_init_params
-      ifrecon=.false.
-      call rom_init_fields
-
-      call setbases_heat
-
-      call seta
-      call setb
-      call setc_const
-      call setu
-c     call setops
-
-      if (ifdumpops) call dump_all
-
-      call qoisetup
-
-      setup_end=dnekclock()
-
-      if (nio.eq.0) write (6,*) 'exiting rom_setup'
-      if (nio.eq.0) write (6,*) 'setup_time:', setup_end-setup_start
-
-      return
-      end
-c-----------------------------------------------------------------------
       subroutine rom_setup_v
 
       include 'SIZE'
@@ -485,51 +452,6 @@ c-----------------------------------------------------------------------
 
          call opcopy(vx,vy,vz,ux,uy,uz)
       endif
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine setc_const
-
-      include 'SIZE'
-      include 'TOTAL'
-      include 'MOR'
-
-      parameter (lt=lx1*ly1*lz1*lelt)
-
-      real cux(lt),cuy(lt),cuz(lt)
-
-      common /scrk1/ t1(lt),binv(lt),wk1(lt),wk2(lt),wk3(lt)
-      common /scrcwk/ wk(lcloc)
-
-      conv_time=dnekclock()
-
-      call invers2(binv,bm1,lx1*ly1*lz1*nelv)
-      call rone(binv,lx1*ly1*lz1*nelv)
-
-      if (nio.eq.0) write (6,*) 'inside setc'
-
-      l=0
-      n=lx1*ly1*lz1*nelv
-
-      do k=0,0
-         call setcnv_c(ub(1,k),vb(1,k),wb(1,k))
-         do j=0,nb
-            call setcnv_u(ub(1,j),vb(1,j),wb(1,j))
-            call ccu(cux,cuy,cuz)
-            do i=1,nb
-               l=l+1
-               clocal(l) = 
-     $            op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),cux,cuy,cuz,binv)
-               icloc(1,l) = i
-               icloc(2,l) = j
-               icloc(3,l) = k
-            enddo
-         enddo
-      enddo
-      ncloc=l
-
-      if (nio.eq.0) write (6,*) 'exiting setc'
 
       return
       end
