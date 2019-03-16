@@ -656,6 +656,7 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'
       include 'MOR'
+      include 'AVG'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
@@ -679,7 +680,7 @@ c-----------------------------------------------------------------------
          call cmult(ua,s,nb+1)
          call cmult(u2a,s,(nb+1)**2)
 
-         call recon(ux,vy,vz,ua)
+         call recon(ux,uy,uz,ua)
          call outpost(ux,uy,uz,pavg,tavg,'avg')
 
          call opzero(ux,uy,uz)
