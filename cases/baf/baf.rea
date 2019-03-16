@@ -12,11 +12,11 @@
    1.00000     p008 CONDUCT
    0.00000     p009 
    0.00000     p010 FINTIME
-   1.00000E+06 p011 NSTEPS
-   1.00000E-04 p012 DT
+   2.00000E+06 p011 NSTEPS
+  -5.00000E-05 p012 DT
    0.00000     p013 IOCOMM
    0.00000     p014 IOTIME
-   1.00000E+03 p015 IOSTEP
+   2.00000E+03 p015 IOSTEP
    0.00000     p016 PSSOLVER: 0=default
    0.00000     p017 
   0.500000E-01 p018 GRID < 0 --> # cells on screen
@@ -34,7 +34,7 @@
    0.00000     p030 > 0 ==> properties set in uservp()
    0.00000     p031 NPERT: #perturbation modes
    0.00000     p032 #BCs in re2 file, if > 0
-   0.00000     p033 MOR: 0 -> L2prod, else -> H10prod
+   1.00000     p033 MOR: 0 -> L2prod, else -> H10prod
    1.00000     p034 MOR: 0 -> mode 0 = IC, else -> mode 0 = average of avg.list
    1.00000     p035 MOR: 0 -> gen ops, 1 -> dump ops, 2 -> read ops
    0.00000     p036
