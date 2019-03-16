@@ -23,7 +23,7 @@ ls ../../data/baf/avgbaf0.f* > avg.list
 ln -s $MOR_DIR/data/baf/baf0.f00001 r0.f00001
 
 cp SIZE_TEST SIZE
-cp SIZE_LMOR LMOR
+cp LMOR_TEST LMOR
 
 $SOURCE_ROOT/bin/makenek test
 
