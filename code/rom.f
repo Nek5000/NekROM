@@ -132,11 +132,11 @@ c-----------------------------------------------------------------------
       ad_dt = dt
       ad_re = 1/param(2)
 
-      ifl2=.true.
-      ips='L2 '
+      ifl2=.false.
+      ips='H10'
       if (param(33).eq.0) then
-         ifl2=.false.
-         ips='H10'
+         ifl2=.true.
+         ips='L2 '
       endif
 
       ifavgic=.false.
