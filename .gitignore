@@ -46,3 +46,8 @@ ldc
 rom40
 cyl_ann
 #cyl_rect
+
+# Visit
+
+*.session
+*.session.gui

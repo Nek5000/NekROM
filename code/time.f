@@ -648,7 +648,7 @@ c     call add2s2(rhs,a0,s,nb+1) ! not working...
       call mxm(conv,nb,ad_alpha(1,icount),3,tmp(1),1)
 
       call sub2(rhs,tmp(1),nb)
-      if (ifforce) call add2(rhs,bg(1),nb)
+c     if (ifforce) call add2(rhs,bg(1),nb)
 
       return
       end
