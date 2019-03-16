@@ -257,7 +257,7 @@ c-----------------------------------------------------------------------
       npmin = np-lcglo+(lcglo/np)*np
       n=lx1*ly1*lz1*nelv
 
-      if (ifread.and.nid.eq.0) open (unit=12,file='ops/c')
+      if (ifread.and.nid.eq.0) open (unit=12,file='ops/cv')
 
       do k=0,nb
          if (nio.eq.0) write (6,*) 'k=',k
@@ -275,25 +275,25 @@ c                 call outpost(wk1,wk2,wk3,pr,t,'ccc')
             endif
             do i=1,nb
                l=l+1
-               if (.not.ifread) cltmp(l) = 
+               if (.not.ifread) cvltmp(l) = 
      $            op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),cux,cuy,cuz,binv)
-               icltmp(1,l) = i
-               icltmp(2,l) = j
-               icltmp(3,l) = k
+               icvltmp(1,l) = i
+               icvltmp(2,l) = j
+               icvltmp(3,l) = k
                mcloc = nlocmin + mid / npmin
                if (l.eq.mcloc) then
                   if (ifread) then
                      if (nid.eq.0) then
-                        read (12,*) (cltmp(kk),kk=1,mcloc)
+                        read (12,*) (cvltmp(kk),kk=1,mcloc)
                      else
-                        call rzero(cltmp,mcloc)
+                        call rzero(cvltmp,mcloc)
                      endif
                   endif
-                  if (ifread) call gop(cltmp,wk,'+  ',mcloc)
+                  if (ifread) call gop(cvltmp,wk,'+  ',mcloc)
                   if (nid.eq.mid) then
                      ncloc = mcloc
-                     call copy(clocal,cltmp,ncloc)
-                     call icopy(icloc,icltmp,ncloc*3)
+                     call copy(cvl,cvltmp,ncloc)
+                     call icopy(icvl,icvltmp,ncloc*3)
                   endif
                   mid=mid+1
                   l = 0
@@ -327,22 +327,22 @@ c-----------------------------------------------------------------------
       n=lx1*ly1*lz1*nelt
 
       if (ifread) then
-         call read_serial(a0,(nb+1)**2,'ops/a ',wk1,nid)
+         call read_serial(av0,(nb+1)**2,'ops/av ',wk1,nid)
       else
          do j=0,nb ! Form the A matrix for basis function
             call axhelm(usave,ub(1,j),ones,zeros,1,1)
             call axhelm(vsave,vb(1,j),ones,zeros,1,1)
             if (ldim.eq.3) call axhelm(wsave,wb(1,j),ones,zeros,1,1)
             do i=0,nb
-               a0(i,j) = glsc2(ub(1,i),usave,n)+glsc2(vb(1,i),vsave,n)
-               if (ldim.eq.3) a0(i,j) = a0(i,j)+glsc2(wb(1,i),wsave,n)
+               av0(i,j) = glsc2(ub(1,i),usave,n)+glsc2(vb(1,i),vsave,n)
+               if (ldim.eq.3) av0(i,j) = av0(i,j)+glsc2(wb(1,i),wsave,n)
             enddo
          enddo
       endif
 
       do j=1,nb
       do i=1,nb
-         a(i,j)=a0(i,j)
+         av(i,j)=av0(i,j)
       enddo
       enddo
 
@@ -364,11 +364,11 @@ c-----------------------------------------------------------------------
       if (nio.eq.0) write (6,*) 'inside setb'
 
       if (ifread) then
-         call read_serial(b0,(nb+1)**2,'ops/b ',tab,nid)
+         call read_serial(bv0,(nb+1)**2,'ops/bv ',tab,nid)
       else
          do j=0,nb
          do i=0,nb
-            b0(i,j) = op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),
+            bv0(i,j) = op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),
      $                            ub(1,j),vb(1,j),wb(1,j),bm1)
          enddo
          enddo
@@ -376,7 +376,7 @@ c-----------------------------------------------------------------------
 
       do j=1,nb
       do i=1,nb
-         b(i,j)=b0(i,j)
+         bv(i,j)=bv0(i,j)
       enddo
       enddo
 

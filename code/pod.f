@@ -10,7 +10,7 @@ c-----------------------------------------------------------------------
       real u0(lt,3)
       common /scrk3/ t4(lt),t5(lt),t6(lt)
       common /scrk4/ bwm1(lt)
-      common /scrk5/ au(lt),av(lt),aw(lt)
+      common /scrk5/ a1(lt),a2(lt),a3(lt)
 
       if (nio.eq.0) write (6,*) 'inside setbases'
 
@@ -38,12 +38,12 @@ c-----------------------------------------------------------------------
 
       if (ifdrago) then
          do i=0,nb
-            call lap2d(au,ub(1,i))
+            call lap2d(a1,ub(1,i))
             call lap2d(av,vb(1,i))
-            if (ldim.eq.3) call lap2d(aw,wb(1,i))
-            call opcmult(au,av,aw,param(2))
+            if (ldim.eq.3) call lap2d(a3,wb(1,i))
+            call opcmult(a1,a2,a3,param(2))
             call comp_pdrag(fd1(1,i),ub(1,i),vb(1,i),wb(1,i))
-            call comp_pdrag(fd3(1,i),au,av,aw)
+            call comp_pdrag(fd3(1,i),a1,a2,a3)
          enddo
       endif
 

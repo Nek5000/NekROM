@@ -31,8 +31,8 @@ c     Variable for vorticity
       call setr(rhs,icount)
 
       if (ad_step.le.3) then
-         call cmult2(flu,b,ad_beta(1,icount)/ad_dt,nb*nb)
-         call add2s2(flu,a,1/ad_re,nb*nb)
+         call cmult2(flu,bv,ad_beta(1,icount)/ad_dt,nb*nb)
+         call add2s2(flu,av,1/ad_re,nb*nb)
          call lu(flu,nb,nb,ir,ic)
       endif
 
@@ -145,10 +145,10 @@ c-----------------------------------------------------------------------
       call rzero(cu,nb)
 
       do l=1,ncloc
-         i=icloc(1,l)
-         j=icloc(2,l)
-         k=icloc(3,l)
-         cu(i)=cu(i)+clocal(l)*u(j,1)*u(k,1)
+         i=icvl(1,l)
+         j=icvl(2,l)
+         k=icvl(3,l)
+         cu(i)=cu(i)+cvl(l)*u(j,1)*u(k,1)
       enddo
 
       call gop(cu,work,'+  ',nb)
@@ -203,11 +203,11 @@ c     Working arrays for LU
 
       s=-1.0/ad_re
 
-c     call add2s2(rhs,a0,s,nb+1) ! not working...
+c     call add2s2(rhs,av0,s,nb+1) ! not working...
       do i=0,nb
-         opt_rhs(i)=opt_rhs(i)+s*a0(i,0)
+         opt_rhs(i)=opt_rhs(i)+s*av0(i,0)
       enddo
-c      call add2s2(rhs,a0(1,0),-1/ad_re,nb)
+c      call add2s2(rhs,av0(1,0),-1/ad_re,nb)
 
       call copy(conv(1,3),conv(1,2),nb)
       call copy(conv(1,2),conv(1,1),nb)
@@ -472,16 +472,16 @@ c-----------------------------------------------------------------------
       real rhs(nb)
 
       call mxm(u,nb+1,ad_beta(2,icount),3,tmp,1)
-c     call mxm(b0,nb+1,tmp,nb+1,rhs,1)
-      call mxm(b,nb,tmp(1),nb,rhs,1)
+c     call mxm(bv0,nb+1,tmp,nb+1,rhs,1)
+      call mxm(bv,nb,tmp(1),nb,rhs,1)
 
       call cmult(rhs,-1.0/ad_dt,nb)
 
       s=-1.0/ad_re
 
-c     call add2s2(rhs,a0,s,nb+1) ! not working...
+c     call add2s2(rhs,av0,s,nb+1) ! not working...
       do i=1,nb
-         rhs(i)=rhs(i)+s*a0(i,0)
+         rhs(i)=rhs(i)+s*av0(i,0)
       enddo
 
       call copy(conv(1,3),conv(1,2),nb)
@@ -564,3 +564,4 @@ c-----------------------------------------------------------------------
 
       return
       end
+c-----------------------------------------------------------------------

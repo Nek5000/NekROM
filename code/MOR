@@ -38,10 +38,10 @@ c     parameters and common blocks for MOR
       parameter (lcglo=nb*(nb+1)*(nb+1))
       parameter (lcloc=lcglo/lpmin+1)
 
-      common /morops/ a0(0:nb,0:nb),b0(0:nb,0:nb),
-     $                a(nb,nb),b(nb,nb),
-     $                clocal(lcloc),cltmp(lcloc),
-     $                icloc(3,lcloc),icltmp(3,lcloc)
+      common /morvops/ av0(0:nb,0:nb),bv0(0:nb,0:nb),
+     $                 av(nb,nb),bv(nb,nb),
+     $                 cvl(lcloc),cvltmp(lcloc),
+     $                 icvl(3,lcloc),icvltmp(3,lcloc)
 
       common /morsol/ u(0:nb,3),uj(0:nb,6),
      $                u2(0:nb,0:nb),u2j(0:nb,0:nb,6)

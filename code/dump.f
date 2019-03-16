@@ -101,11 +101,12 @@ c-----------------------------------------------------------------------
 
       common /dumpglobal/ wk1(lcloc),wk2(lcloc)
 
-      call dump_serial(ug,ls*ls,'ops/g ',nid)
-      call dump_serial(a0,(nb+1)**2,'ops/a ',nid)
-      call dump_serial(b0,(nb+1)**2,'ops/b ',nid)
-      call dump_serial(u,(nb+1)*3,'ops/u ',nid)
-      call dump_global(clocal,ncloc,'ops/c ',wk1,wk2,nid)
+      call dump_serial(ug,ls*ls,'ops/gv ',nid)
+      call dump_serial(av0,(nb+1)**2,'ops/av ',nid)
+      call dump_serial(bv0,(nb+1)**2,'ops/bv ',nid)
+      call dump_serial(u,(nb+1)*3,'ops/v ',nid)
+      call dump_global(cvl,ncloc,'ops/cv ',wk1,wk2,nid)
+
 
       ttmp=time
       itmp=istep

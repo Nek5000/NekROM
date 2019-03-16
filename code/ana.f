@@ -352,15 +352,15 @@ c-----------------------------------------------------------------------
          do i=0,np-1
             mcloc = nlocmin + i / npmin
             if (nid.eq.i) then
-               call copy(cltmp,clocal,mcloc)
+               call copy(cvltmp,cvl,mcloc)
             else
-               call rzero(cltmp,mcloc)
+               call rzero(cvltmp,mcloc)
             endif
 
-            call gop(cltmp,ctmp,'+  ',mcloc)
+            call gop(cvltmp,ctmp,'+  ',mcloc)
 
             do j=1,mcloc
-               if (abs(cltmp(j)).gt.tol) nnz=nnz+1
+               if (abs(cvltmp(j)).gt.tol) nnz=nnz+1
             enddo
          enddo
          tol=tol*faci
@@ -578,7 +578,7 @@ c-----------------------------------------------------------------------
 
       do j=0,nb
       do i=0,nb
-         mtke=mtke+b0(i,j)*cdiff(i)*cdiff(j)
+         mtke=mtke+bv0(i,j)*cdiff(i)*cdiff(j)
       enddo
       enddo
 
@@ -627,7 +627,7 @@ c-----------------------------------------------------------------------
       do i=0,nb
 c         mtke=mtke+b0(i,j)*(coef(i)*coef(j))
 c         mtke=mtke+b0(i,j)*(coef(i)*coef(j)-usa(i)*usa(j))
-         mtke=mtke+b0(i,j)*(coef(i)*coef(j)-coef(i)*usa(j)
+         mtke=mtke+bv0(i,j)*(coef(i)*coef(j)-coef(i)*usa(j)
      $               -usa(i)*coef(j)+usa(i)*usa(j))
       enddo
       enddo
