@@ -164,6 +164,22 @@ c     ifforce=.true.
 
       call compute_BDF_coef(ad_alpha,ad_beta)
 
+      if (nio.eq.0) then
+         write(6,*) 'rp_ips        ',ips
+         write(6,*) 'rp_ifl2       ',ifl2
+         write(6,*) 'rp_ifforce    ',ifforce
+         write(6,*) 'rp_ifread     ',ifread
+         write(6,*) 'rp_ifpart     ',ifpart
+         write(6,*) 'rp_ifrecon    ',ifrecon
+         write(6,*) 'rp_ifdump     ',ifdump
+         write(6,*) 'rp_ifvort     ',ifvort
+         write(6,*) 'rp_ifdumpops  ',ifdumpops
+         write(6,*) 'rp_ifavgic    ',ifavgic
+         write(6,*) 'rp_ifdrago    ',ifdrago
+
+c        write(6,*) 'rp_if= ',if
+      endif
+
       if (nio.eq.0) write (6,*) 'exiting rom_init_params'
 
       return
