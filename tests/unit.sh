@@ -22,6 +22,7 @@ ls ../../data/baf/avgbaf0.f* > avg.list
 
 ln -s $MOR_DIR/data/baf/baf0.f00001 r0.f00001
 
+cp SIZE_TEST SIZE
 $SOURCE_ROOT/bin/makenek test
 
 $SOURCE_ROOT/bin/genmap << Z
