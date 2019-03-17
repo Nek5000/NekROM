@@ -1,0 +1,10 @@
+$(OBJDIR)/ana.o   :ana.f;            $(FC) -c $(FL2) $< -o $@
+$(OBJDIR)/aux.o   :aux.f;            $(FC) -c $(FL2) $< -o $@
+$(OBJDIR)/conv.o  :conv.f;           $(FC) -c $(FL2) $< -o $@
+$(OBJDIR)/dump.o  :dump.f;           $(FC) -c $(FL2) $< -o $@
+$(OBJDIR)/ei.o    :ei.f;             $(FC) -c $(FL2) $< -o $@
+$(OBJDIR)/pod.o   :pod.f;            $(FC) -c $(FL2) $< -o $@
+$(OBJDIR)/qoi.o   :qoi.f;            $(FC) -c $(FL2) $< -o $@
+$(OBJDIR)/read.o  :read.f;           $(FC) -c $(FL2) $< -o $@
+$(OBJDIR)/rom.o   :rom.f;            $(FC) -c $(FL2) $< -o $@
+$(OBJDIR)/time.o  :time.f;           $(FC) -c $(FL2) $< -o $@
