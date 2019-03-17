@@ -171,6 +171,26 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      function scaprod(t1,t2)
+
+      include 'SIZE'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real t1(lt),t2(lt)
+
+      if (ips.eq.'L2 ') then
+         vecprod=wl2sprod(t1,t2)
+      else if (ips.eq.'H10') then
+         vecprod=h10sprod(t1,t2)
+      else
+         call exitti('did not provide supported inner product space$')
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
       function vecprod(t1,t2,t3,t4,t5,t6)
 
       include 'SIZE'
@@ -181,9 +201,9 @@ c-----------------------------------------------------------------------
       real t1(lt),t2(lt),t3(lt),t4(lt),t5(lt),t6(lt)
 
       if (ips.eq.'L2 ') then
-         vecprod=wl2prod(t1,t2,t3,t4,t5,t6)
+         vecprod=wl2vprod(t1,t2,t3,t4,t5,t6)
       else if (ips.eq.'H10') then
-         vecprod=h10prod(t1,t2,t3,t4,t5,t6)
+         vecprod=h10vprod(t1,t2,t3,t4,t5,t6)
       else
          call exitti('did not provide supported inner product space$')
       endif
@@ -191,11 +211,30 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      function h10prod(t1,t2,t3,t4,t5,t6)
+      function h10sprod(t1,t2)
 
       include 'SIZE'
-      include 'SOLN'
-      include 'MASS'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real t1(lt),t2(lt)
+
+      common /scrk3/ t3(lt)
+
+      if (nio.eq.0) write (6,*) 'inside h10sprod'
+
+      call axhelm(t3,t1,ones,zeros,1,1)
+      h10sprod=glsc2(t3,t2,lx1*ly1*lz1*nelt)
+
+      if (nio.eq.0) write (6,*) 'exiting h10sprod'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      function h10vprod(t1,t2,t3,t4,t5,t6)
+
+      include 'SIZE'
       include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
@@ -204,44 +243,60 @@ c-----------------------------------------------------------------------
 
       common /scrk3/ t7(lt),t8(lt),t9(lt)
 
-      if (nio.eq.0) write (6,*) 'inside h10prod'
+      if (nio.eq.0) write (6,*) 'inside h10vprod'
 
       n=lx1*ly1*lz1*nelt
 
       call axhelm(t7,t1,ones,zeros,1,1)
-      h10prod=glsc2(t7,t4,n)
+      h10vprod=glsc2(t7,t4,n)
 
-      if (.not.ifvort) then
-         call axhelm(t8,t2,ones,zeros,1,1)
-         h10prod=h10prod+glsc2(t8,t5,n)
+      call axhelm(t8,t2,ones,zeros,1,1)
+      h10vprod=h10vprod+glsc2(t8,t5,n)
 
-         if (ldim.eq.3) then
-            call axhelm(t9,t3,ones,zeros,1,1)
-            h10prod = h10prod + glsc2(t9,t6,n)
-         endif
+      if (ldim.eq.3) then
+         call axhelm(t9,t3,ones,zeros,1,1)
+         h10vprod = h10vprod + glsc2(t9,t6,n)
       endif
 
-      if (nio.eq.0) write (6,*) 'exiting h10prod'
+      if (nio.eq.0) write (6,*) 'exiting h10vprod'
 
       return
       end
 c-----------------------------------------------------------------------
-      function wl2prod(t1,t2,t3,t4,t5,t6)
+      function wl2sprod(t1,t2)
 
       include 'SIZE'
-      include 'SOLN'
       include 'MASS'
-      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real t1(lt),t2(lt)
+
+      if (nio.eq.0) write (6,*) 'inside wl2sprod'
+
+      n=lx1*ly1*lz1*nelt
+
+      wl2sprod = glsc3(t1,t2,bm1,n)
+
+      if (nio.eq.0) write (6,*) 'exiting wl2sprod'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      function wl2vprod(t1,t2,t3,t4,t5,t6)
+
+      include 'SIZE'
+      include 'MASS'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
       real t1(lt),t2(lt),t3(lt),t4(lt),t5(lt),t6(lt)
 
-      common /scrk3/ bwm1(lt),t8(lt),t9(lt)
+      if (nio.eq.0) write (6,*) 'inside wl2vprod'
 
-      if (nio.eq.0) write (6,*) 'inside wl2prod'
+      wl2vprod = op_glsc2_wt(t1,t2,t3,t4,t5,t6,bm1)
 
-      n=lx1*ly1*lz1*nelt
+      if (nio.eq.0) write (6,*) 'exiting wl2vprod'
 
       call col3(bwm1,bm1,wm1,n)
 
