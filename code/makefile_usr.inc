@@ -8,3 +8,4 @@ $(OBJDIR)/qoi.o   :qoi.f;            $(FC) -c $(FL2) $< -o $@
 $(OBJDIR)/read.o  :read.f;           $(FC) -c $(FL2) $< -o $@
 $(OBJDIR)/rom.o   :rom.f;            $(FC) -c $(FL2) $< -o $@
 $(OBJDIR)/time.o  :time.f;           $(FC) -c $(FL2) $< -o $@
+$(OBJDIR)/unit.o  :unit.f;           $(FC) -c $(FL2) $< -o $@
