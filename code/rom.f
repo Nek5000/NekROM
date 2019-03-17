@@ -162,21 +162,34 @@ c-----------------------------------------------------------------------
       ifpart=.false.
       ifforce=.false.
 c     ifforce=.true.
+      do i=0,ldimt1
+         ifpod(i)=.false.
+      enddo
+      if (ifflow.and.ifheat) then
+         call exitti('ifflow and ifheat are true...')
+      else 
+c        ifpod(0)=.true.
+         ifpod(1)=.true.
+c        ifpod(2)=.true.
+      endif
 
       call compute_BDF_coef(ad_alpha,ad_beta)
 
       if (nio.eq.0) then
-         write(6,*) 'rp_ips        ',ips
-         write(6,*) 'rp_ifl2       ',ifl2
-         write(6,*) 'rp_ifforce    ',ifforce
-         write(6,*) 'rp_ifread     ',ifread
-         write(6,*) 'rp_ifpart     ',ifpart
-         write(6,*) 'rp_ifrecon    ',ifrecon
-         write(6,*) 'rp_ifdump     ',ifdump
-         write(6,*) 'rp_ifvort     ',ifvort
-         write(6,*) 'rp_ifdumpops  ',ifdumpops
-         write(6,*) 'rp_ifavgic    ',ifavgic
-         write(6,*) 'rp_ifdrago    ',ifdrago
+         write (6,*) 'rp_ips        ',ips
+         write (6,*) 'rp_ifl2       ',ifl2
+         write (6,*) 'rp_ifforce    ',ifforce
+         write (6,*) 'rp_ifread     ',ifread
+         write (6,*) 'rp_ifpart     ',ifpart
+         write (6,*) 'rp_ifrecon    ',ifrecon
+         write (6,*) 'rp_ifdump     ',ifdump
+         write (6,*) 'rp_ifvort     ',ifvort
+         write (6,*) 'rp_ifdumpops  ',ifdumpops
+         write (6,*) 'rp_ifavgic    ',ifavgic
+         write (6,*) 'rp_ifdrago    ',ifdrago
+         do i=0,ldimt1
+            write (6,*) 'rp_ifpod(',i,')   ',ifpod(i)
+         enddo
 
 c        write(6,*) 'rp_if= ',if
       endif
