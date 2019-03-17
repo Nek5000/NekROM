@@ -210,112 +210,112 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine rom_const
+c     subroutine rom_const
+c DEPRECATED
 c This subroutine is solving rom with constrains
 c The subroutine is based on BFGS method with barrier function
-      
 c-----------------------------------------------------------------------
-      include 'SIZE'
-      include 'TOTAL'
-      include 'MOR'
+c     include 'SIZE'
+c     include 'TOTAL'
+c     include 'MOR'
 
-      parameter (lt=lx1*ly1*lz1*lelt)
+c     parameter (lt=lx1*ly1*lz1*lelt)
 
 c     Matrices and vectors for advance
-      real tmp(0:nb),tmat(nb,nb+1)
-      real coef(1:nb)
+c     real tmp(0:nb),tmat(nb,nb+1)
+c     real coef(1:nb)
 
-      common /scrrstep/ t1(lt),t2(lt),t3(lt),work(lt)
+c     common /scrrstep/ t1(lt),t2(lt),t3(lt),work(lt)
 
 c     Variable for vorticity
-      real vort(lt,3)
+c     real vort(lt,3)
 
 c     Working arrays for LU
 
-      common /nekmpi/ nidd,npp,nekcomm,nekgroup,nekreal
+c     common /nekmpi/ nidd,npp,nekcomm,nekgroup,nekreal
 
-      n  = lx1*ly1*lz1*nelt
+c     n  = lx1*ly1*lz1*nelt
 
-      time=time+ad_dt
+c     time=time+ad_dt
 
-      count = min0(ad_step,3)
+c     count = min0(ad_step,3)
 
-      if (ad_step.le.3) then
-         call cmult2(helm,b,ad_beta(1,count)/ad_dt,nb*nb)
-         call add2s2(helm,a,1/ad_re,nb*nb)
-      endif
+c     if (ad_step.le.3) then
+c        call cmult2(helm,b,ad_beta(1,count)/ad_dt,nb*nb)
+c        call add2s2(helm,a,1/ad_re,nb*nb)
+c     endif
 
-      ONE = 1.
-      ZERO= 0.
+c     ONE = 1.
+c     ZERO= 0.
 
-      call mxm(u,nb+1,ad_beta(2,count),3,tmp,1)
-      call mxm(b,nb,tmp(1),nb,opt_rhs(1),1)
+c     call mxm(u,nb+1,ad_beta(2,count),3,tmp,1)
+c     call mxm(b,nb,tmp(1),nb,opt_rhs(1),1)
 
-      call cmult(opt_rhs,-1.0/ad_dt,nb+1)
+c     call cmult(opt_rhs,-1.0/ad_dt,nb+1)
 
-      s=-1.0/ad_re
+c     s=-1.0/ad_re
 
 c     call add2s2(rhs,av0,s,nb+1) ! not working...
-      do i=0,nb
-         opt_rhs(i)=opt_rhs(i)+s*av0(i,0)
-      enddo
+c     do i=0,nb
+c        opt_rhs(i)=opt_rhs(i)+s*av0(i,0)
+c     enddo
 c      call add2s2(rhs,av0(1,0),-1/ad_re,nb)
 
-      call copy(conv(1,3),conv(1,2),nb)
-      call copy(conv(1,2),conv(1,1),nb)
+c     call copy(conv(1,3),conv(1,2),nb)
+c     call copy(conv(1,2),conv(1,1),nb)
 
-      if (np.eq.1) then
-         call mxm(c,nb*(nb+1),u,nb+1,tmat,1)
-         call mxm(tmat,nb,u,nb+1,conv,1)
-      else
-         call evalc(conv)
-      endif
+c     if (np.eq.1) then
+c        call mxm(c,nb*(nb+1),u,nb+1,tmat,1)
+c        call mxm(tmat,nb,u,nb+1,conv,1)
+c     else
+c        call evalc(conv)
+c     endif
 
-      call mxm(conv,nb,ad_alpha(1,count),3,tmp(1),1)
+c     call mxm(conv,nb,ad_alpha(1,count),3,tmp(1),1)
 
-      call sub2(opt_rhs,tmp,nb+1)
+c     call sub2(opt_rhs,tmp,nb+1)
 
-      call copy(u(1,3),u(1,2),nb)
-      call copy(u(1,2),u(1,1),nb)
+c     call copy(u(1,3),u(1,2),nb)
+c     call copy(u(1,2),u(1,1),nb)
 
-      call opt_const
+c     call opt_const
 
-      if (mod(ad_step,ad_iostep).eq.0) then
+c     if (mod(ad_step,ad_iostep).eq.0) then
 
-!        This output is to make sure the ceof matches with matlab code
+c        This output is to make sure the ceof matches with matlab code
 
-         if (nio.eq.0) then
-            write (6,*)'ad_step:',ad_step,ad_iostep,npp,nid
-            if (ad_step.eq.ad_nsteps) then
-               do j=1,nb
-                  write(6,*) j,u(j,1),'final'
-               enddo
-            else
-               do j=1,nb
-                  write(6,*) j,u(j,1)
-               enddo
-            endif
-         endif
+c        if (nio.eq.0) then
+c           write (6,*)'ad_step:',ad_step,ad_iostep,npp,nid
+c           if (ad_step.eq.ad_nsteps) then
+c              do j=1,nb
+c                 write(6,*) j,u(j,1),'final'
+c              enddo
+c           else
+c              do j=1,nb
+c                 write(6,*) j,u(j,1)
+c              enddo
+c           endif
+c        endif
 
-         if (ifdump) then
-            call opzero(vx,vy,vz)
-            do j=1,nb
-               call opadds(vx,vy,vz,ub(1,j),vb(1,j),wb(1,j),coef(j),n,2)
-            enddo
-            call opadd2  (vx,vy,vz,ub,vb,wb)
+c        if (ifdump) then
+c           call opzero(vx,vy,vz)
+c           do j=1,nb
+c              call opadds(vx,vy,vz,ub(1,j),vb(1,j),wb(1,j),coef(j),n,2)
+c           enddo
+c           call opadd2  (vx,vy,vz,ub,vb,wb)
 
-            ! compute the vorticity of the ROM reconstructed field
-            call opcopy(t1,t2,t3,vx,vy,vz)
-            call comp_vort3(vort,work1,work2,t1,t2,t3)
-            ifto = .true. ! turn on temp in fld file
-            call copy(t,vort,n)
+c           ! compute the vorticity of the ROM reconstructed field
+c           call opcopy(t1,t2,t3,vx,vy,vz)
+c           call comp_vort3(vort,work1,work2,t1,t2,t3)
+c           ifto = .true. ! turn on temp in fld file
+c           call copy(t,vort,n)
 
-            call outpost (vx,vy,vz,pr,t,'rom')
-         endif
-      endif
+c           call outpost (vx,vy,vz,pr,t,'rom')
+c        endif
+c     endif
 
-      return
-      end
+c     return
+c     end
 c-----------------------------------------------------------------------
       subroutine opt_const
 
