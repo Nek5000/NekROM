@@ -161,6 +161,20 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine shiftt(t)
+
+      include 'SIZE'
+      include 'MOR'
+
+      real t(nb)
+
+      call copy(ut(1,3),ut(1,2),nb)
+      call copy(ut(1,2),ut(1,1),nb)
+      call copy(ut(1,1),t,nb)
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine lap2d(d2u,u)
 
       include 'SIZE'
