@@ -244,9 +244,8 @@ c-----------------------------------------------------------------------
             call copy_sol(ub,vb,wb,pb,tb,uic,vic,wic,pic,tic)
          endif
          call outpost(uavg,vavg,wavg,pavg,tavg,'avg')
+         if (ifforce) call gradp(bgx,bgy,bgz,pavg)
       endif
-
-      if (ifforce) call gradp(bgx,bgy,bgz,pavg)
 
       if (ifrecon) then
          do i=1,ns
