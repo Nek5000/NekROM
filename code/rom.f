@@ -104,10 +104,11 @@ c-----------------------------------------------------------------------
       subroutine setops
 
       include 'SIZE'
+      include 'MOR'
 
       if (nio.eq.0) write (6,*) 'inside setops'
 
-      call seta
+      call seta(av,av0,'ops/av ')
       call setb
       call setc
       call setu
@@ -325,7 +326,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine seta
+      subroutine seta(a,a0,fname)
 
       include 'SIZE'
       include 'TOTAL'
@@ -333,30 +334,34 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /scrseta/ usave(lt),vsave(lt),wsave(lt),wk1(lt)
-      common /scrread/ tab((nb+1)**2)
+      common /scrseta/ wk1(lt)
+
+      real a0(0:nb,0:nb),a(nb,nb)
+
+      character*128 fname
 
       if (nio.eq.0) write (6,*) 'inside seta'
 
       n=lx1*ly1*lz1*nelt
 
       if (ifread) then
-         call read_serial(av0,(nb+1)**2,'ops/av ',wk1,nid)
+         call read_serial(a0,(nb+1)**2,fname,wk1,nid)
       else
          do j=0,nb ! Form the A matrix for basis function
-            call axhelm(usave,ub(1,j),ones,zeros,1,1)
-            call axhelm(vsave,vb(1,j),ones,zeros,1,1)
-            if (ldim.eq.3) call axhelm(wsave,wb(1,j),ones,zeros,1,1)
-            do i=0,nb
-               av0(i,j) = glsc2(ub(1,i),usave,n)+glsc2(vb(1,i),vsave,n)
-               if (ldim.eq.3) av0(i,j) = av0(i,j)+glsc2(wb(1,i),wsave,n)
-            enddo
+         do i=0,nb
+            if (ifield.eq.1) then
+               a0(i,j)=vecprod(ub(1,i),vb(1,i),wb(1,i),
+     $                         ub(1,j),vb(1,j),wb(1,j))
+            else
+               a0(i,j)=scaprod(tb(1,ifield-1,i),tb(1,ifield-1,j))
+            endif
+         enddo
          enddo
       endif
 
       do j=1,nb
       do i=1,nb
-         av(i,j)=av0(i,j)
+         a(i,j)=a0(i,j)
       enddo
       enddo
 
