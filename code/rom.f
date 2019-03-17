@@ -107,8 +107,8 @@ c-----------------------------------------------------------------------
       if (nio.eq.0) write (6,*) 'inside setops'
 
       call seta(av,av0,'ops/av ')
-      call setb
       call setc
+      call setb(bv,bv0,'ops/bv ')
       call setu
       call setg
 
@@ -380,32 +380,42 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine setb
+      subroutine setb(b,b0,fname)
 
       include 'SIZE'
-      include 'TOTAL'
       include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
       common /scrread/ tab((nb+1)**2)
 
+      real b(nb,nb),b0(0:nb,0:nb)
+
+      character*128 fname
+
       if (nio.eq.0) write (6,*) 'inside setb'
 
       if (ifread) then
-         call read_serial(bv0,(nb+1)**2,'ops/bv ',tab,nid)
+         call read_serial(b0,(nb+1)**2,fname,tab,nid)
       else
+         mio=nio
+         nio=-1
          do j=0,nb
          do i=0,nb
-            bv0(i,j) = op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),
-     $                            ub(1,j),vb(1,j),wb(1,j),bm1)
+            if (ifield.eq.1) then
+               b0(i,j)=wl2vprod(ub(1,i),vb(1,i),wb(1,i),
+     $                          ub(1,j),vb(1,j),wb(1,j))
+            else
+               b0(i,j)=wl2sprod(tb(1,ifield-1,i),tb(1,ifield-1,j))
+            endif
          enddo
          enddo
+         nio=mio
       endif
 
       do j=1,nb
       do i=1,nb
-         bv(i,j)=bv0(i,j)
+         b(i,j)=b0(i,j)
       enddo
       enddo
 
