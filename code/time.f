@@ -28,7 +28,7 @@ c     Variable for vorticity
 
       icount = min0(ad_step,3)
 
-      call setr(rhs,icount)
+      call setr_v(rhs,icount)
 
       if (ad_step.le.3) then
          call cmult2(fluv,bv,ad_beta(1,icount)/ad_dt,nb*nb)
@@ -88,6 +88,55 @@ c     call comp_rms ! old
       return
       end
 c-----------------------------------------------------------------------
+      subroutine rom_step_t
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+      include 'AVG'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+c     Matrices and vectors for advance
+      real tmp(0:nb),rhs(nb)
+
+      common /scrrstep/ t1(lt),t2(lt),t3(lt),work(lt)
+
+      common /nekmpi/ nidd,npp,nekcomm,nekgroup,nekreal
+
+      if (ad_step.eq.1) then
+         step_time = 0.
+      endif
+
+      last_time = dnekclock()
+
+      n=lx1*ly1*lz1*nelt
+
+      icount = min0(ad_step,3)
+
+      call setr_t(rhs,icount)
+
+      if (ad_step.le.3) then
+         call cmult2(flut,bt,ad_beta(1,icount)/ad_dt,nb*nb)
+         call add2s2(flut,at,1/ad_re,nb*nb)
+         call lu(flut,nb,nb,irt,ict)
+      endif
+
+      if (isolve.eq.0) then ! standard matrix inversion
+         call solve(rhs,flut,1,nb,nb,irt,ict)
+      else if (isolve.eq.1) then ! constrained solve
+         !call csolve(rhs,flu,...
+      else
+         call exitti('incorrect isolve specified...')
+      endif
+
+      call shiftt(rhs)
+
+      step_time=step_time+dnekclock()-last_time
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine compute_BDF_coef(ad_alpha,ad_beta)
 
       real ad_alpha(3,3), ad_beta(4,3)
@@ -119,7 +168,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine evalc(cu)
+      subroutine evalc(cu,cl,icl,uu)
 
       include 'SIZE'
       include 'TOTAL'
@@ -133,6 +182,9 @@ c-----------------------------------------------------------------------
 
       common /scrk4/ work(lx1*ly1*lz1*lelt)
 
+      real cl(nloc),uu(0:nb)
+      integer icl(3,ncloc)
+
       if (icalld.eq.0) then
          evalc_time=0.
          icalld=1
@@ -145,10 +197,10 @@ c-----------------------------------------------------------------------
       call rzero(cu,nb)
 
       do l=1,ncloc
-         i=icvl(1,l)
-         j=icvl(2,l)
-         k=icvl(3,l)
-         cu(i)=cu(i)+cvl(l)*u(j,1)*u(k,1)
+         i=icl(1,l)
+         j=icl(2,l)
+         k=icl(3,l)
+         cu(i)=cu(i)+cl(l)*uu(j)*u(k,1)
       enddo
 
       call gop(cu,work,'+  ',nb)
@@ -462,7 +514,41 @@ c     currently can only come up with this way to compute log for an array
       return
       end
 c-----------------------------------------------------------------------
-      subroutine setr(rhs,icount)
+      subroutine setr_t(rhs,icount)
+
+      include 'SIZE'
+      include 'MOR'
+
+      common /scrrhs/ tmp(0:nb)
+
+      real rhs(nb)
+
+      call mxm(ut,nb+1,ad_beta(2,icount),3,tmp,1)
+c     call mxm(bv0,nb+1,tmp,nb+1,rhs,1)
+      call mxm(bt,nb,tmp(1),nb,rhs,1)
+
+      call cmult(rhs,-1.0/ad_dt,nb)
+
+      s=-1.0/ad_re
+
+c     call add2s2(rhs,av0,s,nb+1) ! not working...
+      do i=1,nb
+         rhs(i)=rhs(i)+s*at0(i,0)
+      enddo
+
+      call copy(ctr(1,3),ctr(1,2),nb)
+      call copy(ctr(1,2),ctr(1,1),nb)
+
+      call evalc(ctr,ctl,ictl,ut)
+
+      call mxm(ctr,nb,ad_alpha(1,icount),3,tmp(1),1)
+
+      call sub2(rhs,tmp(1),nb)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine setr_v(rhs,icount)
 
       include 'SIZE'
       include 'MOR'
@@ -484,12 +570,12 @@ c     call add2s2(rhs,av0,s,nb+1) ! not working...
          rhs(i)=rhs(i)+s*av0(i,0)
       enddo
 
-      call copy(conv(1,3),conv(1,2),nb)
-      call copy(conv(1,2),conv(1,1),nb)
+      call copy(cvr(1,3),cvr(1,2),nb)
+      call copy(cvr(1,2),cvr(1,1),nb)
 
-      call evalc(conv)
+      call evalc(cvr,cvl,icvl,u)
 
-      call mxm(conv,nb,ad_alpha(1,icount),3,tmp(1),1)
+      call mxm(cvr,nb,ad_alpha(1,icount),3,tmp(1),1)
 
       call sub2(rhs,tmp(1),nb)
       if (ifforce) call add2(rhs,bg(1),nb)
