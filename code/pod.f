@@ -304,7 +304,7 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'inside wl2vprod'
 
-      wl2vprod = op_glsc2_wt(t1,t2,t3,t4,t5,t6,bm1)
+      wl2vprod=op_glsc2_wt(t1,t2,t3,t4,t5,t6,bm1)
 
       if (nio.eq.0) write (6,*) 'exiting wl2vprod'
 
