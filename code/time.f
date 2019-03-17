@@ -31,13 +31,13 @@ c     Variable for vorticity
       call setr(rhs,icount)
 
       if (ad_step.le.3) then
-         call cmult2(flu,bv,ad_beta(1,icount)/ad_dt,nb*nb)
-         call add2s2(flu,av,1/ad_re,nb*nb)
-         call lu(flu,nb,nb,ir,ic)
+         call cmult2(fluv,bv,ad_beta(1,icount)/ad_dt,nb*nb)
+         call add2s2(fluv,av,1/ad_re,nb*nb)
+         call lu(fluv,nb,nb,irv,icv)
       endif
 
       if (isolve.eq.0) then ! standard matrix inversion
-         call solve(rhs,flu,1,nb,nb,ir,ic)
+         call solve(rhs,fluv,1,nb,nb,irv,icv)
       else if (isolve.eq.1) then ! constrained solve
          !call csolve(rhs,flu,...
       else

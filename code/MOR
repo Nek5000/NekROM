@@ -71,8 +71,8 @@ c     parameters and common blocks for MOR
 
       common /morivars/ i0,j0,k0,i1,j1,k1,ns,navg,ncloc,npr,npart
 
-      common /morlu/ flu(nb,nb)
-      common /morilu/ ir(nb), ic(nb)
+      common /morlu/ fluv(nb,nb),flut(nb,nb)
+      common /morilu/ irv(nb),icv(nb),irt(nb),ict(nb)
 
       real qnf, helm, invhelm, qngradf, qny, qns
       common /moropt/ helm(nb,nb), opt_rhs(0:nb), invhelm(nb,nb)
