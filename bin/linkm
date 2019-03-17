@@ -23,6 +23,8 @@ rm time.f   &> /dev/null
 rm unit.f   &> /dev/null
 rm test.usr &> /dev/null
 
+rm makefile_usr.inc &> /dev/null
+
 # link files
 
 ln -s {$MOR_DIR/code,${cwd}}/MOR
@@ -42,3 +44,5 @@ ln -s {$MOR_DIR/code,$cwd}/time.f
 
 ln -s {$MOR_DIR/tests,$cwd}/unit.f
 ln -s {$MOR_DIR/tests,$cwd}/test.usr
+
+ln -s {$MOR_DIR/code,$cwd}/makefile_usr.inc
