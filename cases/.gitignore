@@ -9,3 +9,4 @@ avg.list
 test.usr
 *.m
 tmp.*
+makefile_usr.inc
