@@ -182,8 +182,8 @@ c-----------------------------------------------------------------------
 
       common /scrk4/ work(lx1*ly1*lz1*lelt)
 
-      real cl(nloc),uu(0:nb)
-      integer icl(3,ncloc)
+      real cl(lcloc),uu(0:nb)
+      integer icl(3,lcloc)
 
       if (icalld.eq.0) then
          evalc_time=0.
