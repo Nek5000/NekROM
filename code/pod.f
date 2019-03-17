@@ -29,11 +29,21 @@ c-----------------------------------------------------------------------
          do j=1,ns
          do i=1,nb
             call opadds(ub(1,i),vb(1,i),wb(1,i),
-     $         us0(1,1,j),us0(1,2,j),us0(1,ldim,j),evec(j,i),n,2)
+     $         us0(1,1,j),us0(1,2,j),us0(1,ldim,j),evec(j,i,1),n,2)
          enddo
          enddo
 
-         call scale_bases
+         call scale_vbases
+
+         if (ifpod(2)) then
+            do i=1,nb
+               call rzero(tb(1,1,i),n)
+               do j=1,ns
+                  call add2s2(tb(1,1,i),ts(1,j,1),evec(j,i,2),n)
+               enddo
+            enddo
+            call scale_tbases
+         endif
       endif
 
       if (ifdrago) then
@@ -298,15 +308,34 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'exiting wl2vprod'
 
-      call col3(bwm1,bm1,wm1,n)
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine setgram
 
-      if (ifvort) then
-         wl2prod = glsc3(t1,t4,bwm1,n)
-      else
-         wl2prod = op_glsc2_wt(t1,t2,t3,t4,t5,t6,bwm1)
+      include 'SIZE'
+      include 'MOR'
+
+      if (.not.ifread) then
+         if (ifpod(0)) call gengram(ug(1,1,0),dps,ns,ldim)
+         if (ifpod(1)) call gengram(ug(1,1,1),us0,ns,ldim)
+         do i=2,ldimt1
+            if (ifpod(i)) call gengram(ug(1,1,i),ts(1,1,i),ns,1)
+         enddo
       endif
+      
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine setevec
 
-      if (nio.eq.0) write (6,*) 'exiting wl2prod'
+      include 'SIZE'
+      include 'MOR'
+
+c     do i=0,ldimt1
+c        if (ifpod(i)) call genevec(evec(1,1,i),eval(1,i),ug(1,1,i))
+c     enddo
+      call genevec(evec(1,1,1),eval(1,1),ug(1,1,1))
 
       return
       end
@@ -398,7 +427,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine genevec(gg)
+      subroutine genevec(vec,val,gram)
 
       !!! does not work if ns.lt.ls !!!
 
@@ -408,30 +437,36 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real hh(ls,ls),gg(ls,ls),identity(ls,ls),eigv(ls,ls),w(ls,ls)
+      integer icalld
+      save    icalld
+      data    icalld /0/
+      
+      common /scrgvec/ eye(ls,ls),gc(ls,ls),wk(ls,ls),eigv(ls,ls)
+
+      real gram(ls,ls),vec(ls,nb),val(ls)
 
       if (nio.eq.0) write (6,*) 'inside genevec'
 
-      call rzero(identity,ls*ls)
+      if (icalld.eq.0) then
+         call rzero(eye,ls*ls)
+         do j=1,ls
+            eye(j,j) = 1.
+         enddo
+         icalld=1
+      endif
 
-      do j=1,ls
-         identity(j,j) = 1
-      enddo
+      call copy(gc,gram,ls*ls)
 
-      call copy(hh,gg,ls*ls)
-
-      call generalev(hh,identity,eval,ls,w)
-      call copy(eigv,hh,ls*ls)
-
-      if (nio.eq.0) write (6,*)'number of modes:',nb
+      call generalev(gc,eye,val,ls,wk)
+      call copy(eigv,gc,ls*ls)
 
       do l = 1,nb
-         call copy(evec(1,l),eigv(1,ls-l+1),ls) ! reverse order of eigv
+         call copy(vec(1,l),eigv(1,ls-l+1),ls) ! reverse order of eigv
       enddo
 
       do i=1,ns
          if (nio.eq.0) write (6,'(i5,1p1e16.6,3x,a)')
-     $      i,eval(ns-i+1),'eval'
+     $      i,val(ns-i+1),'eval'
       enddo
 
       if (nio.eq.0) write (6,*) 'exiting genevec'
@@ -439,15 +474,13 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine scale_bases
+      subroutine scale_vbases
 
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
-
-      character*3 op
 
       nio=-1
       do i=1,nb
@@ -460,104 +493,21 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine comp_hyperpar
+      subroutine scale_tbases
 
       include 'SIZE'
+      include 'TOTAL'
       include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real ep
-      real uw(lt),vw(lt),ww(lt)
-      real tmp1(nb),tmp2(nb),delta(nb)
-      real work(ls,nb)
-
-      ! eps is the free parameter
-      ! 1e-2 is used in the paper
-      ep = 1e-2
-
-      n  = lx1*ly1*lz1*nelt
-
-      do j=1,nb                    ! compute hyper-parameter
-         call axhelm(uw,ub(1,j),ones,zeros,1,1)
-         call axhelm(vw,vb(1,j),ones,zeros,1,1)
-         if (ldim.eq.3) call axhelm(ww,wb(1,j),ones,zeros,1,1)
-         do i=1,ls
-            work(i,j) = glsc2(us(1,1,i),uw,n)+glsc2(us(1,2,i),vw,n)
-            if (ldim.eq.3) work(i,j)=work(i,j)+glsc2(us(1,ldim,i),ww,n)
-         enddo
-         tmp1(j) = vlmin(work(:,j),ls)
-         tmp2(j) = vlmax(work(:,j),ls)
-         delta(j) = tmp2(j)-tmp1(j)
-         sample_min(j) = tmp1(j) - ep * delta(j)
-         sample_max(j) = tmp2(j) + ep * delta(j)
-         write(6,*) j,sample_min(j),sample_max(j)
+      nio=-1
+      do i=1,nb
+         p=scaprod(tb(1,1,i),tb(1,1,i))
+         s=1./sqrt(p)
+         call cmult(tb(1,1,i),s,lx1*ly1*lz1*nelt)
       enddo
-
-      ! compute distance between sample_max and sample_min
-      call sub3(sam_dis,sample_max,sample_min,nb)
-      if (nid.eq.0) then
-         do i=1,nb
-            write(6,*)i,sam_dis(i)
-         enddo
-      endif
-
-      if (nid.eq.0) then
-         open (unit=51,file='sample_min')
-         do i=1,nb
-            write (51,*) sample_min(i)
-         enddo
-         close (unit=51)
-
-         open (unit=52,file='sample_max')
-         do i=1,nb
-            write (52,*) sample_max(i)
-         enddo
-         close (unit=52)
-      endif
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine opbinv1_nom(out1,out2,out3,inp1,inp2,inp3,SCALE)
-C--------------------------------------------------------------------
-C
-C     Compute OUT = (B)-1 * INP   (explicit)
-C
-C--------------------------------------------------------------------
-      include 'SIZE'
-      include 'INPUT'
-      include 'MASS'
-      include 'SOLN'
-
-      real out1  (1)
-      real out2  (1)
-      real out3  (1)
-      real inp1  (1)
-      real inp2  (1)
-      real inp3  (1)
-
-      include 'OPCTR'
-
-c     call opmask  (inp1,inp2,inp3)
-      call opdssum (inp1,inp2,inp3)
-
-      ntot=lx1*ly1*lz1*nelv
-
-      if (if3d) then
-         do 100 i=1,ntot
-            tmp    =binvm1(i,1,1,1)*scale
-            out1(i)=inp1(i)*tmp
-            out2(i)=inp2(i)*tmp
-            out3(i)=inp3(i)*tmp
-  100    continue
-      else
-         do 200 i=1,ntot
-            tmp    =binvm1(i,1,1,1)*scale
-            out1(i)=inp1(i)*tmp
-            out2(i)=inp2(i)*tmp
-  200    continue
-      endif
+      nio=nid
 
       return
       end

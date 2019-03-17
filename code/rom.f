@@ -81,10 +81,8 @@ c-----------------------------------------------------------------------
       call rom_init_params
       call rom_init_fields
 
-      if (.not.ifread) then
-         call gengram(ug,us0,ns,ldim)
-         call genevec(ug)
-      endif
+      call setgram
+      call setevec
 
       call setbases
       call setops
