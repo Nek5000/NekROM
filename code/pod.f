@@ -39,7 +39,7 @@ c-----------------------------------------------------------------------
       if (ifdrago) then
          do i=0,nb
             call lap2d(a1,ub(1,i))
-            call lap2d(av,vb(1,i))
+            call lap2d(a2,vb(1,i))
             if (ldim.eq.3) call lap2d(a3,wb(1,i))
             call opcmult(a1,a2,a3,param(2))
             call comp_pdrag(fd1(1,i),ub(1,i),vb(1,i),wb(1,i))
