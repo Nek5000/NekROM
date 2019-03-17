@@ -40,7 +40,7 @@ c-----------------------------------------------------------------------
          if (istep.eq.0) then
             call rom_setup_v
          else
-            call rom_step
+            call rom_step_v
             call recon(vx,vy,vz,u) ! reconstruct velocity to be used in h-t
          endif
       else
@@ -50,7 +50,7 @@ c-----------------------------------------------------------------------
 
          ad_step = 1
          do i=1,ad_nsteps
-            call rom_step
+            call rom_step_v
             time=time+dt
             ad_step=ad_step+1
          enddo
