@@ -107,8 +107,8 @@ c-----------------------------------------------------------------------
       if (nio.eq.0) write (6,*) 'inside setops'
 
       call seta(av,av0,'ops/av ')
-      call setc
       call setb(bv,bv0,'ops/bv ')
+      call setc(cvl,icvl,'ops/cv ')
       call setu
       call setg
 
@@ -258,7 +258,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine setc
+      subroutine setc(cl,icl)
 
       include 'SIZE'
       include 'TOTAL'
@@ -266,10 +266,14 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real cux(lt), cuy(lt), cuz(lt)
+      real cux(lt),cuy(lt),cuz(lt)
 
-      common /scrk1/ t1(lt), binv(lt),wk1(lt),wk2(lt),wk3(lt)
+      common /scrk1/ t1(lt),binv(lt),wk1(lt),wk2(lt),wk3(lt)
       common /scrcwk/ wk(lcloc)
+
+      real cl(lcloc),icl(3,lcloc)
+
+      character*128 fname
 
       conv_time=dnekclock()
 
@@ -284,7 +288,7 @@ c-----------------------------------------------------------------------
       npmin = np-lcglo+(lcglo/np)*np
       n=lx1*ly1*lz1*nelv
 
-      if (ifread.and.nid.eq.0) open (unit=12,file='ops/cv')
+      if (ifread.and.nid.eq.0) open (unit=12,file=fname)
 
       do k=0,nb
          if (nio.eq.0) write (6,*) 'k=',k
@@ -292,16 +296,26 @@ c-----------------------------------------------------------------------
          do j=0,nb
             if (.not.ifread) then
                call setcnv_u(ub(1,j),vb(1,j),wb(1,j))
-               call ccu(cux,cuy,cuz)
-               if (ifdrago) then
+               if (ifield.eq.1) then
+                  call ccu(cux,cuy,cuz)
+               else
+                  call cct(cux)
+               endif
+               if (ifdrago.and.ifield.eq.1) then
                   call opbinv1(wk1,wk2,wk3,cux,cuy,cuz,1.)
                   call comp_pdrag(fd2(1,j,k),wk1,wk2,wk3)
                endif
             endif
             do i=1,nb
                l=l+1
-               if (.not.ifread) cvltmp(l) = 
-     $            op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),cux,cuy,cuz,binv)
+               if (.not.ifread) then
+                  if (ifield.eq.1) then
+                     cvltmp(l)=op_glsc2_wt(
+     $                  ub(1,i),vb(1,i),wb(1,i),cux,cuy,cuz,binv)
+                  else
+                     cvltmp(l)=glsc2(tb(1,1,i),cux,n)
+                  endif
+               endif
                icvltmp(1,l) = i
                icvltmp(2,l) = j
                icvltmp(3,l) = k
@@ -317,8 +331,8 @@ c-----------------------------------------------------------------------
                   if (ifread) call gop(cvltmp,wk,'+  ',mcloc)
                   if (nid.eq.mid) then
                      ncloc = mcloc
-                     call copy(cvl,cvltmp,ncloc)
-                     call icopy(icvl,icvltmp,ncloc*3)
+                     call copy(cl,cvltmp,ncloc)
+                     call icopy(icl,icvltmp,ncloc*3)
                   endif
                   mid=mid+1
                   l = 0
