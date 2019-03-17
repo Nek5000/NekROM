@@ -35,7 +35,24 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine ccu(cu1,cu2,cu3) ! compute C(c) * u set by setcnv
+      subroutine cct(ct) ! compute C(u) * t set by setcnv
+
+      include 'SIZE'
+
+      parameter(lt=lx1*ly1*lz1*lelt)
+      parameter(ltd=lxd*lyd*lzd*lelt)
+
+      real ct(lt)
+
+      common /convect/ c1v(ltd), c2v(ltd), c3v(ltd),
+     $                 u1v(ltd), u2v(ltd), u3v(ltd)
+
+      call convect_new(ct,u1v,.true.,c1v,c2v,c3v,.true.)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine ccu(cu1,cu2,cu3) ! compute C(u) * u set by setcnv
 
       include 'SIZE'
 
