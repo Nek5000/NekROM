@@ -357,16 +357,18 @@ c-----------------------------------------------------------------------
       if (ifread) then
          call read_serial(a0,(nb+1)**2,fname,wk1,nid)
       else
+         nio=-1
          do j=0,nb ! Form the A matrix for basis function
          do i=0,nb
             if (ifield.eq.1) then
-               a0(i,j)=vecprod(ub(1,i),vb(1,i),wb(1,i),
-     $                         ub(1,j),vb(1,j),wb(1,j))
+               a0(i,j)=h10vprod(ub(1,i),vb(1,i),wb(1,i),
+     $                          ub(1,j),vb(1,j),wb(1,j))
             else
-               a0(i,j)=scaprod(tb(1,ifield-1,i),tb(1,ifield-1,j))
+               a0(i,j)=h10sprod(tb(1,ifield-1,i),tb(1,ifield-1,j))
             endif
          enddo
          enddo
+         nio=nid
       endif
 
       do j=1,nb
