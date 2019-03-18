@@ -37,7 +37,7 @@
    0.00000     p033 MOR: 0 -> L2prod, else -> H10prod
    1.00000     p034 MOR: 0 -> mode 0 = IC, else -> mode 0 = average of avg.list
    1.00000     p035 MOR: 0 -> gen ops, 1 -> dump ops, 2 -> read ops
-   0.00000     p036
+   0.00000     p036 MOR: 0 -> standard, 1 -> constrained
    0.00000     p037 
    0.00000     p038 
    0.00000     p039 
@@ -1351,8 +1351,7 @@
  E  172  3   171.000       2.00000       0.00000       0.00000       0.00000    
  E  172  4   61.0000       2.00000       0.00000       0.00000       0.00000    
   ***** NO THERMAL BOUNDARY CONDITIONS *****
-           1  PRESOLVE/RESTART OPTIONS  *****
-r0.f00001
+           0  PRESOLVE/RESTART OPTIONS  *****
            7          INITIAL CONDITIONS *****
 C Default                                                                       
 C Default                                                                       
