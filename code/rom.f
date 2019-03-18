@@ -165,7 +165,7 @@ c     ifforce=.true.
          ifpod(i)=.false.
       enddo
       if (ifflow.and.ifheat) then
-         call exitti('ifflow and ifheat are true...')
+         call exitti('ifflow and ifheat are true...$',n)
       else 
 c        ifpod(0)=.true.
          ifpod(1)=.true.
