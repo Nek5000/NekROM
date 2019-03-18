@@ -443,7 +443,7 @@ c-----------------------------------------------------------------------
 
       jfield=ifield
       ifield=1
-      call proj2bases(u,uic,vic,wic)
+      call proj2vbases(u,uic,vic,wic,ub,vb,wb)
       call outpost(uic,vic,wic,pr,t,'uic')
       ifield=jfield
 

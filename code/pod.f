@@ -64,7 +64,25 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine proj2bases(coef,ux,uy,uz)
+      subroutine proj2sbases(coef,tt,sb)
+
+      include 'SIZE'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real coef(0:nb),tt(lt)
+
+      if (ifl2) then
+         call wl2sproj(coef,tt,sb)
+      else
+         call h10sproj(coef,tt,sb)
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine proj2vbases(coef,ux,uy,uz,uub,vvb,wwb)
 
       include 'SIZE'
       include 'MOR'
@@ -72,50 +90,88 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       real coef(0:nb),ux(lt),uy(lt),uz(lt)
+      real uub(lt,nb),vvb(lt,nb),wwb(lt,nb)
 
       if (ifl2) then
-         call wl2proj(coef,ux,uy,uz)
+         call wl2vproj(coef,ux,uy,uz,uub,vvb,wwb)
       else
-         call h10proj(coef,ux,uy,uz)
+         call h10vproj(coef,ux,uy,uz,uub,vvb,wwb)
       endif
 
       return
       end
 c-----------------------------------------------------------------------
-      subroutine h10proj(coef,ux,uy,uz)
+      subroutine h10sproj(coef,tt,sb)
 
       include 'SIZE'
       include 'SOLN'
       include 'MASS'
-      include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real ux(lt),uy(lt),uz(lt)
-
       common /scrk3/ t1(lt),t2(lt),t3(lt),t4(lt),t5(lt),t6(lt)
 
-      real coef(0:nb)
+      real coef(0:nb),tt(lt),sb(lt,0:nb)
 
-      if (nio.eq.0) write (6,*) 'inside h10proj'
+      if (nio.eq.0) write (6,*) 'inside h10sproj'
 
       n=lx1*ly1*lz1*nelt
 
-      call opsub3(t1,t2,t3,ux,uy,uz,ub,vb,wb)
+      call sub3(t1,tt,sb)
 
       coef(0) = 1.
       if (nio.eq.0) write (6,1) coef(0),coef(0),1.
 
       do i=1,nb
-         call axhelm(t4,ub(1,i),ones,zeros,1,1)
-         call axhelm(t5,vb(1,i),ones,zeros,1,1)
+         call axhelm(t2,sb(1,i),ones,zeros,1,1)
 
-         ww = glsc2(t4,ub(1,i),n)+glsc2(t5,vb(1,i),n)
+         ww = glsc2(t2,sb(1,i),n)
+         vv = glsc2(t2,t1,n)
+
+         coef(i) = vv/ww
+         if (nio.eq.0) write (6,1) coef(i),vv,ww
+      enddo
+
+      if (nio.eq.0) write (6,*) 'exiting h10sproj'
+
+    1 format(' h10coef',1p3e16.8)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine h10vproj(coef,ux,uy,uz,uub,vvb,wwb)
+
+      include 'SIZE'
+      include 'SOLN'
+      include 'MASS'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real ux(lt),uy(lt),uz(lt),uub(lt,0:nb),vvb(lt,0:nb),wwb(lt,0:nb)
+
+      common /scrk3/ t1(lt),t2(lt),t3(lt),t4(lt),t5(lt),t6(lt)
+
+      real coef(0:nb)
+
+      if (nio.eq.0) write (6,*) 'inside h10vproj'
+
+      n=lx1*ly1*lz1*nelt
+
+      call opsub3(t1,t2,t3,ux,uy,uz,uub,vvb,wwb)
+
+      coef(0) = 1.
+      if (nio.eq.0) write (6,1) coef(0),coef(0),1.
+
+      do i=1,nb
+         call axhelm(t4,uub(1,i),ones,zeros,1,1)
+         call axhelm(t5,vvb(1,i),ones,zeros,1,1)
+
+         ww = glsc2(t4,uub(1,i),n)+glsc2(t5,vvb(1,i),n)
          vv = glsc2(t4,t1,n)+glsc2(t5,t2,n)
 
          if (ldim.eq.3) then
-            call axhelm(t6,wb(1,i),ones,zeros,1,1)
-            ww = ww + glsc2(t6,wb(1,i),n)
+            call axhelm(t6,wwb(1,i),ones,zeros,1,1)
+            ww = ww + glsc2(t6,wwb(1,i),n)
             vv = vv + glsc2(t6,t3,n)
          endif
 
@@ -123,14 +179,14 @@ c-----------------------------------------------------------------------
          if (nio.eq.0) write (6,1) coef(i),vv,ww
       enddo
 
-      if (nio.eq.0) write (6,*) 'exiting h10proj'
+      if (nio.eq.0) write (6,*) 'exiting h10vproj'
 
     1 format(' h10coef',1p3e16.8)
 
       return
       end
 c-----------------------------------------------------------------------
-      subroutine wl2proj(coef,ux,uy,uz)
+      subroutine wl2sproj(coef,ux,uub)
 
       include 'SIZE'
       include 'SOLN'
@@ -139,43 +195,72 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real ux(lt),uy(lt),uz(lt)
+      real ux(lt),uub(lt,0:nb)
 
       common /scrk3/ t1(lt),t2(lt),t3(lt),t4(lt),t5(lt),t6(lt)
-      common /scrk4/ bwm1(lt)
 
       real coef(0:nb)
 
-      if (nio.eq.0) write (6,*) 'inside wl2proj'
+      if (nio.eq.0) write (6,*) 'inside wl2sproj'
 
       n=lx1*ly1*lz1*nelt
 
-      call opsub3(t1,t2,t3,ux,uy,uz,ub,vb,wb)
+      call sub3(t1,ux,uub,n)
 
       coef(0) = 1.
 
       if (nio.eq.0) write (6,1) coef(0),coef(0),1.0
 
-      if (ifvort) then
-         do i=1,nb
-            ww = glsc3(ub(1,i),ub(1,i),bwm1,n)
-            vv = glsc3(ub(1,i),t1,bwm1,n)
+      do i=1,nb
+         ww = glsc3(uub(1,i),uub(1,i),bm1,n)
+         vv = glsc3(uub(1,i),t1,bm1,n)
 
-            coef(i) = vv/ww
-            if (nio.eq.0) write (6,1) coef(i),vv,ww
-         enddo
-      else
-         do i=1,nb
-            ww = op_glsc2_wt(
-     $         ub(1,i),vb(1,i),wb(1,i),ub(1,i),vb(1,i),wb(1,i),bm1)
-            vv = op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),t1,t2,t3,bm1)
+         coef(i) = vv/ww
+         if (nio.eq.0) write (6,1) coef(i),vv,ww
+      enddo
 
-            coef(i) = vv/ww
-            if (nio.eq.0) write (6,1) coef(i),vv,ww
-         enddo
-      endif
+      if (nio.eq.0) write (6,*) 'exiting wl2sproj'
 
-      if (nio.eq.0) write (6,*) 'exiting wl2proj'
+    1 format(' wl2coef',1p3e16.8)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine wl2vproj(coef,ux,uy,uz,uub,vvb,wwb)
+
+      include 'SIZE'
+      include 'SOLN'
+      include 'MASS'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real ux(lt),uy(lt),uz(lt),uub(lt,0:nb),vvb(lt,0:nb),wwb(lt,0:nb)
+
+      common /scrk3/ t1(lt),t2(lt),t3(lt),t4(lt),t5(lt),t6(lt)
+
+      real coef(0:nb)
+
+      if (nio.eq.0) write (6,*) 'inside wl2vproj'
+
+      n=lx1*ly1*lz1*nelt
+
+      call opsub3(t1,t2,t3,ux,uy,uz,uub,vvb,wwb)
+
+      coef(0) = 1.
+
+      if (nio.eq.0) write (6,1) coef(0),coef(0),1.0
+
+      do i=1,nb
+         ww = op_glsc2_wt(
+     $      uub(1,i),vvb(1,i),wwb(1,i),uub(1,i),vvb(1,i),wwb(1,i),bm1)
+         vv = op_glsc2_wt(uub(1,i),vvb(1,i),wwb(1,i),t1,t2,t3,bm1)
+
+         coef(i) = vv/ww
+         if (nio.eq.0) write (6,1) coef(i),vv,ww
+      enddo
+
+      if (nio.eq.0) write (6,*) 'exiting wl2vproj'
 
     1 format(' wl2coef',1p3e16.8)
 

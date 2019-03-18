@@ -117,7 +117,7 @@ c        call genbases
 
       if (mod(istep,max(iostep,1)).eq.0) then
          nio = -1
-         call proj2bases(u,vx,vy,vz)
+         call proj2vbases(u,vx,vy,vz,ub,vb,wb)
          nio = nid
 
          do i=0,nb
@@ -189,7 +189,7 @@ c-----------------------------------------------------------------------
          call opadd3(t1,t2,t3,
      $      us(1,1,i),us(1,2,i),us(1,ldim,i),ub,vb,wb)
          nio = -1
-         call proj2bases(utmp,t1,t2,t3)
+         call proj2vbases(utmp,t1,t2,t3,ub,vb,wb)
          nio = nid
          call add2(savg,utmp,nb+1)
 
@@ -211,7 +211,7 @@ c-----------------------------------------------------------------------
       do i=1,ns
          call opadd3(t1,t2,t3,us(1,1,i),us(1,2,i),us(1,ldim,i),ub,vb,wb)
          nio = -1
-         call proj2bases(utmp,t1,t2,t3)
+         call proj2vbases(utmp,t1,t2,t3,ub,vb,wb)
          nio = nid
          do j=0,nb
             svar(j)=svar(j)+(savg(j)-utmp(j))**2
@@ -278,7 +278,7 @@ c-----------------------------------------------------------------------
       n=lx1*ly1*lz1*nelv
 
       nio = -1
-      call proj2bases(u,vx,vy,vz)
+      call proj2vbases(u,vx,vy,vz,ub,vb,wb)
       nio = nid
 
       write (fmt1,'("(i7,", i0, "(1pe15.7),1x,a4)")') nb+2
@@ -512,7 +512,7 @@ c     projecting on to the reduce space
          if (nio.eq.0) write (6,*) i,'th snapshot:'
 c        call opadd3(t1,t2,t3,us(1,i),vs(1,i),ws(1,i),ub,vb,wb)
          nio = -1
-         call proj2bases(utmp,t1,t2,t3)
+         call proj2vbases(utmp,t1,t2,t3,ub,vb,wb)
 c call dumpcoef(utmp,nb,i) <- deprecated subroutine
          nio = nid
          call add2(savg,utmp,nb+1)
@@ -524,7 +524,7 @@ c call dumpcoef(utmp,nb,i) <- deprecated subroutine
       do i=1,ns
 c        call opadd3(t1,t2,t3,us(1,i),vs(1,i),ws(1,i),ub,vb,wb)
          nio = -1
-         call proj2bases(utmp,t1,t2,t3)
+         call proj2vbases(utmp,t1,t2,t3,ub,vb,wb)
          nio = nid
          do j=0,nb
             svar(j)=svar(j)+(savg(j)-utmp(j))**2
