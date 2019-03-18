@@ -75,11 +75,16 @@ c     call comp_rms ! old
          if (.true.) then
             idump=ad_step/ad_iostep
             call reconv(vx,vy,vz,u)
-            if (ifpod(2)) call recont(t,ut)
-
-            ! compute the vorticity of the ROM reconstructed field
             call opcopy(t1,t2,t3,vx,vy,vz)
-            call comp_vort3(vort,work1,work2,t1,t2,t3)
+
+            if (ifpod(2)) then
+               call recont(vort,ut)
+            else if (ifheat) then
+               call copy(vort,t,n)
+            else
+               call comp_vort3(vort,work1,work2,t1,t2,t3)
+            endif
+
             ifto = .true. ! turn on temp in fld file
             call outpost(vx,vy,vz,pavg,vort,'rom')
             if (nio.eq.0) write (6,*) 'inside ifdump'
