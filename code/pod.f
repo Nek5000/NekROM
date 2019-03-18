@@ -41,7 +41,7 @@ c-----------------------------------------------------------------------
             do i=1,nb
                call rzero(tb(1,1,i),n)
                do j=1,ns
-                  call add2s2(tb(1,1,i),ts(1,j,1),evec(j,i,2),n)
+                  call add2s2(tb(1,1,i),ts0(1,j,1),evec(j,i,2),n)
                enddo
             enddo
             call scale_tbases
