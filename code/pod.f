@@ -150,7 +150,6 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelt
 
-      call col3(bwm1,bm1,wm1,n)
       call opsub3(t1,t2,t3,ux,uy,uz,ub,vb,wb)
 
       coef(0) = 1.
@@ -168,8 +167,8 @@ c-----------------------------------------------------------------------
       else
          do i=1,nb
             ww = op_glsc2_wt(
-     $         ub(1,i),vb(1,i),wb(1,i),ub(1,i),vb(1,i),wb(1,i),bwm1)
-            vv = op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),t1,t2,t3,bwm1)
+     $         ub(1,i),vb(1,i),wb(1,i),ub(1,i),vb(1,i),wb(1,i),bm1)
+            vv = op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),t1,t2,t3,bm1)
 
             coef(i) = vv/ww
             if (nio.eq.0) write (6,1) coef(i),vv,ww
