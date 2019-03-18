@@ -93,14 +93,24 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'
       include 'MOR'
+      include 'TSTEP'
 
       if (nio.eq.0) write (6,*) 'inside setops'
 
+      jfield=ifield
+      ifield=1
       call seta(av,av0,'ops/av ')
       call setb(bv,bv0,'ops/bv ')
       call setc(cvl,icvl,'ops/cv ')
       call setu
+      if (ifpod(2)) then
+         ifield=2
+         call seta(at,at0,'ops/at ')
+         call setb(bt,bt0,'ops/bt ')
+         call setc(ctl,ictl,'ops/ct ')
+      endif
       call setg
+      ifield=jfield
 
       if (nio.eq.0) write (6,*) 'exiting setops'
 
@@ -120,6 +130,7 @@ c-----------------------------------------------------------------------
 
       ad_dt = dt
       ad_re = 1/param(2)
+      ad_pe = 1/param(8)
 
       ifl2=.false.
       ips='H10'
@@ -444,6 +455,14 @@ c-----------------------------------------------------------------------
       jfield=ifield
       ifield=1
       call proj2vbases(u,uic,vic,wic,ub,vb,wb)
+
+      if (ifpod(2)) then
+         call proj2sbases(ut,tic,tb)
+         do i=0,nb
+            write (6,*) 'ut',ut(i,1)
+         enddo
+      endif
+
       call outpost(uic,vic,wic,pr,t,'uic')
       ifield=jfield
 
