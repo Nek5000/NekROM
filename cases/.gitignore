@@ -10,3 +10,4 @@ test.usr
 *.m
 tmp.*
 makefile_usr.inc
+fort.*
