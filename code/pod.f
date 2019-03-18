@@ -104,8 +104,7 @@ c-----------------------------------------------------------------------
       subroutine h10sproj(coef,tt,sb)
 
       include 'SIZE'
-      include 'SOLN'
-      include 'MASS'
+      include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
@@ -142,8 +141,7 @@ c-----------------------------------------------------------------------
       subroutine h10vproj(coef,ux,uy,uz,uub,vvb,wwb)
 
       include 'SIZE'
-      include 'SOLN'
-      include 'MASS'
+      include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
@@ -189,7 +187,6 @@ c-----------------------------------------------------------------------
       subroutine wl2sproj(coef,ux,uub)
 
       include 'SIZE'
-      include 'SOLN'
       include 'MASS'
       include 'MOR'
 
@@ -229,7 +226,6 @@ c-----------------------------------------------------------------------
       subroutine wl2vproj(coef,ux,uy,uz,uub,vvb,wwb)
 
       include 'SIZE'
-      include 'SOLN'
       include 'MASS'
       include 'MOR'
 
