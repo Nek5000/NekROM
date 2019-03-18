@@ -436,13 +436,16 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'
       include 'SOLN'
+      include 'TSTEP'
       include 'MOR'
 
       if (nio.eq.0) write (6,*) 'inside setu'
 
+      jfield=ifield
+      ifield=1
       call proj2bases(u,uic,vic,wic)
-
       call outpost(uic,vic,wic,pr,t,'uic')
+      ifield=jfield
 
       if (nio.eq.0) write (6,*) 'exiting setu'
 
