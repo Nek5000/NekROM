@@ -107,6 +107,13 @@ c-----------------------------------------------------------------------
       call dump_serial(u,(nb+1)*3,'ops/v ',nid)
       call dump_global(cvl,ncloc,'ops/cv ',wk1,wk2,nid)
 
+      if (ifpod(2)) then
+         call dump_serial(ug(1,1,2),ls*ls,'ops/gt ',nid)
+         call dump_serial(at0,(nb+1)**2,'ops/at ',nid)
+         call dump_serial(bt0,(nb+1)**2,'ops/bt ',nid)
+         call dump_serial(ut,(nb+1)*3,'ops/t ',nid)
+         call dump_global(ctl,ncloc,'ops/ct ',wk1,wk2,nid)
+      endif
 
       ttmp=time
       itmp=istep
