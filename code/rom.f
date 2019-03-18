@@ -1,15 +1,4 @@
 c-----------------------------------------------------------------------
-c     include 'ana.f'
-c     include 'aux.f'
-c     include 'conv.f'
-c     include 'pod.f'
-c     include 'ei.f'
-c     include 'dump.f'
-c     include 'qoi.f'
-c     include 'read.f'
-c     include 'time.f'
-c     include 'unit.f'
-c-----------------------------------------------------------------------
       subroutine rom_update_v
 
       include 'SIZE'
