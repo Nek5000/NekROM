@@ -101,7 +101,7 @@ c-----------------------------------------------------------------------
 
       common /dumpglobal/ wk1(lcloc),wk2(lcloc)
 
-      call dump_serial(ug,ls*ls,'ops/gv ',nid)
+      call dump_serial(ug(1,1,1),ls*ls,'ops/gv ',nid)
       call dump_serial(av0,(nb+1)**2,'ops/av ',nid)
       call dump_serial(bv0,(nb+1)**2,'ops/bv ',nid)
       call dump_serial(u,(nb+1)*3,'ops/v ',nid)
