@@ -75,6 +75,7 @@ c     call comp_rms ! old
          if (.true.) then
             idump=ad_step/ad_iostep
             call reconv(vx,vy,vz,u)
+            if (ifpod(2)) call recont(t,ut)
 
             ! compute the vorticity of the ROM reconstructed field
             call opcopy(t1,t2,t3,vx,vy,vz)
