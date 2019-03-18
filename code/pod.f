@@ -333,10 +333,10 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
 
-c     do i=0,ldimt1
-c        if (ifpod(i)) call genevec(evec(1,1,i),eval(1,i),ug(1,1,i))
-c     enddo
-      call genevec(evec(1,1,1),eval(1,1),ug(1,1,1))
+      do i=0,ldimt1
+         if (ifpod(i)) call genevec(evec(1,1,i),eval(1,i),ug(1,1,i))
+      enddo
+c     call genevec(evec(1,1,1),eval(1,1),ug(1,1,1))
 
       return
       end
