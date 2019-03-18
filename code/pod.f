@@ -318,11 +318,14 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       if (.not.ifread) then
+         jfield=ifield
+         ifield=1
          if (ifpod(0)) call gengram(ug(1,1,0),dps,ns,ldim)
          if (ifpod(1)) call gengram(ug(1,1,1),us0,ns,ldim)
          do i=2,ldimt1
             if (ifpod(i)) call gengram(ug(1,1,i),ts(1,1,i),ns,1)
          enddo
+         ifield=jfield
       endif
       
       return
@@ -483,6 +486,8 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
+      jfield=ifield
+      ifield=1
       nio=-1
       do i=1,nb
          p=vecprod(ub(1,i),vb(1,i),wb(1,i),ub(1,i),vb(1,i),wb(1,i))
@@ -490,6 +495,7 @@ c-----------------------------------------------------------------------
          call opcmult(ub(1,i),vb(1,i),wb(1,i),s)
       enddo
       nio=nid
+      ifield=jfield
 
       return
       end
