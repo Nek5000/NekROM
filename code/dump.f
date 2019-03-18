@@ -113,7 +113,7 @@ c-----------------------------------------------------------------------
       do i=0,nb
          time=i
          itmp=i
-         call outpost(ub(1,i),vb(1,i),wb(1,i),pr,t,'bas')
+         call outpost(ub(1,i),vb(1,i),wb(1,i),pb(1,i),tb(1,1,i),'bas')
       enddo
       istep=itmp
       time=ttmp
