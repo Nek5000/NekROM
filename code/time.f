@@ -118,7 +118,7 @@ c     Matrices and vectors for advance
 
       if (ad_step.le.3) then
          call cmult2(flut,bt,ad_beta(1,icount)/ad_dt,nb*nb)
-         call add2s2(flut,at,1/ad_re,nb*nb)
+         call add2s2(flut,at,1/ad_pe,nb*nb)
          call lu(flut,nb,nb,irt,ict)
       endif
 
@@ -529,7 +529,7 @@ c     call mxm(bv0,nb+1,tmp,nb+1,rhs,1)
 
       call cmult(rhs,-1.0/ad_dt,nb)
 
-      s=-1.0/ad_re
+      s=-1.0/ad_pe
 
 c     call add2s2(rhs,av0,s,nb+1) ! not working...
       do i=1,nb
