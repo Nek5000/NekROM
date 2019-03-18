@@ -14,6 +14,8 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'inside setbases'
 
+      n=lx1*ly1*lz1*nelt
+
       if (ifread) then
          call loadbases(ub,vb,wb,nb)
       else
