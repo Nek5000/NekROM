@@ -251,6 +251,7 @@ c-----------------------------------------------------------------------
             call sub3(us0(1,1,i),us(1,1,i),ub,n)
             call sub3(us0(1,2,i),us(1,2,i),vb,n)
             if (ldim.eq.3) call sub3(us0(1,ldim,i),us(1,ldim,i),wb,n)
+            if (ifpod(2)) call sub3(ts0(1,i,1),ts(1,i,1),tb,n)
          enddo
       endif
 
