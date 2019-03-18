@@ -41,7 +41,7 @@ c-----------------------------------------------------------------------
             call rom_setup_v
          else
             call rom_step_v
-            call recon(vx,vy,vz,u) ! reconstruct velocity to be used in h-t
+            call reconv(vx,vy,vz,u) ! reconstruct velocity to be used in h-t
          endif
       else
          call rom_setup_v

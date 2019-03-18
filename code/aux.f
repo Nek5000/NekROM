@@ -14,7 +14,27 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine recon(ux,uy,uz,coef)
+      subroutine recont(tt,coef)
+
+      include 'SIZE'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real tt(lt),coef(0:nb)
+
+      n=lx1*ly1*lz1*nelt
+
+      call rzero(tt,n)
+
+      do i=0,nb
+         call add2s2(tt,tb(1,1,i),coef(i),n)
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine reconv(ux,uy,uz,coef)
 
       include 'SIZE'
       include 'MOR'

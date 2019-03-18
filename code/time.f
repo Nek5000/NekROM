@@ -53,7 +53,7 @@ c     call comp_rms ! old
 
       step_time=step_time+dnekclock()-last_time
 
-      if (ifheat) call recon(vx,vy,vz,u)
+      if (ifheat) call reconv(vx,vy,vz,u)
 
       if (mod(ad_step,ad_iostep).eq.0) then
 !        This output is to make sure the ceof matches with matlab code
@@ -74,7 +74,7 @@ c     call comp_rms ! old
 
          if (.true.) then
             idump=ad_step/ad_iostep
-            call recon(vx,vy,vz,u)
+            call reconv(vx,vy,vz,u)
 
             ! compute the vorticity of the ROM reconstructed field
             call opcopy(t1,t2,t3,vx,vy,vz)
@@ -611,7 +611,7 @@ c-----------------------------------------------------------------------
          call cmult(ua,s,nb+1)
          call cmult(u2a,s,(nb+1)**2)
 
-         call recon(ux,uy,uz,ua)
+         call reconv(ux,uy,uz,ua)
          call outpost(ux,uy,uz,pavg,tavg,'avg')
 
          call opzero(ux,uy,uz)
