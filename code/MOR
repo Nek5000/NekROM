@@ -49,6 +49,8 @@ c     parameters and common blocks for MOR
      $                 ctl(lcloc),ctltmp(lcloc),
      $                 ictl(3,lcloc),ictltmp(3,lcloc)
 
+      common /morcpl/  bvt0(0:nb,0:nb) 
+
       common /morvsol/ u(0:nb,3),uj(0:nb,6),
      $                 u2(0:nb,0:nb),u2j(0:nb,0:nb,6)
 
