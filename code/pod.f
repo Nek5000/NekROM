@@ -273,9 +273,9 @@ c-----------------------------------------------------------------------
       real t1(lt),t2(lt)
 
       if (ips.eq.'L2 ') then
-         vecprod=wl2sprod(t1,t2)
+         scaprod=wl2sprod(t1,t2)
       else if (ips.eq.'H10') then
-         vecprod=h10sprod(t1,t2)
+         scaprod=h10sprod(t1,t2)
       else
          call exitti('did not provide supported inner product space$')
       endif

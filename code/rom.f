@@ -298,10 +298,11 @@ c-----------------------------------------------------------------------
          if (.not.ifread) call setcnv_c(ub(1,k),vb(1,k),wb(1,k))
          do j=0,nb
             if (.not.ifread) then
-               call setcnv_u(ub(1,j),vb(1,j),wb(1,j))
                if (ifield.eq.1) then
+                  call setcnv_u(ub(1,j),vb(1,j),wb(1,j))
                   call ccu(cux,cuy,cuz)
                else
+                  call setcnv_u(tb(1,1,j),vb(1,j),wb(1,j))
                   call cct(cux)
                endif
                if (ifdrago.and.ifield.eq.1) then
