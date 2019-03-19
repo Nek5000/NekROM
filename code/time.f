@@ -54,6 +54,7 @@ c     call comp_rms ! old
       step_time=step_time+dnekclock()-last_time
 
       if (ifheat) call reconv(vx,vy,vz,u)
+      if (ifpod(2)) time=time+dt
 
       if (mod(ad_step,ad_iostep).eq.0) then
 !        This output is to make sure the ceof matches with matlab code
