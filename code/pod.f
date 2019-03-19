@@ -110,7 +110,7 @@ c-----------------------------------------------------------------------
 
       common /scrk3/ t1(lt),t2(lt),t3(lt),t4(lt),t5(lt),t6(lt)
 
-      real coef(0:nb),tt(lt),sb(lt,0:nb)
+      real coef(0:nb),tt(lt),sb(lt,ldimt,0:nb)
 
       if (nio.eq.0) write (6,*) 'inside h10sproj'
 
@@ -122,9 +122,9 @@ c-----------------------------------------------------------------------
       if (nio.eq.0) write (6,1) coef(0),coef(0),1.
 
       do i=1,nb
-         call axhelm(t2,sb(1,i),ones,zeros,1,1)
+         call axhelm(t2,sb(1,1,i),ones,zeros,1,1)
 
-         ww = glsc2(t2,sb(1,i),n)
+         ww = glsc2(t2,sb(1,1,i),n)
          vv = glsc2(t2,t1,n)
 
          coef(i) = vv/ww
