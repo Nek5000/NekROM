@@ -154,6 +154,7 @@ c-----------------------------------------------------------------------
       ifdrago=.false.
       if (param(36).ne.0) ifdrago=.true.
 
+      isolve=nint(param(37))
       ifvort=.false. ! default to false for now
       ifdump=.true.
       ifrecon=.true.
