@@ -281,7 +281,13 @@ c     call add2s2(rhs,av0,s,nb+1) ! not working...
       call mxm(cvr,nb,ad_alpha(1,icount),3,tmp(1),1)
 
       call sub2(rhs,tmp(1),nb)
-      if (ifforce) call add2(rhs,bg(1),nb)
+
+      if (ifbuoy) then
+         call mxm(bvt0,nb+1,ut(0,1),nb+1,tmp(0),1)
+         call add2(rhs,tmp(1),nb)
+      else if (ifforce) then
+         call add2(rhs,bg(1),nb)
+      endif
 
       return
       end

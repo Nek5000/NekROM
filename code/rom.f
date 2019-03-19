@@ -161,7 +161,7 @@ c-----------------------------------------------------------------------
       if (ifread) ifrecon=.false.
       ifpart=.false.
       ifforce=.false.
-c     ifforce=.true.
+      ifforce=.true.
       do i=0,ldimt1
          ifpod(i)=.false.
       enddo
@@ -172,6 +172,7 @@ c        ifpod(0)=.true.
          ifpod(1)=.true.
 c        ifpod(2)=.true.
       endif
+      ifbuoy=.false.
 
       call compute_BDF_coef(ad_alpha,ad_beta)
 
@@ -187,6 +188,7 @@ c        ifpod(2)=.true.
          write (6,*) 'rp_ifdumpops  ',ifdumpops
          write (6,*) 'rp_ifavgic    ',ifavgic
          write (6,*) 'rp_ifdrago    ',ifdrago
+         write (6,*) 'rp_ifbuoy     ',ifbuoy
          do i=0,ldimt1
             write (6,*) 'rp_ifpod(',i,')   ',ifpod(i)
          enddo
@@ -484,10 +486,21 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'inside setg'
 
-      do i=1,nb
-         bg(i)=-vecprod(bgx,bgy,bgz,ub(1,i),vb(1,i),wb(1,i))
-         if (nio.eq.0) write (6,*) bg(i),i,'bg'
-      enddo
+      call rzero(bg,nb)
+      call rzero(bvt0,(nb+1)**2)
+
+      if (ifbuoy) then
+         do j=0,nb
+         do i=0,nb
+            bvt0(i,j)=tbeta*scaprod(tb(1,1,j),vb(1,i))
+         enddo
+         enddo
+      else if (ifforce) then
+         do i=1,nb
+            bg(i)=-vecprod(bgx,bgy,bgz,ub(1,i),vb(1,i),wb(1,i))
+            if (nio.eq.0) write (6,*) bg(i),i,'bg'
+         enddo
+      endif
 
       call outpost(bgx,bgy,bz,pavg,tavg,'bgv')
 
