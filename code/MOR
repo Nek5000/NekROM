@@ -67,7 +67,8 @@ c     parameters and common blocks for MOR
       common /morqoi/ rnus,rdgx(0:nb),rdgy(0:nb),rdgz(0:nb)
       common /mordrag/ fd1(ldim,0:nb),fd2(ldim,0:nb,0:nb),fd3(ldim,0:nb)
       common /mordarray/ sobj(lx1,ly1,lz1,lelt),g(lx1,ly1,lz1,lelt)
-      common /morpar/ ad_dt,ad_re,ad_pe,ad_alpha(3,3),ad_beta(4,3)
+      common /morpar/ ad_dt,ad_re,ad_pe,ad_alpha(3,3),ad_beta(4,3),
+     $                tbeta
 
       integer ad_nsteps, ad_iostep, ad_step
       common /moripar/ ad_nsteps, ad_iostep, ad_step
