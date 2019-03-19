@@ -135,7 +135,7 @@ c-----------------------------------------------------------------------
       if (nio.eq.0) write (6,*) 'esym',esym,s2,s3
 
       if (edif.gt.1.e-13) iexit=iexit+1
-      if (esym.gt.2.e-14) iexit=iexit+2
+      if (esym.gt.1.e-13) iexit=iexit+2
 
       s1=0.
       s2=0.
@@ -150,7 +150,7 @@ c-----------------------------------------------------------------------
       edia=sqrt(s1/s2)
 
       if (nio.eq.0) write (6,*) 'edia',edia,s1,s2
-      if (.not.ifl2.and.edia.gt.3.3e-15) iexit=iexit+4
+      if (.not.ifl2.and.edia.gt.1.e-14) iexit=iexit+4
 
       s1=0.
 
@@ -161,7 +161,7 @@ c-----------------------------------------------------------------------
       euni=sqrt(s1/s2)
 
       if (nio.eq.0) write (6,*) 'euni',euni,s1,s2
-      if (.not.ifl2.and.euni.gt.3.4e-15) iexit=iexit+8
+      if (.not.ifl2.and.euni.gt.1.e-14) iexit=iexit+8
 
       call exit(iexit)
 
