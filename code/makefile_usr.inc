@@ -1,6 +1,7 @@
 $(OBJDIR)/ana.o   :$(MOR_DIR)/code/ana.f;        $(FC) -c $(FL2) $< -o $@
 $(OBJDIR)/aux.o   :$(MOR_DIR)/code/aux.f;        $(FC) -c $(FL2) $< -o $@
 $(OBJDIR)/conv.o  :$(MOR_DIR)/code/conv.f;       $(FC) -c $(FL2) $< -o $@
+$(OBJDIR)/const.o  :$(MOR_DIR)/code/const.f;       $(FC) -c $(FL2) $< -o $@
 $(OBJDIR)/dump.o  :$(MOR_DIR)/code/dump.f;       $(FC) -c $(FL2) $< -o $@
 $(OBJDIR)/ei.o    :$(MOR_DIR)/code/ei.f;         $(FC) -c $(FL2) $< -o $@
 $(OBJDIR)/pod.o   :$(MOR_DIR)/code/pod.f;        $(FC) -c $(FL2) $< -o $@
