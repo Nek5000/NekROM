@@ -8,8 +8,6 @@ cwd="$(pwd -P)"
 rm MOR      &> /dev/null
 rm test.usr &> /dev/null
 
-rm makefile_usr.inc &> /dev/null
-
 # link files
 
 ln -s {$MOR_DIR/code,${cwd}}/MOR
