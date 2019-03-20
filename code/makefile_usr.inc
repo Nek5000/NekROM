@@ -1,12 +1,12 @@
-$(OBJDIR)/ana.o   :$(MOR_DIR)/code/ana.f;        $(FC) -c $(FL2) $< -o $@
-$(OBJDIR)/aux.o   :$(MOR_DIR)/code/aux.f;        $(FC) -c $(FL2) $< -o $@
-$(OBJDIR)/conv.o  :$(MOR_DIR)/code/conv.f;       $(FC) -c $(FL2) $< -o $@
-$(OBJDIR)/const.o  :$(MOR_DIR)/code/const.f;       $(FC) -c $(FL2) $< -o $@
-$(OBJDIR)/dump.o  :$(MOR_DIR)/code/dump.f;       $(FC) -c $(FL2) $< -o $@
-$(OBJDIR)/ei.o    :$(MOR_DIR)/code/ei.f;         $(FC) -c $(FL2) $< -o $@
-$(OBJDIR)/pod.o   :$(MOR_DIR)/code/pod.f;        $(FC) -c $(FL2) $< -o $@
-$(OBJDIR)/qoi.o   :$(MOR_DIR)/code/qoi.f;        $(FC) -c $(FL2) $< -o $@
-$(OBJDIR)/read.o  :$(MOR_DIR)/code/read.f;       $(FC) -c $(FL2) $< -o $@
-$(OBJDIR)/rom.o   :$(MOR_DIR)/code/rom.f;        $(FC) -c $(FL2) $< -o $@
-$(OBJDIR)/time.o  :$(MOR_DIR)/code/time.f;       $(FC) -c $(FL2) $< -o $@
-$(OBJDIR)/unit.o  :$(MOR_DIR)/tests/unit.f;      $(FC) -c $(FL2) $< -o $@
+$(OBJDIR)/ana.o   :$(MOR_DIR)/code/ana.f    LMOR;  $(FC) -c $(FL2) $< -o $@
+$(OBJDIR)/aux.o   :$(MOR_DIR)/code/aux.f    LMOR;  $(FC) -c $(FL2) $< -o $@
+$(OBJDIR)/conv.o  :$(MOR_DIR)/code/conv.f   LMOR;  $(FC) -c $(FL2) $< -o $@
+$(OBJDIR)/const.o :$(MOR_DIR)/code/const.f  LMOR;  $(FC) -c $(FL2) $< -o $@
+$(OBJDIR)/dump.o  :$(MOR_DIR)/code/dump.f   LMOR;  $(FC) -c $(FL2) $< -o $@
+$(OBJDIR)/ei.o    :$(MOR_DIR)/code/ei.f     LMOR;  $(FC) -c $(FL2) $< -o $@
+$(OBJDIR)/pod.o   :$(MOR_DIR)/code/pod.f    LMOR;  $(FC) -c $(FL2) $< -o $@
+$(OBJDIR)/qoi.o   :$(MOR_DIR)/code/qoi.f    LMOR;  $(FC) -c $(FL2) $< -o $@
+$(OBJDIR)/read.o  :$(MOR_DIR)/code/read.f   LMOR;  $(FC) -c $(FL2) $< -o $@
+$(OBJDIR)/rom.o   :$(MOR_DIR)/code/rom.f    LMOR;  $(FC) -c $(FL2) $< -o $@
+$(OBJDIR)/time.o  :$(MOR_DIR)/code/time.f   LMOR;  $(FC) -c $(FL2) $< -o $@
+$(OBJDIR)/unit.o  :$(MOR_DIR)/tests/unit.f  LMOR;  $(FC) -c $(FL2) $< -o $@
