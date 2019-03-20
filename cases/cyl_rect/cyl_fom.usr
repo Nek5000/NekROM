@@ -53,9 +53,7 @@ c-----------------------------------------------------------------------
 
       common /snsl2/ el2, fl2
       common /uchk/ fd(ldim),px(lt),py(lt),pz(lt),ux(lt),uy(lt),uz(lt),
-     $              gt(lt),au(lt),av(lt),aw(lt),h1(lt),h2(lt)
-
-      common /mdrg/ dpxm,dpx2m,dvxm,dvxm,dv2xm,dtxm,dt2xm
+     $              gt(lt),a1(lt),a2(lt),a3(lt),h1(lt),h2(lt)
 
       real x0(3)
       save x0
@@ -63,40 +61,13 @@ c-----------------------------------------------------------------------
 
       real rk(lt,3)
 
-      if (istep.eq.0)
-         call set_obj  ! define objects for surface integrals
-c        dpxm=0.
-c        dpx2m=0.
-c        dvxm=0.
-c        dv2xm=0.
-c        dtxm=0.
-c        dt2xm=0.
-      endif
+      if (istep.eq.0) call set_obj  ! define objects for surface integrals
 
       call estimate_strouhal
 
       scale = 1.  ! Cd = F/(.5 rho U^2 ) = 2*F
 
       call torque_calc(scale,x0,.true.,.false.)
-
-c     dpxm=pxm+dragpx(1)
-c     dpx2m=px2m+dragpx(1)*dragpx(1)
-c     dvxm=vxm+dragvx(1)
-c     dvx2m=vx2m+dragvx(1)*dragvx(1)
-c     dvxm=vxm+dragvx(1)
-c     dvx2m=vx2m+dragvx(1)*dragvx(1)
-
-c     if (istep.ge.nsteps) then
-c        dpxm=dpxm/real(nsteps)
-c        dp2xm=dp2xm/real(nsteps)
-c        dvxm=dvxm/real(nsteps)
-c        dv2xm=dv2xm/real(nsteps)
-c        dtxm=dtxm/real(nsteps)
-c        dt2xm=dt2xm/real(nsteps)
-c        if (nio.eq.0) write (6,*) dpxm,dpx2m,dpx2m-dpxm*dpxm,'apdrg'
-c        if (nio.eq.0) write (6,*) dvxm,dvx2m,dvx2m-dvxm*dvxm,'avdrg'
-c        if (nio.eq.0) write (6,*) dtxm,dtx2m,dtx2m-dtxm*dtxm,'atdrg'
-c     endif
 
       call avg_all
 
