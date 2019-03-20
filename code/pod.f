@@ -419,7 +419,7 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       do i=0,ldimt1
-         if (ifpod(i)) call genevec(evec(1,1,i),eval(1,i),ug(1,1,i))
+         if (ifpod(i)) call genevec(evec(1,1,i),eval(1,i),ug(1,1,i),i)
       enddo
 c     call genevec(evec(1,1,1),eval(1,1),ug(1,1,1))
 
@@ -513,7 +513,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine genevec(vec,val,gram)
+      subroutine genevec(vec,val,gram,ifld)
 
       !!! does not work if ns.lt.ls !!!
 
@@ -551,8 +551,8 @@ c-----------------------------------------------------------------------
       enddo
 
       do i=1,ns
-         if (nio.eq.0) write (6,'(i5,1p1e16.6,3x,a)')
-     $      i,val(ns-i+1),'eval'
+         if (nio.eq.0) write (6,'(i5,1p1e16.6,3x,a,i1)')
+     $      i,val(ns-i+1),'eval',ifld
       enddo
 
       if (nio.eq.0) write (6,*) 'exiting genevec'
