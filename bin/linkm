@@ -5,8 +5,9 @@ cwd="$(pwd -P)"
 
 # remove pre-existing files
 
-rm MOR      &> /dev/null
-rm test.usr &> /dev/null
+rm MOR              &> /dev/null
+rm test.usr         &> /dev/null
+rm makefile_usr.inc &> /dev/null
 
 # link files
 
