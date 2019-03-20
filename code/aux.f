@@ -155,14 +155,19 @@ c-----------------------------------------------------------------------
             enddo
             dx=pdx1+pdx2+pdx3+vdx
             dy=pdy1+pdy2+pdy3+vdy
-c           if (nio.eq.0) write (6,*) ad_step*dt,vdx,pdx1,pdx2,pdx3,dx,'dragx'
-c           if (nio.eq.0) write (6,*) ad_step*dt,vdy,pdy1,pdy2,pdy3,dy,'dragy'
+c           if (nio.eq.0) write (6,1) time,vdx,pdx1,pdx2,pdx3,dx,'dragx'
+c           if (nio.eq.0) write (6,1) time,vdy,pdy1,pdy2,pdy3,dy,'dragy'
+            if (nio.eq.0) write (6,2) time,vdx,pdx3,dx,'dragx'
+            if (nio.eq.0) write (6,2) time,vdy,pdy3,dy,'dragy'
             if (ldim.eq.3) then
                dz=vlsc2(rdgz,u,nb+1)
                write (6,*) ad_step*dt,vdz,'dragz'
             endif
          endif
       endif
+
+    1 format (1p6e16.8,2x,a)
+    2 format (1p4e16.8,2x,a)
 
       return
       end
