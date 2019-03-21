@@ -1,13 +1,12 @@
 #!/bin/bash
 
 cwd="$(pwd -P)"
-: ${MOR_DIR:=$(cd ..; dirname $(pwd -P))}
+: ${MOR_DIR:=$(dirname $(dirname $cwd))}
 
 # remove pre-existing files
 
-rm MOR      &> /dev/null
-rm test.usr &> /dev/null
-
+rm MOR              &> /dev/null
+rm test.usr         &> /dev/null
 rm makefile_usr.inc &> /dev/null
 
 # link files
@@ -17,3 +16,8 @@ ln -s {$MOR_DIR/tests,$cwd}/test.usr
 
 echo "MOR_DIR=${MOR_DIR}" > makefile_usr.inc
 cat $MOR_DIR/code/makefile_usr.inc >> $cwd/makefile_usr.inc
+
+# copy SIZE & LMOR if it does not exist
+
+cp -n $MOR_DIR/code/LMOR.template LMOR
+cp -n $MOR_DIR/code/SIZE.template SIZE

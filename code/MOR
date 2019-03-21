@@ -49,6 +49,8 @@ c     parameters and common blocks for MOR
      $                 ctl(lcloc),ctltmp(lcloc),
      $                 ictl(3,lcloc),ictltmp(3,lcloc)
 
+      common /morcpl/  bvt0(0:nb,0:nb) 
+
       common /morvsol/ u(0:nb,3),uj(0:nb,6),
      $                 u2(0:nb,0:nb),u2j(0:nb,0:nb,6)
 
@@ -65,7 +67,8 @@ c     parameters and common blocks for MOR
       common /morqoi/ rnus,rdgx(0:nb),rdgy(0:nb),rdgz(0:nb)
       common /mordrag/ fd1(ldim,0:nb),fd2(ldim,0:nb,0:nb),fd3(ldim,0:nb)
       common /mordarray/ sobj(lx1,ly1,lz1,lelt),g(lx1,ly1,lz1,lelt)
-      common /morpar/ ad_dt,ad_re,ad_pe,ad_alpha(3,3),ad_beta(4,3)
+      common /morpar/ ad_dt,ad_re,ad_pe,ad_alpha(3,3),ad_beta(4,3),
+     $                tbeta
 
       integer ad_nsteps, ad_iostep, ad_step
       common /moripar/ ad_nsteps, ad_iostep, ad_step
@@ -82,10 +85,12 @@ c     parameters and common blocks for MOR
       common /morqn/ qngradf(nb), qns(nb), qny(nb), qnf
 
       logical ifl2,ifvort,ifdump,ifrecon,ifstep,ifpart,ifavgic,
-     $        ifdumpops,ifdrago,ifrms,ifread,ifforce,ifpod(0:ldimt1)
+     $        ifdumpops,ifdrago,ifrms,ifread,ifforce,ifpod(0:ldimt1),
+     $        ifbuoy
 
       common /morflags/ ifl2,ifvort,ifdumpeig,ifrecon,ifstep,ifavgic,
-     $                  ifdumpops,ifdrago,ifrms,ifread,ifforce,ifpod
+     $                  ifdumpops,ifdrago,ifrms,ifread,ifforce,ifpod,
+     $                  ifbuoy
 
       real last_time,misc_time
       common /mortime/ step_time,last_time,misc_time,evalc_time
