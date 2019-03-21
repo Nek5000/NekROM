@@ -274,7 +274,7 @@ c-----------------------------------------------------------------------
       real cux(lt),cuy(lt),cuz(lt)
 
       common /scrk1/ t1(lt),binv(lt),wk1(lt),wk2(lt),wk3(lt)
-      common /scrcwk/ wk(lcloc)
+      common /scrcwk/ wk(lcloc),wk4(lt),wk5(lt),wk6(lt)
 
       real cl(lcloc),icl(3,lcloc)
 
@@ -308,7 +308,8 @@ c-----------------------------------------------------------------------
                   call cct(cux)
                endif
                if (ifdrago.and.ifield.eq.1) then
-                  call opbinv1(wk1,wk2,wk3,cux,cuy,cuz,1.)
+                  call opcopy(wk4,wk5,wk6,cux,cuy,cuz)
+                  call opbinv1(wk1,wk2,wk3,wk4,wk5,wk6,1.)
                   call comp_pdrag(fd2(1,j,k),wk1,wk2,wk3)
                endif
             endif
