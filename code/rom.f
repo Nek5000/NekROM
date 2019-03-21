@@ -139,8 +139,8 @@ c-----------------------------------------------------------------------
          ips='L2 '
       endif
 
-      ifavgic=.false.
-      if (param(34).ne.0) ifavgic=.true.
+      ifavg0=.false.
+      if (param(34).ne.0) ifavg0=.true.
 
       ifdumpops=.false.
       ifread=.false.
@@ -186,7 +186,7 @@ c        ifpod(2)=.true.
          write (6,*) 'rp_ifdump     ',ifdump
          write (6,*) 'rp_ifvort     ',ifvort
          write (6,*) 'rp_ifdumpops  ',ifdumpops
-         write (6,*) 'rp_ifavgic    ',ifavgic
+         write (6,*) 'rp_ifavg0     ',ifavg0
          write (6,*) 'rp_ifdrago    ',ifdrago
          write (6,*) 'rp_ifbuoy     ',ifbuoy
          do i=0,ldimt1
@@ -240,11 +240,11 @@ c-----------------------------------------------------------------------
             call copy_sol(uavg,vavg,wavg,pavg,tavg,vx,vy,vz,pr,t)
             call pop_sol(vx,vy,vz,pr,t)
          endif
-         if (ifavgic) then
+
+         if (ifavg0) then
             call copy_sol(ub,vb,wb,pb,tb,uavg,vavg,wavg,pavg,tavg)
-         else
-            call copy_sol(ub,vb,wb,pb,tb,uic,vic,wic,pic,tic)
          endif
+
          call outpost(uavg,vavg,wavg,pavg,tavg,'avg')
          if (ifforce) call gradp(bgx,bgy,bgz,pavg)
       endif
