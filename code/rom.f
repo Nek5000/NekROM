@@ -263,7 +263,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine setc(cl,icl)
+      subroutine setc(cl,icl,fname)
 
       include 'SIZE'
       include 'TOTAL'
@@ -279,21 +279,24 @@ c-----------------------------------------------------------------------
       real cl(lcloc),icl(3,lcloc)
 
       character*128 fname
+      character*128 fnlint
+
+      if (nio.eq.0) write (6,*) 'inside setc'
 
       conv_time=dnekclock()
 
       call invers2(binv,bm1,lx1*ly1*lz1*nelv)
       call rone(binv,lx1*ly1*lz1*nelv)
 
-      if (nio.eq.0) write (6,*) 'inside setc'
+      call lints(fnlint,fname,128)
 
       l=0
-      mid = 0
-      nlocmin = lcglo/np
-      npmin = np-lcglo+(lcglo/np)*np
+      mid=0
+      nlocmin=lcglo/np
+      npmin=np-lcglo+(lcglo/np)*np
       n=lx1*ly1*lz1*nelv
 
-      if (ifread.and.nid.eq.0) open (unit=12,file=fname)
+      if (ifread.and.nid.eq.0) open (unit=12,file=fnlint)
 
       do k=0,nb
          if (nio.eq.0) write (6,*) 'k=',k
