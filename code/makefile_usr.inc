@@ -8,4 +8,5 @@ $(OBJDIR)/qoi.o   :$(MOR_DIR)/code/qoi.f;        $(FC) -c $(FL2) $< -o $@
 $(OBJDIR)/read.o  :$(MOR_DIR)/code/read.f;       $(FC) -c $(FL2) $< -o $@
 $(OBJDIR)/rom.o   :$(MOR_DIR)/code/rom.f;        $(FC) -c $(FL2) $< -o $@
 $(OBJDIR)/time.o  :$(MOR_DIR)/code/time.f;       $(FC) -c $(FL2) $< -o $@
+$(OBJDIR)/const.o  :$(MOR_DIR)/code/const.f;      $(FC) -c $(FL2) $< -o $@
 $(OBJDIR)/unit.o  :$(MOR_DIR)/tests/unit.f;      $(FC) -c $(FL2) $< -o $@
