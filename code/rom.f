@@ -103,12 +103,12 @@ c-----------------------------------------------------------------------
       call setb(bv,bv0,'ops/bv ')
       call setc(cvl,icvl,'ops/cv ')
       call setu
-      if (ifpod(2)) then
+c     if (ifpod(2)) then
          ifield=2
          call seta(at,at0,'ops/at ')
          call setb(bt,bt0,'ops/bt ')
          call setc(ctl,ictl,'ops/ct ')
-      endif
+c     endif
       call setg
       ifield=jfield
 
