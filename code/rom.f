@@ -94,7 +94,6 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
       include 'TSTEP'
-      include 'INPUT'
 
       if (nio.eq.0) write (6,*) 'inside setops'
 
@@ -104,7 +103,7 @@ c-----------------------------------------------------------------------
       call setb(bv,bv0,'ops/bv ')
       call setc(cvl,icvl,'ops/cv ')
       call setu
-      if (ifheat) then
+      if (ifpod(2)) then
          ifield=2
          call seta(at,at0,'ops/at ')
          call setb(bt,bt0,'ops/bt ')
@@ -163,16 +162,13 @@ c-----------------------------------------------------------------------
       ifpart=.false.
       ifforce=.false.
       ifforce=.true.
+
       do i=0,ldimt1
          ifpod(i)=.false.
       enddo
-      if (ifflow.and.ifheat) then
-         call exitti('ifflow and ifheat are true...$',n)
-      else 
-c        ifpod(0)=.true.
-         ifpod(1)=.true.
-c        ifpod(2)=.true.
-      endif
+      ifpod(1)=.true.
+      ifpod(2)=ifheat
+
       ifbuoy=.false.
 
       call compute_BDF_coef(ad_alpha,ad_beta)
