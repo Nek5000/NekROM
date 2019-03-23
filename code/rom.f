@@ -192,7 +192,7 @@ c-----------------------------------------------------------------------
             write (6,*) 'rp_ifpod(',i,')   ',ifpod(i)
          enddo
          do i=0,ldimt1
-            write (6,*) 'rp_ifrod(',i,')   ',ifrod(i)
+            write (6,*) 'rp_ifrom(',i,')   ',ifrom(i)
          enddo
 
 c        write(6,*) 'rp_if= ',if
