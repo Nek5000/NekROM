@@ -32,17 +32,16 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine loadbases(ub,vb,wb,nb)
+      subroutine loadbases
 
       include 'SIZE'
       include 'TOTAL'
+      include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
       common /scrk1/ tmp1(lt),tmp2(lt),tmp3(lt),
      $               tmp4(lt),tmp5(lt),tmp6(lt,3)
-
-      real ub(lt,0:nb), vb(lt,0:nb), wb(lt,0:nb)
 
       character*128 fname
       character*1   fn1(128)
@@ -57,16 +56,17 @@ c-----------------------------------------------------------------------
       n=lx1*ly1*lz1*nelt
       n2=lx2*ly2*lz2*nelt
 
-      call opcopy(tmp1,tmp2,tmp3,vx,vy,vz)
-      call copy(tmp4,pr,n2)
-      call copy(tmp5,t,n)
+      call push_sol(vx,vy,vz,pr,t)
 
       inquire (file='bas.list',exist=ifexist)
 
       if (ifexist) then
-         call opzero(tmp6,tmp6(1,2),tmp6(1,3))
          nn=nb+1
-c        call get_saved_fields(ub,vb,wb,nn,tmp6,.false.,'bas.list ')
+         call get_saved_fields(us,ps,ts,nn,'bas.list ')
+         do i=0,nb
+            call copy_sol(ub(1,i),vb(1,i),wb(1,i),pb(1,i),tb(1,i,1),
+     $       us(1,1,i+1),us(1,2,i+1),us(1,ldim,i+1),ps(1,i+1),ts(1,i,1))
+         enddo
          if (nn.lt.nb) call exitti(
      $   'number of files in bas.list fewer than nb',nb-nn)
       else
@@ -83,9 +83,7 @@ c        call get_saved_fields(ub,vb,wb,nn,tmp6,.false.,'bas.list ')
          enddo
       endif
 
-      call opcopy(vx,vy,vz,tmp1,tmp2,tmp3)
-      call copy(pr,tmp4,n2)
-      call copy(t,tmp5,n)
+      call pop_sol(vx,vy,vz,pr,t)
 
       if (nio.eq.0) write (6,*) 'exiting loadbases'
 
