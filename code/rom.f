@@ -464,7 +464,7 @@ c-----------------------------------------------------------------------
       if (ifpod(2)) then
          call proj2sbases(ut,tic,tb)
          do i=0,nb
-            write (6,*) 'ut',ut(i,1)
+            if (nio.eq.0) write (6,*) 'ut',ut(i,1)
          enddo
       endif
 
