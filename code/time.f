@@ -53,12 +53,13 @@ c     call comp_rms ! old
 
       step_time=step_time+dnekclock()-last_time
 
-      if (ifheat) call reconv(vx,vy,vz,u)
-      if (ifpod(2)) time=time+dt
+      if (ifdump) then
+         time=time+dt
+      else
+         call reconv(vx,vy,vz,u)
+      endif
 
       if (mod(ad_step,ad_iostep).eq.0) then
-!        This output is to make sure the ceof matches with matlab code
-
          if (nio.eq.0) then
             write (6,*)'ad_step:',ad_step,ad_iostep,npp,nid,step_time
             if (ad_step.eq.ad_nsteps) then
@@ -73,12 +74,12 @@ c     call comp_rms ! old
             endif
          endif
 
-         if (.true.) then
+         if (ifdump) then
             idump=ad_step/ad_iostep
             call reconv(vx,vy,vz,u)
             call opcopy(t1,t2,t3,vx,vy,vz)
 
-            if (ifpod(2)) then
+            if (ifrom(2)) then
                call recont(vort,ut)
             else if (ifheat) then
                call copy(vort,t,n)

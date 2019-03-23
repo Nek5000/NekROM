@@ -154,20 +154,22 @@ c-----------------------------------------------------------------------
       ifdrago=.false.
       if (param(36).ne.0) ifdrago=.true.
 
+      do i=0,ldimt1
+         ifpod(i)=.false.
+         ifrom(i)=.false.
+      enddo
+      ifpod(1)=.true.
+      ifpod(2)=ifheat
+      ifrom(1)=.true.
+
       isolve=nint(param(37))
       ifvort=.false. ! default to false for now
-      ifdump=.true.
+      ifdump=((.not.ifheat).or.ifrom(2))
       ifrecon=.true.
       if (ifread) ifrecon=.false.
       ifpart=.false.
       ifforce=.false.
       ifforce=.true.
-
-      do i=0,ldimt1
-         ifpod(i)=.false.
-      enddo
-      ifpod(1)=.true.
-      ifpod(2)=ifheat
 
       ifbuoy=.false.
 
@@ -188,6 +190,9 @@ c-----------------------------------------------------------------------
          write (6,*) 'rp_ifbuoy     ',ifbuoy
          do i=0,ldimt1
             write (6,*) 'rp_ifpod(',i,')   ',ifpod(i)
+         enddo
+         do i=0,ldimt1
+            write (6,*) 'rp_ifrod(',i,')   ',ifrod(i)
          enddo
 
 c        write(6,*) 'rp_if= ',if
