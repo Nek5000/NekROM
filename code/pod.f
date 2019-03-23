@@ -420,7 +420,8 @@ c-----------------------------------------------------------------------
 
       if (.not.ifread) then
          do i=0,ldimt1
-            if (ifpod(i)) call genevec(evec(1,1,i),eval(1,i),ug(1,1,i),i)
+            if (ifpod(i)) call
+     $         genevec(evec(1,1,i),eval(1,i),ug(1,1,i),i)
          enddo
       endif
 
