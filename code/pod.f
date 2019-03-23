@@ -418,10 +418,11 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
 
-      do i=0,ldimt1
-         if (ifpod(i)) call genevec(evec(1,1,i),eval(1,i),ug(1,1,i),i)
-      enddo
-c     call genevec(evec(1,1,1),eval(1,1),ug(1,1,1))
+      if (.not.ifread) then
+         do i=0,ldimt1
+            if (ifpod(i)) call genevec(evec(1,1,i),eval(1,i),ug(1,1,i),i)
+         enddo
+      endif
 
       return
       end
