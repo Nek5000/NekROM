@@ -1,7 +1,0 @@
-      ! MOR Parameters
-
-      parameter (ls=100) ! number of snapshots
-      parameter (nb=5)  ! number of basis vectors
-
-      parameter (lk=1)   ! largest wave number for pdrag calculation
-      parameter (lmsk=1) ! number of partitions
