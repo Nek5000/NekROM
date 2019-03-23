@@ -63,8 +63,6 @@ c-----------------------------------------------------------------------
 
       inquire (file='bas.list',exist=ifexist)
 
-      call exitti('read bases is not functional...')
-
       if (ifexist) then
          call opzero(tmp6,tmp6(1,2),tmp6(1,3))
          nn=nb+1
