@@ -159,7 +159,7 @@ c-----------------------------------------------------------------------
          ifrom(i)=.false.
       enddo
       ifpod(1)=.true.
-      ifpod(2)=ifheat
+      ifpod(2)=(ifheat.and..not.ifread)
       ifrom(1)=.true.
 
       isolve=nint(param(37))
