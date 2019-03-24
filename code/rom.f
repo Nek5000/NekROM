@@ -79,7 +79,7 @@ c-----------------------------------------------------------------------
 
       if (ifdumpops) call dump_all
 
-      call qoisetup
+      if (ifcdrag) call cvdrag_setup
 
       setup_end=dnekclock()
 
@@ -511,38 +511,6 @@ c-----------------------------------------------------------------------
       call outpost(bgx,bgy,bz,pavg,tavg,'bgv')
 
       if (nio.eq.0) write (6,*) 'exiting setg'
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine qoisetup
-
-      include 'SIZE'
-      include 'TOTAL'
-      include 'MOR'
-
-      parameter (lt=lx1*ly1*lz1*lelt)
-
-      common /scrk1/ ux(lt),uy(lt),uz(lt)
-
-      if (ifcdrag) then
-         call opcopy(ux,uy,uz,vx,vy,vz)
-
-         do i=0,nb
-            nio = -1
-            call opcopy(vx,vy,vz,ub(1,i),vb(1,i),wb(1,i))
-            call torque_calc(1.,x0,.true.,.false.)
-            rdgx(i)=dragvx(1)
-            rdgy(i)=dragvy(1)
-            rdgz(i)=dragvz(1)
-            nio = nid
-            if (nio.eq.0) then
-               write (6,*) i,rdgx(i),rdgy(i),rdgz(i),'dragi'
-            endif
-         enddo
-
-         call opcopy(vx,vy,vz,ux,uy,uz)
-      endif
 
       return
       end

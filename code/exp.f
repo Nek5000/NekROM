@@ -135,7 +135,7 @@ c     call setops
 
       if (ifdumpops) call dump_all
 
-      call qoisetup
+c     call qoisetup
 
       setup_end=dnekclock()
 

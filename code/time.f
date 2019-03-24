@@ -48,7 +48,7 @@ c     Variable for vorticity
       call setavg
       call setj
 
-      call comp_drag
+      if (ifcdrag) call cdrag
 c     call comp_rms ! old
 
       step_time=step_time+dnekclock()-last_time

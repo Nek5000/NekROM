@@ -127,54 +127,6 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine comp_drag
-
-      include 'SIZE'
-      include 'TSTEP'
-      include 'MOR'
-
-      real tmp(0:nb)
-
-      if (ifcdrag) then
-         if (nio.eq.0) then
-            vdx=vlsc2(rdgx,u,nb+1)
-            vdy=vlsc2(rdgy,u,nb+1)
-            pdx1=0.
-            pdx2=0.
-            pdx3=0.
-            pdy1=0.
-            pdy2=0.
-            pdy3=0.
-            call mxm(u,nb+1,ad_beta(2,count),3,tmp,1)
-            do j=0,nb
-               pdx1=pdx1+fd1(1,j)*tmp(j)
-               pdy1=pdy1+fd1(2,j)*tmp(j)
-               do i=0,nb
-                  pdx2=pdx2+fd2(1,i,j)*u(j,1)*u(i,1)
-                  pdy2=pdy2+fd2(2,i,j)*u(j,1)*u(i,1)
-               enddo
-               pdx3=pdx3+fd3(1,j)*u(j,1)
-               pdy3=pdy3+fd3(2,j)*u(j,1)
-            enddo
-            dx=pdx1+pdx2+pdx3+vdx
-            dy=pdy1+pdy2+pdy3+vdy
-c           if (nio.eq.0) write (6,1) time,vdx,pdx1,pdx2,pdx3,dx,'dragx'
-c           if (nio.eq.0) write (6,1) time,vdy,pdy1,pdy2,pdy3,dy,'dragy'
-            if (nio.eq.0) write (6,2) time,vdx,pdx3,dx,'dragx'
-            if (nio.eq.0) write (6,2) time,vdy,pdy3,dy,'dragy'
-            if (ldim.eq.3) then
-               dz=vlsc2(rdgz,u,nb+1)
-               write (6,*) ad_step*dt,vdz,'dragz'
-            endif
-         endif
-      endif
-
-    1 format (1p6e16.8,2x,a)
-    2 format (1p4e16.8,2x,a)
-
-      return
-      end
-c-----------------------------------------------------------------------
       subroutine shiftu(v)
 
       include 'SIZE'
