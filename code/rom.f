@@ -165,17 +165,16 @@ c-----------------------------------------------------------------------
       isolve=nint(param(37))
       ifvort=.false. ! default to false for now
       ifdump=((.not.ifheat).or.ifrom(2))
-      ifrecon=.true.
-      if (ifread) ifrecon=.false.
+      ifrecon=(.not.ifread)
       ifpart=.false.
       ifforce=.false.
-      ifforce=.true.
+c     ifforce=.true.
 
       ifbuoy=.false.
 
       call compute_BDF_coef(ad_alpha,ad_beta)
 
-      if (nio.eq.0) then
+c     if (nio.eq.0) then
          write (6,*) 'rp_ips        ',ips
          write (6,*) 'rp_ifl2       ',ifl2
          write (6,*) 'rp_ifforce    ',ifforce
@@ -196,7 +195,8 @@ c-----------------------------------------------------------------------
          enddo
 
 c        write(6,*) 'rp_if= ',if
-      endif
+c     endif
+c     call exitt0
 
       if (nio.eq.0) write (6,*) 'exiting rom_init_params'
 
