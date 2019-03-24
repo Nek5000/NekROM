@@ -27,10 +27,15 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'
 
+      parameter (lt=lx1*ly1*lz1*lelt)
+      common /scrinvop/ u1(lt),u2(lt),u3(lt)
+
       real g1(1),g2(1),g3(1),h1(1),h2(1)
       real r1(1),r2(1),r3(1)
 
       character*3 op
+
+      call opcopy(u1,u2,u3,g1,g2,g3)
 
       if (op.eq.'H10') then
          call ophinv(r1,r2,r3,g1,g2,g3,h1,h2,tolh,nmxhi)
@@ -39,6 +44,8 @@ c-----------------------------------------------------------------------
       else
          call exitti('did not provide supported operator$')
       endif
+
+      call opcopy(g1,g2,g3,u1,u2,u3)
 
       return
       end
