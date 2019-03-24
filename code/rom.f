@@ -287,9 +287,6 @@ c-----------------------------------------------------------------------
 
       conv_time=dnekclock()
 
-      call invers2(binv,bm1,lx1*ly1*lz1*nelv)
-      call rone(binv,lx1*ly1*lz1*nelv)
-
       call lints(fnlint,fname,128)
 
       l=0
@@ -323,7 +320,7 @@ c-----------------------------------------------------------------------
                if (.not.ifread) then
                   if (ifield.eq.1) then
                      cvltmp(l)=op_glsc2_wt(
-     $                  ub(1,i),vb(1,i),wb(1,i),cux,cuy,cuz,binv)
+     $                  ub(1,i),vb(1,i),wb(1,i),cux,cuy,cuz,ones)
                   else
                      cvltmp(l)=glsc2(tb(1,1,i),cux,n)
                   endif
