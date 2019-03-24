@@ -74,6 +74,8 @@ c     call comp_rms ! old
             endif
          endif
 
+         ifdump=ifdump
+
          if (ifdump) then
             idump=ad_step/ad_iostep
             call reconv(vx,vy,vz,u)
