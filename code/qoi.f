@@ -1,10 +1,10 @@
 c-----------------------------------------------------------------------
-      subroutine comp_pdrag(fd,px,py,pz)
+      subroutine cint(fd,px,py,pz)
 
-      ! fd: drag vector
-      ! px,py,pz: pressure gradient
+      ! fd: integral
+      ! px,py,pz: gradient field
 
-      ! computes the pressure drag on object 1 given the pressure gradient
+      ! computes the contour integral on object 1 given the gradient field
 
       include 'SIZE'
       include 'SOLN'
@@ -17,12 +17,13 @@ c-----------------------------------------------------------------------
       real px(lt),py(lt),pz(lt)
       real fd(ldim)
 
-      call setup_pdrag(px,py,pz)
+c     call setup_pdrag(px,py,pz)
+      call cint_helper(px,py,pz)
 
       n=lx1*ly1*lz1*nelt
 
       if (ldim.eq.3) 
-     $   call exitti('ldim.eq.3 not supported in comp_pdrag$',n)
+     $   call exitti('ldim.eq.3 not supported in cpdrag$',n)
 
       fd(1)=0.
       fd(2)=0.
@@ -42,7 +43,7 @@ c        write (6,*) 'ak pdrag',k,ak,bk,fd(1),fd(2)
       return
       end
 c-----------------------------------------------------------------------
-      subroutine setup_pdrag(px,py,pz)
+      subroutine cint_helper(px,py,pz)
 
       include 'SIZE'
       include 'TOTAL'
@@ -76,8 +77,8 @@ c-----------------------------------------------------------------------
             ieg=object(iobj,mem,1)
             ifc=object(iobj,mem,2)
             if (gllnid(ieg).eq.nid) then
-               if (ifinit) call setup_pdrag_init(ifc,gllel(ieg))
-               call setup_pdrag_helper(px,py,pz,ifc,gllel(ieg))
+               if (ifinit) call cint_helper_init(ifc,gllel(ieg))
+               call cint_cdgds(px,py,pz,ifc,gllel(ieg))
             endif
          enddo
       enddo
@@ -85,7 +86,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine setup_pdrag_init(if,ie)
+      subroutine cint_helper_init(if,ie)
 
       include 'SIZE'
       include 'TOTAL'
@@ -128,7 +129,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine setup_pdrag_helper(px,py,pz,if,ie)
+      subroutine cint_cdgds(px,py,pz,if,ie)
 
       include 'SIZE'
       include 'TOTAL'
@@ -139,9 +140,6 @@ c-----------------------------------------------------------------------
      $     pz(lx1,ly1,lz1,lelt)
 
       call facind(kx1,kx2,ky1,ky2,kz1,kz2,lx1,ly1,lz1,if)
-c     write (6,*) 'ks',kx1,kx2,ky1,ky2,kz1,kz2,lx1,ly1,lz1,if
-
-c     call outpost(px,py,pz,pr,t,'ppp')
 
       twopi=2.*pi
 

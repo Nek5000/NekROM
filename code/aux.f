@@ -135,7 +135,7 @@ c-----------------------------------------------------------------------
 
       real tmp(0:nb)
 
-      if (ifdrago) then
+      if (ifcdrag) then
          if (nio.eq.0) then
             vdx=vlsc2(rdgx,u,nb+1)
             vdy=vlsc2(rdgy,u,nb+1)

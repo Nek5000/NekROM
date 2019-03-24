@@ -151,8 +151,8 @@ c-----------------------------------------------------------------------
          ifread=.true.
       endif
 
-      ifdrago=.false.
-      if (param(36).ne.0) ifdrago=.true.
+      ifcdrag=.false.
+      if (param(36).ne.0) ifcdrag=.true.
 
       do i=0,ldimt1
          ifpod(i)=.false.
@@ -185,7 +185,7 @@ c     if (nio.eq.0) then
          write (6,*) 'rp_ifvort     ',ifvort
          write (6,*) 'rp_ifdumpops  ',ifdumpops
          write (6,*) 'rp_ifavg0     ',ifavg0
-         write (6,*) 'rp_ifdrago    ',ifdrago
+         write (6,*) 'rp_ifcdrag    ',ifcdrag
          write (6,*) 'rp_ifbuoy     ',ifbuoy
          do i=0,ldimt1
             write (6,*) 'rp_ifpod(',i,')   ',ifpod(i)
@@ -312,10 +312,10 @@ c-----------------------------------------------------------------------
                   call setcnv_u(tb(1,1,j),vb(1,j),wb(1,j))
                   call cct(cux)
                endif
-               if (ifdrago.and.ifield.eq.1) then
+               if (ifcdrag.and.ifield.eq.1) then
                   call opcopy(wk4,wk5,wk6,cux,cuy,cuz)
                   call opbinv1(wk1,wk2,wk3,wk4,wk5,wk6,1.)
-                  call comp_pdrag(fd2(1,j,k),wk1,wk2,wk3)
+                  call cint(fd2(1,j,k),wk1,wk2,wk3)
                endif
             endif
             do i=1,nb
@@ -525,7 +525,7 @@ c-----------------------------------------------------------------------
 
       common /scrk1/ ux(lt),uy(lt),uz(lt)
 
-      if (ifdrago) then
+      if (ifcdrag) then
          call opcopy(ux,uy,uz,vx,vy,vz)
 
          do i=0,nb
