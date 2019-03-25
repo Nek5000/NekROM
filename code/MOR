@@ -91,7 +91,7 @@ c     parameters and common blocks for MOR
      $        ifdumpops,ifcdrag,ifrms,ifread,ifforce,ifpod(0:ldimt1),
      $        ifbuoy,ifrom(0:ldimt1)
 
-      common /morflags/ ifl2,ifvort,ifdumpeig,ifrecon,ifstep,ifavg0,
+      common /morflags/ ifl2,ifvort,ifdump,ifrecon,ifstep,ifavg0,
      $                  ifdumpops,ifcdrag,ifrms,ifread,ifforce,ifpod,
      $                  ifbuoy,ifrom
 
