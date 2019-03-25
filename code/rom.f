@@ -166,6 +166,7 @@ c-----------------------------------------------------------------------
       ifvort=.false. ! default to false for now
       ifdump=((.not.ifheat).or.ifrom(2))
       ifrecon=(.not.ifread)
+
       ifpart=.false.
       ifforce=.false.
 c     ifforce=.true.
@@ -174,7 +175,7 @@ c     ifforce=.true.
 
       call compute_BDF_coef(ad_alpha,ad_beta)
 
-c     if (nio.eq.0) then
+      if (nio.eq.0) then
          write (6,*) 'rp_ips        ',ips
          write (6,*) 'rp_ifl2       ',ifl2
          write (6,*) 'rp_ifforce    ',ifforce
@@ -193,10 +194,7 @@ c     if (nio.eq.0) then
          do i=0,ldimt1
             write (6,*) 'rp_ifrom(',i,')   ',ifrom(i)
          enddo
-
-c        write(6,*) 'rp_if= ',if
-c     endif
-c     call exitt0
+      endif
 
       if (nio.eq.0) write (6,*) 'exiting rom_init_params'
 
