@@ -249,6 +249,16 @@ c-----------------------------------------------------------------------
             call copy_sol(ub,vb,wb,pb,tb,uavg,vavg,wavg,pavg,tavg)
          endif
 
+         if (ifcintp) then
+            call conv_sol(cxb,cyb,czb,uavg,vavg,wavg)
+            do i=1,ns
+               call conv_sol(cs(1,1,i),cs(1,2,i),cs(1,ldim,i),
+     $                       us(1,1,i),us(1,2,i),us(1,ldim,i))
+               call opsub3(cs0(1,1,i),cs0(1,2,i),cs0(1,ldim,i),
+     $                     cs(1,1,i),cs(1,2,i),cs(1,ldim,i),cxb,cyb,czb)
+            enddo
+         endif
+
          call outpost(uavg,vavg,wavg,pavg,tavg,'avg')
          if (ifforce) call gradp(bgx,bgy,bgz,pavg)
       endif
