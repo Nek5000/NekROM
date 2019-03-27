@@ -580,3 +580,24 @@ c     call opmask  (inp1,inp2,inp3)
       return
       end
 c-----------------------------------------------------------------------
+      subroutine invmat(a,wk,iwk1,iwk2,n)
+
+      real a(n,n)
+      real wk1(n,n)
+      integer iwk1(n),iwk2(n)
+
+      call copy(wk,a,n*n)
+      call rzero(a,n*n)
+
+      do i=1,n
+         a(i,i)=1.
+      enddo
+
+      call lu(wk,n,n,iwk1,iwk2)
+      do i=1,n
+         call solve(a(1,i),wk,1,n,n,iwk1,iwk2)
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------

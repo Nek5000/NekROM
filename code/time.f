@@ -200,20 +200,63 @@ c-----------------------------------------------------------------------
 
       stime=dnekclock()
 
-      l=1
+      if (ifcintp) then
+         call mxm(cintp,nb,uu,nb+1,cu,1)
+      else
+         l=1
 
-      call rzero(cu,nb)
+         call rzero(cu,nb)
 
-      do l=1,ncloc
-         i=icl(1,l)
-         j=icl(2,l)
-         k=icl(3,l)
-         cu(i)=cu(i)+cl(l)*uu(j)*u(k,1)
-      enddo
+         do l=1,ncloc
+            i=icl(1,l)
+            j=icl(2,l)
+            k=icl(3,l)
+            cu(i)=cu(i)+cl(l)*uu(j)*u(k,1)
+         enddo
 
-      call gop(cu,work,'+  ',nb)
+         call gop(cu,work,'+  ',nb)
+      endif
 
       evalc_time=evalc_time+dnekclock()-stime
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine setcintp
+
+      include 'SIZE'
+      include 'ROM'
+
+      common /scrci/ t1m(ls,nb),t2m(nb,ls),t3m(nb,nb),t4m(nb,ls),
+     $               t5m(ls,nb),t6m(nb,nb),t7m(0:nb,0:nb)
+
+      do j=1,ns
+         call proj2vbases(t1,us(1,1,j),us(1,2,j),us(1,ldjm,j),ub,vb,wb)
+         call proj2vbases(t2,cs(1,1,j),cs(1,2,j),cs(1,ldjm,j),
+     $                    cxb,cyb,czb)
+         do i=1,nb
+            uu(i,j)=t1(i)
+            uut(j,i)=t1(i)
+            cc(j,i)=t2(i)
+         enddo
+      enddo
+
+      call mxm(t1m,nb,t2m,ns,t3m,nb)
+      call invmat(t3m,rtmp1,itmp1,itmp2,nb)
+      call mxm(t3m,nb,t1m,nb,t4m,ls)
+      call mxm(t4m,nb,t5m,ls,t6m,nb)
+
+      call rzero(t7m,(nb+1)**2)
+
+      t7m(0,0)=1.
+
+      do j=1,nb
+      do i=1,nb
+         t7m(j,i)=t6m(i,j)
+      enddo
+      enddo
+
+      call mxm(bvc,nb,t7m,nb+1,cintp,nb+1)
 
       return
       end

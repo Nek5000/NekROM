@@ -167,6 +167,9 @@ c-----------------------------------------------------------------------
       ifdump=((.not.ifheat).or.ifrom(2))
       ifrecon=(.not.ifread)
 
+      ifcintp=.false.
+      if (param(37).ne.0) ifcintp=.true.
+
       ifpart=.false.
       ifforce=.false.
 c     ifforce=.true.
@@ -188,6 +191,7 @@ c     ifforce=.true.
          write (6,*) 'rp_ifavg0     ',ifavg0
          write (6,*) 'rp_ifcdrag    ',ifcdrag
          write (6,*) 'rp_ifbuoy     ',ifbuoy
+         write (6,*) 'rp_ifcintp    ',ifcintp
          do i=0,ldimt1
             write (6,*) 'rp_ifpod(',i,')   ',ifpod(i)
          enddo
