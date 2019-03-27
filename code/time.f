@@ -296,10 +296,8 @@ c     call add2s2(rhs,av0,s,nb+1) ! not working...
          rhs(i)=rhs(i)+s*at0(i,0)
       enddo
 
-      call copy(ctr(1,3),ctr(1,2),nb)
-      call copy(ctr(1,2),ctr(1,1),nb)
-
-      call evalc(ctr,ctl,ictl,ut)
+      call evalc(tmp(1),ctl,ictl,ut)
+      call shift3(ctr,tmp(1),nb)
 
       call mxm(ctr,nb,ad_alpha(1,icount),3,tmp(1),1)
 
@@ -313,7 +311,7 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
 
-      common /scrrhs/ tmp(0:nb)
+      common /scrrhs/ tmp1(0:nb),tmp2(0:nb)
 
       real rhs(nb)
 
@@ -330,19 +328,21 @@ c     call add2s2(rhs,av0,s,nb+1) ! not working...
          rhs(i)=rhs(i)+s*av0(i,0)
       enddo
 
-      call evalc(tmp(1),cvl,icvl,u)
+      call evalc(tmp1(1),cvl,icvl,u)
+      call chsign(tmp1(1),nb)
+
+      if (ifbuoy) then
+         call mxm(bvt0,nb+1,ut(0,1),nb+1,tmp2(0),1)
+         call add2(tmp(1),tmp(2),nb)
+      else if (ifforce) then
+         call add2(tmp(1),bg(1),nb)
+      endif
+
       call shift3(fu,tmp(1),nb)
 
       call mxm(fu,nb,ad_alpha(1,icount),3,tmp(1),1)
 
-      call sub2(rhs,tmp(1),nb)
-
-      if (ifbuoy) then
-         call mxm(bvt0,nb+1,ut(0,1),nb+1,tmp(0),1)
-         call add2(rhs,tmp(1),nb)
-      else if (ifforce) then
-         call add2(rhs,bg(1),nb)
-      endif
+      call add2(rhs,tmp(1),nb)
 
       return
       end
