@@ -299,6 +299,30 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine conv_sol(ux,uy,uz,vx,vy,vz) ! compute convection
+
+      include 'SIZE'
+      include 'INPUT'
+      include 'MASS'
+
+      parameter (lt1=lx1*ly1*lz1*lelt)
+      parameter (lt2=lx2*ly2*lz2*lelt)
+
+      real vx(lt1),vy(lt1),vz(lt1),pr(lt2),t(lt1,ldimt)
+      real ux(lt1),uy(lt1),uz(lt1)
+      common /scrctd/ t1(lt1),t2(lt1),t3(lt1),h1(lt1),h2(lt1)
+
+      n1=lx1*ly1*lz1*nelt
+      n2=lx2*ly2*lz2*nelt
+
+      call setcnv_c(vx,vy,vz)
+      call setcnv_u(vx,vy,vz)
+      call ccu(ux,uy,uz)
+      call opbinv1(ux,uy,uz,ux,uy,uz,1.)
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine ctd_sol(ux,uy,uz,vx,vy,vz,pr,t) ! compute the time-derivative
 
       include 'SIZE'
@@ -317,11 +341,7 @@ c-----------------------------------------------------------------------
 
       call gradp(ux,uy,uz,pr)
       call opchsgn(ux,uy,uz)
-
-      call setcnv_c(vx,vy,vz)
-      call setcnv_u(vx,vy,vz)
-      call ccu(t1,t2,t3)
-      call opbinv1(t1,t2,t3,t1,t2,t3,1.)
+      call conv_sol(t1,t2,t3,vx,vy,vz)
       call opchsgn(t1,t2,t3)
 
       call opadd2(ux,uy,uz,t1,t2,t3)
@@ -363,6 +383,62 @@ c-----------------------------------------------------------------------
       do i=1,ns
          call gradp(dps(1,1,i),dps(1,2,i),dps(1,ldim,i),ps(1,i))
       enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine setconvbases
+
+      include 'SIZE'
+      include 'MOR'
+      include 'AVG'
+      include 'TSTEP'
+
+
+      n=lx1*ly1*lz1*nelt
+
+      do i=1,ns
+         call conv_sol(us0(1,1,i),us0(1,2,i),us0(1,ldim,i),
+     $                 us(1,1,i),us(1,2,i),us(1,ldim,i))
+      enddo
+
+      call opzero(ub,vb,wb,n)
+
+      do j=1,ns
+         call opadd2(ub,vb,wb,us0(1,1,j),us0(1,2,j),us0(1,ldim,j))
+      enddo
+
+      s=1./real(ns)
+
+      call opcmult(ub,vb,wb,s)
+
+
+      do j=1,ns
+         call opadds(us0(1,1,j),us0(1,2,j),us0(1,ldim,j),
+     $               ub,vb,wb,-1.,n,2)
+      enddo
+
+      call gengram(ug(1,1,2),us0,ns,ldim)
+      call genevec(evec(1,1,2),eval(1,2),ug(1,1,2),2)
+
+      do i=1,nb
+         call opzero(ub(1,i),vb(1,i),wb(1,i))
+      enddo
+
+      ! ub, vb, wb, are the modes
+      do j=1,ns
+      do i=1,nb
+         call opadds(ub(1,i),vb(1,i),wb(1,i),
+     $      us0(1,1,j),us0(1,2,j),us0(1,ldim,j),evec(j,i,1),n,2)
+      enddo
+      enddo
+
+      itmp=istep
+      do i=0,nb
+         istep=i
+         call outpost(ub(1,i),vb(1,i),wb(1,i),wb(1,i),wb(1,i),'cnv')
+      enddo
+      istep=itmp
 
       return
       end
