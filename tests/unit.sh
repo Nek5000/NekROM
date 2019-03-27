@@ -28,7 +28,7 @@ cp LMOR_TEST LMOR
 $SOURCE_ROOT/bin/makenek test
 
 $SOURCE_ROOT/bin/genmap << Z
-baf
+test
 .01
 Z
 

@@ -1,7 +1,6 @@
-cd $MOR_DIR/cases/baf
 $MOR_DIR/bin/linkm
 
-echo 'baf'     > SESSION.NAME
+echo 'test'     > SESSION.NAME
 echo `pwd`'/' >> SESSION.NAME
 
 $MOR_DIR/bin/gsnaps baf
