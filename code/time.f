@@ -225,7 +225,7 @@ c-----------------------------------------------------------------------
       subroutine setcintp
 
       include 'SIZE'
-      include 'ROM'
+      include 'MOR'
 
       common /scrci/ t1m(ls,nb),t2m(nb,ls),t3m(nb,nb),t4m(nb,ls),
      $               t5m(ls,nb),t6m(nb,nb),t7m(0:nb,0:nb)
