@@ -58,6 +58,7 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'
       include 'TOTAL'
+      include 'MOR'
 
       call setavg
       call setj
