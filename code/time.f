@@ -330,12 +330,10 @@ c     call add2s2(rhs,av0,s,nb+1) ! not working...
          rhs(i)=rhs(i)+s*av0(i,0)
       enddo
 
-      call copy(cvr(1,3),cvr(1,2),nb)
-      call copy(cvr(1,2),cvr(1,1),nb)
+      call evalc(tmp(1),cvl,icvl,u)
+      call shift3(fu,tmp(1),nb)
 
-      call evalc(cvr,cvl,icvl,u)
-
-      call mxm(cvr,nb,ad_alpha(1,icount),3,tmp(1),1)
+      call mxm(fu,nb,ad_alpha(1,icount),3,tmp(1),1)
 
       call sub2(rhs,tmp(1),nb)
 
