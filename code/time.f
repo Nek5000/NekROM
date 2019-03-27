@@ -228,16 +228,17 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       common /scrci/ t1m(ls,nb),t2m(nb,ls),t3m(nb,nb),t4m(nb,ls),
-     $               t5m(ls,nb),t6m(nb,nb),t7m(0:nb,0:nb)
+     $               t5m(ls,nb),t6m(nb,nb),t7m(0:nb,0:nb),
+     $               t1v(0:nb),t2v(0:nb)
 
       do j=1,ns
-         call proj2vbases(t1,us(1,1,j),us(1,2,j),us(1,ldjm,j),ub,vb,wb)
-         call proj2vbases(t2,cs(1,1,j),cs(1,2,j),cs(1,ldjm,j),
+         call proj2vbases(t1v,us(1,1,j),us(1,2,j),us(1,ldjm,j),ub,vb,wb)
+         call proj2vbases(t2v,cs(1,1,j),cs(1,2,j),cs(1,ldjm,j),
      $                    cxb,cyb,czb)
          do i=1,nb
-            uu(i,j)=t1(i)
-            uut(j,i)=t1(i)
-            cc(j,i)=t2(i)
+            t1m(i,j)=t1v(i)
+            t2m(j,i)=t1v(i)
+            t4m(j,i)=t2v(i)
          enddo
       enddo
 
