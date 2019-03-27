@@ -318,7 +318,7 @@ c-----------------------------------------------------------------------
 
       call mxm(u,nb+1,ad_beta(2,icount),3,tmp1,1)
 c     call mxm(bv0,nb+1,tmp,nb+1,rhs,1)
-      call mxm(bv,nb,tmp(1),nb,rhs,1)
+      call mxm(bv,nb,tmp1(1),nb,rhs,1)
 
       call cmult(rhs,-1.0/ad_dt,nb)
 
@@ -334,16 +334,16 @@ c     call add2s2(rhs,av0,s,nb+1) ! not working...
 
       if (ifbuoy) then
          call mxm(bvt0,nb+1,ut(0,1),nb+1,tmp2(0),1)
-         call add2(tmp(1),tmp(2),nb)
+         call add2(tmp1(1),tmp2(1),nb)
       else if (ifforce) then
-         call add2(tmp(1),bg(1),nb)
+         call add2(tmp1(1),bg(1),nb)
       endif
 
-      call shift3(fu,tmp(1),nb)
+      call shift3(fu,tmp1(1),nb)
 
-      call mxm(fu,nb,ad_alpha(1,icount),3,tmp(1),1)
+      call mxm(fu,nb,ad_alpha(1,icount),3,tmp1(1),1)
 
-      call add2(rhs,tmp(1),nb)
+      call add2(rhs,tmp1(1),nb)
 
       return
       end
