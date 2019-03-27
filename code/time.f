@@ -9,7 +9,7 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
 c     Matrices and vectors for advance
-      real tmp(0:nb),rhs(nb)
+      real tmp(0:nb),rhs(0:nb)
 
       common /scrrstep/ t1(lt),t2(lt),t3(lt),work(lt)
 
@@ -28,7 +28,8 @@ c     Variable for vorticity
 
       icount = min0(ad_step,3)
 
-      call setr_v(rhs,icount)
+      rhs(0)=1.
+      call setr_v(rhs(1),icount)
 
       if (ad_step.le.3) then
          call cmult2(fluv,bv,ad_beta(1,icount)/ad_dt,nb*nb)
@@ -37,14 +38,14 @@ c     Variable for vorticity
       endif
 
       if (isolve.eq.0) then ! standard matrix inversion
-         call solve(rhs,fluv,1,nb,nb,irv,icv)
+         call solve(rhs(1),fluv,1,nb,nb,irv,icv)
       else if (isolve.eq.1) then ! constrained solve
          call BFGS_freeze 
       else
          call exitti('incorrect isolve specified...')
       endif
 
-      call shiftu(rhs)
+      call shift3(u,rhs,nb+1)
       call setavg
       call setj
 
@@ -106,7 +107,7 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
 c     Matrices and vectors for advance
-      real tmp(0:nb),rhs(nb)
+      real tmp(0:nb),rhs(0:nb)
 
       common /scrrstep/ t1(lt),t2(lt),t3(lt),work(lt)
 
@@ -122,7 +123,8 @@ c     Matrices and vectors for advance
 
       icount = min0(ad_step,3)
 
-      call setr_t(rhs,icount)
+      rhs(0)=1.
+      call setr_t(rhs(1),icount)
 
       if (ad_step.le.3) then
          call cmult2(flut,bt,ad_beta(1,icount)/ad_dt,nb*nb)
@@ -131,14 +133,14 @@ c     Matrices and vectors for advance
       endif
 
       if (isolve.eq.0) then ! standard matrix inversion
-         call solve(rhs,flut,1,nb,nb,irt,ict)
+         call solve(rhs(1),flut,1,nb,nb,irt,ict)
       else if (isolve.eq.1) then ! constrained solve
          !call csolve(rhs,flu,...
       else
          call exitti('incorrect isolve specified...')
       endif
 
-      call shiftt(rhs)
+      call shift3(ut,rhs,nb+1)
 
       step_time=step_time+dnekclock()-last_time
 

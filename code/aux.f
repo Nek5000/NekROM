@@ -127,30 +127,13 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine shiftu(v)
+      subroutine shift3(u,v,n)
 
-      include 'SIZE'
-      include 'MOR'
-
-      real v(nb)
+      real u(n,3),v(n)
 
       call copy(u(1,3),u(1,2),nb)
       call copy(u(1,2),u(1,1),nb)
       call copy(u(1,1),v,nb)
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine shiftt(t)
-
-      include 'SIZE'
-      include 'MOR'
-
-      real t(nb)
-
-      call copy(ut(1,3),ut(1,2),nb)
-      call copy(ut(1,2),ut(1,1),nb)
-      call copy(ut(1,1),t,nb)
 
       return
       end
