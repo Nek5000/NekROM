@@ -46,13 +46,23 @@ c     Variable for vorticity
       endif
 
       call shift3(u,rhs,nb+1)
+
+      step_time=step_time+dnekclock()-last_time
+
+      call pp
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine pp
+
+      include 'SIZE'
+      include 'TOTAL'
+
       call setavg
       call setj
 
       if (ifcdrag) call cdrag
-c     call comp_rms ! old
-
-      step_time=step_time+dnekclock()-last_time
 
       if (ifdump) then
          time=time+dt
