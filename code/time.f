@@ -316,7 +316,7 @@ c-----------------------------------------------------------------------
 
       real rhs(nb)
 
-      call mxm(u,nb+1,ad_beta(2,icount),3,tmp,1)
+      call mxm(u,nb+1,ad_beta(2,icount),3,tmp1,1)
 c     call mxm(bv0,nb+1,tmp,nb+1,rhs,1)
       call mxm(bv,nb,tmp(1),nb,rhs,1)
 
