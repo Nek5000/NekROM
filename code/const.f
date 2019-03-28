@@ -1,4 +1,4 @@
-      subroutine BFGS_freeze
+      subroutine BFGS_freeze(rhs)
 
       include 'SIZE'
       include 'TOTAL'
@@ -10,22 +10,25 @@
       real tmp4(nb),tmp5(nb),tmp6(nb,nb),tmp7(nb,nb)
       real yy(nb,nb),ys,sBs
       real ww(nb), ngf, pert
+      real uu(nb), rhs(nb)
       integer par_step
       integer chekbc ! flag for checking boundary
 
       if (nio.eq.0) write (6,*) 'inside BFGS_freeze'
+
+      call copy(uu,u(1,1),nb)
    
-c     parameter for barrier function
+      ! parameter for barrier function
       par = 1e-3 
       par_step = 4
    
-c     invhelm for computing qnf
+      ! invhelm for computing qnf
       if (ad_step.le.3) then 
          call copy(invhelm(1,1),helm(1,1),nb*nb)
-         call lu(invhelm,nb,nb,ir,ic)
+         call lu(invhelm,nb,nb,irv,icv)
       endif
 
-c     BFGS method with barrier function starts
+      ! BFGS method with barrier function starts
       do k=1,par_step
 
          chekbc = 0
@@ -34,17 +37,17 @@ c        use helm from BDF3/EXT3 as intial approximation
          call copy(B_qn(1,1),helm(1,1),nb*nb)
 !         call copy(B_qn(1,1),invhelm(1,1),nb*nb)
 
-         call comp_qnf
-         call comp_qngradf
+         call comp_qnf(uu,rhs)
+         call comp_qngradf(uu,rhs)
 
 c        compute quasi-Newton step
          do j=1,500
 
             call copy(tmp3(1,1),B_qn(1,1),nb*nb)
-            call lu(tmp3,nb,nb,ir,ic)
+            call lu(tmp3,nb,nb,irv,icv)
             call copy(qns,qngradf,nb)
             call chsign(qns,nb)
-            call solve(qns,tmp3,1,nb,nb,ir,ic)
+            call solve(qns,tmp3,1,nb,nb,irv,icv)
 c            if (j .eq. 1) then
 c               call copy(qns,qngradf,nb)
 c               call solve(qns,B_qn,1,nb,nb,ir,ic)
@@ -53,21 +56,21 @@ c               call mxm(B_qn,nb,qngradf,nb,qns,1)
 c            endif
 
 c            call chsign(qns,nb)
-            call add2(u(1,1),qns,nb)
+            call add2(uu,qns,nb)
 
             ! check the boundary 
             do ii=1,nb
-               if ((u(ii,1)-sample_max(ii)).ge.1e-8) then
+               if ((uu(i)-sample_max(ii)).ge.1e-8) then
                   chekbc = 1
-                  u(ii,1) = sample_max(ii) - 0.1*sam_dis(ii)
-               elseif ((sample_min(ii)-u(ii,1)).ge.1e-8) then
+                  uu(ii) = sample_max(ii) - 0.1*sam_dis(ii)
+               elseif ((sample_min(ii)-uu(ii)).ge.1e-8) then
                   chekbc = 1
-                  u(ii,1) = sample_min(ii) + 0.1*sam_dis(ii)
+                  uu(ii) = sample_min(ii) + 0.1*sam_dis(ii)
                endif
             enddo
 
             call copy(go,qngradf,nb) ! store old qn-gradf
-            call comp_qngradf        ! update qn-gradf
+            call comp_qngradf(uu,rhs)        ! update qn-gradf
             call sub3(qny,qngradf,go,nb) 
 
             ! update approximate Hessian by two rank-one update if chekbc = 0
@@ -80,13 +83,13 @@ c            call chsign(qns,nb)
             endif   
 
             call copy(ww,qngradf,nb)
-            call solve(ww,invhelm,1,nb,nb,ir,ic)
+            call solve(ww,invhelm,1,nb,nb,irv,icv)
 
             ngf = glsc2(ww,qngradf,nb)
             ngf = sqrt(ngf)
 
             fo = qnf      ! store old qn-f
-            call comp_qnf ! update qn-f
+            call comp_qnf(uu,rhs) ! update qn-f
             qndf = abs(qnf-fo)/abs(fo) 
 c            write(6,*)'f and old f',j,qnf,fo,qndf,ngf
 
@@ -100,21 +103,22 @@ c     update solution
   900    write(6,*)'criterion reached, number of iteration:'
      $              ,ad_step,j,par,ngf,qndf 
          par = par*0.1
-c         par = 2.**(-k)
       enddo
+      call copy(rhs,uu,nb)
 
       if (nio.eq.0) write (6,*) 'exitting BFGS_freeze'
 
       return
       end
 c-----------------------------------------------------------------------
-      subroutine comp_qngradf
+      subroutine comp_qngradf(uu,rhs)
       
       include 'SIZE'
       include 'MOR'
 
       real tmp1(nb),tmp2(nb),tmp3(nb),tmp4(nb)
       real mpar
+      real uu(nb), rhs(nb)
       integer barr_func
 
       barr_func = 1
@@ -123,8 +127,8 @@ c-----------------------------------------------------------------------
 
       if (barr_func .eq. 1) then ! use logarithmic as barrier function
 
-         call sub3(tmp1,u(1,1),sample_max,nb)  
-         call sub3(tmp2,u(1,1),sample_min,nb)  
+         call sub3(tmp1,uu,sample_max,nb)  
+         call sub3(tmp2,uu,sample_min,nb)  
    
          ! add perturbation 
          call cadd(tmp1,-1e-2,nb)
@@ -135,17 +139,17 @@ c-----------------------------------------------------------------------
          call add3(tmp3,tmp1,tmp2,nb)
 
          mpar = -1.0*par
-         call add3s12(qngradf,opt_rhs(1),tmp3,-1.0,mpar,nb)
+         call add3s12(qngradf,rhs,tmp3,-1.0,mpar,nb)
    
          ONE = 1.
          ZERO= 0.
-         call dgemv('N',nb,nb,ONE,helm,nb,u(1,1),1,ZERO,tmp4,1)
+         call dgemv('N',nb,nb,ONE,helm,nb,uu,1,ZERO,tmp4,1)
          call add2(qngradf,tmp4,nb)
 
       else ! use inverse function as barrier function
 
-         call sub3(tmp1,u(1,1),sample_max,nb)  
-         call sub3(tmp2,sample_min,u(1,1),nb)  
+         call sub3(tmp1,uu,sample_max,nb)  
+         call sub3(tmp2,sample_min,uu,nb)  
          call vsq(tmp1,nb)
          call vsq(tmp2,nb)
          call invcol1(tmp1,nb)
@@ -153,11 +157,11 @@ c-----------------------------------------------------------------------
          call sub3(tmp3,tmp2,tmp1,nb)
 
          mpar = -1.0*par
-         call add3s12(qngradf,opt_rhs(1),tmp3,-1.0,mpar,nb)
+         call add3s12(qngradf,rhs,tmp3,-1.0,mpar,nb)
    
          ONE = 1.
          ZERO= 0.
-         call dgemv('N',nb,nb,ONE,helm,nb,u(1,1),1,ZERO,tmp4,1)
+         call dgemv('N',nb,nb,ONE,helm,nb,uu,1,ZERO,tmp4,1)
          call add2(qngradf,tmp4,nb)
 
       endif
@@ -167,7 +171,7 @@ c-----------------------------------------------------------------------
       return 
       end
 c-----------------------------------------------------------------------
-      subroutine comp_qnf
+      subroutine comp_qnf(uu,rhs)
       
       include 'SIZE'
       include 'MOR'
@@ -177,6 +181,7 @@ c-----------------------------------------------------------------------
       real term1,term2,term3,term4
       real bar1,bar2 ! bar1 and bar2 are the barrier function for two constrains
       integer barr_func
+      real uu(nb), rhs(nb)
 
       barr_func = 1
 
@@ -186,21 +191,21 @@ c     evaluate quasi-newton f
       ONE = 1.
       ZERO= 0.
 
-      call dgemv('N',nb,nb,ONE,helm,nb,u(1,1),1,ZERO,tmp6,1) ! H*coef
-      term1 = 0.5 * glsc2(tmp6,u(1,1),nb) ! coef'*H*coef
+      call dgemv('N',nb,nb,ONE,helm,nb,uu,1,ZERO,tmp6,1) ! H*coef
+      term1 = 0.5 * glsc2(tmp6,uu,nb) ! coef'*H*coef
 
-      term2 = glsc2(u(1,1),opt_rhs(1),nb) ! coef'*rhs
+      term2 = glsc2(uu,rhs,nb) ! coef'*rhs
 
       ! 0.5*rhs'*inv(H)*rhs
-      call copy(tmp5,opt_rhs(1),nb)
-      call solve(tmp5,invhelm,1,nb,nb,ir,ic)
-      term3 = 0.5 * glsc2(opt_rhs(1),tmp5,nb)
+      call copy(tmp5,rhs,nb)
+      call solve(tmp5,invhelm,1,nb,nb,irv,icv)
+      term3 = 0.5 * glsc2(rhs,tmp5,nb)
 
       if (barr_func .eq. 1) then ! use logarithmetic as barrier function
 
          ! barrier term
-         call sub3(tmp1,sample_max,u(1,1),nb)  
-         call sub3(tmp2,u(1,1),sample_min,nb)  
+         call sub3(tmp1,sample_max,uu,nb)  
+         call sub3(tmp2,uu,sample_min,nb)  
    
          ! add perturbation
          call cadd(tmp1,1e-2,nb)
@@ -213,8 +218,8 @@ c     evaluate quasi-newton f
 
       else 
 
-         call sub3(tmp1,u(1,1),sample_max,nb)  
-         call sub3(tmp2,sample_min,u(1,1),nb)  
+         call sub3(tmp1,uu,sample_max,nb)  
+         call sub3(tmp2,sample_min,uu,nb)  
    
          do i=1,nb
             tmp3(i) = 1./tmp1(i)
