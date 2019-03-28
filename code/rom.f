@@ -270,6 +270,8 @@ c-----------------------------------------------------------------------
      $                       us(1,1,i),us(1,2,i),us(1,ldim,i))
                call opsub3(cs0(1,1,i),cs0(1,2,i),cs0(1,ldim,i),
      $                     cs(1,1,i),cs(1,2,i),cs(1,ldim,i),cxb,cyb,czb)
+               call outpost(cs(1,1,i),cs(1,2,i),cs(1,ldim,i),
+     $                      pavg,tavg,'cnv')
             enddo
          endif
 
