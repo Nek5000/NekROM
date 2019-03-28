@@ -109,6 +109,15 @@ c-----------------------------------------------------------------------
          call setb(bt,bt0,'ops/bt ')
          call setc(ctl,ictl,'ops/ct ')
       endif
+      if (ifcintp) then
+         do j=0,nb
+         do i=1,nb
+            bvc(i,j)=wl2vprod(ub(1,i),vb(1,i),wb(1,i),
+     $                        cxb(1,j),cyb(1,j),czb(1,j))
+         enddo
+         enddo
+         call setcintp
+      endif
       call setg
       ifield=jfield
 
