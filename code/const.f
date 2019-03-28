@@ -388,6 +388,7 @@ c        compute quasi-Newton step
             call solve(qns,tmp3,1,nb,nb,irv,icv)
 
             call add2(uu,qns,nb)
+            call backtrackr(uu,qns,rhs,1e-4,0.5)
 
             ! check the boundary 
             do ii=1,nb
@@ -437,7 +438,7 @@ c     update solution
       return
       end
 c-----------------------------------------------------------------------
-      subroutine backtrackr(uu,s,rhs)
+      subroutine backtrackr(uu,s,rhs,sigmab,facb)
 
       include 'SIZE'
       include 'MOR'
@@ -448,10 +449,13 @@ c-----------------------------------------------------------------------
       real uuo(nb), uu(nb)
       real Jfk(nb)
       real fk, fk1
-      integer chekbc
+      real Jfks
+      integer chekbc, counter
+      real sigmab, facb
 
       alphak = 1
       chekbc = 1
+      counter = 0
 
       call comp_qnf(uu,rhs,fk) ! get old f
       call comp_qngradf(uu,rhs,Jfk)
@@ -460,7 +464,29 @@ c-----------------------------------------------------------------------
       call add2s1(uu,s,alphak,nb)
 
       call comp_qnf(uu,rhs,fk1) ! get new f
+      Jfks = vlsc2(Jfk,s)
 
+      do while (fk1 > fk + sigmab * alphak * Jfks .OR. chekbc.eq.1)
+         counter = counter + 1
+         alphak = alphak * facb
+         call add3s2(uu,uuo,s,1,alphak,nb)
+
+         chekbc = 0
+         do ii=1,nb
+            if ((uu(i)-sample_max(ii)).ge.1e-8) then
+               chekbc = 1
+            elseif ((sample_min(ii)-uu(ii)).ge.1e-8) then
+               chekbc = 1
+            endif
+         enddo
+
+         call comp_qnf(uu,rhs,fk1)
+
+         if (alphak < 1e-4) goto 900
+      enddo
+
+  900    write(6,*)'backtrackr:'
+     $              ,counter,alphak
 
       return
       end
