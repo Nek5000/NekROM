@@ -554,12 +554,13 @@ c-----------------------------------------------------------------------
       if (nio.eq.0) write (6,*) 'inside genevec'
 
       if (icalld.eq.0) then
-         call rzero(eye,ls*ls)
-         do j=1,ls
-            eye(j,j) = 1.
-         enddo
          icalld=1
       endif
+
+      call rzero(eye,ls*ls)
+      do j=1,ls
+         eye(j,j) = 1.
+      enddo
 
       call copy(gc,gram,ls*ls)
 
