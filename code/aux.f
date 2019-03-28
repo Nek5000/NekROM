@@ -131,9 +131,9 @@ c-----------------------------------------------------------------------
 
       real u(n,3),v(n)
 
-      call copy(u(1,3),u(1,2),nb)
-      call copy(u(1,2),u(1,1),nb)
-      call copy(u(1,1),v,nb)
+      call copy(u(1,3),u(1,2),n)
+      call copy(u(1,2),u(1,1),n)
+      call copy(u(1,1),v,n)
 
       return
       end
