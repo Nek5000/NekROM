@@ -260,7 +260,7 @@ c-----------------------------------------------------------------------
 
       coef(0) = 1.
 
-      if (nio.eq.0) write (6,1) coef(0),coef(0),1.0
+      if (nio.eq.0) write (6,1) 0,coef(0),coef(0),1.0
 
       do i=1,nb
          ww = op_glsc2_wt(
@@ -268,12 +268,12 @@ c-----------------------------------------------------------------------
          vv = op_glsc2_wt(uub(1,i),vvb(1,i),wwb(1,i),t1,t2,t3,bm1)
 
          coef(i) = vv/ww
-         if (nio.eq.0) write (6,1) coef(i),vv,ww
+         if (nio.eq.0) write (6,1) i,coef(i),vv,ww
       enddo
 
       if (nio.eq.0) write (6,*) 'exiting wl2vproj'
 
-    1 format(' wl2coef',1p3e16.8)
+    1 format(' wl2coef',i4,1p3e16.8)
 
       return
       end
