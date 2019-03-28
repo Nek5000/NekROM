@@ -13,10 +13,8 @@ c     Matrices and vectors for advance
 
       common /scrrstep/ t1(lt),t2(lt),t3(lt),work(lt)
 
-c     Variable for vorticity
-      real vort(lt,3)
-
       common /nekmpi/ nidd,npp,nekcomm,nekgroup,nekreal
+
 
       if (ad_step.eq.1) then
          step_time = 0.
@@ -59,6 +57,12 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
+      include 'AVG'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      common /scrrstep/ t1(lt),t2(lt),t3(lt),work(lt)
+
+      real vort(lt)
 
       call setavg
       call setj
