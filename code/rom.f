@@ -156,6 +156,9 @@ c-----------------------------------------------------------------------
       ifavg0=.false.
       if (param(34).ne.0) ifavg0=.true.
 
+      if (ifavg0.and.(nb.eq.ls))
+     $   call exitti('nb == ls results in linear dependent bases$',nb)
+
       ifdumpops=.false.
       ifread=.false.
       np35=nint(param(35))
@@ -270,6 +273,8 @@ c-----------------------------------------------------------------------
      $                       us(1,1,i),us(1,2,i),us(1,ldim,i))
                call opsub3(cs0(1,1,i),cs0(1,2,i),cs0(1,ldim,i),
      $                     cs(1,1,i),cs(1,2,i),cs(1,ldim,i),cxb,cyb,czb)
+               call outpost(cs(1,1,i),cs(1,2,i),cs(1,ldim,i),
+     $                      pavg,tavg,'cnv')
             enddo
          endif
 
