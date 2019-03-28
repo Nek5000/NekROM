@@ -177,7 +177,7 @@ c-----------------------------------------------------------------------
       ifrecon=(.not.ifread)
 
       ifcintp=.false.
-      if (param(37).ne.0) ifcintp=.true.
+      if (param(38).ne.0) ifcintp=.true.
 
       ifpart=.false.
       ifforce=.false.
