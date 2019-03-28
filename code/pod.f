@@ -35,7 +35,7 @@ c-----------------------------------------------------------------------
          enddo
          enddo
 
-         call scale_vbases
+         call norm_vec(ub,vb,wb)
 
          if (ifpod(2)) then
             do i=1,nb
@@ -44,7 +44,7 @@ c-----------------------------------------------------------------------
                   call add2s2(tb(1,1,i),ts0(1,j,1),evec(j,i,2),n)
                enddo
             enddo
-            call scale_tbases
+            call norm_sca(tb)
          endif
       endif
 
@@ -562,7 +562,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine scale_vbases
+      subroutine norm_vec(uub,vvb,wwb)
 
       include 'SIZE'
       include 'TOTAL'
@@ -570,13 +570,16 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
+      real uub(lt,0:nb),vvb(lt,0:nb),wwb(lt,0:nb)
+
       jfield=ifield
       ifield=1
       nio=-1
       do i=1,nb
-         p=vecprod(ub(1,i),vb(1,i),wb(1,i),ub(1,i),vb(1,i),wb(1,i))
+         p=vecprod(uub(1,i),vvb(1,i),wwb(1,i),
+     $             uub(1,i),vvb(1,i),wwb(1,i))
          s=1./sqrt(p)
-         call opcmult(ub(1,i),vb(1,i),wb(1,i),s)
+         call opcmult(uub(1,i),vvb(1,i),wwb(1,i),s)
       enddo
       nio=nid
       ifield=jfield
@@ -584,7 +587,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine scale_tbases
+      subroutine norm_sca(ssb)
 
       include 'SIZE'
       include 'TOTAL'
@@ -592,11 +595,13 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
+      real ssb(lt,0:nb)
+
       nio=-1
       do i=1,nb
-         p=scaprod(tb(1,1,i),tb(1,1,i))
+         p=scaprod(ssb(1,i),ssb(1,i))
          s=1./sqrt(p)
-         call cmult(tb(1,1,i),s,lx1*ly1*lz1*nelt)
+         call cmult(ssb(1,i),s,lx1*ly1*lz1*nelt)
       enddo
       nio=nid
 
