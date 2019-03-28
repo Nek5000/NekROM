@@ -416,7 +416,10 @@ c-----------------------------------------------------------------------
       if (.not.ifread) then
          jfield=ifield
          ifield=1
-         if (ifpod(0)) call gengram(ug(1,1,0),dps,ns,ldim)
+         if (ifcintp) then
+            ifpod(0)=.true.
+            call gengram(ug(1,1,0),cs0,ns,ldim)
+         endif
          if (ifpod(1)) call gengram(ug(1,1,1),us0,ns,ldim)
          do i=2,ldimt1
             ifield=i
