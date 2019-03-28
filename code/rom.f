@@ -34,6 +34,11 @@ c-----------------------------------------------------------------------
          endif
       else
          call rom_setup_v
+         if (isolve.eq.1) then
+            if (nio.eq.0) write(6,*) 
+     $       'solving with constrained optimization'
+            call comp_hyperpar
+         endif
 
          if (nio.eq.0) write (6,*) 'starting rom_step loop',ad_nsteps
 

@@ -90,11 +90,11 @@ c     parameters and common blocks for MOR
       common /morlu/ fluv(nb,nb),flut(nb,nb)
       common /morilu/ irv(nb),icv(nb),irt(nb),ict(nb)
 
-      real qnf, helm, invhelm, qngradf, qny, qns
-      common /moropt/ helm(nb,nb), opt_rhs(0:nb), invhelm(nb,nb)
+      real helm, invhelm, qny, qns
+      common /moropt/ helm(nb,nb), opt_rhs(nb), invhelm(nb,nb)
       common /morhyperpar/ sample_min(nb), sample_max(nb), sam_dis(nb)
       common /moropt_par/ par
-      common /morqn/ qngradf(nb), qns(nb), qny(nb), qnf
+      common /morqn/ qns(nb), qny(nb)
 
       logical ifl2,ifvort,ifdump,ifrecon,ifstep,ifpart,ifavg0,
      $        ifdumpops,ifcdrag,ifrms,ifread,ifforce,ifpod(0:ldimt1),
