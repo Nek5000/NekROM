@@ -156,6 +156,9 @@ c-----------------------------------------------------------------------
       ifavg0=.false.
       if (param(34).ne.0) ifavg0=.true.
 
+      if (ifavg0.and.(nb.eq.ls))
+     $   call exitti('nb == ls results in linear dependent bases$',nb)
+
       ifdumpops=.false.
       ifread=.false.
       np35=nint(param(35))
