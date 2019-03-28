@@ -345,15 +345,17 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       real B_qn(nb,nb)
+      real qgo(nb), qngradf(nb), ngf
       real fo,qnf,qndf
-      real tmp(nb,nb),tmp1(nb,nb),tmp2(nb,nb),tmp3(nb,nb)
-      real tmp4(nb),tmp5(nb),tmp6(nb,nb),tmp7(nb,nb)
       real yy(nb,nb),ys,sBs
-      real ww(nb), ngf, pert
+      real ww(nb), pert
       real uu(nb), rhs(nb)
-      real qgo(nb), qngradf(nb)
+
       integer par_step
       integer chekbc ! flag for checking boundary
+
+      real tmp(nb,nb),tmp1(nb,nb),tmp2(nb,nb),tmp3(nb,nb)
+      real tmp4(nb),tmp5(nb),tmp6(nb,nb),tmp7(nb,nb)
 
       if (nio.eq.0) write (6,*) 'inside BFGS'
 
@@ -389,7 +391,7 @@ c        compute quasi-Newton step
             call chsign(qns,nb)
             call solve(qns,tmp3,1,nb,nb,irv,icv)
 
-            call add2(uu,qns,nb)
+c            call add2(uu,qns,nb)
             call backtrackr(uu,qns,rhs,1e-4,0.5)
 
             ! check the boundary 
@@ -446,16 +448,15 @@ c-----------------------------------------------------------------------
       include 'MOR'
       include 'TOTAL'
 
-      integer alphak
       real rhs(nb), s(nb)
       real uuo(nb), uu(nb)
       real Jfk(nb)
       real fk, fk1
       real Jfks
       integer chekbc, counter
-      real sigmab, facb
+      real sigmab, facb, alphak
 
-      alphak = 1
+      alphak = 1.0
       chekbc = 1
       counter = 0
 
@@ -466,12 +467,12 @@ c-----------------------------------------------------------------------
       call add2s1(uu,s,alphak,nb)
 
       call comp_qnf(uu,rhs,fk1) ! get new f
-      Jfks = vlsc2(Jfk,s)
+      Jfks = vlsc2(Jfk,s,nb)
 
-      do while (fk1 > fk + sigmab * alphak * Jfks .OR. chekbc.eq.1)
+      do while ((fk1 > fk + sigmab * alphak * Jfks) .OR. (chekbc.eq.1))
          counter = counter + 1
          alphak = alphak * facb
-         call add3s2(uu,uuo,s,1,alphak,nb)
+         call add3s2(uu,uuo,s,1.0,alphak,nb)
 
          chekbc = 0
          do ii=1,nb
