@@ -5,14 +5,17 @@
       include 'MOR'
 
       real B_qn(nb,nb)
-      real go(nb),fo,qndf
-      real tmp(nb,nb),tmp1(nb,nb),tmp2(nb,nb),tmp3(nb,nb)
-      real tmp4(nb),tmp5(nb),tmp6(nb,nb),tmp7(nb,nb)
+      real qgo(nb), qngradf(nb), ngf
+      real fo,qnf,qndf
       real yy(nb,nb),ys,sBs
-      real ww(nb), ngf, pert
+      real ww(nb), pert
       real uu(nb), rhs(nb)
+
       integer par_step
       integer chekbc ! flag for checking boundary
+
+      real tmp(nb,nb),tmp1(nb,nb),tmp2(nb,nb),tmp3(nb,nb)
+      real tmp4(nb),tmp5(nb),tmp6(nb,nb),tmp7(nb,nb)
 
       if (nio.eq.0) write (6,*) 'inside BFGS_freeze'
 
@@ -37,8 +40,8 @@ c        use helm from BDF3/EXT3 as intial approximation
          call copy(B_qn(1,1),helm(1,1),nb*nb)
 !         call copy(B_qn(1,1),invhelm(1,1),nb*nb)
 
-         call comp_qnf(uu,rhs)
-         call comp_qngradf(uu,rhs)
+         call comp_qnf(uu,rhs,qnf)
+         call comp_qngradf(uu,rhs,qngradf)
 
 c        compute quasi-Newton step
          do j=1,500
@@ -70,7 +73,7 @@ c            call chsign(qns,nb)
             enddo
 
             call copy(go,qngradf,nb) ! store old qn-gradf
-            call comp_qngradf(uu,rhs)        ! update qn-gradf
+            call comp_qngradf(uu,rhs,qngradf)        ! update qn-gradf
             call sub3(qny,qngradf,go,nb) 
 
             ! update approximate Hessian by two rank-one update if chekbc = 0
@@ -89,7 +92,7 @@ c            call chsign(qns,nb)
             ngf = sqrt(ngf)
 
             fo = qnf      ! store old qn-f
-            call comp_qnf(uu,rhs) ! update qn-f
+            call comp_qnf(uu,rhs,qnf) ! update qn-f
             qndf = abs(qnf-fo)/abs(fo) 
 c            write(6,*)'f and old f',j,qnf,fo,qndf,ngf
 
@@ -111,14 +114,14 @@ c     update solution
       return
       end
 c-----------------------------------------------------------------------
-      subroutine comp_qngradf(uu,rhs)
+      subroutine comp_qngradf(uu,rhs,s)
       
       include 'SIZE'
       include 'MOR'
 
       real tmp1(nb),tmp2(nb),tmp3(nb),tmp4(nb)
       real mpar
-      real uu(nb), rhs(nb)
+      real uu(nb), rhs(nb), s(nb)
       integer barr_func
 
       barr_func = 1
@@ -139,12 +142,12 @@ c-----------------------------------------------------------------------
          call add3(tmp3,tmp1,tmp2,nb)
 
          mpar = -1.0*par
-         call add3s12(qngradf,rhs,tmp3,-1.0,mpar,nb)
+         call add3s12(s,rhs,tmp3,-1.0,mpar,nb)
    
          ONE = 1.
          ZERO= 0.
          call dgemv('N',nb,nb,ONE,helm,nb,uu,1,ZERO,tmp4,1)
-         call add2(qngradf,tmp4,nb)
+         call add2(s,tmp4,nb)
 
       else ! use inverse function as barrier function
 
@@ -157,12 +160,12 @@ c-----------------------------------------------------------------------
          call sub3(tmp3,tmp2,tmp1,nb)
 
          mpar = -1.0*par
-         call add3s12(qngradf,rhs,tmp3,-1.0,mpar,nb)
+         call add3s12(s,rhs,tmp3,-1.0,mpar,nb)
    
          ONE = 1.
          ZERO= 0.
          call dgemv('N',nb,nb,ONE,helm,nb,uu,1,ZERO,tmp4,1)
-         call add2(qngradf,tmp4,nb)
+         call add2(s,tmp4,nb)
 
       endif
 
@@ -171,7 +174,7 @@ c-----------------------------------------------------------------------
       return 
       end
 c-----------------------------------------------------------------------
-      subroutine comp_qnf(uu,rhs)
+      subroutine comp_qnf(uu,rhs,qnf)
       
       include 'SIZE'
       include 'MOR'
@@ -182,6 +185,7 @@ c-----------------------------------------------------------------------
       real bar1,bar2 ! bar1 and bar2 are the barrier function for two constrains
       integer barr_func
       real uu(nb), rhs(nb)
+      real qnf
 
       barr_func = 1
 
@@ -328,6 +332,135 @@ c      if (nio.eq.0) write(6,*) 'inside invHessian_update'
 
       call add2(B(1,1),ss(1,1),nb*nb)
       call exitt0
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine BFGS(rhs)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      real B_qn(nb,nb)
+      real fo,qnf,qndf
+      real tmp(nb,nb),tmp1(nb,nb),tmp2(nb,nb),tmp3(nb,nb)
+      real tmp4(nb),tmp5(nb),tmp6(nb,nb),tmp7(nb,nb)
+      real yy(nb,nb),ys,sBs
+      real ww(nb), ngf, pert
+      real uu(nb), rhs(nb)
+      real qgo(nb), qngradf(nb)
+      integer par_step
+      integer chekbc ! flag for checking boundary
+
+      if (nio.eq.0) write (6,*) 'inside BFGS'
+
+      call copy(uu,u(1,1),nb)
+   
+      ! parameter for barrier function
+      par = 1e-3 
+      par_step = 4
+   
+      ! invhelm for computing qnf
+      if (ad_step.le.3) then 
+         call copy(invhelm(1,1),helm(1,1),nb*nb)
+         call lu(invhelm,nb,nb,irv,icv)
+      endif
+
+      ! BFGS method with barrier function starts
+      do k=1,par_step
+
+         chekbc = 0
+
+c        use helm from BDF3/EXT3 as intial approximation
+         call copy(B_qn(1,1),helm(1,1),nb*nb)
+
+         call comp_qnf(uu,rhs,qnf)
+         call comp_qngradf(uu,rhs,qngradf)
+
+c        compute quasi-Newton step
+         do j=1,100
+
+            call copy(tmp3(1,1),B_qn(1,1),nb*nb)
+            call lu(tmp3,nb,nb,irv,icv)
+            call copy(qns,qngradf,nb)
+            call chsign(qns,nb)
+            call solve(qns,tmp3,1,nb,nb,irv,icv)
+
+            call add2(uu,qns,nb)
+
+            ! check the boundary 
+            do ii=1,nb
+               if ((uu(i)-sample_max(ii)).ge.1e-8) then
+                  chekbc = 1
+                  uu(ii) = sample_max(ii) - 0.1*sam_dis(ii)
+               elseif ((sample_min(ii)-uu(ii)).ge.1e-8) then
+                  chekbc = 1
+                  uu(ii) = sample_min(ii) + 0.1*sam_dis(ii)
+               endif
+            enddo
+
+            call copy(go,qngradf,nb) ! store old qn-gradf
+            call comp_qngradf(uu,rhs,qngradf)        ! update qn-gradf
+            call sub3(qny,qngradf,go,nb) 
+
+            ! update approximate Hessian by two rank-one update if chekbc = 0
+            ! first rank-one update
+            call Hessian_update(B_qn,qns,qny,nb)
+
+            call copy(ww,qngradf,nb)
+            call solve(ww,invhelm,1,nb,nb,irv,icv)
+
+            ngf = glsc2(ww,qngradf,nb)
+            ngf = sqrt(ngf)
+
+            fo = qnf      ! store old qn-f
+            call comp_qnf(uu,rhs,qnf) ! update qn-f
+            qndf = abs(qnf-fo)/abs(fo) 
+c            write(6,*)'f and old f',j,qnf,fo,qndf,ngf
+
+            ! reset chekbc 
+            chekbc = 0
+
+            if (ngf .lt. 1e-4 .OR. qndf .lt. 1e-6  ) goto 900
+
+c     update solution
+         enddo
+  900    write(6,*)'criterion reached, number of iteration:'
+     $              ,ad_step,j,par,ngf,qndf 
+         par = par*0.1
+      enddo
+      call copy(rhs,uu,nb)
+
+      if (nio.eq.0) write (6,*) 'exitting BFGS'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine backtrackr(uu,s,rhs)
+
+      include 'SIZE'
+      include 'MOR'
+      include 'TOTAL'
+
+      integer alphak
+      real rhs(nb), s(nb)
+      real uuo(nb), uu(nb)
+      real Jfk(nb)
+      real fk, fk1
+      integer chekbc
+
+      alphak = 1
+      chekbc = 1
+
+      call comp_qnf(uu,rhs,fk) ! get old f
+      call comp_qngradf(uu,rhs,Jfk)
+
+      call copy(uuo,uu,nb)
+      call add2s1(uu,s,alphak,nb)
+
+      call comp_qnf(uu,rhs,fk1) ! get new f
+
 
       return
       end
