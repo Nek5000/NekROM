@@ -51,6 +51,7 @@ c        compute quasi-Newton step
             call copy(qns,qngradf,nb)
             call chsign(qns,nb)
             call solve(qns,tmp3,1,nb,nb,irv,icv)
+
 c            if (j .eq. 1) then
 c               call copy(qns,qngradf,nb)
 c               call solve(qns,B_qn,1,nb,nb,ir,ic)
@@ -72,9 +73,9 @@ c            call chsign(qns,nb)
                endif
             enddo
 
-            call copy(go,qngradf,nb) ! store old qn-gradf
+            call copy(qgo,qngradf,nb) ! store old qn-gradf
             call comp_qngradf(uu,rhs,qngradf)        ! update qn-gradf
-            call sub3(qny,qngradf,go,nb) 
+            call sub3(qny,qngradf,qgo,nb) 
 
             ! update approximate Hessian by two rank-one update if chekbc = 0
             ! first rank-one update
@@ -149,6 +150,7 @@ c-----------------------------------------------------------------------
          call dgemv('N',nb,nb,ONE,helm,nb,uu,1,ZERO,tmp4,1)
          call add2(s,tmp4,nb)
 
+
       else ! use inverse function as barrier function
 
          call sub3(tmp1,uu,sample_max,nb)  
@@ -183,9 +185,9 @@ c-----------------------------------------------------------------------
       real tmp4(nb),tmp5(nb),tmp6(nb)
       real term1,term2,term3,term4
       real bar1,bar2 ! bar1 and bar2 are the barrier function for two constrains
-      integer barr_func
       real uu(nb), rhs(nb)
       real qnf
+      integer barr_func
 
       barr_func = 1
 
@@ -401,9 +403,9 @@ c        compute quasi-Newton step
                endif
             enddo
 
-            call copy(go,qngradf,nb) ! store old qn-gradf
+            call copy(qgo,qngradf,nb) ! store old qn-gradf
             call comp_qngradf(uu,rhs,qngradf)        ! update qn-gradf
-            call sub3(qny,qngradf,go,nb) 
+            call sub3(qny,qngradf,qgo,nb) 
 
             ! update approximate Hessian by two rank-one update if chekbc = 0
             ! first rank-one update
