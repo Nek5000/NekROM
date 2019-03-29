@@ -398,7 +398,7 @@ c            call add2(uu,qns,nb)
 
             ! check the boundary 
             do ii=1,nb
-               if ((uu(i)-sample_max(ii)).ge.1e-8) then
+               if ((uu(ii)-sample_max(ii)).ge.1e-8) then
                   chekbc = 1
                   uu(ii) = sample_max(ii) - 0.1*sam_dis(ii)
                elseif ((sample_min(ii)-uu(ii)).ge.1e-8) then
@@ -478,7 +478,7 @@ c-----------------------------------------------------------------------
 
          chekbc = 0
          do ii=1,nb
-            if ((uu(i)-sample_max(ii)).ge.1e-8) then
+            if ((uu(ii)-sample_max(ii)).ge.1e-8) then
                chekbc = 1
             elseif ((sample_min(ii)-uu(ii)).ge.1e-8) then
                chekbc = 1
