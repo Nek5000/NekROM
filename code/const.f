@@ -64,7 +64,7 @@ c            call chsign(qns,nb)
 
             ! check the boundary 
             do ii=1,nb
-               if ((uu(i)-sample_max(ii)).ge.1e-8) then
+               if ((uu(ii)-sample_max(ii)).ge.1e-8) then
                   chekbc = 1
                   uu(ii) = sample_max(ii) - 0.1*sam_dis(ii)
                elseif ((sample_min(ii)-uu(ii)).ge.1e-8) then
@@ -104,8 +104,10 @@ c            write(6,*)'f and old f',j,qnf,fo,qndf,ngf
 
 c     update solution
          enddo
+
   900    write(6,*)'ad_step, par, iter, ngf, qndf:'
-     $              ,ad_step,par,j,ngf,qndf 
+         write(6,*)ad_step,par,j,ngf,qndf 
+
          par = par*0.1
       enddo
       call copy(rhs,uu,nb)
