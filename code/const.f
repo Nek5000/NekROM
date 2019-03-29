@@ -17,7 +17,7 @@
       real tmp(nb,nb),tmp1(nb,nb),tmp2(nb,nb),tmp3(nb,nb)
       real tmp4(nb),tmp5(nb),tmp6(nb,nb),tmp7(nb,nb)
 
-      if (nio.eq.0) write (6,*) 'inside BFGS_freeze'
+c      if (nio.eq.0) write (6,*) 'inside BFGS_freeze'
 
       call copy(uu,u(1,1),nb)
    
@@ -104,13 +104,13 @@ c            write(6,*)'f and old f',j,qnf,fo,qndf,ngf
 
 c     update solution
          enddo
-  900    write(6,*)'criterion reached, number of iteration:'
-     $              ,ad_step,j,par,ngf,qndf 
+  900    write(6,*)'ad_step, par, iter, ngf, qndf:'
+     $              ,ad_step,par,j,ngf,qndf 
          par = par*0.1
       enddo
       call copy(rhs,uu,nb)
 
-      if (nio.eq.0) write (6,*) 'exitting BFGS_freeze'
+c      if (nio.eq.0) write (6,*) 'exitting BFGS_freeze'
 
       return
       end
@@ -357,7 +357,7 @@ c-----------------------------------------------------------------------
       real tmp(nb,nb),tmp1(nb,nb),tmp2(nb,nb),tmp3(nb,nb)
       real tmp4(nb),tmp5(nb),tmp6(nb,nb),tmp7(nb,nb)
 
-      if (nio.eq.0) write (6,*) 'inside BFGS'
+c      if (nio.eq.0) write (6,*) 'inside BFGS'
 
       call copy(uu,u(1,1),nb)
    
@@ -431,13 +431,13 @@ c            write(6,*)'f and old f',j,qnf,fo,qndf,ngf
 
 c     update solution
          enddo
-  900    write(6,*)'criterion reached, number of iteration:'
-     $              ,ad_step,j,par,ngf,qndf 
+  900    write(6,*)'ad_step, par, iter, ngf, qndf:'
+     $              ,ad_step,par,j,ngf,qndf 
          par = par*0.1
       enddo
       call copy(rhs,uu,nb)
 
-      if (nio.eq.0) write (6,*) 'exitting BFGS'
+c      if (nio.eq.0) write (6,*) 'exitting BFGS'
 
       return
       end
@@ -485,7 +485,9 @@ c-----------------------------------------------------------------------
 
          call comp_qnf(uu,rhs,fk1)
 
-         if (alphak < 1e-4) goto 900
+         if (alphak < 1e-4) then
+            exit
+         endif
       enddo
 
   900    write(6,*)'backtrackr:'
