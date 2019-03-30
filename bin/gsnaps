@@ -18,4 +18,4 @@ case "$1" in
         wget -O t.t https://uofi.box.com/shared/static/d2lbk9pirwb891bqw7bezadk5tk99v4h.gz;;
 esac
 
-tar -xvf t.tar.gz &> /dev/null
+tar -xvf t.t &> /dev/null
