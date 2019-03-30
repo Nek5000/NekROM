@@ -20,7 +20,7 @@ $MOR_DIR/tests/test_template.sh $(echo $name | perl -ne 'print lc')
 ls ../../data/cyl_rect/cyl0.f* > file.list
 ls ../../data/cyl_rect/avgcyl0.f* > avg.list
 
-ln -s $MOR_DIR/data/cyl/cyl0.f01000 r0.f00001
+ln -s $MOR_DIR/data/cyl_rect/cyl0.f01000 r0.f00001
 
 $SOURCE_ROOT/bin/makenek test
 
