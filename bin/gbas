@@ -1,0 +1,13 @@
+#!/bin/bash
+
+# Get Bases
+
+case "$1" in
+    cyl_rect_l2)
+        wget -nv -O t.t https://uofi.box.com/shared/static/y8bz61llcp2f7mx24gllv5qrmcvlmoy4.gz
+        ;;
+    cyl_rect_h10)
+        wget -nv -O t.t https://uofi.box.com/shared/static/6b95pwii9dlpkxsr4krpb46c70j46grt.gz
+esac
+
+tar -xvf t.t
