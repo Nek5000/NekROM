@@ -12,7 +12,6 @@ c-----------------------------------------------------------------------
       common /rom_update/ rom_time
 
       if (icalld.eq.0) then
-         call opcopy(uic,vic,wic,vx,vy,vz)
          rom_time=0.
          icalld=1
       endif
@@ -67,6 +66,8 @@ c-----------------------------------------------------------------------
       if (nio.eq.0) write (6,*) 'inside rom_setup'
 
       setup_start=dnekclock()
+
+      call opcopy(uic,vic,wic,vx,vy,vz)
 
       call rom_init_params
       call rom_init_fields
