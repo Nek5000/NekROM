@@ -1,15 +1,11 @@
 if [[ $1 =~ _L2_ ]]; then
     ifl2='.TRUE.'
-    $MOR_DIR/bin/gops baf-l2
-    wget https://uofi.box.com/shared/static/4u3ez373wzsmcv2exfw1dya2ex48152i.gz -O baf-l2-bas.tar.gz || cp $MOR_DIR/ldata/baf-l2-bas.tar.gz .
-    tar -xvzf baf-l2-bas.tar.gz
-    mv baf-l2-bas/* .
+    $MOR_DIR/bin/gops cyl_rect_l2
+    $MOR_DIR/bin/gbas cyl_rect_l2
 else
     ifl2='.FALSE.'
-    $MOR_DIR/bin/gops baf-h10
-    wget https://uofi.box.com/shared/static/1br5da8zf9ldqpwut477589621vzrxw6.gz -O baf-h10-bas.tar.gz || cp $MOR_DIR/ldata/baf-h10-bas.tar.gz .
-    tar -xvzf baf-h10-bas.tar.gz
-    mv baf-h10-bas/* .
+    $MOR_DIR/bin/gops cyl_rect_h10
+    $MOR_DIR/bin/gbas cyl_rect_h10
 fi
 
 mkdir ops
