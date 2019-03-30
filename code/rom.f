@@ -61,6 +61,7 @@ c-----------------------------------------------------------------------
       subroutine rom_setup_v
 
       include 'SIZE'
+      include 'SOLN'
       include 'MOR'
 
       if (nio.eq.0) write (6,*) 'inside rom_setup'
