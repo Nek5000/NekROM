@@ -104,9 +104,9 @@ c-----------------------------------------------------------------------
 
       jfield=ifield
       ifield=1
-      call seta(av,av0,'ops/av ')
-      call setb(bv,bv0,'ops/bv ')
-      call setc(cvl,icvl,'ops/cv ')
+      call seta(av,av0,'ops/au ')
+      call setb(bv,bv0,'ops/bu ')
+      call setc(cvl,icvl,'ops/cu ')
       call setu
       if (ifpod(2)) then
          ifield=2
