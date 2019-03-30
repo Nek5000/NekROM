@@ -1,3 +1,5 @@
+#!/bin/bash -x
+
 if [[ $1 =~ _L2_ ]]; then
     ifl2='.TRUE.'
     $MOR_DIR/bin/gops cyl_rect_l2
@@ -15,6 +17,7 @@ $MOR_DIR/tests/test_template.sh $(echo $name | perl -ne 'print lc')
 
 ls ../../data/cyl_rect/cyl0.f* > file.list
 ls ../../data/cyl_rect/avgcyl0.f* > avg.list
+ls bas/bascyl0.f* > bas.list
 
 cp ../../data/cyl_rect/cyl0.f01000 r0.f00001
 
