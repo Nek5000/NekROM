@@ -17,13 +17,10 @@ mkdir ops
 name="$(echo $1 | perl -pe 's/_(L2|H10)_/_/g')(${ifl2})"
 $MOR_DIR/tests/test_template.sh $(echo $name | perl -ne 'print lc')
 
-ls ../../data/baf/baf0.f* > file.list
-ls ../../data/baf/avgbaf0.f* > avg.list
+ls ../../data/cyl_rect/cyl0.f* > file.list
+ls ../../data/cyl_rect/avgcyl0.f* > avg.list
 
-ln -s $MOR_DIR/data/baf/baf0.f00001 r0.f00001
-
-cp SIZE_TEST SIZE
-cp LMOR_TEST LMOR
+ln -s $MOR_DIR/data/cyl/cyl0.f01000 r0.f00001
 
 $SOURCE_ROOT/bin/makenek test
 
