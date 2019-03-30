@@ -2,24 +2,20 @@
 
 # Get Snapshots
 
-mkdir $MOR_DIR/data
+mkdir $MOR_DIR/data &> /dev/null
 cd $MOR_DIR/data
 
-case=$1
-
-case "${case:=all}" in
+case "$1" in
     baf)
-        wget -nv -O baf.tar.gz https://uofi.box.com/shared/static/bnoflcpf6i6mmofiy4ufmm8gey6t83k1.gz || cp $MOR_DIR/ldata/baf.tar.gz .
-        tar -xvf baf.tar.gz &> /dev/null
-        ;;
+        wget -O t.t https://uofi.box.com/shared/static/bnoflcpf6i6mmofiy4ufmm8gey6t83k1.gz;;
     cyl)
-        wget -nv -O cyl.tar.gz https://uofi.box.com/shared/static/insxch1bjvzl4bnzr3lpr1c016i4g75p.gz || cp $MOR_DIR/ldata/cyl.tar.gz .
-        tar -xvf cyg.tar.gz &> /dev/null
-        wget -nv -O cyls0.f00001 https://uofi.box.com/shared/static/msk1qxdpcw8e0a1olyah9s82cj45acxe.f00001
-        ;;
-    all)
-        cd $MOR_DIR/bin
-        ./gsnaps baf
-        ./gsnaps cyl
-        ;;
+        wget -O t.t https://uofi.box.com/shared/static/insxch1bjvzl4bnzr3lpr1c016i4g75p.gz;;
+    cyl_rect | cyl_rect_100)
+        wget -O t.t https://uofi.box.com/shared/static/6106y4kprx84dswlm6s0fagf4yo08oiw.gz;;
+    cyl_rect_500)
+        wget -O t.t https://uofi.box.com/shared/static/8499xg74j4a2jt58d8cw85pedvbgw4u9.gz;;
+    cyl_rect_full)
+        wget -O t.t https://uofi.box.com/shared/static/d2lbk9pirwb891bqw7bezadk5tk99v4h.gz;;
 esac
+
+tar -xvf t.tar.gz &> /dev/null
