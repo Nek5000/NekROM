@@ -20,7 +20,7 @@ c-----------------------------------------------------------------------
       param(35) = 0
 
       call rom_setup_v
-      call read_serial(vv,ls*ls,'ops/g ',wk,nid)
+      call read_serial(vv,ls*ls,'ops/gu ',wk,nid)
 
       iexit=0
 
@@ -112,7 +112,7 @@ c-----------------------------------------------------------------------
       param(35) = 0
 
       call rom_setup_v
-      call read_serial(aa,(nb+1)**2,'ops/a ',wk,nid)
+      call read_serial(aa,(nb+1)**2,'ops/au ',wk,nid)
 
       iexit=0
 
@@ -187,7 +187,7 @@ c-----------------------------------------------------------------------
       param(35) = 0
 
       call rom_setup_v
-      call read_serial(bb,(nb+1)**2,'ops/b ',wk,nid)
+      call read_serial(bb,(nb+1)**2,'ops/bu ',wk,nid)
 
       iexit=0
 
@@ -262,7 +262,7 @@ c-----------------------------------------------------------------------
       param(35) = 0
 
       call rom_setup_v
-      call read_serial(cc,nb*(nb+1)**2,'ops/c ',wk,nid)
+      call read_serial(cc,nb*(nb+1)**2,'ops/cu ',wk,nid)
 
       iexit=0
 
