@@ -1,4 +1,12 @@
+#!/bin/bash -x
+
+cd $MOR_DIR/tests
+mkdir t
+cd t
 $MOR_DIR/bin/linkm
+
+cp $MOR_DIR/tests/test.rea .
+cp $MOR_DIR/tests/test.usr .
 
 echo 'test'     > SESSION.NAME
 echo `pwd`'/' >> SESSION.NAME
