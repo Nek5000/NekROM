@@ -83,9 +83,6 @@ c-----------------------------------------------------------------------
             endif
          endif
 
-
-         ifdump=ifdump
-
          if (ifdump) then
             idump=ad_step/ad_iostep
             call reconv(vx,vy,vz,u)
@@ -99,7 +96,6 @@ c-----------------------------------------------------------------------
 
             ifto = .true. ! turn on temp in fld file
             call outpost(vx,vy,vz,pavg,vort,'rom')
-            if (nio.eq.0) write (6,*) 'inside ifdump'
          endif
       endif
 
