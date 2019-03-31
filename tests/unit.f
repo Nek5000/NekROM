@@ -129,9 +129,9 @@ c-----------------------------------------------------------------------
 
       do j=0,nb
       do i=0,nb
-         if (nio.eq.0) write (6,*) i,j,av0(i,j),aa(i,j),'a'
-         s1=s1+(aa(i,j)-av0(i,j))**2
-         s2=s2+(av0(i,j)-av0(j,i))**2
+         if (nio.eq.0) write (6,*) i,j,au0(i,j),aa(i,j),'a'
+         s1=s1+(aa(i,j)-au0(i,j))**2
+         s2=s2+(au0(i,j)-au0(j,i))**2
          s3=s3+aa(i,j)**2
       enddo
       enddo
@@ -150,8 +150,8 @@ c-----------------------------------------------------------------------
 
       do j=1,nb
       do i=1,nb
-         if (i.ne.j) s1=s1+av0(i,j)**2
-         s2=s2+av0(i,j)**2
+         if (i.ne.j) s1=s1+au0(i,j)**2
+         s2=s2+au0(i,j)**2
       enddo
       enddo
 
@@ -163,7 +163,7 @@ c-----------------------------------------------------------------------
       s1=0.
 
       do i=1,nb
-         s1=s1+(av0(i,i)-1.)**2
+         s1=s1+(au0(i,i)-1.)**2
       enddo
 
       euni=sqrt(s1/s2)
@@ -207,9 +207,9 @@ c-----------------------------------------------------------------------
 
       do j=0,nb
       do i=0,nb
-         if (nio.eq.0) write (6,*) i,j,bv0(i,j),bb(i,j),'b'
-         s1=s1+(bb(i,j)-bv0(i,j))**2
-         s2=s2+(bv0(i,j)-bv0(j,i))**2
+         if (nio.eq.0) write (6,*) i,j,bu0(i,j),bb(i,j),'b'
+         s1=s1+(bb(i,j)-bu0(i,j))**2
+         s2=s2+(bu0(i,j)-bu0(j,i))**2
          s3=s3+bb(i,j)**2
       enddo
       enddo
@@ -228,7 +228,7 @@ c-----------------------------------------------------------------------
 
       do j=1,nb
       do i=1,nb
-         if (i.ne.j) s1=s1+bv0(i,j)**2
+         if (i.ne.j) s1=s1+bu0(i,j)**2
          s2=s2+bb(i,j)**2
       enddo
       enddo
@@ -241,7 +241,7 @@ c-----------------------------------------------------------------------
       s1=0.
 
       do i=1,nb
-         s1=s1+(bv0(i,i)-1.)**2
+         s1=s1+(bu0(i,i)-1.)**2
       enddo
 
       euni=sqrt(s1/s2)
@@ -286,16 +286,16 @@ c-----------------------------------------------------------------------
       if (nio.eq.0) write (6,*) 'live | data'
 
       do jc=1,nb*(nb+1)**2
-         i=icvl(1,jc)
-         j=icvl(2,jc)
-         k=icvl(3,jc)
+         i=icul(1,jc)
+         j=icul(2,jc)
+         k=icul(3,jc)
 
-         cglob(i,j,k)=cglob(i,j,k)+cvl(jc)
+         cglob(i,j,k)=cglob(i,j,k)+cul(jc)
          cglob(k,j,i)=cglob(k,j,i)-cc(jc)
 
-         s1=s1+(cc(jc)-cvl(jc))**2
+         s1=s1+(cc(jc)-cul(jc))**2
          s3=s3+cc(jc)**2
-         write (6,*) i,j,k,cvl(jc),cc(jc),'c'
+         write (6,*) i,j,k,cul(jc),cc(jc),'c'
       enddo
 
       do k=1,nb
