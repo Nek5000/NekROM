@@ -167,7 +167,7 @@ c-----------------------------------------------------------------------
 
       ifdumpops=.false.
       ifread=.false.
-      np172=nint(param(173))
+      np173=nint(param(173))
       if (np173.eq.1) then
          ifdumpops=.true.
       else if (np173.eq.2) then
