@@ -5,6 +5,13 @@ c     parameters and common blocks for MOR
       common /morgram/ ug(ls,ls,0:ldimt1)
       common /moreig/ evec(ls,nb,0:ldimt1),eval(ls,0:ldimt1)
 
+      common /morconvect/ c1v(lxd*lyd*lzd*lelt,0:nb),
+     $                    c2v(lxd*lyd*lzd*lelt,0:nb),
+     $                    c3v(lxd*lyd*lzd*lelt,0:nb),
+     $                    u1v(lxd*lyd*lzd*lelt,0:nb),
+     $                    u2v(lxd*lyd*lzd*lelt,0:nb),
+     $                    u3v(lxd*lyd*lzd*lelt,0:nb)
+
       common /morbasis/ ub(lx1*ly1*lz1*lelt,0:nb),
      $                  vb(lx1*ly1*lz1*lelt,0:nb),
      $                  wb(lx1*ly1*lz1*lelt,0:nb),
@@ -44,18 +51,17 @@ c     parameters and common blocks for MOR
       parameter (lcglo=nb*(nb+1)*(nb+1))
       parameter (lcloc=lcglo/lpmin+1)
 
-      common /morvops/ av0(0:nb,0:nb),bv0(0:nb,0:nb),
-     $                 av(nb,nb),bv(nb,nb),
-     $                 cvl(lcloc),cvltmp(lcloc),
-     $                 icvl(3,lcloc),icvltmp(3,lcloc)
+      common /morvops/ au0(0:nb,0:nb),bu0(0:nb,0:nb),
+     $                 au(nb,nb),bu(nb,nb),
+     $                 cul(lcloc),cultmp(lcloc),
+     $                 icul(3,lcloc),icultmp(3,lcloc)
 
       common /mortops/ at0(0:nb,0:nb),bt0(0:nb,0:nb),
      $                 at(nb,nb),bt(nb,nb),
      $                 ctl(lcloc),ctltmp(lcloc),
      $                 ictl(3,lcloc),ictltmp(3,lcloc)
-      
 
-      common /morcpl/  bvt0(0:nb,0:nb),bvc(nb,0:nb),cintp(nb,0:nb)
+      common /morcpl/  but0(0:nb,0:nb),buc(nb,0:nb),cintp(nb,0:nb)
 
       common /morvsol/ u(0:nb,3),uj(0:nb,6),
      $                 u2(0:nb,0:nb),u2j(0:nb,0:nb,6)
@@ -82,8 +88,8 @@ c     parameters and common blocks for MOR
       common /morpar/ ad_dt,ad_re,ad_pe,ad_alpha(3,3),ad_beta(4,3),
      $                tbeta
 
-      integer ad_nsteps, ad_iostep, ad_step
-      common /moripar/ ad_nsteps, ad_iostep, ad_step
+      integer ad_nsteps,ad_iostep,ad_step,ad_qstep
+      common /moripar/ ad_nsteps,ad_iostep,ad_step,ad_qstep
 
       common /morivars/ i0,j0,k0,i1,j1,k1,ns,navg,ncloc,npr,npart,isolve
 
@@ -98,11 +104,11 @@ c     parameters and common blocks for MOR
 
       logical ifl2,ifvort,ifdump,ifrecon,ifstep,ifpart,ifavg0,
      $        ifdumpops,ifcdrag,ifrms,ifread,ifforce,ifpod(0:ldimt1),
-     $        ifbuoy,ifrom(0:ldimt1),ifcintp
+     $        ifbuoy,ifrom(0:ldimt1),ifcintp,iffastc
 
       common /morflags/ ifl2,ifvort,ifdump,ifrecon,ifstep,ifavg0,
      $                  ifdumpops,ifcdrag,ifrms,ifread,ifforce,ifpod,
-     $                  ifbuoy,ifrom,ifcintp
+     $                  ifbuoy,ifrom,ifcintp,iffastc
 
       real last_time,misc_time
       common /mortime/ step_time,last_time,misc_time,evalc_time

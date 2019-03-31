@@ -2,21 +2,18 @@
 
 # Get Operators
 
-case=$1
-
-case "${case:=all}" in
+case "$1" in
     baf-l2)
-        cd $MOR_DIR/cases/baf/
-        wget -nv -O baf-l2-ops.tar.gz https://uofi.box.com/shared/static/g6ub5yqv4v1q7xe2nhtfm7c9kl8o36yp.gz || cp $MOR_DIR/ldata/baf-l2-ops.tar.gz .
-        tar -xvf baf-l2-ops.tar.gz
+        wget -nv -O t.t https://uofi.box.com/shared/static/g6ub5yqv4v1q7xe2nhtfm7c9kl8o36yp.gz || cp $MOR_DIR/ldata/baf-l2-ops.tar.gz .
         ;;
     baf-h10)
-        cd $MOR_DIR/cases/baf/
-        wget -nv -O baf-h10-ops.tar.gz https://uofi.box.com/shared/static/d4rxo1h2jy6wnt6uxnsd3d3ex5tdbpr0.gz || cp $MOR_DIR/ldata/baf-h10-ops.tar.gz .
-        tar -xvf baf-h10-ops.tar.gz
+        wget -nv -O t.t https://uofi.box.com/shared/static/d4rxo1h2jy6wnt6uxnsd3d3ex5tdbpr0.gz || cp $MOR_DIR/ldata/baf-h10-ops.tar.gz .
         ;;
-    all)
-        cd $MOR_DIR/bin
-        ./gops baf
+    cyl_rect_l2)
+        wget -nv -O t.t https://uofi.box.com/shared/static/l77fpwsu8qxdx508v88rx1uuhs3ddqee.gz
         ;;
+    cyl_rect_h10)
+        wget -nv -O t.t https://uofi.box.com/shared/static/28u974hnuy44k4qxv8fugea1na8mijws.gz
 esac
+
+tar -xvf t.t

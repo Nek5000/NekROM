@@ -1,5 +1,5 @@
 c-----------------------------------------------------------------------
-      subroutine rom_update_v
+      subroutine rom_update
 
       include 'SIZE'
       include 'TOTAL'
@@ -9,40 +9,40 @@ c-----------------------------------------------------------------------
       save    icalld
       data    icalld /0/
 
-      common /rom_update/ rom_time
+      logical ifmult
 
-      if (icalld.eq.0) then
-         call opcopy(uic,vic,wic,vx,vy,vz)
-         rom_time=0.
-         icalld=1
-      endif
+      common /romup/ rom_time
 
       stime=dnekclock()
+
+      if (icalld.eq.0) then
+         rom_time=0.
+         icalld=1
+         call rom_setup
+      endif
 
       ad_step = istep
       jfield=ifield
       ifield=1
 
-      if (ifheat) then
+      ifmult=.not.ifrom(2).and.ifheat
+
+      if (ifmult) then
          if (ifflow) call exitti(
-     $   'error: running rom_update_v with ifflow = .true.$',nelv)
-         if (istep.eq.0) then
-            call rom_setup_v
-         else
-            call rom_step_v
+     $   'error: running rom_update with ifflow = .true.$',nelv)
+         if (istep.gt.0) then
+            call rom_step
             call reconv(vx,vy,vz,u) ! reconstruct velocity to be used in h-t
          endif
       else
-         call rom_setup_v
-
          if (nio.eq.0) write (6,*) 'starting rom_step loop',ad_nsteps
-
          ad_step = 1
          do i=1,ad_nsteps
-            call rom_step_v
+            call rom_step
             time=time+dt
             ad_step=ad_step+1
          enddo
+         icalld=0
       endif
 
       ifield=jfield
@@ -50,23 +50,30 @@ c-----------------------------------------------------------------------
       dtime=dnekclock()-stime
       rom_time=rom_time+dtime
 
-      if (ifheat) then
-         if (nio.eq.0) write (6,*) 'rom_time: ',dtime
-      else
+      if (ifmult) then
+         if (nio.eq.0) write (6,*) 'romd_time: ',dtime
+      endif
+
+      if (.not.ifmult.or.nsteps.eq.istep) then
+         call final
+         if (nio.eq.0) write (6,*) 'evalc_time: ',evalc_time
          if (nio.eq.0) write (6,*) 'rom_time: ',rom_time
       endif
 
       return
       end
 c-----------------------------------------------------------------------
-      subroutine rom_setup_v
+      subroutine rom_setup
 
       include 'SIZE'
+      include 'SOLN'
       include 'MOR'
 
       if (nio.eq.0) write (6,*) 'inside rom_setup'
 
       setup_start=dnekclock()
+
+      call opcopy(uic,vic,wic,vx,vy,vz)
 
       call rom_init_params
       call rom_init_fields
@@ -104,9 +111,9 @@ c-----------------------------------------------------------------------
 
       jfield=ifield
       ifield=1
-      call seta(av,av0,'ops/av ')
-      call setb(bv,bv0,'ops/bv ')
-      call setc(cvl,icvl,'ops/cv ')
+      call seta(au,au0,'ops/au ')
+      call setb(bu,bu0,'ops/bu ')
+      call setc(cul,icul,'ops/cu ')
       call setu
       if (ifpod(2)) then
          ifield=2
@@ -117,8 +124,8 @@ c-----------------------------------------------------------------------
       if (ifcintp) then
          do j=0,nb
          do i=1,nb
-            bvc(i,j)=wl2vprod(ub(1,i),vb(1,i),wb(1,i),
-     $                        cxb(1,j),cyb(1,j),czb(1,j))
+            buc(i,j)=wl2vip(ub(1,i),vb(1,i),wb(1,i),
+     $                      cxb(1,j),cyb(1,j),czb(1,j))
          enddo
          enddo
          call setcintp
@@ -146,30 +153,40 @@ c-----------------------------------------------------------------------
       ad_re = 1/param(2)
       ad_pe = 1/param(8)
 
+      isolve=nint(param(170))
+
       ifl2=.false.
       ips='H10'
-      if (param(33).eq.0) then
+      if (param(171).eq.0) then
          ifl2=.true.
          ips='L2 '
       endif
 
       ifavg0=.false.
-      if (param(34).ne.0) ifavg0=.true.
+      if (param(172).ne.0) ifavg0=.true.
 
       if (ifavg0.and.(nb.eq.ls))
      $   call exitti('nb == ls results in linear dependent bases$',nb)
 
       ifdumpops=.false.
       ifread=.false.
-      np35=nint(param(35))
-      if (np35.eq.1) then
+      np173=nint(param(173))
+      if (np173.eq.1) then
          ifdumpops=.true.
-      else if (np35.eq.2) then
+      else if (np173.eq.2) then
          ifread=.true.
       endif
 
+      ad_qstep=nint(param(180))+ad_iostep*max(1-nint(param(180)),0)
+
       ifcdrag=.false.
-      if (param(36).ne.0) ifcdrag=.true.
+      if (param(182).ne.0) ifcdrag=.true.
+
+      iffastc=.false.
+      if (param(191).ne.0) iffastc=.true.
+
+      ifcintp=.false.
+      if (param(192).ne.0) ifcintp=.true.
 
       do i=0,ldimt1
          ifpod(i)=.false.
@@ -179,34 +196,32 @@ c-----------------------------------------------------------------------
       ifpod(2)=(ifheat.and..not.ifread)
       ifrom(1)=.true.
 
-      isolve=nint(param(37))
       ifvort=.false. ! default to false for now
       ifdump=((.not.ifheat).or.ifrom(2))
       ifrecon=(.not.ifread)
 
-      ifcintp=.false.
-      if (param(38).ne.0) ifcintp=.true.
-
       ifpart=.false.
       ifforce=.false.
-c     ifforce=.true.
-
       ifbuoy=.false.
+      ifcintp=.false.
 
       call compute_BDF_coef(ad_alpha,ad_beta)
 
       if (nio.eq.0) then
-         write (6,*) 'rp_ips        ',ips
+         write (6,*) 'rp_isolve     ',isolve
          write (6,*) 'rp_ifl2       ',ifl2
-         write (6,*) 'rp_ifforce    ',ifforce
+         write (6,*) 'rp_ifavg0     ',ifavg0
+         write (6,*) 'rp_ifdumpops  ',ifdumpops
          write (6,*) 'rp_ifread     ',ifread
+         write (6,*) 'rp_ad_qstep   ',ad_qstep
+         write (6,*) 'rp_ifcdrag    ',ifcdrag
+         write (6,*) 'rp_iffastc    ',iffastc
+         write (6,*) ' '
+         write (6,*) 'rp_ifforce    ',ifforce
          write (6,*) 'rp_ifpart     ',ifpart
          write (6,*) 'rp_ifrecon    ',ifrecon
          write (6,*) 'rp_ifdump     ',ifdump
          write (6,*) 'rp_ifvort     ',ifvort
-         write (6,*) 'rp_ifdumpops  ',ifdumpops
-         write (6,*) 'rp_ifavg0     ',ifavg0
-         write (6,*) 'rp_ifcdrag    ',ifcdrag
          write (6,*) 'rp_ifbuoy     ',ifbuoy
          write (6,*) 'rp_ifcintp    ',ifcintp
          do i=0,ldimt1
@@ -320,59 +335,80 @@ c-----------------------------------------------------------------------
 
       call lints(fnlint,fname,128)
 
+      if (iffastc) then
+         jj=nb
+         ntot=nb*(nb+1)*(nb+2)/2
+      else
+         jj=0
+         ntot=nb*(nb+1)*(nb+1)
+      endif
+
+      ntp=ntot/np
+      mm=ntot-(ntot/np)*np
+
       l=0
       mid=0
-      nlocmin=lcglo/np
-      npmin=np-lcglo+(lcglo/np)*np
+
       n=lx1*ly1*lz1*nelv
 
       if (ifread.and.nid.eq.0) open (unit=12,file=fnlint)
 
+      if (.not.ifread) then
+         do i=0,nb
+            call set_convect_new(c1v(1,i),c2v(1,i),c3v(1,i),
+     $                           ub(1,i),vb(1,i),wb(1,i))
+            if (ifield.eq.1) then
+               call intp_rstd_all(u1v(1,i),ub(1,i),nelv)
+               call intp_rstd_all(u2v(1,i),vb(1,i),nelv)
+               if (ldim.eq.3) call intp_rstd_all(u3v(1,i),wb(1,i),nelv)
+            else
+               call intp_rstd_all(u1v(1,i),tb(1,1,i),nelv)
+            endif
+         enddo
+      endif
+
       do k=0,nb
          if (nio.eq.0) write (6,*) 'k=',k
-         if (.not.ifread) call setcnv_c(ub(1,k),vb(1,k),wb(1,k))
-         do j=0,nb
+         do j=min(k,jj),nb
             if (.not.ifread) then
                if (ifield.eq.1) then
-                  call setcnv_u(ub(1,j),vb(1,j),wb(1,j))
-                  call ccu(cux,cuy,cuz)
+                  if (iffastc) then
+                     call ccu_new(cux,cuy,cuz,j,k)
+                  else
+                     call ccu(cux,cuy,cuz,k,j)
+                  endif
                else
-                  call setcnv_u(tb(1,1,j),vb(1,j),wb(1,j))
-                  call cct(cux)
-               endif
-               if (ifcdrag.and.ifield.eq.1) then
-                  call opcopy(wk4,wk5,wk6,cux,cuy,cuz)
-                  call opbinv1(wk1,wk2,wk3,wk4,wk5,wk6,1.)
-                  call cint(fd2(1,j,k),wk1,wk2,wk3)
+                  call cct(cux1)
                endif
             endif
             do i=1,nb
                l=l+1
                if (.not.ifread) then
                   if (ifield.eq.1) then
-                     cvltmp(l)=op_glsc2_wt(
+                     cultmp(l)=op_glsc2_wt(
      $                  ub(1,i),vb(1,i),wb(1,i),cux,cuy,cuz,ones)
                   else
-                     cvltmp(l)=glsc2(tb(1,1,i),cux,n)
+                     cultmp(l)=glsc2(tb(1,1,i),cux,n)
                   endif
                endif
-               icvltmp(1,l) = i
-               icvltmp(2,l) = j
-               icvltmp(3,l) = k
-               mcloc = nlocmin + mid / npmin
+               icultmp(1,l) = i
+               icultmp(2,l) = j
+               icultmp(3,l) = k
+               mcloc=ntp+max(mm-mid,0)/max(mm-mid,1)
+c              if (nio.eq.0) write (6,*) l,mcloc,'mcloc'
                if (l.eq.mcloc) then
                   if (ifread) then
                      if (nid.eq.0) then
-                        read (12,*) (cvltmp(kk),kk=1,mcloc)
+                        read (12,*) (cultmp(kk),kk=1,mcloc)
                      else
-                        call rzero(cvltmp,mcloc)
+                        call rzero(cultmp,mcloc)
                      endif
                   endif
-                  if (ifread) call gop(cvltmp,wk,'+  ',mcloc)
+                  if (ifread) call gop(cultmp,wk,'+  ',mcloc)
                   if (nid.eq.mid) then
-                     ncloc = mcloc
-                     call copy(cl,cvltmp,ncloc)
-                     call icopy(icl,icvltmp,ncloc*3)
+                     ncloc=mcloc
+                     call copy(cl,cultmp,ncloc)
+                     call icopy(icl,icultmp,ncloc*3)
                   endif
                   mid=mid+1
                   l = 0
@@ -415,10 +451,10 @@ c-----------------------------------------------------------------------
          do j=0,nb ! Form the A matrix for basis function
          do i=0,nb
             if (ifield.eq.1) then
-               a0(i,j)=h10vprod(ub(1,i),vb(1,i),wb(1,i),
-     $                          ub(1,j),vb(1,j),wb(1,j))
+               a0(i,j)=h10vip(ub(1,i),vb(1,i),wb(1,i),
+     $                        ub(1,j),vb(1,j),wb(1,j))
             else
-               a0(i,j)=h10sprod(tb(1,ifield-1,i),tb(1,ifield-1,j))
+               a0(i,j)=h10sip(tb(1,ifield-1,i),tb(1,ifield-1,j))
             endif
          enddo
          enddo
@@ -460,10 +496,10 @@ c-----------------------------------------------------------------------
          do j=0,nb
          do i=0,nb
             if (ifield.eq.1) then
-               b0(i,j)=wl2vprod(ub(1,i),vb(1,i),wb(1,i),
-     $                          ub(1,j),vb(1,j),wb(1,j))
+               b0(i,j)=wl2vip(ub(1,i),vb(1,i),wb(1,i),
+     $                        ub(1,j),vb(1,j),wb(1,j))
             else
-               b0(i,j)=wl2sprod(tb(1,ifield-1,i),tb(1,ifield-1,j))
+               b0(i,j)=wl2sip(tb(1,ifield-1,i),tb(1,ifield-1,j))
             endif
          enddo
          enddo
@@ -492,10 +528,10 @@ c-----------------------------------------------------------------------
 
       jfield=ifield
       ifield=1
-      call proj2vbases(u,uic,vic,wic,ub,vb,wb)
+      call pv2b(u,uic,vic,wic,ub,vb,wb)
 
       if (ifpod(2)) then
-         call proj2sbases(ut,tic,tb)
+         call ps2b(ut,tic,tb)
          do i=0,nb
             if (nio.eq.0) write (6,*) 'ut',ut(i,1)
          enddo
@@ -521,17 +557,17 @@ c-----------------------------------------------------------------------
       if (nio.eq.0) write (6,*) 'inside setg'
 
       call rzero(bg,nb)
-      call rzero(bvt0,(nb+1)**2)
+      call rzero(but0,(nb+1)**2)
 
       if (ifbuoy) then
          do j=0,nb
          do i=0,nb
-            bvt0(i,j)=tbeta*scaprod(tb(1,1,j),vb(1,i))
+            but0(i,j)=tbeta*sip(tb(1,1,j),vb(1,i))
          enddo
          enddo
       else if (ifforce) then
          do i=1,nb
-            bg(i)=-vecprod(bgx,bgy,bgz,ub(1,i),vb(1,i),wb(1,i))
+            bg(i)=-vip(bgx,bgy,bgz,ub(1,i),vb(1,i),wb(1,i))
             if (nio.eq.0) write (6,*) bg(i),i,'bg'
          enddo
       endif
@@ -539,6 +575,19 @@ c-----------------------------------------------------------------------
       call outpost(bgx,bgy,bz,pavg,tavg,'bgv')
 
       if (nio.eq.0) write (6,*) 'exiting setg'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine final
+
+      include 'SIZE'
+      include 'MOR'
+
+      if (ifdumpops) then
+         call dump_serial(u,nb+1,'ops/uf ',nid)
+         if (ifrom(2)) call dump_serial(ut,nb+1,'ops/tf ',nid)
+      endif
 
       return
       end

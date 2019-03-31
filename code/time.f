@@ -1,20 +1,11 @@
 c-----------------------------------------------------------------------
-      subroutine rom_step_v
+      subroutine rom_step
 
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
-      include 'AVG'
 
-      parameter (lt=lx1*ly1*lz1*lelt)
-
-c     Matrices and vectors for advance
-      real tmp(0:nb),rhs(0:nb)
-
-      common /scrrstep/ t1(lt),t2(lt),t3(lt),work(lt)
-
-      common /nekmpi/ nidd,npp,nekcomm,nekgroup,nekreal
-
+      real rhs(0:nb)
 
       if (ad_step.eq.1) then
          step_time = 0.
@@ -22,7 +13,7 @@ c     Matrices and vectors for advance
 
       last_time = dnekclock()
 
-      n  = lx1*ly1*lz1*nelt
+      n=lx1*ly1*lz1*nelt
 
       icount = min0(ad_step,3)
 
@@ -30,8 +21,8 @@ c     Matrices and vectors for advance
       call setr_v(rhs(1),icount)
 
       if (ad_step.le.3) then
-         call cmult2(fluv,bv,ad_beta(1,icount)/ad_dt,nb*nb)
-         call add2s2(fluv,av,1/ad_re,nb*nb)
+         call cmult2(fluv,bu,ad_beta(1,icount)/ad_dt,nb*nb)
+         call add2s2(fluv,au,1/ad_re,nb*nb)
          call copy(helm,fluv,nb*nb)
          call lu(fluv,nb,nb,irv,icv)
       endif
@@ -62,18 +53,15 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
       common /scrrstep/ t1(lt),t2(lt),t3(lt),work(lt)
+      common /nekmpi/ nidd,npp,nekcomm,nekgroup,nekreal
 
       real vort(lt)
 
       call setavg
       call setj
 
-      if (ifcdrag) call cdrag
-
-      if (ifdump) then
-         time=time+dt
-      else
-         call reconv(vx,vy,vz,u)
+      if (mod(ad_step,ad_qstep).eq.0) then
+         if (ifcdrag) call cdrag
       endif
 
       if (mod(ad_step,ad_iostep).eq.0) then
@@ -91,9 +79,6 @@ c-----------------------------------------------------------------------
             endif
          endif
 
-
-         ifdump=ifdump
-
          if (ifdump) then
             idump=ad_step/ad_iostep
             call reconv(vx,vy,vz,u)
@@ -107,7 +92,6 @@ c-----------------------------------------------------------------------
 
             ifto = .true. ! turn on temp in fld file
             call outpost(vx,vy,vz,pavg,vort,'rom')
-            if (nio.eq.0) write (6,*) 'inside ifdump'
          endif
       endif
 
@@ -251,9 +235,8 @@ c-----------------------------------------------------------------------
      $               t1v(0:nb),t2v(0:nb)
 
       do j=1,ns
-         call proj2vbases(t1v,us(1,1,j),us(1,2,j),us(1,ldjm,j),ub,vb,wb)
-         call proj2vbases(t2v,cs(1,1,j),cs(1,2,j),cs(1,ldjm,j),
-     $                    cxb,cyb,czb)
+         call pv2b(t1v,us(1,1,j),us(1,2,j),us(1,ldjm,j),ub,vb,wb)
+         call pv2b(t2v,cs(1,1,j),cs(1,2,j),cs(1,ldjm,j),cxb,cyb,czb)
          do i=1,nb
             t1m(i,j)=t1v(i)
             t2m(j,i)=t1v(i)
@@ -324,7 +307,7 @@ c-----------------------------------------------------------------------
 
       call mxm(u,nb+1,ad_beta(2,icount),3,tmp1,1)
 c     call mxm(bv0,nb+1,tmp,nb+1,rhs,1)
-      call mxm(bv,nb,tmp1(1),nb,rhs,1)
+      call mxm(bu,nb,tmp1(1),nb,rhs,1)
 
       call cmult(rhs,-1.0/ad_dt,nb)
 
@@ -332,14 +315,14 @@ c     call mxm(bv0,nb+1,tmp,nb+1,rhs,1)
 
 c     call add2s2(rhs,av0,s,nb+1) ! not working...
       do i=1,nb
-         rhs(i)=rhs(i)+s*av0(i,0)
+         rhs(i)=rhs(i)+s*au0(i,0)
       enddo
 
-      call evalc(tmp1(1),cvl,icvl,u)
+      call evalc(tmp1(1),cul,icul,u)
       call chsign(tmp1(1),nb)
 
       if (ifbuoy) then
-         call mxm(bvt0,nb+1,ut(0,1),nb+1,tmp2(0),1)
+         call mxm(but0,nb+1,ut(0,1),nb+1,tmp2(0),1)
          call add2(tmp1(1),tmp2(1),nb)
       else if (ifforce) then
          call add2(tmp1(1),bg(1),nb)

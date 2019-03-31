@@ -91,7 +91,6 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
-      call gfldr('../../data/baf/baf0.f00001') ! set initial state
       call test
 
       return
