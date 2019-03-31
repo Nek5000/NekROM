@@ -45,7 +45,8 @@ c-----------------------------------------------------------------------
       if (nio.eq.0) write (6,*) 'esym',esym,s1,s3
       if (nio.eq.0) write (6,*) 'edif',edif,s2,s3
 
-      if (esym.gt.1e-16) iexit=iexit+1
+      if (ifl2.and.esym.gt.1e-16) iexit=iexit+1
+      if (.not.ifl2.and.esym.gt.1e-15) iexit=iexit+1
       if (edif.gt.1e-16) iexit=iexit+2
 
       call exit(iexit)
@@ -142,7 +143,7 @@ c-----------------------------------------------------------------------
       if (nio.eq.0) write (6,*) 'esym',esym,s2,s3
 
       if (edif.gt.1.e-16) iexit=iexit+1
-      if (esym.gt.1.e-16) iexit=iexit+2
+      if (esym.gt.1.e-15) iexit=iexit+2
 
       s1=0.
       s2=0.
