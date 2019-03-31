@@ -30,8 +30,8 @@ c     Matrices and vectors for advance
       call setr_v(rhs(1),icount)
 
       if (ad_step.le.3) then
-         call cmult2(fluv,bv,ad_beta(1,icount)/ad_dt,nb*nb)
-         call add2s2(fluv,av,1/ad_re,nb*nb)
+         call cmult2(fluv,bu,ad_beta(1,icount)/ad_dt,nb*nb)
+         call add2s2(fluv,au,1/ad_re,nb*nb)
          call copy(helm,fluv,nb*nb)
          call lu(fluv,nb,nb,irv,icv)
       endif
@@ -323,7 +323,7 @@ c-----------------------------------------------------------------------
 
       call mxm(u,nb+1,ad_beta(2,icount),3,tmp1,1)
 c     call mxm(bv0,nb+1,tmp,nb+1,rhs,1)
-      call mxm(bv,nb,tmp1(1),nb,rhs,1)
+      call mxm(bu,nb,tmp1(1),nb,rhs,1)
 
       call cmult(rhs,-1.0/ad_dt,nb)
 
@@ -331,14 +331,14 @@ c     call mxm(bv0,nb+1,tmp,nb+1,rhs,1)
 
 c     call add2s2(rhs,av0,s,nb+1) ! not working...
       do i=1,nb
-         rhs(i)=rhs(i)+s*av0(i,0)
+         rhs(i)=rhs(i)+s*au0(i,0)
       enddo
 
-      call evalc(tmp1(1),cvl,icvl,u)
+      call evalc(tmp1(1),cul,icul,u)
       call chsign(tmp1(1),nb)
 
       if (ifbuoy) then
-         call mxm(bvt0,nb+1,ut(0,1),nb+1,tmp2(0),1)
+         call mxm(but0,nb+1,ut(0,1),nb+1,tmp2(0),1)
          call add2(tmp1(1),tmp2(1),nb)
       else if (ifforce) then
          call add2(tmp1(1),bg(1),nb)

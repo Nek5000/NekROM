@@ -102,10 +102,10 @@ c-----------------------------------------------------------------------
       common /dumpglobal/ wk1(lcloc),wk2(lcloc)
 
       call dump_serial(ug(1,1,1),ls*ls,'ops/gu ',nid)
-      call dump_serial(av0,(nb+1)**2,'ops/au ',nid)
-      call dump_serial(bv0,(nb+1)**2,'ops/bu ',nid)
+      call dump_serial(au0,(nb+1)**2,'ops/au ',nid)
+      call dump_serial(bu0,(nb+1)**2,'ops/bu ',nid)
       call dump_serial(u,(nb+1)*3,'ops/u ',nid)
-      call dump_global(cvl,ncloc,'ops/cu ',wk1,wk2,nid)
+      call dump_global(cul,ncloc,'ops/cu ',wk1,wk2,nid)
 
       if (ifpod(2)) then
          call dump_serial(ug(1,1,2),ls*ls,'ops/gt ',nid)

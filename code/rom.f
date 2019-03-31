@@ -107,9 +107,9 @@ c-----------------------------------------------------------------------
 
       jfield=ifield
       ifield=1
-      call seta(av,av0,'ops/au ')
-      call setb(bv,bv0,'ops/bu ')
-      call setc(cvl,icvl,'ops/cu ')
+      call seta(au,au0,'ops/au ')
+      call setb(bu,bu0,'ops/bu ')
+      call setc(cul,icul,'ops/cu ')
       call setu
       if (ifpod(2)) then
          ifield=2
@@ -120,7 +120,7 @@ c-----------------------------------------------------------------------
       if (ifcintp) then
          do j=0,nb
          do i=1,nb
-            bvc(i,j)=wl2vip(ub(1,i),vb(1,i),wb(1,i),
+            buc(i,j)=wl2vip(ub(1,i),vb(1,i),wb(1,i),
      $                      cxb(1,j),cyb(1,j),czb(1,j))
          enddo
          enddo
@@ -378,30 +378,30 @@ c-----------------------------------------------------------------------
                l=l+1
                if (.not.ifread) then
                   if (ifield.eq.1) then
-                     cvltmp(l)=op_glsc2_wt(
+                     cultmp(l)=op_glsc2_wt(
      $                  ub(1,i),vb(1,i),wb(1,i),cux,cuy,cuz,ones)
                   else
-                     cvltmp(l)=glsc2(tb(1,1,i),cux,n)
+                     cultmp(l)=glsc2(tb(1,1,i),cux,n)
                   endif
                endif
-               icvltmp(1,l) = i
-               icvltmp(2,l) = j
-               icvltmp(3,l) = k
+               icultmp(1,l) = i
+               icultmp(2,l) = j
+               icultmp(3,l) = k
                mcloc=ntp+max(mm-mid,0)/max(mm-mid,1)
 c              if (nio.eq.0) write (6,*) l,mcloc,'mcloc'
                if (l.eq.mcloc) then
                   if (ifread) then
                      if (nid.eq.0) then
-                        read (12,*) (cvltmp(kk),kk=1,mcloc)
+                        read (12,*) (cultmp(kk),kk=1,mcloc)
                      else
-                        call rzero(cvltmp,mcloc)
+                        call rzero(cultmp,mcloc)
                      endif
                   endif
-                  if (ifread) call gop(cvltmp,wk,'+  ',mcloc)
+                  if (ifread) call gop(cultmp,wk,'+  ',mcloc)
                   if (nid.eq.mid) then
                      ncloc=mcloc
-                     call copy(cl,cvltmp,ncloc)
-                     call icopy(icl,icvltmp,ncloc*3)
+                     call copy(cl,cultmp,ncloc)
+                     call icopy(icl,icultmp,ncloc*3)
                   endif
                   mid=mid+1
                   l = 0
@@ -550,12 +550,12 @@ c-----------------------------------------------------------------------
       if (nio.eq.0) write (6,*) 'inside setg'
 
       call rzero(bg,nb)
-      call rzero(bvt0,(nb+1)**2)
+      call rzero(but0,(nb+1)**2)
 
       if (ifbuoy) then
          do j=0,nb
          do i=0,nb
-            bvt0(i,j)=tbeta*sip(tb(1,1,j),vb(1,i))
+            but0(i,j)=tbeta*sip(tb(1,1,j),vb(1,i))
          enddo
          enddo
       else if (ifforce) then

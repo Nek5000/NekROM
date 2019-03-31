@@ -90,7 +90,7 @@ c-----------------------------------------------------------------------
 
       do j=0,nb
       do i=0,nb
-         tke=tke+bv0(i,j)*cdiff(i)*cdiff(j)
+         tke=tke+bu0(i,j)*cdiff(i)*cdiff(j)
       enddo
       enddo
 
