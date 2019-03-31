@@ -1,5 +1,5 @@
 c-----------------------------------------------------------------------
-      subroutine rom_update_v
+      subroutine rom_update
 
       include 'SIZE'
       include 'TOTAL'
@@ -11,14 +11,14 @@ c-----------------------------------------------------------------------
 
       logical ifmult
 
-      common /rom_update/ rom_time
+      common /romup/ rom_time
 
       stime=dnekclock()
 
       if (icalld.eq.0) then
          rom_time=0.
          icalld=1
-         call rom_setup_v
+         call rom_setup
       endif
 
       ad_step = istep
@@ -29,16 +29,16 @@ c-----------------------------------------------------------------------
 
       if (ifmult) then
          if (ifflow) call exitti(
-     $   'error: running rom_update_v with ifflow = .true.$',nelv)
+     $   'error: running rom_update with ifflow = .true.$',nelv)
          if (istep.gt.0) then
-            call rom_step_v
+            call rom_step
             call reconv(vx,vy,vz,u) ! reconstruct velocity to be used in h-t
          endif
       else
          if (nio.eq.0) write (6,*) 'starting rom_step loop',ad_nsteps
          ad_step = 1
          do i=1,ad_nsteps
-            call rom_step_v
+            call rom_step
             time=time+dt
             ad_step=ad_step+1
          enddo
@@ -63,7 +63,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine rom_setup_v
+      subroutine rom_setup
 
       include 'SIZE'
       include 'SOLN'

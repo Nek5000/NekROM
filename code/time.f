@@ -1,5 +1,5 @@
 c-----------------------------------------------------------------------
-      subroutine rom_step_v
+      subroutine rom_step
 
       include 'SIZE'
       include 'TOTAL'

@@ -1,5 +1,5 @@
 c-----------------------------------------------------------------------
-      subroutine rom_update_v_ei
+      subroutine rom_update_ei
 
       include 'SIZE'
       include 'TOTAL'
@@ -23,14 +23,14 @@ c-----------------------------------------------------------------------
       jfield=ifield
       ifield=1
 
-      call rom_setup_v
+      call rom_setup
       call sets_diag
 
       if (nio.eq.0) write (6,*) 'starting rom_step loop',ad_nsteps
 
       ad_step = 1
       do i=1,ad_nsteps
-         call rom_step_v
+         call rom_step
          time=time+dt
          ad_step=ad_step+1
       enddo
