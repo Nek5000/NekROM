@@ -322,30 +322,50 @@ c-----------------------------------------------------------------------
 
       call lints(fnlint,fname,128)
 
+      if (iffastc) then
+         jj=nb
+         ntot=nb*(nb+1)*(nb+2)/2
+      else
+         jj=0
+         ntot=nb*(nb+1)*(nb+1)
+      endif
+
+      ntp=ntot/np
+      mm=ntot-(ntot/np)*np
+
       l=0
       mid=0
-      nlocmin=lcglo/np
-      npmin=np-lcglo+(lcglo/np)*np
+
       n=lx1*ly1*lz1*nelv
 
       if (ifread.and.nid.eq.0) open (unit=12,file=fnlint)
 
+      if (.not.ifread) then
+         do i=0,nb
+            call set_convect_new(c1v(1,i),c2v(1,i),c3v(1,i),
+     $                           ub(1,i),vb(1,i),wb(1,i))
+            if (ifield.eq.1) then
+               call intp_rstd_all(u1v(1,i),ub(1,i),nelv)
+               call intp_rstd_all(u2v(1,i),vb(1,i),nelv)
+               if (ldim.eq.3) call intp_rstd_all(u3v(1,i),wb(1,i),nelv)
+            else
+               call intp_rstd_all(u1v(1,i),tb(1,1,i),nelv)
+            endif
+         enddo
+      endif
+
       do k=0,nb
          if (nio.eq.0) write (6,*) 'k=',k
-         if (.not.ifread) call setcnv_c(ub(1,k),vb(1,k),wb(1,k))
-         do j=0,nb
+         do j=min(k,jj),nb
             if (.not.ifread) then
                if (ifield.eq.1) then
-                  call setcnv_u(ub(1,j),vb(1,j),wb(1,j))
-                  call ccu(cux,cuy,cuz)
+                  if (iffastc) then
+                     call ccu_new(cux,cuy,cuz,j,k)
+                  else
+                     call ccu(cux,cuy,cuz,k,j)
+                  endif
                else
-                  call setcnv_u(tb(1,1,j),vb(1,j),wb(1,j))
-                  call cct(cux)
-               endif
-               if (ifcdrag.and.ifield.eq.1) then
-                  call opcopy(wk4,wk5,wk6,cux,cuy,cuz)
-                  call opbinv1(wk1,wk2,wk3,wk4,wk5,wk6,1.)
-                  call cint(fd2(1,j,k),wk1,wk2,wk3)
+                  call cct(cux1)
                endif
             endif
             do i=1,nb
@@ -361,7 +381,8 @@ c-----------------------------------------------------------------------
                icvltmp(1,l) = i
                icvltmp(2,l) = j
                icvltmp(3,l) = k
-               mcloc = nlocmin + mid / npmin
+               mcloc=ntp+max(mm-mid,0)/max(mm-mid,1)
+c              if (nio.eq.0) write (6,*) l,mcloc,'mcloc'
                if (l.eq.mcloc) then
                   if (ifread) then
                      if (nid.eq.0) then
@@ -372,7 +393,7 @@ c-----------------------------------------------------------------------
                   endif
                   if (ifread) call gop(cvltmp,wk,'+  ',mcloc)
                   if (nid.eq.mid) then
-                     ncloc = mcloc
+                     ncloc=mcloc
                      call copy(cl,cvltmp,ncloc)
                      call icopy(icl,icvltmp,ncloc*3)
                   endif

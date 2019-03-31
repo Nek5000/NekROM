@@ -5,6 +5,13 @@ c     parameters and common blocks for MOR
       common /morgram/ ug(ls,ls,0:ldimt1)
       common /moreig/ evec(ls,nb,0:ldimt1),eval(ls,0:ldimt1)
 
+      common /morconvect/ c1v(lxd*lyd*lzd*lelt,0:nb),
+     $                    c2v(lxd*lyd*lzd*lelt,0:nb),
+     $                    c3v(lxd*lyd*lzd*lelt,0:nb),
+     $                    u1v(lxd*lyd*lzd*lelt,0:nb),
+     $                    u2v(lxd*lyd*lzd*lelt,0:nb),
+     $                    u3v(lxd*lyd*lzd*lelt,0:nb)
+
       common /morbasis/ ub(lx1*ly1*lz1*lelt,0:nb),
      $                  vb(lx1*ly1*lz1*lelt,0:nb),
      $                  wb(lx1*ly1*lz1*lelt,0:nb),
@@ -98,11 +105,11 @@ c     parameters and common blocks for MOR
 
       logical ifl2,ifvort,ifdump,ifrecon,ifstep,ifpart,ifavg0,
      $        ifdumpops,ifcdrag,ifrms,ifread,ifforce,ifpod(0:ldimt1),
-     $        ifbuoy,ifrom(0:ldimt1),ifcintp
+     $        ifbuoy,ifrom(0:ldimt1),ifcintp,iffastc
 
       common /morflags/ ifl2,ifvort,ifdump,ifrecon,ifstep,ifavg0,
      $                  ifdumpops,ifcdrag,ifrms,ifread,ifforce,ifpod,
-     $                  ifbuoy,ifrom,ifcintp
+     $                  ifbuoy,ifrom,ifcintp,iffastc
 
       real last_time,misc_time
       common /mortime/ step_time,last_time,misc_time,evalc_time
