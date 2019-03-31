@@ -50,9 +50,12 @@ c-----------------------------------------------------------------------
       dtime=dnekclock()-stime
       rom_time=rom_time+dtime
 
-      if (ifheat) then
-         if (nio.eq.0) write (6,*) 'rom_time: ',dtime
-      else
+      if (ifmult) then
+         if (nio.eq.0) write (6,*) 'romd_time: ',dtime
+      endif
+
+      if (.not.ifmult.or.nsteps.eq.istep) then
+         call final
          if (nio.eq.0) write (6,*) 'evalc_time: ',evalc_time
          if (nio.eq.0) write (6,*) 'rom_time: ',rom_time
       endif
@@ -572,6 +575,19 @@ c-----------------------------------------------------------------------
       call outpost(bgx,bgy,bz,pavg,tavg,'bgv')
 
       if (nio.eq.0) write (6,*) 'exiting setg'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine final
+
+      include 'SIZE'
+      include 'MOR'
+
+      if (ifdumpops) then
+         call dump_serial(u,nb+1,'ops/uf ',nid)
+         if (ifrom(2)) call dump_serial(ut,nb+1,'ops/tf ',nid)
+      endif
 
       return
       end
