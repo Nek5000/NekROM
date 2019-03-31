@@ -1,5 +1,3 @@
-#!/bin/bash -x
-
 cd $MOR_DIR/tests
 mkdir t
 cd t

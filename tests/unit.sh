@@ -1,5 +1,3 @@
-#!/bin/bash -x
-
 if [[ $1 =~ _L2_ ]]; then
     ifl2='.TRUE.'
     $MOR_DIR/bin/gops cyl_rect_l2

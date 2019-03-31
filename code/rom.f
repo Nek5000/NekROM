@@ -12,7 +12,6 @@ c-----------------------------------------------------------------------
       common /rom_update/ rom_time
 
       if (icalld.eq.0) then
-         call opcopy(uic,vic,wic,vx,vy,vz)
          rom_time=0.
          icalld=1
       endif
@@ -62,11 +61,14 @@ c-----------------------------------------------------------------------
       subroutine rom_setup_v
 
       include 'SIZE'
+      include 'SOLN'
       include 'MOR'
 
       if (nio.eq.0) write (6,*) 'inside rom_setup'
 
       setup_start=dnekclock()
+
+      call opcopy(uic,vic,wic,vx,vy,vz)
 
       call rom_init_params
       call rom_init_fields
@@ -117,8 +119,8 @@ c-----------------------------------------------------------------------
       if (ifcintp) then
          do j=0,nb
          do i=1,nb
-            bvc(i,j)=wl2vprod(ub(1,i),vb(1,i),wb(1,i),
-     $                        cxb(1,j),cyb(1,j),czb(1,j))
+            bvc(i,j)=wl2vip(ub(1,i),vb(1,i),wb(1,i),
+     $                      cxb(1,j),cyb(1,j),czb(1,j))
          enddo
          enddo
          call setcintp
@@ -415,10 +417,10 @@ c-----------------------------------------------------------------------
          do j=0,nb ! Form the A matrix for basis function
          do i=0,nb
             if (ifield.eq.1) then
-               a0(i,j)=h10vprod(ub(1,i),vb(1,i),wb(1,i),
-     $                          ub(1,j),vb(1,j),wb(1,j))
+               a0(i,j)=h10vip(ub(1,i),vb(1,i),wb(1,i),
+     $                        ub(1,j),vb(1,j),wb(1,j))
             else
-               a0(i,j)=h10sprod(tb(1,ifield-1,i),tb(1,ifield-1,j))
+               a0(i,j)=h10sip(tb(1,ifield-1,i),tb(1,ifield-1,j))
             endif
          enddo
          enddo
@@ -460,10 +462,10 @@ c-----------------------------------------------------------------------
          do j=0,nb
          do i=0,nb
             if (ifield.eq.1) then
-               b0(i,j)=wl2vprod(ub(1,i),vb(1,i),wb(1,i),
-     $                          ub(1,j),vb(1,j),wb(1,j))
+               b0(i,j)=wl2vip(ub(1,i),vb(1,i),wb(1,i),
+     $                        ub(1,j),vb(1,j),wb(1,j))
             else
-               b0(i,j)=wl2sprod(tb(1,ifield-1,i),tb(1,ifield-1,j))
+               b0(i,j)=wl2sip(tb(1,ifield-1,i),tb(1,ifield-1,j))
             endif
          enddo
          enddo
@@ -492,10 +494,10 @@ c-----------------------------------------------------------------------
 
       jfield=ifield
       ifield=1
-      call proj2vbases(u,uic,vic,wic,ub,vb,wb)
+      call pv2b(u,uic,vic,wic,ub,vb,wb)
 
       if (ifpod(2)) then
-         call proj2sbases(ut,tic,tb)
+         call ps2b(ut,tic,tb)
          do i=0,nb
             if (nio.eq.0) write (6,*) 'ut',ut(i,1)
          enddo
@@ -526,12 +528,12 @@ c-----------------------------------------------------------------------
       if (ifbuoy) then
          do j=0,nb
          do i=0,nb
-            bvt0(i,j)=tbeta*scaprod(tb(1,1,j),vb(1,i))
+            bvt0(i,j)=tbeta*sip(tb(1,1,j),vb(1,i))
          enddo
          enddo
       else if (ifforce) then
          do i=1,nb
-            bg(i)=-vecprod(bgx,bgy,bgz,ub(1,i),vb(1,i),wb(1,i))
+            bg(i)=-vip(bgx,bgy,bgz,ub(1,i),vb(1,i),wb(1,i))
             if (nio.eq.0) write (6,*) bg(i),i,'bg'
          enddo
       endif

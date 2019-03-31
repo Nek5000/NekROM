@@ -14,10 +14,10 @@ c-----------------------------------------------------------------------
       logical iflag
       real vv(ls,ls)
 
-      param(33) = 1
-      if (iflag) param(33) = 0
-      param(34) = 1
-      param(35) = 0
+      param(33) = 1.
+      if (iflag) param(33) = 0.
+      param(34) = 1.
+      param(35) = 0.
 
       call rom_setup_v
       call read_serial(vv,ls*ls,'ops/gu ',wk,nid)
@@ -27,6 +27,8 @@ c-----------------------------------------------------------------------
       s1=0.
       s2=0.
       s3=0.
+
+      if (nio.eq.0) write (6,*) 'live | data'
 
       do j=1,ls
       do i=1,ls
@@ -43,8 +45,8 @@ c-----------------------------------------------------------------------
       if (nio.eq.0) write (6,*) 'esym',esym,s1,s3
       if (nio.eq.0) write (6,*) 'edif',edif,s2,s3
 
-      if (esym.gt.1e-13) iexit=iexit+1
-      if (edif.gt.1e-13) iexit=iexit+2
+      if (esym.gt.1e-16) iexit=iexit+1
+      if (edif.gt.1e-16) iexit=iexit+2
 
       call exit(iexit)
 
@@ -63,10 +65,10 @@ c-----------------------------------------------------------------------
       logical iflag
       real u0(0:nb)
 
-      param(33) = 1
-      if (iflag) param(33) = 0
-      param(34) = 1
-      param(35) = 0
+      param(33) = 1.
+      if (iflag) param(33) = 0.
+      param(34) = 1.
+      param(35) = 0.
 
       call rom_setup_v
       call read_serial(u0,nb+1,'ops/u ',wk,nid)
@@ -74,8 +76,10 @@ c-----------------------------------------------------------------------
       s1=0.
       s2=0.
 
+      if (nio.eq.0) write (6,*) 'live | data'
+
       do i=0,nb
-         write (6,*) u0(i),u(i,1),'ic'
+         write (6,*) i,u(i,1),u0(i),'ic'
       enddo
 
       do i=1,nb
@@ -106,10 +110,10 @@ c-----------------------------------------------------------------------
 
       real aa(0:nb,0:nb)
 
-      param(33) = 1
-      if (iflag) param(33) = 0
-      param(34) = 1
-      param(35) = 0
+      param(33) = 1.
+      if (iflag) param(33) = 0.
+      param(34) = 1.
+      param(35) = 0.
 
       call rom_setup_v
       call read_serial(aa,(nb+1)**2,'ops/au ',wk,nid)
@@ -120,8 +124,11 @@ c-----------------------------------------------------------------------
       s2=0.
       s3=0.
 
+      if (nio.eq.0) write (6,*) 'live | data'
+
       do j=0,nb
       do i=0,nb
+         if (nio.eq.0) write (6,*) i,j,av0(i,j),aa(i,j),'a'
          s1=s1+(aa(i,j)-av0(i,j))**2
          s2=s2+(av0(i,j)-av0(j,i))**2
          s3=s3+aa(i,j)**2
@@ -134,8 +141,8 @@ c-----------------------------------------------------------------------
       if (nio.eq.0) write (6,*) 'edif',edif,s1,s3
       if (nio.eq.0) write (6,*) 'esym',esym,s2,s3
 
-      if (edif.gt.1.e-13) iexit=iexit+1
-      if (esym.gt.1.e-13) iexit=iexit+2
+      if (edif.gt.1.e-16) iexit=iexit+1
+      if (esym.gt.1.e-16) iexit=iexit+2
 
       s1=0.
       s2=0.
@@ -150,7 +157,7 @@ c-----------------------------------------------------------------------
       edia=sqrt(s1/s2)
 
       if (nio.eq.0) write (6,*) 'edia',edia,s1,s2
-      if (.not.ifl2.and.edia.gt.1.e-13) iexit=iexit+4
+      if (.not.ifl2.and.edia.gt.1.e-11) iexit=iexit+4
 
       s1=0.
 
@@ -181,10 +188,10 @@ c-----------------------------------------------------------------------
 
       real bb(0:nb,0:nb)
 
-      param(33) = 1
-      if (iflag) param(33) = 0
-      param(34) = 1
-      param(35) = 0
+      param(33) = 1.
+      if (iflag) param(33) = 0.
+      param(34) = 1.
+      param(35) = 0.
 
       call rom_setup_v
       call read_serial(bb,(nb+1)**2,'ops/bu ',wk,nid)
@@ -195,8 +202,11 @@ c-----------------------------------------------------------------------
       s2=0.
       s3=0.
 
+      if (nio.eq.0) write (6,*) 'live | data'
+
       do j=0,nb
       do i=0,nb
+         if (nio.eq.0) write (6,*) i,j,bv0(i,j),bb(i,j),'b'
          s1=s1+(bb(i,j)-bv0(i,j))**2
          s2=s2+(bv0(i,j)-bv0(j,i))**2
          s3=s3+bb(i,j)**2
@@ -206,7 +216,7 @@ c-----------------------------------------------------------------------
       edif=sqrt(s1/s3)
       esym=sqrt(s2/s3)
 
-      if (edif.gt.1.e-13) iexit=iexit+1
+      if (edif.gt.1.e-16) iexit=iexit+1
       if (esym.gt.1.e-16) iexit=iexit+2
 
       if (nio.eq.0) write (6,*) 'edif',edif,s1,s3
@@ -224,7 +234,7 @@ c-----------------------------------------------------------------------
 
       edia=sqrt(s1/s2)
 
-      if (ifl2.and.edia.gt.5.9e-15) iexit=iexit+4
+      if (ifl2.and.edia.gt.1.e-9) iexit=iexit+4
       if (nio.eq.0) write (6,*) 'edia',edia,s1,s2
 
       s1=0.
@@ -235,7 +245,7 @@ c-----------------------------------------------------------------------
 
       euni=sqrt(s1/s2)
 
-      if (ifl2.and.euni.gt.6.6e-15) iexit=iexit+8
+      if (ifl2.and.euni.gt.1.e-14) iexit=iexit+8
       if (nio.eq.0) write (6,*) 'euni',euni,s1,s2
 
       call exit(iexit)
@@ -256,10 +266,10 @@ c-----------------------------------------------------------------------
 
       real cc(lcloc), cglob(nb,nb+1,nb+1)
 
-      param(33) = 1
-      if (iflag) param(33) = 0
-      param(34) = 1
-      param(35) = 0
+      param(33) = 1.
+      if (iflag) param(33) = 0.
+      param(34) = 1.
+      param(35) = 0.
 
       call rom_setup_v
       call read_serial(cc,nb*(nb+1)**2,'ops/cu ',wk,nid)
@@ -272,6 +282,8 @@ c-----------------------------------------------------------------------
 
       call rzero(cglob,nb*(nb+1)**2)
 
+      if (nio.eq.0) write (6,*) 'live | data'
+
       do jc=1,nb*(nb+1)**2
          i=icvl(1,jc)
          j=icvl(2,jc)
@@ -282,7 +294,7 @@ c-----------------------------------------------------------------------
 
          s1=s1+(cc(jc)-cvl(jc))**2
          s3=s3+cc(jc)**2
-         write (6,*) 'cc',cvl(jc),cc(jc)
+         write (6,*) i,j,k,cvl(jc),cc(jc),'c'
       enddo
 
       do k=1,nb
@@ -294,7 +306,7 @@ c-----------------------------------------------------------------------
       enddo
 
       edif=sqrt(s1/s3)
-      if (edif.gt.1.e-13) iexit=iexit+1
+      if (edif.gt.1.e-16) iexit=iexit+1
       if (nio.eq.0) write (6,*) 'edif',edif,s1,s3
 
       eskew=sqrt(s2/s3)
