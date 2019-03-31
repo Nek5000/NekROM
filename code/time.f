@@ -60,7 +60,9 @@ c-----------------------------------------------------------------------
       call setavg
       call setj
 
-      if (ifcdrag) call cdrag
+      if (mod(ad_step,ad_qstep).eq.0) then
+         if (ifcdrag) call cdrag
+      endif
 
       if (ifdump) then
          time=time+dt

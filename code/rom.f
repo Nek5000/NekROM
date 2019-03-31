@@ -173,8 +173,10 @@ c-----------------------------------------------------------------------
          ifread=.true.
       endif
 
+      ad_qstep=nint(param(180))+ad_iostep*max(1-nint(param(180)),0)
+
       ifcdrag=.false.
-      if (param(181).ne.0) ifcdrag=.true.
+      if (param(182).ne.0) ifcdrag=.true.
 
       iffastc=.false.
       if (param(191).ne.0) iffastc=.true.
@@ -207,6 +209,8 @@ c-----------------------------------------------------------------------
          write (6,*) 'rp_ifavg0     ',ifavg0
          write (6,*) 'rp_ifdumpops  ',ifdumpops
          write (6,*) 'rp_ifread     ',ifread
+         write (6,*) 'rp_ad_qstep   ',ad_qstep
+         write (6,*) 'rp_ifcdrag    ',ifcdrag
          write (6,*) 'rp_iffastc    ',iffastc
          write (6,*) ' '
          write (6,*) 'rp_ifforce    ',ifforce
@@ -214,7 +218,6 @@ c-----------------------------------------------------------------------
          write (6,*) 'rp_ifrecon    ',ifrecon
          write (6,*) 'rp_ifdump     ',ifdump
          write (6,*) 'rp_ifvort     ',ifvort
-         write (6,*) 'rp_ifcdrag    ',ifcdrag
          write (6,*) 'rp_ifbuoy     ',ifbuoy
          write (6,*) 'rp_ifcintp    ',ifcintp
          do i=0,ldimt1
