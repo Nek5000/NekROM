@@ -4,17 +4,8 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
-      include 'AVG'
 
-      parameter (lt=lx1*ly1*lz1*lelt)
-
-c     Matrices and vectors for advance
-      real tmp(0:nb),rhs(0:nb)
-
-      common /scrrstep/ t1(lt),t2(lt),t3(lt),work(lt)
-
-      common /nekmpi/ nidd,npp,nekcomm,nekgroup,nekreal
-
+      real rhs(0:nb)
 
       if (ad_step.eq.1) then
          step_time = 0.
@@ -22,7 +13,7 @@ c     Matrices and vectors for advance
 
       last_time = dnekclock()
 
-      n  = lx1*ly1*lz1*nelt
+      n=lx1*ly1*lz1*nelt
 
       icount = min0(ad_step,3)
 
@@ -62,6 +53,7 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
       common /scrrstep/ t1(lt),t2(lt),t3(lt),work(lt)
+      common /nekmpi/ nidd,npp,nekcomm,nekgroup,nekreal
 
       real vort(lt)
 
