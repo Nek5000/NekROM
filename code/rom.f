@@ -148,30 +148,38 @@ c-----------------------------------------------------------------------
       ad_re = 1/param(2)
       ad_pe = 1/param(8)
 
+      isolve=nint(param(170))
+
       ifl2=.false.
       ips='H10'
-      if (param(33).eq.0) then
+      if (param(171).eq.0) then
          ifl2=.true.
          ips='L2 '
       endif
 
       ifavg0=.false.
-      if (param(34).ne.0) ifavg0=.true.
+      if (param(172).ne.0) ifavg0=.true.
 
       if (ifavg0.and.(nb.eq.ls))
      $   call exitti('nb == ls results in linear dependent bases$',nb)
 
       ifdumpops=.false.
       ifread=.false.
-      np35=nint(param(35))
-      if (np35.eq.1) then
+      np172=nint(param(173))
+      if (np173.eq.1) then
          ifdumpops=.true.
-      else if (np35.eq.2) then
+      else if (np173.eq.2) then
          ifread=.true.
       endif
 
       ifcdrag=.false.
-      if (param(36).ne.0) ifcdrag=.true.
+      if (param(181).ne.0) ifcdrag=.true.
+
+      iffastc=.false.
+      if (param(191).ne.0) iffastc=.true.
+
+      ifcintp=.false.
+      if (param(192).ne.0) ifcintp=.true.
 
       do i=0,ldimt1
          ifpod(i)=.false.
@@ -181,33 +189,30 @@ c-----------------------------------------------------------------------
       ifpod(2)=(ifheat.and..not.ifread)
       ifrom(1)=.true.
 
-      isolve=nint(param(37))
       ifvort=.false. ! default to false for now
       ifdump=((.not.ifheat).or.ifrom(2))
       ifrecon=(.not.ifread)
 
-      ifcintp=.false.
-      if (param(38).ne.0) ifcintp=.true.
-
       ifpart=.false.
       ifforce=.false.
-c     ifforce=.true.
-
       ifbuoy=.false.
+      ifcintp=.false.
 
       call compute_BDF_coef(ad_alpha,ad_beta)
 
       if (nio.eq.0) then
-         write (6,*) 'rp_ips        ',ips
+         write (6,*) 'rp_isolve     ',isolve
          write (6,*) 'rp_ifl2       ',ifl2
-         write (6,*) 'rp_ifforce    ',ifforce
+         write (6,*) 'rp_ifavg0     ',ifavg0
+         write (6,*) 'rp_ifdumpops  ',ifdumpops
          write (6,*) 'rp_ifread     ',ifread
+         write (6,*) 'rp_iffastc    ',iffastc
+         write (6,*) ' '
+         write (6,*) 'rp_ifforce    ',ifforce
          write (6,*) 'rp_ifpart     ',ifpart
          write (6,*) 'rp_ifrecon    ',ifrecon
          write (6,*) 'rp_ifdump     ',ifdump
          write (6,*) 'rp_ifvort     ',ifvort
-         write (6,*) 'rp_ifdumpops  ',ifdumpops
-         write (6,*) 'rp_ifavg0     ',ifavg0
          write (6,*) 'rp_ifcdrag    ',ifcdrag
          write (6,*) 'rp_ifbuoy     ',ifbuoy
          write (6,*) 'rp_ifcintp    ',ifcintp

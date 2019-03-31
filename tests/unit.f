@@ -14,10 +14,10 @@ c-----------------------------------------------------------------------
       logical iflag
       real vv(ls,ls)
 
-      param(33) = 1.
-      if (iflag) param(33) = 0.
-      param(34) = 1.
-      param(35) = 0.
+      param(171) = 1.
+      if (iflag) param(171) = 0.
+      param(172) = 1.
+      param(173) = 0.
 
       call rom_setup_v
       call read_serial(vv,ls*ls,'ops/gu ',wk,nid)
@@ -65,10 +65,10 @@ c-----------------------------------------------------------------------
       logical iflag
       real u0(0:nb)
 
-      param(33) = 1.
-      if (iflag) param(33) = 0.
-      param(34) = 1.
-      param(35) = 0.
+      param(171) = 1.
+      if (iflag) param(171) = 0.
+      param(172) = 1.
+      param(173) = 0.
 
       call rom_setup_v
       call read_serial(u0,nb+1,'ops/u ',wk,nid)
@@ -110,10 +110,10 @@ c-----------------------------------------------------------------------
 
       real aa(0:nb,0:nb)
 
-      param(33) = 1.
-      if (iflag) param(33) = 0.
-      param(34) = 1.
-      param(35) = 0.
+      param(171) = 1.
+      if (iflag) param(171) = 0.
+      param(172) = 1.
+      param(173) = 0.
 
       call rom_setup_v
       call read_serial(aa,(nb+1)**2,'ops/au ',wk,nid)
@@ -188,10 +188,10 @@ c-----------------------------------------------------------------------
 
       real bb(0:nb,0:nb)
 
-      param(33) = 1.
-      if (iflag) param(33) = 0.
-      param(34) = 1.
-      param(35) = 0.
+      param(171) = 1.
+      if (iflag) param(171) = 0.
+      param(172) = 1.
+      param(173) = 0.
 
       call rom_setup_v
       call read_serial(bb,(nb+1)**2,'ops/bu ',wk,nid)
@@ -266,10 +266,10 @@ c-----------------------------------------------------------------------
 
       real cc(lcloc), cglob(nb,nb+1,nb+1)
 
-      param(33) = 1.
-      if (iflag) param(33) = 0.
-      param(34) = 1.
-      param(35) = 0.
+      param(171) = 1.
+      if (iflag) param(171) = 0.
+      param(172) = 1.
+      param(173) = 0.
 
       call rom_setup_v
       call read_serial(cc,nb*(nb+1)**2,'ops/cu ',wk,nid)
