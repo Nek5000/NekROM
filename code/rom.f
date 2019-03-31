@@ -9,39 +9,40 @@ c-----------------------------------------------------------------------
       save    icalld
       data    icalld /0/
 
+      logical ifmult
+
       common /rom_update/ rom_time
+
+      stime=dnekclock()
 
       if (icalld.eq.0) then
          rom_time=0.
          icalld=1
+         call rom_setup_v
       endif
-
-      stime=dnekclock()
 
       ad_step = istep
       jfield=ifield
       ifield=1
 
-      if (ifheat) then
+      ifmult=.not.ifrom(2).and.ifheat
+
+      if (ifmult) then
          if (ifflow) call exitti(
      $   'error: running rom_update_v with ifflow = .true.$',nelv)
-         if (istep.eq.0) then
-            call rom_setup_v
-         else
+         if (istep.gt.0) then
             call rom_step_v
             call reconv(vx,vy,vz,u) ! reconstruct velocity to be used in h-t
          endif
       else
-         call rom_setup_v
-
          if (nio.eq.0) write (6,*) 'starting rom_step loop',ad_nsteps
-
          ad_step = 1
          do i=1,ad_nsteps
             call rom_step_v
             time=time+dt
             ad_step=ad_step+1
          enddo
+         icalld=0
       endif
 
       ifield=jfield
