@@ -59,7 +59,7 @@ c-----------------------------------------------------------------------
      $            cs0(1,1,j),cs0(1,2,j),cs0(1,ldim,j),evec(j,i,0),n,2)
             enddo
             enddo
-            call vnorm(cxb,cyb,czb)
+            call norm_vec(cxb,cyb,czb)
          endif
       endif
 
