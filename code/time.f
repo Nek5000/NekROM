@@ -251,9 +251,8 @@ c-----------------------------------------------------------------------
      $               t1v(0:nb),t2v(0:nb)
 
       do j=1,ns
-         call proj2vbases(t1v,us(1,1,j),us(1,2,j),us(1,ldjm,j),ub,vb,wb)
-         call proj2vbases(t2v,cs(1,1,j),cs(1,2,j),cs(1,ldjm,j),
-     $                    cxb,cyb,czb)
+         call pv2b(t1v,us(1,1,j),us(1,2,j),us(1,ldjm,j),ub,vb,wb)
+         call pv2b(t2v,cs(1,1,j),cs(1,2,j),cs(1,ldjm,j),cxb,cyb,czb)
          do i=1,nb
             t1m(i,j)=t1v(i)
             t2m(j,i)=t1v(i)

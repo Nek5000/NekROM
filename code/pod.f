@@ -35,7 +35,7 @@ c-----------------------------------------------------------------------
          enddo
          enddo
 
-         call norm_vec(ub,vb,wb)
+         call vnorm(ub,vb,wb)
 
          if (ifpod(2)) then
             do i=1,nb
@@ -44,7 +44,7 @@ c-----------------------------------------------------------------------
                   call add2s2(tb(1,1,i),ts0(1,j,1),evec(j,i,2),n)
                enddo
             enddo
-            call norm_sca(tb)
+            call snorm(tb)
          endif
 
          if (ifcintp) then
@@ -59,7 +59,7 @@ c-----------------------------------------------------------------------
      $            cs0(1,1,j),cs0(1,2,j),cs0(1,ldim,j),evec(j,i,0),n,2)
             enddo
             enddo
-            call norm_vec(cxb,cyb,czb)
+            call vnorm(cxb,cyb,czb)
          endif
       endif
 
@@ -79,7 +79,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine proj2sbases(coef,tt,sb)
+      subroutine ps2b(coef,tt,sb)
 
       include 'SIZE'
       include 'MOR'
@@ -89,15 +89,15 @@ c-----------------------------------------------------------------------
       real coef(0:nb),tt(lt)
 
       if (ifl2) then
-         call wl2sproj(coef,tt,sb)
+         call wl2ps2b(coef,tt,sb)
       else
-         call h10sproj(coef,tt,sb)
+         call h10ps2b(coef,tt,sb)
       endif
 
       return
       end
 c-----------------------------------------------------------------------
-      subroutine proj2vbases(coef,ux,uy,uz,uub,vvb,wwb)
+      subroutine pv2b(coef,ux,uy,uz,uub,vvb,wwb)
 
       include 'SIZE'
       include 'MOR'
@@ -108,15 +108,15 @@ c-----------------------------------------------------------------------
       real uub(lt,nb),vvb(lt,nb),wwb(lt,nb)
 
       if (ifl2) then
-         call wl2vproj(coef,ux,uy,uz,uub,vvb,wwb)
+         call wl2pv2b(coef,ux,uy,uz,uub,vvb,wwb)
       else
-         call h10vproj(coef,ux,uy,uz,uub,vvb,wwb)
+         call h10pv2b(coef,ux,uy,uz,uub,vvb,wwb)
       endif
 
       return
       end
 c-----------------------------------------------------------------------
-      subroutine h10sproj(coef,tt,sb)
+      subroutine h10ps2b(coef,tt,sb)
 
       include 'SIZE'
       include 'MOR'
@@ -127,7 +127,7 @@ c-----------------------------------------------------------------------
 
       real coef(0:nb),tt(lt),sb(lt,ldimt,0:nb)
 
-      if (nio.eq.0) write (6,*) 'inside h10sproj'
+      if (nio.eq.0) write (6,*) 'inside h10ps2b'
 
       n=lx1*ly1*lz1*nelt
 
@@ -146,14 +146,14 @@ c-----------------------------------------------------------------------
          if (nio.eq.0) write (6,1) coef(i),vv,ww
       enddo
 
-      if (nio.eq.0) write (6,*) 'exiting h10sproj'
+      if (nio.eq.0) write (6,*) 'exiting h10ps2b'
 
     1 format(' h10coef',1p3e16.8)
 
       return
       end
 c-----------------------------------------------------------------------
-      subroutine h10vproj(coef,ux,uy,uz,uub,vvb,wwb)
+      subroutine h10pv2b(coef,ux,uy,uz,uub,vvb,wwb)
 
       include 'SIZE'
       include 'MOR'
@@ -166,7 +166,7 @@ c-----------------------------------------------------------------------
 
       real coef(0:nb)
 
-      if (nio.eq.0) write (6,*) 'inside h10vproj'
+      if (nio.eq.0) write (6,*) 'inside h10vpv2b'
 
       n=lx1*ly1*lz1*nelt
 
@@ -192,14 +192,14 @@ c-----------------------------------------------------------------------
          if (nio.eq.0) write (6,1) coef(i),vv,ww
       enddo
 
-      if (nio.eq.0) write (6,*) 'exiting h10vproj'
+      if (nio.eq.0) write (6,*) 'exiting h10pv2b'
 
     1 format(' h10coef',1p3e16.8)
 
       return
       end
 c-----------------------------------------------------------------------
-      subroutine wl2sproj(coef,ux,uub)
+      subroutine wl2ps2b(coef,ux,uub)
 
       include 'SIZE'
       include 'MASS'
@@ -213,7 +213,7 @@ c-----------------------------------------------------------------------
 
       real coef(0:nb)
 
-      if (nio.eq.0) write (6,*) 'inside wl2sproj'
+      if (nio.eq.0) write (6,*) 'inside wl2ps2b'
 
       n=lx1*ly1*lz1*nelt
 
@@ -231,14 +231,14 @@ c-----------------------------------------------------------------------
          if (nio.eq.0) write (6,1) coef(i),vv,ww
       enddo
 
-      if (nio.eq.0) write (6,*) 'exiting wl2sproj'
+      if (nio.eq.0) write (6,*) 'exiting wl2ps2b'
 
     1 format(' wl2coef',1p3e16.8)
 
       return
       end
 c-----------------------------------------------------------------------
-      subroutine wl2vproj(coef,ux,uy,uz,uub,vvb,wwb)
+      subroutine wl2pv2b(coef,ux,uy,uz,uub,vvb,wwb)
 
       include 'SIZE'
       include 'MASS'
@@ -252,7 +252,7 @@ c-----------------------------------------------------------------------
 
       real coef(0:nb)
 
-      if (nio.eq.0) write (6,*) 'inside wl2vproj'
+      if (nio.eq.0) write (6,*) 'inside wl2pv2b'
 
       n=lx1*ly1*lz1*nelt
 
@@ -271,14 +271,14 @@ c-----------------------------------------------------------------------
          if (nio.eq.0) write (6,1) i,coef(i),vv,ww
       enddo
 
-      if (nio.eq.0) write (6,*) 'exiting wl2vproj'
+      if (nio.eq.0) write (6,*) 'exiting wl2pv2b'
 
     1 format(' wl2coef',i4,1p3e16.8)
 
       return
       end
 c-----------------------------------------------------------------------
-      function scaprod(t1,t2)
+      function sip(t1,t2)
 
       include 'SIZE'
       include 'MOR'
@@ -288,9 +288,9 @@ c-----------------------------------------------------------------------
       real t1(lt),t2(lt)
 
       if (ips.eq.'L2 ') then
-         scaprod=wl2sprod(t1,t2)
+         sip=wl2sip(t1,t2)
       else if (ips.eq.'H10') then
-         scaprod=h10sprod(t1,t2)
+         sip=h10sip(t1,t2)
       else
          call exitti('did not provide supported inner product space$')
       endif
@@ -298,7 +298,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      function vecprod(t1,t2,t3,t4,t5,t6)
+      function vip(t1,t2,t3,t4,t5,t6)
 
       include 'SIZE'
       include 'MOR'
@@ -308,9 +308,9 @@ c-----------------------------------------------------------------------
       real t1(lt),t2(lt),t3(lt),t4(lt),t5(lt),t6(lt)
 
       if (ips.eq.'L2 ') then
-         vecprod=wl2vprod(t1,t2,t3,t4,t5,t6)
+         vip=wl2vip(t1,t2,t3,t4,t5,t6)
       else if (ips.eq.'H10') then
-         vecprod=h10vprod(t1,t2,t3,t4,t5,t6)
+         vip=h10vip(t1,t2,t3,t4,t5,t6)
       else
          call exitti('did not provide supported inner product space$')
       endif
@@ -318,7 +318,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      function h10sprod(t1,t2)
+      function h10sip(t1,t2)
 
       include 'SIZE'
       include 'MOR'
@@ -329,17 +329,17 @@ c-----------------------------------------------------------------------
 
       common /scrk3/ t3(lt)
 
-      if (nio.eq.0) write (6,*) 'inside h10sprod'
+      if (nio.eq.0) write (6,*) 'inside h10sip'
 
       call axhelm(t3,t1,ones,zeros,1,1)
-      h10sprod=glsc2(t3,t2,lx1*ly1*lz1*nelt)
+      h10sip=glsc2(t3,t2,lx1*ly1*lz1*nelt)
 
-      if (nio.eq.0) write (6,*) 'exiting h10sprod'
+      if (nio.eq.0) write (6,*) 'exiting h10sip'
 
       return
       end
 c-----------------------------------------------------------------------
-      function h10vprod(t1,t2,t3,t4,t5,t6)
+      function h10vip(t1,t2,t3,t4,t5,t6)
 
       include 'SIZE'
       include 'MOR'
@@ -350,27 +350,27 @@ c-----------------------------------------------------------------------
 
       common /scrk3/ t7(lt),t8(lt),t9(lt)
 
-      if (nio.eq.0) write (6,*) 'inside h10vprod'
+      if (nio.eq.0) write (6,*) 'inside h10vip'
 
       n=lx1*ly1*lz1*nelt
 
       call axhelm(t7,t1,ones,zeros,1,1)
-      h10vprod=glsc2(t7,t4,n)
+      h10vip=glsc2(t7,t4,n)
 
       call axhelm(t8,t2,ones,zeros,1,1)
-      h10vprod=h10vprod+glsc2(t8,t5,n)
+      h10vip=h10vip+glsc2(t8,t5,n)
 
       if (ldim.eq.3) then
          call axhelm(t9,t3,ones,zeros,1,1)
-         h10vprod = h10vprod + glsc2(t9,t6,n)
+         h10vip = h10vip + glsc2(t9,t6,n)
       endif
 
-      if (nio.eq.0) write (6,*) 'exiting h10vprod'
+      if (nio.eq.0) write (6,*) 'exiting h10vip'
 
       return
       end
 c-----------------------------------------------------------------------
-      function wl2sprod(t1,t2)
+      function wl2sip(t1,t2)
 
       include 'SIZE'
       include 'MASS'
@@ -379,18 +379,18 @@ c-----------------------------------------------------------------------
 
       real t1(lt),t2(lt)
 
-      if (nio.eq.0) write (6,*) 'inside wl2sprod'
+      if (nio.eq.0) write (6,*) 'inside wl2sip'
 
       n=lx1*ly1*lz1*nelt
 
-      wl2sprod = glsc3(t1,t2,bm1,n)
+      wl2sip = glsc3(t1,t2,bm1,n)
 
-      if (nio.eq.0) write (6,*) 'exiting wl2sprod'
+      if (nio.eq.0) write (6,*) 'exiting wl2sip'
 
       return
       end
 c-----------------------------------------------------------------------
-      function wl2vprod(t1,t2,t3,t4,t5,t6)
+      function wl2vip(t1,t2,t3,t4,t5,t6)
 
       include 'SIZE'
       include 'MASS'
@@ -399,11 +399,11 @@ c-----------------------------------------------------------------------
 
       real t1(lt),t2(lt),t3(lt),t4(lt),t5(lt),t6(lt)
 
-      if (nio.eq.0) write (6,*) 'inside wl2vprod'
+      if (nio.eq.0) write (6,*) 'inside wl2vip'
 
-      wl2vprod=op_glsc2_wt(t1,t2,t3,t4,t5,t6,bm1)
+      wl2vip=op_glsc2_wt(t1,t2,t3,t4,t5,t6,bm1)
 
-      if (nio.eq.0) write (6,*) 'exiting wl2vprod'
+      if (nio.eq.0) write (6,*) 'exiting wl2vip'
 
       return
       end
@@ -581,7 +581,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine norm_vec(uub,vvb,wwb)
+      subroutine vnorm(uub,vvb,wwb)
 
       include 'SIZE'
       include 'TOTAL'
@@ -595,8 +595,7 @@ c-----------------------------------------------------------------------
       ifield=1
       nio=-1
       do i=1,nb
-         p=vecprod(uub(1,i),vvb(1,i),wwb(1,i),
-     $             uub(1,i),vvb(1,i),wwb(1,i))
+         p=vip(uub(1,i),vvb(1,i),wwb(1,i),uub(1,i),vvb(1,i),wwb(1,i))
          s=1./sqrt(p)
          call opcmult(uub(1,i),vvb(1,i),wwb(1,i),s)
       enddo
@@ -606,7 +605,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine norm_sca(ssb)
+      subroutine snorm(ssb)
 
       include 'SIZE'
       include 'TOTAL'
@@ -618,7 +617,7 @@ c-----------------------------------------------------------------------
 
       nio=-1
       do i=1,nb
-         p=scaprod(ssb(1,i),ssb(1,i))
+         p=sip(ssb(1,i),ssb(1,i))
          s=1./sqrt(p)
          call cmult(ssb(1,i),s,lx1*ly1*lz1*nelt)
       enddo
