@@ -569,6 +569,7 @@ c-----------------------------------------------------------------------
          do j=0,nb
          do i=0,nb
             but0(i,j)=tbeta*sip(tb(1,j),vb(1,i))
+            but0(i,j)=-tbeta*sip(tb(1,j),ub(1,i))
          enddo
          enddo
       else if (ifforce) then
