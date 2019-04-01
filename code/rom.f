@@ -31,6 +31,7 @@ c-----------------------------------------------------------------------
          if (ifflow) call exitti(
      $   'error: running rom_update with ifflow = .true.$',nelv)
          if (istep.gt.0) then
+            if (ifrom(2)) call rom_step_t
             call rom_step
             call reconv(vx,vy,vz,u) ! reconstruct velocity to be used in h-t
          endif
@@ -38,6 +39,7 @@ c-----------------------------------------------------------------------
          if (nio.eq.0) write (6,*) 'starting rom_step loop',ad_nsteps
          ad_step = 1
          do i=1,ad_nsteps
+            if (ifrom(2)) call rom_step_t
             call rom_step
             time=time+dt
             ad_step=ad_step+1
@@ -195,6 +197,7 @@ c-----------------------------------------------------------------------
       ifpod(1)=.true.
       ifpod(2)=(ifheat.and..not.ifread)
       ifrom(1)=.true.
+      ifrom(2)=(param(174).ne.0)
 
       ifvort=.false. ! default to false for now
       ifdump=((.not.ifheat).or.ifrom(2))
@@ -203,6 +206,7 @@ c-----------------------------------------------------------------------
       ifpart=.false.
       ifforce=.false.
       ifbuoy=.false.
+      ifbuoy=.true.
       ifcintp=.false.
 
       call compute_BDF_coef(ad_alpha,ad_beta)
