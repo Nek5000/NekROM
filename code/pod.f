@@ -39,9 +39,9 @@ c-----------------------------------------------------------------------
 
          if (ifpod(2)) then
             do i=1,nb
-               call rzero(tb(1,1,i),n)
+               call rzero(tb(1,i),n)
                do j=1,ns
-                  call add2s2(tb(1,1,i),ts0(1,j,1),evec(j,i,2),n)
+                  call add2s2(tb(1,i),ts0(1,j),evec(j,i,2),n)
                enddo
             enddo
             call snorm(tb)
@@ -423,7 +423,7 @@ c-----------------------------------------------------------------------
          if (ifpod(1)) call gengram(ug(1,1,1),us0,ns,ldim)
          do i=2,ldimt1
             ifield=i
-            if (ifpod(i)) call gengram(ug(1,1,i),ts0(1,1,i-1),ns,1)
+            if (ifpod(i)) call gengram(ug(1,1,i),ts0,ns,1)
          enddo
          ifield=jfield
       endif

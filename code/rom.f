@@ -302,7 +302,9 @@ c-----------------------------------------------------------------------
             call sub3(us0(1,1,i),us(1,1,i),ub,n)
             call sub3(us0(1,2,i),us(1,2,i),vb,n)
             if (ldim.eq.3) call sub3(us0(1,ldim,i),us(1,ldim,i),wb,n)
-            if (ifpod(2)) call sub3(ts0(1,i,1),ts(1,i,1),tb,n)
+            if (ifpod(2)) call sub3(ts0(1,i),ts(1,i),tb,n)
+            call outpost(us0(1,1,i),us0(1,2,i),us0(1,ldim,i),
+     $                   pavg,ts0(1,i),'ss0')
          enddo
       endif
 
@@ -362,7 +364,7 @@ c-----------------------------------------------------------------------
                call intp_rstd_all(u2v(1,i),vb(1,i),nelv)
                if (ldim.eq.3) call intp_rstd_all(u3v(1,i),wb(1,i),nelv)
             else
-               call intp_rstd_all(u1v(1,i),tb(1,1,i),nelv)
+               call intp_rstd_all(u1v(1,i),tb(1,i),nelv)
             endif
          enddo
       endif
@@ -388,7 +390,7 @@ c-----------------------------------------------------------------------
                      cultmp(l)=op_glsc2_wt(
      $                  ub(1,i),vb(1,i),wb(1,i),cux,cuy,cuz,ones)
                   else
-                     cultmp(l)=glsc2(tb(1,1,i),cux,n)
+                     cultmp(l)=glsc2(tb(1,i),cux,n)
                   endif
                endif
                icultmp(1,l) = i
@@ -454,7 +456,7 @@ c-----------------------------------------------------------------------
                a0(i,j)=h10vip(ub(1,i),vb(1,i),wb(1,i),
      $                        ub(1,j),vb(1,j),wb(1,j))
             else
-               a0(i,j)=h10sip(tb(1,ifield-1,i),tb(1,ifield-1,j))
+               a0(i,j)=h10sip(tb(1,i),tb(1,j))
             endif
          enddo
          enddo
@@ -499,7 +501,7 @@ c-----------------------------------------------------------------------
                b0(i,j)=wl2vip(ub(1,i),vb(1,i),wb(1,i),
      $                        ub(1,j),vb(1,j),wb(1,j))
             else
-               b0(i,j)=wl2sip(tb(1,ifield-1,i),tb(1,ifield-1,j))
+               b0(i,j)=wl2sip(tb(1,i),tb(1,j))
             endif
          enddo
          enddo
@@ -562,7 +564,7 @@ c-----------------------------------------------------------------------
       if (ifbuoy) then
          do j=0,nb
          do i=0,nb
-            but0(i,j)=tbeta*sip(tb(1,1,j),vb(1,i))
+            but0(i,j)=tbeta*sip(tb(1,j),vb(1,i))
          enddo
          enddo
       else if (ifforce) then

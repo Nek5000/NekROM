@@ -28,7 +28,7 @@ c-----------------------------------------------------------------------
       call rzero(tt,n)
 
       do i=0,nb
-         call add2s2(tt,tb(1,1,i),coef(i),n)
+         call add2s2(tt,tb(1,i),coef(i),n)
       enddo
 
       return
@@ -436,7 +436,7 @@ c-----------------------------------------------------------------------
 
       do i=1,ns
          call ctd_sol(us0(1,1,i),us0(1,2,i),us0(1,ldim,i),
-     $      us(1,1,i),us(1,2,i),us(1,ldim,i),ps(1,i),ts(1,1,i))
+     $      us(1,1,i),us(1,2,i),us(1,ldim,i),ps(1,i),ts(1,i))
       enddo
 
       call gengram(dug,us0,ns,ldim)
