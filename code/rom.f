@@ -380,7 +380,7 @@ c-----------------------------------------------------------------------
                      call ccu(cux,cuy,cuz,k,j)
                   endif
                else
-                  call cct(cux1)
+                  call cct(cux,k,j)
                endif
             endif
             do i=1,nb
