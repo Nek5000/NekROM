@@ -584,3 +584,52 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine cpsi
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      logical iftemp
+
+      common /cpsiv/ psi(lt),omega(lt,3),rhs(lt),
+     $               w1(lt),w2(lt),h1(lt),h2(lt)
+
+      common /cptmp/ t1(lt),t2(lt),t3(lt)
+
+      integer icalld
+      save    icalld
+      data    icalld /0/
+
+      n = lx1*ly1*lz1*nelv
+
+      call opcopy(t1,t2,t3,xm1,ym1,zm1)
+
+      iftemp=ifaxis
+      ifaxis=.false.
+      call comp_vort3(omega,w1,w2,vx,vy,vz)
+      call col3(rhs,bm1,omega,n)
+      call rone(h1,n)
+      call rzero(h2,n)
+      tol = param(22)
+c     call chsign(rhs,n)
+      call hmholtz('psi ',psi,rhs,h1,h2,v1mask,vmult,1,tol,1000,1)
+      call dsavg(psi)
+      ifaxis=iftemp
+
+      iftemp=ifxyo
+      if (icalld.eq.0) then
+         icalld=1
+      else
+         ifxyo=.false.
+      endif
+
+      call outpost(psi,omega,vz,pr,t,'psi')
+      ifxyo=iftemp
+
+      call opcopy(xm1,ym1,zm1,t1,t2,t3)
+
+      return
+      end
+c-----------------------------------------------------------------------
