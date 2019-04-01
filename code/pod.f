@@ -116,7 +116,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine h10ps2b(coef,tt,sb)
+      subroutine h10ps2b(coef,tt,sb) ! TODO: error in uic
 
       include 'SIZE'
       include 'MOR'
