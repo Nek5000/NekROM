@@ -352,6 +352,7 @@ c-----------------------------------------------------------------------
       real yy(nb,nb),ys,sBs
       real ww(nb), pert
       real uu(nb), rhs(nb)
+      real alphak
 
       integer par_step
       integer chekbc ! flag for checking boundary
@@ -394,7 +395,7 @@ c        compute quasi-Newton step
             call solve(qns,tmp3,1,nb,nb,irv,icv)
 
 c            call add2(uu,qns,nb)
-            call backtrackr(uu,qns,rhs,1e-4,0.5)
+            call backtrackr(uu,qns,rhs,1e-2,0.5,alphak)
 
             ! check the boundary 
             do ii=1,nb
@@ -433,8 +434,8 @@ c            write(6,*)'f and old f',j,qnf,fo,qndf,ngf
 
 c     update solution
          enddo
-  900    write(6,*)'ad_step, par, iter, ngf, qndf:'
-     $              ,ad_step,par,j,ngf,qndf 
+  900    write(6,*)'ad_step, par, iter, ngf, qndf, alphak:'
+     $              ,ad_step,par,j,ngf,qndf, alphak 
          par = par*0.1
       enddo
       call copy(rhs,uu,nb)
@@ -444,7 +445,7 @@ c      if (nio.eq.0) write (6,*) 'exitting BFGS'
       return
       end
 c-----------------------------------------------------------------------
-      subroutine backtrackr(uu,s,rhs,sigmab,facb)
+      subroutine backtrackr(uu,s,rhs,sigmab,facb,alphak)
 
       include 'SIZE'
       include 'MOR'
@@ -491,9 +492,6 @@ c-----------------------------------------------------------------------
             exit
          endif
       enddo
-
-  900    write(6,*)'backtrackr:'
-     $              ,counter,alphak
 
       return
       end
