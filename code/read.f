@@ -90,6 +90,68 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine get_saved_fields_dummy(nsave,fname)
+
+c     This routine reads files specificed in fname
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'AVG'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      parameter (lt2=lx2*ly2*lz2*lelt)
+
+      common /scrgsf/ xt(lt),yt(lt),zt(lt)
+
+      character*128 fname
+      character*128 fnlint
+
+      ierr = 0
+      call lints(fnlint,fname,128)
+      if (nid.eq.0) open(77,file=fnlint,status='old',err=199)
+      ierr = iglmax(ierr,1)
+      if (ierr.gt.0) goto 199
+      
+      call opcopy(xt,yt,zt,xm1,ym1,zm1)
+
+      icount = 0
+      do ipass=1,nsave
+         call blank(initc,127)
+         initc(1) = 'done '
+         if (nid.eq.0) read(77,127,end=998) initc(1)
+  998    call bcast(initc,127)
+  127    format(a127)
+         if (nio.eq.0) write (6,*) ipass,' '
+
+         if (indx1(initc,'done ',5).eq.0) then ! We're not done
+            nfiles = 1
+            call restart(nfiles)  ! Note -- time is reset.
+
+            ip=ipass
+            icount = icount+1
+         else
+            goto 999
+         endif
+      enddo
+
+  999 continue  ! clean up averages
+      if (nid.eq.0) close(77)
+
+      call opcopy(xm1,ym1,zm1,xt,yt,zt)
+
+      nsave = icount ! Actual number of files read
+
+      return
+
+  199 continue ! exception handle for file not found
+      ierr = 1
+      if (nid.eq.0) ierr = iglmax(ierr,1)
+      write (6,*) fnlint
+      call exitti('get_saved_fields did not find list file.$',ierr)
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine get_saved_fields(usave,psave,tsave,nsave,fname)
 
 c     This routine reads files specificed in fname
