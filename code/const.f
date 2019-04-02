@@ -105,8 +105,8 @@ c            write(6,*)'f and old f',j,qnf,fo,qndf,ngf
 c     update solution
          enddo
 
-  900    write(6,*)'ad_step, par, iter, ngf, qndf:'
-         write(6,*)ad_step,par,j,ngf,qndf 
+  900    write(6,*)'ad_step, par, iter, ngf, qndf:',
+     $               ad_step,par,j,ngf,qndf 
 
          par = par*0.1
       enddo
