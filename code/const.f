@@ -11,13 +11,14 @@
       real ww(nb), pert
       real uu(nb), rhs(nb)
 
-      integer par_step
+      integer par_step, jmax
       integer chekbc ! flag for checking boundary
 
       real tmp(nb,nb),tmp1(nb,nb),tmp2(nb,nb),tmp3(nb,nb)
       real tmp4(nb),tmp5(nb),tmp6(nb,nb),tmp7(nb,nb)
 
 c      if (nio.eq.0) write (6,*) 'inside BFGS_freeze'
+      jmax = 0
 
       call copy(uu,u(1,1),nb)
    
@@ -99,17 +100,26 @@ c            write(6,*)'f and old f',j,qnf,fo,qndf,ngf
 
             ! reset chekbc 
             chekbc = 0
+            
+            jmax = max(j,jmax)
 
-            if (ngf .lt. 1e-4 .OR. qndf .lt. 1e-6  ) goto 900
+            if (ngf .lt. 1e-4 .OR. qndf .lt. 1e-6  ) then
+               exit
+            endif
 
 c     update solution
          enddo
-
-  900    write(6,*)'ad_step, par, iter, ngf, qndf:',
-     $               ad_step,par,j,ngf,qndf 
-
          par = par*0.1
+
       enddo
+
+      if (mod(ad_step,ad_iostep).eq.0) then
+         if (nio.eq.0) then
+            write(6,*)'ad_step, par, jmax, ngf, qndf:',
+     $               ad_step,par,jmax,ngf,qndf 
+         endif
+      endif
+
       call copy(rhs,uu,nb)
 
 c      if (nio.eq.0) write (6,*) 'exitting BFGS_freeze'
@@ -354,13 +364,15 @@ c-----------------------------------------------------------------------
       real uu(nb), rhs(nb)
       real alphak
 
-      integer par_step
+      integer par_step, jmax
       integer chekbc ! flag for checking boundary
 
       real tmp(nb,nb),tmp1(nb,nb),tmp2(nb,nb),tmp3(nb,nb)
       real tmp4(nb),tmp5(nb),tmp6(nb,nb),tmp7(nb,nb)
 
 c      if (nio.eq.0) write (6,*) 'inside BFGS'
+
+      jmax = 0
 
       call copy(uu,u(1,1),nb)
    
@@ -429,15 +441,25 @@ c            write(6,*)'f and old f',j,qnf,fo,qndf,ngf
 
             ! reset chekbc 
             chekbc = 0
+            
+            jmax = max(j,jmax)
 
-            if (ngf .lt. 1e-4 .OR. qndf .lt. 1e-6  ) goto 900
+            if (ngf .lt. 1e-4 .OR. qndf .lt. 1e-6  ) then 
+               exit
+            endif
 
 c     update solution
          enddo
-  900    write(6,*)'ad_step, par, iter, ngf, qndf, alphak:'
-     $              ,ad_step,par,j,ngf,qndf, alphak 
          par = par*0.1
       enddo
+
+      if (mod(ad_step,ad_iostep).eq.0) then
+         if (nio.eq.0) then
+            write(6,*)'ad_step, par, jmax, ngf, qndf:',
+     $               ad_step,par,jmax,ngf,qndf 
+         endif
+      endif
+
       call copy(rhs,uu,nb)
 
 c      if (nio.eq.0) write (6,*) 'exitting BFGS'
