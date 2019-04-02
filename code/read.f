@@ -106,7 +106,8 @@ c     This routine reads files specificed in fname
       character*128 fname
       character*128 fnlint
 
-      common /scrk5/ uu(lt),vv(lt),ww(lt),t1(lt),t2(lt,ldimt),t3(lt)
+      common /scrk5/ uu(lt),vv(lt),ww(lt),t1(lt),t2(lt,ldimt),t3(lt),
+     $               t4(lt),t5(lt),t6(lt)
 
       ierr = 0
       call lints(fnlint,fname,128)
@@ -119,6 +120,7 @@ c     This routine reads files specificed in fname
 
       call push_sol(vx,vy,vz,pr,t)
       call zero_sol(uavg,vavg,wavg,pavg,tavg)
+      call opcopy(t4,t5,t6,xm1,ym1,zm1)
 
       icount = 0
       do ipass=1,nsave
@@ -154,6 +156,7 @@ c     This routine reads files specificed in fname
 
       s=1./real(nsave)
       call scale_sol(uavg,vavg,wavg,pavg,tavg,s)
+      call opcopy(xm1,ym1,zm1,t4,t5,t6)
 
       return
 
