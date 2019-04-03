@@ -584,7 +584,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine cpsi
+      subroutine cpsi(uu,vv,ww)
 
       include 'SIZE'
       include 'TOTAL'
@@ -592,11 +592,12 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       logical iftemp
+      real uu(lt),vv(lt),ww(lt)
 
       common /cpsiv/ psi(lt),omega(lt,3),rhs(lt),
      $               w1(lt),w2(lt),h1(lt),h2(lt)
 
-      common /cptmp/ t1(lt),t2(lt),t3(lt)
+      common /cptmp/ t1(lt),t2(lt),t3(lt),psimask(lx1,ly1,lz1,lelt)
 
       integer icalld
       save    icalld
@@ -606,15 +607,34 @@ c-----------------------------------------------------------------------
 
       call opcopy(t1,t2,t3,xm1,ym1,zm1)
 
+      ! assume homogeneous Dirichlet for stream function for now
+
+      call rone(psimask,n)
+
+      do ie=1,nelt
+      do if=1,2*ldim
+         if (cbc(if,ie,1).ne.'E  ') then
+            call facind(kx1,kx2,ky1,ky2,kz1,kz2,lx1,ly1,lz1,if)
+            do k=kz1,kz2
+            do j=ky1,ky2
+            do i=kx1,kx2
+               psimask(i,j,k,ie)=0.
+            enddo
+            enddo
+            enddo
+         endif
+      enddo
+      enddo
+
       iftemp=ifaxis
       ifaxis=.false.
-      call comp_vort3(omega,w1,w2,vx,vy,vz)
+      call comp_vort3(omega,w1,w2,uu,vv,ww)
       call col3(rhs,bm1,omega,n)
       call rone(h1,n)
       call rzero(h2,n)
       tol = param(22)
 c     call chsign(rhs,n)
-      call hmholtz('psi ',psi,rhs,h1,h2,v1mask,vmult,1,tol,1000,1)
+      call hmholtz('psi ',psi,rhs,h1,h2,psimask,vmult,1,tol,1000,1)
       call dsavg(psi)
       ifaxis=iftemp
 
