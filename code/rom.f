@@ -307,8 +307,8 @@ c-----------------------------------------------------------------------
             call sub3(us0(1,2,i),us(1,2,i),vb,n)
             if (ldim.eq.3) call sub3(us0(1,ldim,i),us(1,ldim,i),wb,n)
             if (ifpod(2)) call sub3(ts0(1,i),ts(1,i),tb,n)
-            call outpost(us0(1,1,i),us0(1,2,i),us0(1,ldim,i),
-     $                   pavg,ts0(1,i),'ss0')
+c           call outpost(us0(1,1,i),us0(1,2,i),us0(1,ldim,i),
+c    $                   pavg,ts0(1,i),'ss0')
          enddo
       endif
 
