@@ -642,12 +642,6 @@ c     call chsign(rhs,n)
       ifxyo=iftemp
 
       call opcopy(xm1,ym1,zm1,t1,t2,t3)
-      if (icalld.eq.0) then
-         icalld=1
-      else
-      endif
-
-
 
       return
       end

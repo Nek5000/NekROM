@@ -89,6 +89,8 @@ c-----------------------------------------------------------------------
       if (ifdumpops) call dump_all
 
       if (ifcdrag) call cvdrag_setup
+      if (ifcnuss) call cnuss_setup
+
       if (isolve.eq.1) then
          if (nio.eq.0) write(6,*) 
      $       'solving with constrained optimization'
