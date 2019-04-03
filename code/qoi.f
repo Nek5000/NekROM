@@ -242,7 +242,7 @@ c           if (nio.eq.0) write (6,1) time,vdy,pdy1,pdy2,pdy3,dy,'dragy'
       return
       end
 c-----------------------------------------------------------------------
-      subroutine cnus_setup
+      subroutine cnuss_setup
 
       include 'SIZE'
       include 'TOTAL'
