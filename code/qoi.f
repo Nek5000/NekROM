@@ -285,7 +285,6 @@ c-----------------------------------------------------------------------
       data    icalld /0/
       data    idir /0/
 
-
       n=lx1*ly1*lz1*nelv
 
       if (icalld.eq.0) then
@@ -311,7 +310,7 @@ c-----------------------------------------------------------------------
                diam=glmax(xm1,n)+glmax(ym1,n)-glmin(xm1,n)-glmin(ym1,n)
             endif
          endif
-         if (nio.eq.0) write (6,1) qu,qv,qw,diam,idir
+         if (nio.eq.0) write (6,*) qu,qv,qw,idir,diam,'bulk_vars'
          icalld=1
       endif
 
