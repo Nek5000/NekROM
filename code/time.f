@@ -15,7 +15,7 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelt
 
-      icount = min0(ad_step,3)
+      icount = min0(max(1,ad_step),3)
 
       rhs(0)=1.
       call setr_v(rhs(1),icount)
