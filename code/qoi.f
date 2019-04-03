@@ -242,3 +242,186 @@ c           if (nio.eq.0) write (6,1) time,vdy,pdy1,pdy2,pdy3,dy,'dragy'
       return
       end
 c-----------------------------------------------------------------------
+      subroutine cnus_setup
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      common /cnus1/ tbm(0:nb,0:nb),tsa(0:nb)
+
+      do j=0,nb
+         do i=0,nb
+            call ctbulk(tbm(i,j),ub(1,j),vb(1,j),wb(1,j),tb(1,i))
+         enddo
+         call ctsurf(tsa(j),tb(1,j))
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine ctsurf(tsurf,tt)
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      call surf_avg(tsurf,a_surf,tt,1,'W  ')  ! tbar on wall
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine ctbulk(tbulk,uu,vv,ww,tt)
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      common /nusvars/ diam
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      real uu(lt),vv(lt),ww(lt),tt(lt)
+
+      integer icalld,idir
+      save    icalld
+      data    icalld /0/
+
+      n=lx1*ly1*lz1*nelv
+
+      if (icalld.eq.0) then
+         ! determine stream-wise direction
+         qu=glsc2(vx,bm1,n)
+         qv=glsc2(vy,bm1,n)
+         qw=glsc2(vz,bm1,n)
+         idir=3
+         if (abs(qu).gt.max(abs(qv),abs(qw))) then
+            idir=1
+         else if (abs(qv).gt.max(abs(qu),abs(qw))) then
+            idir=2
+         endif
+         if (ldim.eq.2) then
+            if (idir.eq.1) diam=glmax(ym1,n)-glmin(ym1,n)
+            if (idir.eq.2) diam=glmax(xm1,n)-glmin(xm1,n)
+         else
+            if (idir.eq.1) then
+               diam=glmax(ym1,n)+glmax(zm1,n)-glmin(ym1,n)-glmin(zm1,n)
+            else if (idir.eq.2) then
+               diam=glmax(xm1,n)+glmax(zm1,n)-glmin(xm1,n)-glmin(zm1,n)
+            else
+               diam=glmax(xm1,n)+glmax(ym1,n)-glmin(xm1,n)-glmin(ym1,n)
+            endif
+         endif
+         icalld=1
+      endif
+
+      if (idir.eq.1) then
+         tbulk=glsc3(uu,tt,bm1,n)/glsc2(uu,bm1,n)
+      if (idir.eq.2) then
+         tbulk=glsc3(vv,tt,bm1,n)/glsc2(vv,bm1,n)
+      else
+         tbulk=glsc3(ww,tt,bm1,n)/glsc2(ww,bm1,n)
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine cnuss
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      common /cnus1/ tbm(0:nb,0:nb),tsa(0:nb)
+      common /nusvars/ diam
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      nv=nx1*ny1*nz1*nelv
+
+      qsurf=1.
+
+      rhocp=param(7)
+      cond=param(8)
+
+      tbulk=0.
+      twall=0.
+
+      do j=0,nb
+         do i=0,nb
+            tbulk=tbulk+tbm(i,j)
+         enddo
+         twall=twall+tsa(j)
+      enddo
+
+      h=(twall-tbulk)
+      if (h.gt.0) h=qsurf/h
+      rnus=diam*h/cond
+
+      if (nio.eq.0) write (6,*) istep,time,twall,bulk,rnus,'fluxes'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine surf_avg(s_bar,a_surf,s,ifld,cb3)
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      real s(lx1,ly1,lz1,lelt)
+      character*3 cb3
+
+      integer e,f
+
+      s_bar  = 0
+      s_surf = 0
+      a_surf = 0
+      n_surf = 0
+
+      do e=1,nelt
+      do f=1,2*ndim
+         if (cbc(f,e,ifld).eq.cb3) then
+            call facint1(s1,a1,s,area,f,e) ! integrate a() on face f
+            s_surf = s_surf + s1
+            a_surf = a_surf + a1
+            n_surf = n_surf + 1
+         endif
+      enddo
+      enddo
+
+      s_surf = glsum(s_surf,1)   ! sum across all processors
+      a_surf = glsum(a_surf,1)
+      n_surf = iglsum(n_surf,1)
+
+      if (a_surf.gt.0) s_bar  = s_surf/a_surf
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine facint1(s1,a1,s,area,f,e) ! integrate a() on face f
+
+      include 'SIZE'
+      include 'TOPOL'
+
+      real s(lx1,ly1,lz1,lelv),area(lx1,lz1,6,lelv)
+
+      integer e,f
+
+      call dsset(nx1,ny1,nz1) !     Set up counters
+      iface  = eface1(f)
+      js1    = skpdat(1,iface)
+      jf1    = skpdat(2,iface)
+      jskip1 = skpdat(3,iface)
+      js2    = skpdat(4,iface)
+      jf2    = skpdat(5,iface)
+      jskip2 = skpdat(6,iface)
+
+      i =0
+      s1=0
+      a1=0
+      do 100 j2=js2,jf2,jskip2
+      do 100 j1=js1,jf1,jskip1
+         i  = i+1
+         s1 = s1 + area(i,1,f,e)*s(j1,j2,1,e)
+         a1 = a1 + area(i,1,f,e)
+  100 continue
+
+      return
+      end
+c-----------------------------------------------------------------------
