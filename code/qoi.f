@@ -314,7 +314,7 @@ c-----------------------------------------------------------------------
 
       if (idir.eq.1) then
          tbulk=glsc3(uu,tt,bm1,n)/glsc2(uu,bm1,n)
-      if (idir.eq.2) then
+      else if (idir.eq.2) then
          tbulk=glsc3(vv,tt,bm1,n)/glsc2(vv,bm1,n)
       else
          tbulk=glsc3(ww,tt,bm1,n)/glsc2(ww,bm1,n)
