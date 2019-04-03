@@ -327,6 +327,7 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'
       include 'TOTAL'
+      include 'MOR'
 
       common /cnus1/ tbm(0:nb,0:nb),tsa(0:nb)
       common /nusvars/ diam
@@ -363,6 +364,7 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'
       include 'TOTAL'
+      include 'MOR'
 
       real s(lx1,ly1,lz1,lelt)
       character*3 cb3
