@@ -190,6 +190,10 @@ c-----------------------------------------------------------------------
       ifcintp=.false.
       if (param(192).ne.0) ifcintp=.true.
 
+      bux=param(193)
+      buy=param(194)
+      buz=param(195)
+
       do i=0,ldimt1
          ifpod(i)=.false.
          ifrom(i)=.false.
@@ -205,8 +209,7 @@ c-----------------------------------------------------------------------
 
       ifpart=.false.
       ifforce=.false.
-      ifbuoy=.false.
-      ifbuoy=.true.
+      ifbuoy=.not.(bux.eq.0..and.buy.eq.0..and.buz.eq.0.).and.ifrom(2)
       ifcintp=.false.
 
       call compute_BDF_coef(ad_alpha,ad_beta)
@@ -568,8 +571,8 @@ c-----------------------------------------------------------------------
       if (ifbuoy) then
          do j=0,nb
          do i=0,nb
-            but0(i,j)=tbeta*sip(tb(1,j),vb(1,i))
-            but0(i,j)=-tbeta*sip(tb(1,j),ub(1,i))
+            but0(i,j)=bux*sip(tb(1,j),ub(1,i))+buy*sip(tb(1,j),vb(1,i))
+            if (ldim.eq.3) but0(i,j)=but0(i,j)+buz*sip(tb(1,j),wb(1,i))
          enddo
          enddo
       else if (ifforce) then
