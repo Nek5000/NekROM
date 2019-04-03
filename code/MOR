@@ -44,6 +44,8 @@ c     parameters and common blocks for MOR
      $                 bgy(lx1*ly1*lz1*lelt),
      $                 bgz(lx1*ly1*lz1*lelt)
 
+      common /morbuoy/ bux,buy,buz
+
       common /moravg/ ua(0:nb),u2a(0:nb,0:nb)
 
       common /mormsk/ dmask(lx1,ly1,lz1,lelt,lmsk+1)
