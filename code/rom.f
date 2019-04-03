@@ -214,7 +214,8 @@ c-----------------------------------------------------------------------
 
       ifpart=.false.
       ifforce=.false.
-      ifbuoy=.not.(bux.eq.0..and.buy.eq.0..and.buz.eq.0.).and.ifrom(2)
+      bu2=bux*bux+buy*buy+buz*buz
+      ifbuoy=bu2.gt.0..and.ifrom(2)
       ifcintp=.false.
 
       call compute_BDF_coef(ad_alpha,ad_beta)
