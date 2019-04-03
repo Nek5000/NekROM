@@ -577,9 +577,9 @@ c-----------------------------------------------------------------------
             bg(i)=-vip(bgx,bgy,bgz,ub(1,i),vb(1,i),wb(1,i))
             if (nio.eq.0) write (6,*) bg(i),i,'bg'
          enddo
+         call outpost(bgx,bgy,bz,pavg,tavg,'bgv')
       endif
 
-      call outpost(bgx,bgy,bz,pavg,tavg,'bgv')
 
       if (nio.eq.0) write (6,*) 'exiting setg'
 
