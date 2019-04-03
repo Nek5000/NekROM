@@ -186,6 +186,9 @@ c-----------------------------------------------------------------------
       ifcdrag=.false.
       if (param(182).ne.0) ifcdrag=.true.
 
+      ifcnuss=.false.
+      if (param(183).ne.0) ifcnuss=.true.
+
       iffastc=.false.
       if (param(191).ne.0) iffastc=.true.
 
