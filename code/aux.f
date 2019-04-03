@@ -638,17 +638,16 @@ c     call chsign(rhs,n)
       call dsavg(psi)
       ifaxis=iftemp
 
-      iftemp=ifxyo
-      if (icalld.eq.0) then
-         icalld=1
-      else
-         ifxyo=.false.
-      endif
-
       call outpost(psi,omega,vz,pr,t,'psi')
       ifxyo=iftemp
 
       call opcopy(xm1,ym1,zm1,t1,t2,t3)
+      if (icalld.eq.0) then
+         icalld=1
+      else
+      endif
+
+
 
       return
       end
