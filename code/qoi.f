@@ -281,8 +281,10 @@ c-----------------------------------------------------------------------
       real uu(lt),vv(lt),ww(lt),tt(lt)
 
       integer icalld,idir
-      save    icalld
+      save    icalld,idir
       data    icalld /0/
+      data    idir /0/
+
 
       n=lx1*ly1*lz1*nelv
 
@@ -309,6 +311,7 @@ c-----------------------------------------------------------------------
                diam=glmax(xm1,n)+glmax(ym1,n)-glmin(xm1,n)-glmin(ym1,n)
             endif
          endif
+         if (nio.eq.0) write (6,1) qu,qv,qw,diam,idir
          icalld=1
       endif
 
@@ -319,6 +322,8 @@ c-----------------------------------------------------------------------
       else
          tbulk=glsc3(ww,tt,bm1,n)/glsc2(ww,bm1,n)
       endif
+
+    1 format (1p4e13.4,i4,'bulk_vars')
 
       return
       end
