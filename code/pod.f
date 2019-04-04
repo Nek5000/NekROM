@@ -412,6 +412,7 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'
       include 'MOR'
+      include 'SOLN'
 
       if (.not.ifread) then
          jfield=ifield
@@ -421,9 +422,8 @@ c-----------------------------------------------------------------------
             call gengram(ug(1,1,0),cs0,ns,ldim)
          endif
          if (ifpod(1)) call gengram(ug(1,1,1),us0,ns,ldim)
-         do i=2,ldimt1
-            ifield=i
-            if (ifpod(i)) call gengram(ug(1,1,i),ts0,ns,1)
+         ifield=2
+         if (ifpod(2)) call gengram(ug(1,1,2),ts0,ns,1)
          enddo
          ifield=jfield
       endif
