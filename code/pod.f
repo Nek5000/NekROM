@@ -424,7 +424,10 @@ c-----------------------------------------------------------------------
          if (ifpod(1)) call gengram(ug(1,1,1),us0,ns,ldim)
          ifield=2
          if (ifpod(2)) call gengram(ug(1,1,2),ts0,ns,1)
-         enddo
+c        do i=1,ns
+c           call outpost(
+c    $         us(1,1,i),us(1,2,i),us(1,ldim,i),pr,ts(1,i),'sna')
+c        enddo
          ifield=jfield
       endif
       
