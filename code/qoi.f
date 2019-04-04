@@ -248,13 +248,28 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
-      common /cnus1/ tbm(0:nb,0:nb),tsa(0:nb)
+      common /cnus1/ tbn(0:nb,0:nb),tbd(0:nb),tsa(0:nb)
 
       do j=0,nb
          do i=0,nb
-            call ctbulk(tbm(i,j),ub(1,j),vb(1,j),wb(1,j),tb(1,i))
+            call ctbulk_num(tbn(i,j),ub(1,i),vb(1,i),wb(1,i),tb(1,j))
          enddo
+         call ctbulk_den(tbd(j),ub(1,j),vb(1,j),wb(1,j))
          call ctsurf(tsa(j),tb(1,j))
+      enddo
+
+      do i=0,nb
+         if (nio.eq.0) write (6,*) i,tsa(i),'tsa'
+      enddo
+
+      do j=0,nb
+      do i=0,nb
+         if (nio.eq.0) write (6,*) i,j,tbn(i,j),'tbn'
+      enddo
+      enddo
+
+      do i=0,nb
+         if (nio.eq.0) write (6,*) i,tbd(i),'tbd'
       enddo
 
       return
@@ -266,6 +281,120 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
 
       call surf_avg(tsurf,a_surf,tt,1,'W  ')  ! tbar on wall
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine ctbulk_den(tbulk_den,uu,vv,ww)
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      common /nusvars/ diam
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      real uu(lt),vv(lt),ww(lt),tt(lt)
+
+      integer icalld,idir
+      save    icalld,idir
+      data    icalld /0/
+      data    idir /0/
+
+      n=lx1*ly1*lz1*nelv
+
+      if (icalld.eq.0) then
+         ! determine stream-wise direction
+         qu=glsc2(vx,bm1,n)
+         qv=glsc2(vy,bm1,n)
+         qw=glsc2(vz,bm1,n)
+         idir=3
+         if (abs(qu).gt.max(abs(qv),abs(qw))) then
+            idir=1
+         else if (abs(qv).gt.max(abs(qu),abs(qw))) then
+            idir=2
+         endif
+         if (ldim.eq.2) then
+            if (idir.eq.1) diam=glmax(ym1,n)-glmin(ym1,n)
+            if (idir.eq.2) diam=glmax(xm1,n)-glmin(xm1,n)
+         else
+            if (idir.eq.1) then
+               diam=glmax(ym1,n)+glmax(zm1,n)-glmin(ym1,n)-glmin(zm1,n)
+            else if (idir.eq.2) then
+               diam=glmax(xm1,n)+glmax(zm1,n)-glmin(xm1,n)-glmin(zm1,n)
+            else
+               diam=glmax(xm1,n)+glmax(ym1,n)-glmin(xm1,n)-glmin(ym1,n)
+            endif
+         endif
+         if (nio.eq.0) write (6,*) qu,qv,qw,idir,diam,'bulk_vars'
+         icalld=1
+      endif
+
+      if (idir.eq.1) then
+         tbulk_den=glsc2(uu,bm1,n)
+      else if (idir.eq.2) then
+         tbulk_den=glsc2(vv,bm1,n)
+      else
+         tbulk_den=glsc2(ww,bm1,n)
+      endif
+
+    1 format (1p4e13.4,i4,'bulk_vars')
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine ctbulk_num(tbulk_num,uu,vv,ww,tt)
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      common /nusvars/ diam
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      real uu(lt),vv(lt),ww(lt),tt(lt)
+
+      integer icalld,idir
+      save    icalld,idir
+      data    icalld /0/
+      data    idir /0/
+
+      n=lx1*ly1*lz1*nelv
+
+      if (icalld.eq.0) then
+         ! determine stream-wise direction
+         qu=glsc2(vx,bm1,n)
+         qv=glsc2(vy,bm1,n)
+         qw=glsc2(vz,bm1,n)
+         idir=3
+         if (abs(qu).gt.max(abs(qv),abs(qw))) then
+            idir=1
+         else if (abs(qv).gt.max(abs(qu),abs(qw))) then
+            idir=2
+         endif
+         if (ldim.eq.2) then
+            if (idir.eq.1) diam=glmax(ym1,n)-glmin(ym1,n)
+            if (idir.eq.2) diam=glmax(xm1,n)-glmin(xm1,n)
+         else
+            if (idir.eq.1) then
+               diam=glmax(ym1,n)+glmax(zm1,n)-glmin(ym1,n)-glmin(zm1,n)
+            else if (idir.eq.2) then
+               diam=glmax(xm1,n)+glmax(zm1,n)-glmin(xm1,n)-glmin(zm1,n)
+            else
+               diam=glmax(xm1,n)+glmax(ym1,n)-glmin(xm1,n)-glmin(ym1,n)
+            endif
+         endif
+         if (nio.eq.0) write (6,*) qu,qv,qw,idir,diam,'bulk_vars'
+         icalld=1
+      endif
+
+      if (idir.eq.1) then
+         tbulk_num=glsc3(uu,tt,bm1,n)
+      else if (idir.eq.2) then
+         tbulk_num=glsc3(vv,tt,bm1,n)
+      else
+         tbulk_num=glsc3(ww,tt,bm1,n)
+      endif
+
+    1 format (1p4e13.4,i4,'bulk_vars')
 
       return
       end
@@ -333,7 +462,7 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
-      common /cnus1/ tbm(0:nb,0:nb),tsa(0:nb)
+      common /cnus1/ tbn(0:nb,0:nb),tbd(0:nb),tsa(0:nb)
       common /nusvars/ diam
 
       parameter (lt=lx1*ly1*lz1*lelt)
@@ -345,21 +474,26 @@ c-----------------------------------------------------------------------
       rhocp=param(7)
       cond=param(8)
 
-      tbulk=0.
+      tbulk_num=0.
+      tbulk_den=0.
       twall=0.
 
       do j=0,nb
          do i=0,nb
-            tbulk=tbulk+tbm(i,j)
+            tbulk_num=tbulk_num+tbn(i,j)*u(i,1)*ut(j,1)
          enddo
-         twall=twall+tsa(j)
+         tbulk_den=tbulk_den+tbd(j)*u(j,1)
+         twall=twall+tsa(j)*ut(j,1)
       enddo
 
+      tbulk=tbulk_num/tbulk_den
       h=(twall-tbulk)
       if (h.gt.0) h=qsurf/h
       rnus=diam*h/cond
 
-      if (nio.eq.0) write (6,*) istep,time,twall,bulk,rnus,'fluxes'
+      if (nio.eq.0) write (6,1) istep,time,twall,tbulk,rnus
+
+    1 format (i10,1p1e16.8,1p2e14.6,1p1e16.8,' fluxes')
 
       return
       end
