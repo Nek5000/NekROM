@@ -86,7 +86,7 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real coef(0:nb),tt(lt)
+      real coef(0:nb),tt(lt),sb(lt,0:nb)
 
       if (ifl2) then
          call wl2ps2b(coef,tt,sb)
