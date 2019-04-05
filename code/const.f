@@ -1,4 +1,4 @@
-      subroutine BFGS_freeze(rhs,amax,amin,adis,bpar)
+      subroutine BFGS_freeze(rhs,amax,amin,adis,bpar,bstep)
 
       include 'SIZE'
       include 'TOTAL'
@@ -26,7 +26,7 @@ c      if (nio.eq.0) write (6,*) 'inside BFGS_freeze'
    
       ! parameter for barrier function
       par = bpar
-      par_step = 4
+      par_step = bstep 
    
       ! invhelm for computing qnf
       if (ad_step.le.3) then 
@@ -356,7 +356,7 @@ c      if (nio.eq.0) write(6,*) 'inside invHessian_update'
       return
       end
 c-----------------------------------------------------------------------
-      subroutine BFGS(rhs,amax,amin,adis,bpar)
+      subroutine BFGS(rhs,amax,amin,adis,bpar,bstep)
 
       include 'SIZE'
       include 'TOTAL'
@@ -386,7 +386,7 @@ c      if (nio.eq.0) write (6,*) 'inside BFGS'
    
       ! parameter for barrier function
       par = bpar 
-      par_step = 4
+      par_step = bstep 
    
       ! invhelm for computing qnf
       if (ad_step.le.3) then 

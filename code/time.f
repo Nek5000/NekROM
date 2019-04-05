@@ -30,8 +30,8 @@ c-----------------------------------------------------------------------
       if (isolve.eq.0) then ! standard matrix inversion
          call solve(rhs(1),fluv,1,nb,nb,irv,icv)
       else if (isolve.eq.1) then ! constrained solve
-         call BFGS_freeze(rhs(1),umax,umin,udis,1e-3) 
-c        call BFGS(rhs(1),umax,umin,udis,1e-3) 
+         call BFGS_freeze(rhs(1),umax,umin,udis,1e-3,4) 
+c        call BFGS(rhs(1),umax,umin,udis,1e-3,4) 
       else
          call exitti('incorrect isolve specified...')
       endif
