@@ -487,8 +487,8 @@ c-----------------------------------------------------------------------
             work(i,j) = glsc2(us0(1,1,i),uw,n)+glsc2(us0(1,2,i),vw,n)
             if (ldim.eq.3) work(i,j)=work(i,j)+glsc2(us0(1,ldim,i),ww,n)
          enddo
-         tmp1(j) = vlmin(work(:,j),ls)
-         tmp2(j) = vlmax(work(:,j),ls)
+         tmp1(j) = vlmin(work(1,j),ls)
+         tmp2(j) = vlmax(work(1,j),ls)
          delta(j) = tmp2(j)-tmp1(j)
          umin(j) = tmp1(j) - ep * delta(j)
          umax(j) = tmp2(j) + ep * delta(j)
@@ -516,6 +516,92 @@ c-----------------------------------------------------------------------
          enddo
          close (unit=52)
       endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine hyperpar
+
+      include 'SIZE'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real ep
+      real uw(lt),vw(lt),ww(lt)
+      real tmp1(nb),tmp2(nb),delta(nb)
+
+      ! eps is the free parameter
+      ! 1e-2 is used in the paper
+      ep = 1e-2
+
+      n  = lx1*ly1*lz1*nelt
+      if (ifpod(1)) then
+         do j=1,nb                    ! compute hyper-parameter
+            tmp1(j) = vlmin(uk(j,1),ls)
+            tmp2(j) = vlmax(uk(j,1),ls)
+            delta(j) = tmp2(j)-tmp1(j)
+            umin(j) = tmp1(j) - ep * delta(j)
+            umax(j) = tmp2(j) + ep * delta(j)
+            write(6,*) j,umin(j),umax(j)
+         enddo
+      ! compute distance between umax and umin
+      call sub3(udis,umax,umin,nb)
+      if (nid.eq.0) then
+         do i=1,nb
+            write(6,*)i,udis(i)
+         enddo
+      endif
+
+      if (nid.eq.0) then
+         open (unit=51,file='umin')
+         do i=1,nb
+            write (51,*) umin(i)
+         enddo
+         close (unit=51)
+
+         open (unit=52,file='umax')
+         do i=1,nb
+            write (52,*) umax(i)
+         enddo
+         close (unit=52)
+      endif
+      endif   
+
+      if (ifpod(2)) then
+         do j=1,nb                    ! compute hyper-parameter
+            tmp1(j) = vlmin(tk(:,j),ls)
+            tmp2(j) = vlmax(tk(:,j),ls)
+            delta(j) = tmp2(j)-tmp1(j)
+            tmin(j) = tmp1(j) - ep * delta(j)
+            tmax(j) = tmp2(j) + ep * delta(j)
+            write(6,*) j,tmin(j),tmax(j)
+         enddo
+      ! compute distance between umax and umin
+      call sub3(tdis,tmax,tmin,nb)
+      if (nid.eq.0) then
+         do i=1,nb
+            write(6,*)i,tdis(i)
+         enddo
+      endif
+
+      if (nid.eq.0) then
+         open (unit=51,file='tmin')
+         do i=1,nb
+            write (51,*) tmin(i)
+         enddo
+         close (unit=51)
+
+         open (unit=52,file='tmax')
+         do i=1,nb
+            write (52,*) tmax(i)
+         enddo
+         close (unit=52)
+      endif
+      endif   
+
+
+
 
       return
       end
