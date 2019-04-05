@@ -100,7 +100,7 @@ c     parameters and common blocks for MOR
 
       real helm, invhelm, qny, qns
       common /moropt/ helm(nb,nb), opt_rhs(nb), invhelm(nb,nb)
-      common /morhyperpar/ sample_min(nb), sample_max(nb), sam_dis(nb)
+      common /morhyperpar/ umin(nb), umax(nb), udis(nb)
       common /moropt_par/ par
       common /morqn/ qns(nb), qny(nb)
 

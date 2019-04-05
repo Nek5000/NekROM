@@ -490,29 +490,29 @@ c-----------------------------------------------------------------------
          tmp1(j) = vlmin(work(:,j),ls)
          tmp2(j) = vlmax(work(:,j),ls)
          delta(j) = tmp2(j)-tmp1(j)
-         sample_min(j) = tmp1(j) - ep * delta(j)
-         sample_max(j) = tmp2(j) + ep * delta(j)
-         write(6,*) j,sample_min(j),sample_max(j)
+         umin(j) = tmp1(j) - ep * delta(j)
+         umax(j) = tmp2(j) + ep * delta(j)
+         write(6,*) j,umin(j),umax(j)
       enddo
 
-      ! compute distance between sample_max and sample_min
-      call sub3(sam_dis,sample_max,sample_min,nb)
+      ! compute distance between umax and umin
+      call sub3(udis,umax,umin,nb)
       if (nid.eq.0) then
          do i=1,nb
-            write(6,*)i,sam_dis(i)
+            write(6,*)i,udis(i)
          enddo
       endif
 
       if (nid.eq.0) then
-         open (unit=51,file='sample_min')
+         open (unit=51,file='umin')
          do i=1,nb
-            write (51,*) sample_min(i)
+            write (51,*) umin(i)
          enddo
          close (unit=51)
 
-         open (unit=52,file='sample_max')
+         open (unit=52,file='umax')
          do i=1,nb
-            write (52,*) sample_max(i)
+            write (52,*) umax(i)
          enddo
          close (unit=52)
       endif
