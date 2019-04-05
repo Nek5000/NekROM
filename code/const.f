@@ -1,4 +1,4 @@
-      subroutine BFGS_freeze(rhs,amax,amin,bpar)
+      subroutine BFGS_freeze(rhs,amax,amin,adis,bpar)
 
       include 'SIZE'
       include 'TOTAL'
@@ -10,7 +10,7 @@
       real yy(nb,nb),ys,sBs
       real ww(nb), pert
       real uu(nb), rhs(nb)
-      real amax(nb), amin(nb)
+      real amax(nb), amin(nb), adis(nb)
       real bpar
 
       integer par_step, jmax
@@ -69,10 +69,10 @@ c            call chsign(qns,nb)
             do ii=1,nb
                if ((uu(ii)-amax(ii)).ge.1e-8) then
                   chekbc = 1
-                  uu(ii) = amax(ii) - 0.1*sam_dis(ii)
+                  uu(ii) = amax(ii) - 0.1*adis(ii)
                elseif ((amin(ii)-uu(ii)).ge.1e-8) then
                   chekbc = 1
-                  uu(ii) = amin(ii) + 0.1*sam_dis(ii)
+                  uu(ii) = amin(ii) + 0.1*adis(ii)
                endif
             enddo
 
@@ -356,7 +356,7 @@ c      if (nio.eq.0) write(6,*) 'inside invHessian_update'
       return
       end
 c-----------------------------------------------------------------------
-      subroutine BFGS(rhs,amax,amin,bpar)
+      subroutine BFGS(rhs,amax,amin,adis,bpar)
 
       include 'SIZE'
       include 'TOTAL'
@@ -368,7 +368,7 @@ c-----------------------------------------------------------------------
       real yy(nb,nb),ys,sBs
       real ww(nb), pert
       real uu(nb), rhs(nb)
-      real amax(nb), amin(nb)
+      real amax(nb), amin(nb), adis(nb)
       real bpar
       real alphak
 
@@ -421,10 +421,10 @@ c            call add2(uu,qns,nb)
             do ii=1,nb
                if ((uu(ii)-amax(ii)).ge.1e-8) then
                   chekbc = 1
-                  uu(ii) = amax(ii) - 0.1*sam_dis(ii)
+                  uu(ii) = amax(ii) - 0.1*adis(ii)
                elseif ((amin(ii)-uu(ii)).ge.1e-8) then
                   chekbc = 1
-                  uu(ii) = amin(ii) + 0.1*sam_dis(ii)
+                  uu(ii) = amin(ii) + 0.1*adis(ii)
                endif
             enddo
 
