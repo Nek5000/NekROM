@@ -103,7 +103,7 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
-      real ck(nb,ls),ux(lt,ls),uub(lt,0:nb)
+      real ck(0:nb,ls),ux(lt,ls),uub(lt,0:nb)
 
       do i=1,ns
          call ps2b(ck(1,i),ux(1,i),uub)
@@ -118,7 +118,7 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
-      real ck(nb,ls),usnap(lt,ldim,ls),
+      real ck(0:nb,ls),usnap(lt,ldim,ls),
      $     uub(lt,0:nb),vvb(lt,0:nb),wwb(lt,0:nb)
 
       do i=1,ns
