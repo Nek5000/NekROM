@@ -118,6 +118,8 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
+      parameter (lt=lx1*ly1*lz1*lelt)
+
       real ck(0:nb,ls),usnap(lt,ldim,ls),
      $     uub(lt,0:nb),vvb(lt,0:nb),wwb(lt,0:nb)
 
