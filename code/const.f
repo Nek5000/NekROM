@@ -43,8 +43,8 @@ c        use helm from BDF3/EXT3 as intial approximation
          call copy(B_qn(1,1),helm(1,1),nb*nb)
 !         call copy(B_qn(1,1),invhelm(1,1),nb*nb)
 
-         call comp_qnf(uu,rhs,qnf)
-         call comp_qngradf(uu,rhs,qngradf)
+         call comp_qnf(uu,rhs,qnf,amax,amin,bpar)
+         call comp_qngradf(uu,rhs,qngradf,amax,amin,bpar)
 
 c        compute quasi-Newton step
          do j=1,500
@@ -77,7 +77,7 @@ c            call chsign(qns,nb)
             enddo
 
             call copy(qgo,qngradf,nb) ! store old qn-gradf
-            call comp_qngradf(uu,rhs,qngradf)        ! update qn-gradf
+            call comp_qngradf(uu,rhs,qngradf,amax,amin,bpar)        ! update qn-gradf
             call sub3(qny,qngradf,qgo,nb) 
 
             ! update approximate Hessian by two rank-one update if chekbc = 0
@@ -96,7 +96,7 @@ c            call chsign(qns,nb)
             ngf = sqrt(ngf)
 
             fo = qnf      ! store old qn-f
-            call comp_qnf(uu,rhs,qnf) ! update qn-f
+            call comp_qnf(uu,rhs,qnf,amax,amin,bpar) ! update qn-f
             qndf = abs(qnf-fo)/abs(fo) 
 c            write(6,*)'f and old f',j,qnf,fo,qndf,ngf
 
@@ -129,7 +129,7 @@ c      if (nio.eq.0) write (6,*) 'exitting BFGS_freeze'
       return
       end
 c-----------------------------------------------------------------------
-      subroutine comp_qngradf(uu,rhs,s)
+      subroutine comp_qngradf(uu,rhs,s,amax,amin,bpar)
       
       include 'SIZE'
       include 'MOR'
@@ -137,6 +137,8 @@ c-----------------------------------------------------------------------
       real tmp1(nb),tmp2(nb),tmp3(nb),tmp4(nb)
       real mpar
       real uu(nb), rhs(nb), s(nb)
+      real amax(nb), amin(nb) 
+      real bpar
       integer barr_func
 
       barr_func = 1
@@ -190,7 +192,7 @@ c-----------------------------------------------------------------------
       return 
       end
 c-----------------------------------------------------------------------
-      subroutine comp_qnf(uu,rhs,qnf)
+      subroutine comp_qnf(uu,rhs,qnf,amax,amin,bpar)
       
       include 'SIZE'
       include 'MOR'
@@ -200,7 +202,9 @@ c-----------------------------------------------------------------------
       real term1,term2,term3,term4
       real bar1,bar2 ! bar1 and bar2 are the barrier function for two constrains
       real uu(nb), rhs(nb)
+      real amax(nb), amin(nb)
       real qnf
+      real bpar
       integer barr_func
 
       barr_func = 1
@@ -398,8 +402,8 @@ c      if (nio.eq.0) write (6,*) 'inside BFGS'
 c        use helm from BDF3/EXT3 as intial approximation
          call copy(B_qn(1,1),helm(1,1),nb*nb)
 
-         call comp_qnf(uu,rhs,qnf)
-         call comp_qngradf(uu,rhs,qngradf)
+         call comp_qnf(uu,rhs,qnf,amax,amin,bpar)
+         call comp_qngradf(uu,rhs,qngradf,amax,amin,bpar)
 
 c        compute quasi-Newton step
          do j=1,100
@@ -425,7 +429,7 @@ c            call add2(uu,qns,nb)
             enddo
 
             call copy(qgo,qngradf,nb) ! store old qn-gradf
-            call comp_qngradf(uu,rhs,qngradf)        ! update qn-gradf
+            call comp_qngradf(uu,rhs,qngradf,amax,amin,bpar)        ! update qn-gradf
             call sub3(qny,qngradf,qgo,nb) 
 
             ! update approximate Hessian by two rank-one update if chekbc = 0
@@ -440,7 +444,7 @@ c            call add2(uu,qns,nb)
             ngf = sqrt(ngf)
 
             fo = qnf      ! store old qn-f
-            call comp_qnf(uu,rhs,qnf) ! update qn-f
+            call comp_qnf(uu,rhs,qnf,amax,amin,bpar) ! update qn-f
             qndf = abs(qnf-fo)/abs(fo) 
 c            write(6,*)'f and old f',j,qnf,fo,qndf,ngf
 
@@ -491,13 +495,13 @@ c-----------------------------------------------------------------------
       chekbc = 1
       counter = 0
 
-      call comp_qnf(uu,rhs,fk) ! get old f
-      call comp_qngradf(uu,rhs,Jfk)
+      call comp_qnf(uu,rhs,fk,amax,amin,bpar) ! get old f
+      call comp_qngradf(uu,rhs,Jfk,amax,amin,bpar)
 
       call copy(uuo,uu,nb)
       call add2s1(uu,s,alphak,nb)
 
-      call comp_qnf(uu,rhs,fk1) ! get new f
+      call comp_qnf(uu,rhs,fk1,amax,amin,bpar) ! get new f
       Jfks = vlsc2(Jfk,s,nb)
 
       do while ((fk1 > fk + sigmab * alphak * Jfks) .OR. (chekbc.eq.1))
@@ -514,7 +518,7 @@ c-----------------------------------------------------------------------
             endif
          enddo
 
-         call comp_qnf(uu,rhs,fk1)
+         call comp_qnf(uu,rhs,fk1,amax,amin,bpar)
 
          if (alphak < 1e-4) then
             exit
