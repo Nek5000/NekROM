@@ -106,7 +106,7 @@ c-----------------------------------------------------------------------
       real ck(0:nb,ls),ux(lt,ls),uub(lt,0:nb)
 
       do i=1,ns
-         call ps2b(ck(1,i),ux(1,i),uub)
+         call ps2b(ck(0,i),ux(1,i),uub)
       enddo
 
       return
@@ -122,7 +122,7 @@ c-----------------------------------------------------------------------
      $     uub(lt,0:nb),vvb(lt,0:nb),wwb(lt,0:nb)
 
       do i=1,ns
-         call pv2b(ck(1,i),usnap(1,1,i),usnap(1,2,i),usnap(1,ldim,i),
+         call pv2b(ck(0,i),usnap(1,1,i),usnap(1,2,i),usnap(1,ldim,i),
      $        uub,vvb,wwb)
       enddo
 
