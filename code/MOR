@@ -102,7 +102,8 @@ c     parameters and common blocks for MOR
 
       real helm, invhelm, qny, qns
       common /moropt/ helm(nb,nb), opt_rhs(nb), invhelm(nb,nb)
-      common /morhyperpar/ umin(nb), umax(nb), udis(nb)
+      common /morhyperpar/ umin(nb), umax(nb), udis(nb),
+     $                     tmin(nb), tmax(nb), tdis(nb)
       common /morqn/ qns(nb), qny(nb)
 
       logical ifl2,ifvort,ifdump,ifrecon,ifstep,ifpart,ifavg0,
