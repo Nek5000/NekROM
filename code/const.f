@@ -436,7 +436,7 @@ c            call add2(uu,qns,nb)
             enddo
 
             call copy(qgo,qngradf,nb) ! store old qn-gradf
-            call comp_qngradf(uu,rhs,qngradf,amax,amin,par,bflag)        ! update qn-gradf
+            call comp_qngradf(uu,rhs,qngradf,amax,amin,par,bflag) ! update qn-gradf
             call sub3(qny,qngradf,qgo,nb) 
 
             ! update approximate Hessian by two rank-one update if chekbc = 0
