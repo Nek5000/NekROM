@@ -1,4 +1,4 @@
-      subroutine BFGS_freeze(rhs)
+      subroutine BFGS_freeze(rhs,amax,amin,bpar)
 
       include 'SIZE'
       include 'TOTAL'
@@ -10,6 +10,8 @@
       real yy(nb,nb),ys,sBs
       real ww(nb), pert
       real uu(nb), rhs(nb)
+      real amax(nb), amin(nb)
+      real bpar
 
       integer par_step, jmax
       integer chekbc ! flag for checking boundary
@@ -65,12 +67,12 @@ c            call chsign(qns,nb)
 
             ! check the boundary 
             do ii=1,nb
-               if ((uu(ii)-sample_max(ii)).ge.1e-8) then
+               if ((uu(ii)-amax(ii)).ge.1e-8) then
                   chekbc = 1
-                  uu(ii) = sample_max(ii) - 0.1*sam_dis(ii)
-               elseif ((sample_min(ii)-uu(ii)).ge.1e-8) then
+                  uu(ii) = amax(ii) - 0.1*sam_dis(ii)
+               elseif ((amin(ii)-uu(ii)).ge.1e-8) then
                   chekbc = 1
-                  uu(ii) = sample_min(ii) + 0.1*sam_dis(ii)
+                  uu(ii) = amin(ii) + 0.1*sam_dis(ii)
                endif
             enddo
 
@@ -143,8 +145,8 @@ c-----------------------------------------------------------------------
 
       if (barr_func .eq. 1) then ! use logarithmic as barrier function
 
-         call sub3(tmp1,uu,sample_max,nb)  
-         call sub3(tmp2,uu,sample_min,nb)  
+         call sub3(tmp1,uu,amax,nb)  
+         call sub3(tmp2,uu,amin,nb)  
    
          ! add perturbation 
          call cadd(tmp1,-1e-2,nb)
@@ -165,8 +167,8 @@ c-----------------------------------------------------------------------
 
       else ! use inverse function as barrier function
 
-         call sub3(tmp1,uu,sample_max,nb)  
-         call sub3(tmp2,sample_min,uu,nb)  
+         call sub3(tmp1,uu,amax,nb)  
+         call sub3(tmp2,amin,uu,nb)  
          call vsq(tmp1,nb)
          call vsq(tmp2,nb)
          call invcol1(tmp1,nb)
@@ -222,8 +224,8 @@ c     evaluate quasi-newton f
       if (barr_func .eq. 1) then ! use logarithmetic as barrier function
 
          ! barrier term
-         call sub3(tmp1,sample_max,uu,nb)  
-         call sub3(tmp2,uu,sample_min,nb)  
+         call sub3(tmp1,amax,uu,nb)  
+         call sub3(tmp2,uu,amin,nb)  
    
          ! add perturbation
          call cadd(tmp1,1e-2,nb)
@@ -236,8 +238,8 @@ c     evaluate quasi-newton f
 
       else 
 
-         call sub3(tmp1,uu,sample_max,nb)  
-         call sub3(tmp2,sample_min,uu,nb)  
+         call sub3(tmp1,uu,amax,nb)  
+         call sub3(tmp2,amin,uu,nb)  
    
          do i=1,nb
             tmp3(i) = 1./tmp1(i)
@@ -411,12 +413,12 @@ c            call add2(uu,qns,nb)
 
             ! check the boundary 
             do ii=1,nb
-               if ((uu(ii)-sample_max(ii)).ge.1e-8) then
+               if ((uu(ii)-amax(ii)).ge.1e-8) then
                   chekbc = 1
-                  uu(ii) = sample_max(ii) - 0.1*sam_dis(ii)
-               elseif ((sample_min(ii)-uu(ii)).ge.1e-8) then
+                  uu(ii) = amax(ii) - 0.1*sam_dis(ii)
+               elseif ((amin(ii)-uu(ii)).ge.1e-8) then
                   chekbc = 1
-                  uu(ii) = sample_min(ii) + 0.1*sam_dis(ii)
+                  uu(ii) = amin(ii) + 0.1*sam_dis(ii)
                endif
             enddo
 
@@ -502,9 +504,9 @@ c-----------------------------------------------------------------------
 
          chekbc = 0
          do ii=1,nb
-            if ((uu(ii)-sample_max(ii)).ge.1e-8) then
+            if ((uu(ii)-amax(ii)).ge.1e-8) then
                chekbc = 1
-            elseif ((sample_min(ii)-uu(ii)).ge.1e-8) then
+            elseif ((amin(ii)-uu(ii)).ge.1e-8) then
                chekbc = 1
             endif
          enddo
