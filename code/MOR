@@ -31,7 +31,7 @@ c     parameters and common blocks for MOR
      $                 vbt(lx1*ly1*lz1*lelt,0:nb),
      $                 wbt(lx1*ly1*lz1*lelt,0:nb)
 
-      common /morcoef/ uk(nb,ls),tk(nb,ls)
+      common /morcoef/ uk(0:nb,ls),tk(0:nb,ls)
 
       common /morsave/ us(lx1*ly1*lz1*lelt,ldim,ls),
      $                 us0(lx1*ly1*lz1*lelt,ldim,ls),
