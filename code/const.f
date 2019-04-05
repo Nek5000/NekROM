@@ -415,7 +415,7 @@ c        compute quasi-Newton step
             call solve(qns,tmp3,1,nb,nb,irv,icv)
 
 c            call add2(uu,qns,nb)
-            call backtrackr(uu,qns,rhs,1e-2,0.5,alphak)
+            call backtrackr(uu,qns,rhs,1e-2,0.5,alphak,amax,amin)
 
             ! check the boundary 
             do ii=1,nb
