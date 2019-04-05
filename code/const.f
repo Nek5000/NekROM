@@ -422,7 +422,7 @@ c        compute quasi-Newton step
 
 c            call add2(uu,qns,nb)
             call backtrackr(uu,qns,rhs,1e-2,0.5,alphak,amax,amin,bctol
-     $                     ,bflag)
+     $                     ,bflag,par)
 
             ! check the boundary 
             do ii=1,nb
@@ -484,7 +484,7 @@ c      if (nio.eq.0) write (6,*) 'exitting BFGS'
       end
 c-----------------------------------------------------------------------
       subroutine backtrackr(uu,s,rhs,sigmab,facb,alphak,amax,amin,bctol,
-     $            bflag)
+     $            bflag,bpar)
 
       include 'SIZE'
       include 'MOR'
@@ -498,7 +498,7 @@ c-----------------------------------------------------------------------
       real Jfks
       integer chekbc, counter
       real sigmab, facb, alphak
-      real bctol
+      real bctol, bpar
 
       alphak = 1.0
       chekbc = 1
