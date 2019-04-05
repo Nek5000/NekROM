@@ -98,7 +98,7 @@ c-----------------------------------------------------------------------
          if (nio.eq.0) write(6,*) 
      $       'solving with constrained optimization'
 c        call comp_hyperpar
-         call hyperpar
+        call hyperpar
       endif
 
       setup_end=dnekclock()
