@@ -11,10 +11,10 @@
       real ww(nb), pert
       real uu(nb), rhs(nb)
       real amax(nb), amin(nb), adis(nb)
-      real bpar
+      real bpar, par
 
       ! parameter for barrier function
-      integer par_step, jmax, par, bflag
+      integer par_step, jmax, bflag, bstep
       integer chekbc ! flag for checking boundary
       real bctol
 
@@ -47,8 +47,8 @@ c        use helm from BDF3/EXT3 as intial approximation
          call copy(B_qn(1,1),helm(1,1),nb*nb)
 !         call copy(B_qn(1,1),invhelm(1,1),nb*nb)
 
-         call comp_qnf(uu,rhs,qnf,amax,amin,bpar,bflag)
-         call comp_qngradf(uu,rhs,qngradf,amax,amin,bpar,bflag)
+         call comp_qnf(uu,rhs,qnf,amax,amin,par,bflag)
+         call comp_qngradf(uu,rhs,qngradf,amax,amin,par,bflag)
 
 c        compute quasi-Newton step
          do j=1,100
@@ -81,7 +81,7 @@ c            call chsign(qns,nb)
             enddo
 
             call copy(qgo,qngradf,nb) ! store old qn-gradf
-            call comp_qngradf(uu,rhs,qngradf,amax,amin,bpar,bflag)  ! update qn-gradf
+            call comp_qngradf(uu,rhs,qngradf,amax,amin,par,bflag)  ! update qn-gradf
             call sub3(qny,qngradf,qgo,nb) 
 
             ! update approximate Hessian by two rank-one update if chekbc = 0
@@ -100,7 +100,7 @@ c            call chsign(qns,nb)
             ngf = sqrt(ngf)
 
             fo = qnf      ! store old qn-f
-            call comp_qnf(uu,rhs,qnf,amax,amin,bpar,bflag) ! update qn-f
+            call comp_qnf(uu,rhs,qnf,amax,amin,par,bflag) ! update qn-f
             qndf = abs(qnf-fo)/abs(fo) 
 c            write(6,*)'f and old f',j,qnf,fo,qndf,ngf
 
@@ -161,7 +161,7 @@ c-----------------------------------------------------------------------
          call invcol1(tmp2,nb)
          call add3(tmp3,tmp1,tmp2,nb)
 
-         mpar = -1.0*par
+         mpar = -1.0*bpar
          call add3s12(s,rhs,tmp3,-1.0,mpar,nb)
    
          ONE = 1.
@@ -180,7 +180,7 @@ c-----------------------------------------------------------------------
          call invcol1(tmp2,nb)
          call sub3(tmp3,tmp2,tmp1,nb)
 
-         mpar = -1.0*par
+         mpar = -1.0*bpar
          call add3s12(s,rhs,tmp3,-1.0,mpar,nb)
    
          ONE = 1.
@@ -195,7 +195,7 @@ c-----------------------------------------------------------------------
       return 
       end
 c-----------------------------------------------------------------------
-      subroutine comp_qnf(uu,rhs,qnf,amax,amin,bpar,bflag)
+      subroutine comp_qnf(uu,rhs,qnf,amax,amin,bpar,barr_func)
       
       include 'SIZE'
       include 'MOR'
@@ -208,6 +208,7 @@ c-----------------------------------------------------------------------
       real amax(nb), amin(nb)
       real qnf
       real bpar
+      integer barr_func 
 
       barr_func = 1
 
@@ -256,7 +257,7 @@ c     evaluate quasi-newton f
 
       bar1 = vlsum(tmp3,nb)
       bar2 = vlsum(tmp4,nb)
-      term4 = par*(bar1+bar2)
+      term4 = bpar*(bar1+bar2)
 
       qnf = term1 - term2 + term3 - term4
 
@@ -371,11 +372,11 @@ c-----------------------------------------------------------------------
       real ww(nb), pert
       real uu(nb), rhs(nb)
       real amax(nb), amin(nb), adis(nb)
-      real bpar
+      real bpar, par
       real alphak
 
       ! parameter for barrier function
-      integer par_step, jmax, par, bflag
+      integer par_step, jmax, bflag, bstep
       integer chekbc ! flag for checking boundary
       real bctol
 
@@ -407,8 +408,8 @@ c      if (nio.eq.0) write (6,*) 'inside BFGS'
 c        use helm from BDF3/EXT3 as intial approximation
          call copy(B_qn(1,1),helm(1,1),nb*nb)
 
-         call comp_qnf(uu,rhs,qnf,amax,amin,bpar,bflag)
-         call comp_qngradf(uu,rhs,qngradf,amax,amin,bpar,bflag)
+         call comp_qnf(uu,rhs,qnf,amax,amin,par,bflag)
+         call comp_qngradf(uu,rhs,qngradf,amax,amin,par,bflag)
 
 c        compute quasi-Newton step
          do j=1,100
@@ -420,7 +421,8 @@ c        compute quasi-Newton step
             call solve(qns,tmp3,1,nb,nb,irv,icv)
 
 c            call add2(uu,qns,nb)
-            call backtrackr(uu,qns,rhs,1e-2,0.5,alphak,amax,amin,bctol)
+            call backtrackr(uu,qns,rhs,1e-2,0.5,alphak,amax,amin,bctol
+     $                     ,bflag)
 
             ! check the boundary 
             do ii=1,nb
@@ -434,7 +436,7 @@ c            call add2(uu,qns,nb)
             enddo
 
             call copy(qgo,qngradf,nb) ! store old qn-gradf
-            call comp_qngradf(uu,rhs,qngradf,amax,amin,bpar,bflag)        ! update qn-gradf
+            call comp_qngradf(uu,rhs,qngradf,amax,amin,par,bflag)        ! update qn-gradf
             call sub3(qny,qngradf,qgo,nb) 
 
             ! update approximate Hessian by two rank-one update if chekbc = 0
@@ -449,7 +451,7 @@ c            call add2(uu,qns,nb)
             ngf = sqrt(ngf)
 
             fo = qnf      ! store old qn-f
-            call comp_qnf(uu,rhs,qnf,amax,amin,bpar,bflag) ! update qn-f
+            call comp_qnf(uu,rhs,qnf,amax,amin,par,bflag) ! update qn-f
             qndf = abs(qnf-fo)/abs(fo) 
 c            write(6,*)'f and old f',j,qnf,fo,qndf,ngf
 
