@@ -13,7 +13,7 @@
       real amax(nb), amin(nb), adis(nb)
       real bpar
 
-      integer par_step, jmax
+      integer par_step, jmax, par
       integer chekbc ! flag for checking boundary
 
       real tmp(nb,nb),tmp1(nb,nb),tmp2(nb,nb),tmp3(nb,nb)
@@ -25,7 +25,7 @@ c      if (nio.eq.0) write (6,*) 'inside BFGS_freeze'
       call copy(uu,u(1,1),nb)
    
       ! parameter for barrier function
-      par = 1e-3 
+      par = bpar
       par_step = 4
    
       ! invhelm for computing qnf
@@ -47,7 +47,7 @@ c        use helm from BDF3/EXT3 as intial approximation
          call comp_qngradf(uu,rhs,qngradf,amax,amin,bpar)
 
 c        compute quasi-Newton step
-         do j=1,500
+         do j=1,100
 
             call copy(tmp3(1,1),B_qn(1,1),nb*nb)
             call lu(tmp3,nb,nb,irv,icv)
@@ -372,7 +372,7 @@ c-----------------------------------------------------------------------
       real bpar
       real alphak
 
-      integer par_step, jmax
+      integer par_step, jmax, par
       integer chekbc ! flag for checking boundary
 
       real tmp(nb,nb),tmp1(nb,nb),tmp2(nb,nb),tmp3(nb,nb)
@@ -385,7 +385,7 @@ c      if (nio.eq.0) write (6,*) 'inside BFGS'
       call copy(uu,u(1,1),nb)
    
       ! parameter for barrier function
-      par = 1e-3 
+      par = bpar 
       par_step = 4
    
       ! invhelm for computing qnf
