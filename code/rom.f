@@ -86,6 +86,9 @@ c-----------------------------------------------------------------------
       call setbases
       call setops
 
+      if (ifpod(1)) call pv2k(uk,us,ub,vb,wb)
+      if (ifpod(2)) call ps2k(tk,ts,tb)
+
       if (ifdumpops) call dump_all
 
       if (ifcdrag) call cvdrag_setup
