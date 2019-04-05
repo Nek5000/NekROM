@@ -352,7 +352,7 @@ c      if (nio.eq.0) write(6,*) 'inside invHessian_update'
       return
       end
 c-----------------------------------------------------------------------
-      subroutine BFGS(rhs)
+      subroutine BFGS(rhs,amax,amin,bpar)
 
       include 'SIZE'
       include 'TOTAL'
@@ -364,6 +364,8 @@ c-----------------------------------------------------------------------
       real yy(nb,nb),ys,sBs
       real ww(nb), pert
       real uu(nb), rhs(nb)
+      real amax(nb), amin(nb)
+      real bpar
       real alphak
 
       integer par_step, jmax
@@ -470,7 +472,7 @@ c      if (nio.eq.0) write (6,*) 'exitting BFGS'
       return
       end
 c-----------------------------------------------------------------------
-      subroutine backtrackr(uu,s,rhs,sigmab,facb,alphak)
+      subroutine backtrackr(uu,s,rhs,sigmab,facb,alphak,amax,amin)
 
       include 'SIZE'
       include 'MOR'
@@ -479,6 +481,7 @@ c-----------------------------------------------------------------------
       real rhs(nb), s(nb)
       real uuo(nb), uu(nb)
       real Jfk(nb)
+      real amax(nb), amin(nb)
       real fk, fk1
       real Jfks
       integer chekbc, counter
