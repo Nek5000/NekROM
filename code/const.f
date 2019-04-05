@@ -15,6 +15,7 @@
 
       integer par_step, jmax, par
       integer chekbc ! flag for checking boundary
+      real bctol
 
       real tmp(nb,nb),tmp1(nb,nb),tmp2(nb,nb),tmp3(nb,nb)
       real tmp4(nb),tmp5(nb),tmp6(nb,nb),tmp7(nb,nb)
@@ -67,10 +68,10 @@ c            call chsign(qns,nb)
 
             ! check the boundary 
             do ii=1,nb
-               if ((uu(ii)-amax(ii)).ge.1e-8) then
+               if ((uu(ii)-amax(ii)).ge.bctol) then
                   chekbc = 1
                   uu(ii) = amax(ii) - 0.1*adis(ii)
-               elseif ((amin(ii)-uu(ii)).ge.1e-8) then
+               elseif ((amin(ii)-uu(ii)).ge.bctol) then
                   chekbc = 1
                   uu(ii) = amin(ii) + 0.1*adis(ii)
                endif
@@ -374,11 +375,14 @@ c-----------------------------------------------------------------------
 
       integer par_step, jmax, par
       integer chekbc ! flag for checking boundary
+      real bctol
 
       real tmp(nb,nb),tmp1(nb,nb),tmp2(nb,nb),tmp3(nb,nb)
       real tmp4(nb),tmp5(nb),tmp6(nb,nb),tmp7(nb,nb)
 
 c      if (nio.eq.0) write (6,*) 'inside BFGS'
+
+      bctol = 1e-8
 
       jmax = 0
 
@@ -415,14 +419,14 @@ c        compute quasi-Newton step
             call solve(qns,tmp3,1,nb,nb,irv,icv)
 
 c            call add2(uu,qns,nb)
-            call backtrackr(uu,qns,rhs,1e-2,0.5,alphak,amax,amin)
+            call backtrackr(uu,qns,rhs,1e-2,0.5,alphak,amax,amin,bctol)
 
             ! check the boundary 
             do ii=1,nb
-               if ((uu(ii)-amax(ii)).ge.1e-8) then
+               if ((uu(ii)-amax(ii)).ge.bctol) then
                   chekbc = 1
                   uu(ii) = amax(ii) - 0.1*adis(ii)
-               elseif ((amin(ii)-uu(ii)).ge.1e-8) then
+               elseif ((amin(ii)-uu(ii)).ge.bctol) then
                   chekbc = 1
                   uu(ii) = amin(ii) + 0.1*adis(ii)
                endif
@@ -476,7 +480,7 @@ c      if (nio.eq.0) write (6,*) 'exitting BFGS'
       return
       end
 c-----------------------------------------------------------------------
-      subroutine backtrackr(uu,s,rhs,sigmab,facb,alphak,amax,amin)
+      subroutine backtrackr(uu,s,rhs,sigmab,facb,alphak,amax,amin,bctol)
 
       include 'SIZE'
       include 'MOR'
@@ -490,6 +494,7 @@ c-----------------------------------------------------------------------
       real Jfks
       integer chekbc, counter
       real sigmab, facb, alphak
+      real bctol
 
       alphak = 1.0
       chekbc = 1
@@ -511,9 +516,9 @@ c-----------------------------------------------------------------------
 
          chekbc = 0
          do ii=1,nb
-            if ((uu(ii)-amax(ii)).ge.1e-8) then
+            if ((uu(ii)-amax(ii)).ge.bctol) then
                chekbc = 1
-            elseif ((amin(ii)-uu(ii)).ge.1e-8) then
+            elseif ((amin(ii)-uu(ii)).ge.bctol) then
                chekbc = 1
             endif
          enddo
