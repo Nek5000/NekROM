@@ -97,32 +97,33 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine ps2k(ck,ux,,uub)
+      subroutine ps2k(ck,ux,uub)
 
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
 
-      real ck(nb,ls),ux(lt),uub(lt,0:nb)
+      real ck(nb,ls),ux(lt,ls),uub(lt,0:nb)
 
       do i=1,ns
-         call ps2b(ck(1,i),ux,uub)
+         call ps2b(ck(1,i),ux(1,i),uub)
       enddo
 
       return
       end
 c-----------------------------------------------------------------------
-      subroutine pv2k(ck,ux,uy,uz,uub,vvb,wwb)
+      subroutine pv2k(ck,usnap,uub,vvb,wwb)
 
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
 
-      real ck(nb,ls),ux(lt),uy(lt),uz(lt),
+      real ck(nb,ls),usnap(lt,ldim,ls),
      $     uub(lt,0:nb),vvb(lt,0:nb),wwb(lt,0:nb)
 
       do i=1,ns
-         call pv2b(ck(1,i),ux,uy,uz,uub,vvb,wwb)
+         call pv2b(ck(1,i),usnap(1,1,i),usnap(1,2,i),usnap(1,ldim,i),
+     $        uub,vvb,wwb)
       enddo
 
       return
