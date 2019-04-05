@@ -97,6 +97,37 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine ps2k(ck,ux,,uub)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      real ck(nb,ls),ux(lt),uub(lt,0:nb)
+
+      do i=1,ns
+         call ps2b(ck(1,i),ux,uub)
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine pv2k(ck,ux,uy,uz,uub,vvb,wwb)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      real ck(nb,ls),ux(lt),uy(lt),uz(lt),
+     $     uub(lt,0:nb),vvb(lt,0:nb),wwb(lt,0:nb)
+
+      do i=1,ns
+         call pv2b(ck(1,i),ux,uy,uz,uub,vvb,wwb)
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine pv2b(coef,ux,uy,uz,uub,vvb,wwb)
 
       include 'SIZE'
