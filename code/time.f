@@ -138,7 +138,8 @@ c     Matrices and vectors for advance
       if (isolve.eq.0) then ! standard matrix inversion
          call solve(rhs(1),flut,1,nb,nb,irt,ict)
       else if (isolve.eq.1) then ! constrained solve
-         !call csolve(rhs,flu,...
+         call BFGS_freeze(rhs(1),tmax,tmin,tdis,1e-3,4) 
+c        call BFGS(rhs(1),tmax,tmin,tdis,1e-3,4) 
       else
          call exitti('incorrect isolve specified...')
       endif
