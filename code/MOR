@@ -100,8 +100,9 @@ c     parameters and common blocks for MOR
       common /morlu/ fluv(nb,nb),flut(nb,nb)
       common /morilu/ irv(nb),icv(nb),irt(nb),ict(nb)
 
-      real helm, invhelm, qny, qns
-      common /moropt/ helm(nb,nb), opt_rhs(nb), invhelm(nb,nb)
+      real helmu,invhelmu,helmt,invhelmt,qny, qns
+      common /moropt/ opt_rhs(nb), helmu(nb,nb), invhelmu(nb,nb),
+     $               helmt(nb,nb), invhelmt(nb,nb) 
       common /morhyperpar/ umin(nb), umax(nb), udis(nb),
      $                     tmin(nb), tmax(nb), tdis(nb)
       common /morqn/ qns(nb), qny(nb)

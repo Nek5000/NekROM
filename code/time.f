@@ -23,15 +23,16 @@ c-----------------------------------------------------------------------
       if (ad_step.le.3) then
          call cmult2(fluv,bu,ad_beta(1,icount)/ad_dt,nb*nb)
          call add2s2(fluv,au,1/ad_re,nb*nb)
-         call copy(helm,fluv,nb*nb)
+         call copy(helmu,fluv,nb*nb)
          call lu(fluv,nb,nb,irv,icv)
+         call copy(invhelmu,fluv,nb*nb)
       endif
 
       if (isolve.eq.0) then ! standard matrix inversion
          call solve(rhs(1),fluv,1,nb,nb,irv,icv)
       else if (isolve.eq.1) then ! constrained solve
-         call BFGS_freeze(rhs(1),umax,umin,udis,1e-3,4) 
-c        call BFGS(rhs(1),umax,umin,udis,1e-3,4) 
+         call BFGS_freeze(rhs(1),helmu,invhelmu,umax,umin,udis,1e-3,4) 
+c        call BFGS(rhs(1),helmu,invhelmu,umax,umin,udis,1e-3,4) 
       else
          call exitti('incorrect isolve specified...')
       endif
@@ -132,14 +133,16 @@ c     Matrices and vectors for advance
       if (ad_step.le.3) then
          call cmult2(flut,bt,ad_beta(1,icount)/ad_dt,nb*nb)
          call add2s2(flut,at,1/ad_pe,nb*nb)
+         call copy(helmt,flut,nb*nb)
          call lu(flut,nb,nb,irt,ict)
+         call copy(invhelmt,flut,nb*nb)
       endif
 
       if (isolve.eq.0) then ! standard matrix inversion
          call solve(rhs(1),flut,1,nb,nb,irt,ict)
       else if (isolve.eq.1) then ! constrained solve
-         call BFGS_freeze(rhs(1),tmax,tmin,tdis,1e-3,4) 
-c        call BFGS(rhs(1),tmax,tmin,tdis,1e-3,4) 
+         call BFGS_freeze(rhs(1),helmt,invhelmt,tmax,tmin,tdis,1e-3,4) 
+c        call BFGS(rhs(1),helmt,invhelmt,tmax,tmin,tdis,1e-3,4) 
       else
          call exitti('incorrect isolve specified...')
       endif
