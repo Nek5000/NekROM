@@ -681,26 +681,20 @@ c-----------------------------------------------------------------------
 
       real err(0:nb)
 
-      call rom_init_params
-      call rom_init_fields
+      call rom_setup
 
-      call setgram
-      call setevec
-
-      call setbases
-
-      write(6,*)'ns=',ns
-      do ii=1,ns
+      do j=1,ns
+         istep=j
          nio = -1
-         call pv2b(u,us(1,1,ii),us(1,2,ii),us(1,ldim,ii)
+         call pv2b(u,us(1,1,j),us(1,2,j),us(1,ldim,j)
      $                    ,ub,vb,wb)
          nio = nid
 
          write (fmt1,'("(i7,", i0, "(1pe15.7),1x,a4)")') nb+2
          write (fmt2,'("(i7,", i0, "(1pe15.7),1x,a4)")') nb+3
 
-         call opcopy(t1,t2,t3,us(1,1,ii),us(1,2,ii),us(1,ldim,ii))
-c         energy=op_glsc2_wt(t1,t2,t3,t1,t2,t3,bm1)
+         call opcopy(t1,t2,t3,us(1,1,j),us(1,2,j),us(1,ldim,j))
+         energy=op_glsc2_wt(t1,t2,t3,t1,t2,t3,bm1)
 
          n=lx1*ly1*lz1*nelv
 
@@ -712,7 +706,7 @@ c         energy=op_glsc2_wt(t1,t2,t3,t1,t2,t3,bm1)
             err(i)=op_glsc2_wt(t1,t2,t3,t1,t2,t3,bm1)
             istep = i
             time = err(i)
-c            call outpost(t1,t2,t3,pr,t,'err')
+            call outpost(t1,t2,t3,pr,t,'err')
          enddo
          time = ttmp
          istep = itmp
