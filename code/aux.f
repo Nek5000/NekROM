@@ -68,24 +68,25 @@ c-----------------------------------------------------------------------
       real ux(lt),uy(lt),uz(lt)
 
       call opsub3(ud,vd,wd,ux,uy,uz,uavg,vavg,wavg)
-      tke = op_glsc2_wt(ud,vd,wd,ud,vd,wd,bm1)
+      tke = .5*op_glsc2_wt(ud,vd,wd,ud,vd,wd,bm1)
 
       return
       end
 c-----------------------------------------------------------------------
-      subroutine ctke_rom(tke,coef,acoef)
+      subroutine ctke
 
       include 'SIZE'
       include 'MOR'
+      include 'TSTEP'
+
+      common /ctkea/ cdiff(0:nb)
 
       parameter (lt=lx1*ly1*lz1*lelt)
-
-      real coef(0:nb), acoef(0:nb), cdiff(0:nb)
 
       tke=0.
 
       do i=0,nb
-         cdiff(i)=coef(i)-acoef(i)
+         cdiff(i)=u(i,1)-uas(i)
       enddo
 
       do j=0,nb
@@ -93,6 +94,10 @@ c-----------------------------------------------------------------------
          tke=tke+bu0(i,j)*cdiff(i)*cdiff(j)
       enddo
       enddo
+
+      tke=tke*.5
+
+      if (nio.eq.0) write (6,*) time,tke,'tke'
 
       return
       end
@@ -731,6 +736,76 @@ c     call chsign(rhs,n)
       ifxyo=iftemp
 
       call opcopy(xm1,ym1,zm1,t1,t2,t3)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine csga(ga,sb)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real ga(lt,nb),sb(lt,nb)
+
+      n=lx1*ly1*lz1*nelv
+
+      do ib=1,nb
+         call axhelm(ga(1,ib),sb(1,ib),ones,zeros,1,1)
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine emask(g,ie)
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      real g(lx1*ly1*lz1,lelt)
+
+      n=lx1*ly1*lz1*nelt
+
+      do i=1,nelt
+         if (ie.ne.i) call rzero(g(1,i),lx1*ly1*lz1)
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine setf(f)
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      real f(lx1,ly1,lz1,lelt)
+
+      do ie=1,nelt
+      do if=1,2*ldim
+         call facind(kx1,kx2,ky1,ky2,kz1,kz2,lx1,ly1,lz1,if)
+         if (cbc(if,ie,2).eq.'f  ') then
+            l=1
+            do iz=kz1,kz2
+            do iy=ky1,ky2
+            do ix=kx1,kx2
+               f(ix,iy,iz,ie)=f(ix,iy,iz,ie)*area(l,1,if,ie)
+               l=l+1
+            enddo
+            enddo
+            enddo
+         else
+            do iz=kz1,kz2
+            do iy=ky1,ky2
+            do ix=kx1,kx2
+               f(ix,iy,iz,ie)=0.
+            enddo
+            enddo
+            enddo
+         endif
+      enddo
+      enddo
 
       return
       end

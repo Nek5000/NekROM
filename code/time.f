@@ -6,6 +6,10 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       real rhs(0:nb)
+      logical ifdebug
+
+c     ifdebug=.true.
+c     ifdebug=.false.
 
       if (ad_step.eq.1) then
          step_time = 0.
@@ -20,6 +24,14 @@ c-----------------------------------------------------------------------
       rhs(0)=1.
       call setr_v(rhs(1),icount)
 
+      do i=0,nb
+         if (ifdebug) write (6,*) i,u(i,1),'sol'
+      enddo
+
+      do i=0,nb
+         if (ifdebug) write (6,*) i,rhs(i),'rhs'
+      enddo
+
       if (ad_step.le.3) then
          call cmult2(fluv,bu,ad_beta(1,icount)/ad_dt,nb*nb)
          call add2s2(fluv,au,1/ad_re,nb*nb)
@@ -27,6 +39,24 @@ c-----------------------------------------------------------------------
          call lu(fluv,nb,nb,irv,icv)
          call copy(invhelmu,fluv,nb*nb)
       endif
+
+      do j=1,nb
+      do i=1,nb
+         if (ifdebug) write (6,*) i,j,au(i,j),'au'
+      enddo
+      enddo
+
+      do j=1,nb
+      do i=1,nb
+         if (ifdebug) write (6,*) i,j,bu(i,j),'bu'
+      enddo
+      enddo
+
+      do j=1,nb
+      do i=1,nb
+         if (ifdebug) write (6,*) i,j,fluv(i,j),'LU'
+      enddo
+      enddo
 
       if (isolve.eq.0) then ! standard matrix inversion
          call solve(rhs(1),fluv,1,nb,nb,irv,icv)
@@ -36,6 +66,12 @@ c        call BFGS(rhs(1),helmu,invhelmu,umax,umin,udis,1e-3,4)
       else
          call exitti('incorrect isolve specified...')
       endif
+
+      do i=0,nb
+         if (ifdebug) write (6,*) i,rhs(i),'sol'
+      enddo
+
+c     if (ifdebug) call exitt0
 
       call shift3(u,rhs,nb+1)
 
@@ -63,6 +99,7 @@ c-----------------------------------------------------------------------
       call setj
 
       if (mod(ad_step,ad_qstep).eq.0) then
+         if (ifctke) call ctke
          if (ifcdrag) call cdrag
          if (ifcnuss) call cnuss
       endif
@@ -298,6 +335,19 @@ c     call add2s2(rhs,av0,s,nb+1) ! not working...
       call mxm(ctr,nb,ad_alpha(1,icount),3,tmp(1),1)
 
       call sub2(rhs,tmp(1),nb)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine setr_laplace(rhs)
+
+      include 'SIZE'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      common /scrrhs/ tmp1(0:nb),tmp2(0:nb),s(lt)
+
+      real rhs(nb)
 
       return
       end
