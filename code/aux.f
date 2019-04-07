@@ -748,11 +748,11 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real ga(lt,nb),sb(lt,nb)
+      real ga(lt,0:nb),sb(lt,0:nb)
 
       n=lx1*ly1*lz1*nelv
 
-      do ib=1,nb
+      do ib=0,nb
          call axhelm(ga(1,ib),sb(1,ib),ones,zeros,1,1)
       enddo
 
