@@ -565,3 +565,31 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine neumann(a1,a2)
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      real a1(lx1,ly1,lz1,lelt),a2(lx1,ly1,lz1,lelt)
+
+      do ie=1,nel
+      do if=1,2*ldim
+         if (cbc(if,ie,2).eq.'f  ') then
+            call facind(kx1,kx2,ky1,ky2,kz1,kz2,lx1,ly1,lz1,if)
+            l=1
+            do iz=kz1,kz2
+            do iy=ky1,ky2
+            do ix=kx1,kx2
+               a2(ix,iy,iz,ie)=a2(ix,iy,iz,ie)*area(l,1,if,ie)
+               l=l+1
+            enddo
+            enddo
+            enddo
+         endif
+      enddo
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
