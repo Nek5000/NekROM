@@ -706,14 +706,10 @@ c-----------------------------------------------------------------------
             err(i)=op_glsc2_wt(t1,t2,t3,t1,t2,t3,bm1)
             istep = i
             time = err(i)
-<<<<<<< Updated upstream
             call outpost(t1,t2,t3,pr,t,'err')
-=======
-c            call outpost(t1,t2,t3,pr,t,'err')
             if (ii == 1) then
                call outpost(t1,t2,t3,pr,t,'err')
             endif
->>>>>>> Stashed changes
          enddo
          time = ttmp
          istep = itmp
