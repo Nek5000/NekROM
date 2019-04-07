@@ -263,6 +263,7 @@ c-----------------------------------------------------------------------
          write (6,*) 'rp_ad_qstep   ',ad_qstep
          write (6,*) 'rp_ifctke     ',ifctke
          write (6,*) 'rp_ifcdrag    ',ifcdrag
+         write (6,*) 'rp_ifcnuss    ',ifcnuss
          write (6,*) 'rp_iffastc    ',iffastc
          write (6,*) ' '
          write (6,*) 'rp_ifforce    ',ifforce
