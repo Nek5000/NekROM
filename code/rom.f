@@ -89,6 +89,8 @@ c-----------------------------------------------------------------------
       if (ifpod(1)) call pv2k(uk,us,ub,vb,wb)
       if (ifpod(2)) call ps2k(tk,ts,tb)
 
+      call asnap
+
       if (ifdumpops) call dump_all
 
       if (ifcdrag) call cvdrag_setup
@@ -105,6 +107,31 @@ c        call comp_hyperpar
 
       if (nio.eq.0) write (6,*) 'exiting rom_setup'
       if (nio.eq.0) write (6,*) 'setup_time:', setup_end-setup_start
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine asnap
+
+      include 'SIZE'
+      include 'MOR'
+      include 'AVG'
+
+      common /scrasnap/ t1(0:nb)
+
+      call pv2b(uas,uavg,vavg,wavg,ub,vb,wb)
+      call rzero(uvs,nb+1)
+
+      do j=1,ns
+         do i=0,nb
+            uvs(i)=uvs(i)+(uk(i,j)-uas(i))**2
+         enddo
+      enddo
+
+      s=1./real(ns)
+      do i=0,nb
+         uvs(i)=uvs(i)*s
+      enddo
 
       return
       end
