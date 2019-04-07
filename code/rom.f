@@ -187,6 +187,9 @@ c-----------------------------------------------------------------------
 
       ad_qstep=nint(param(180))+ad_iostep*max(1-nint(param(180)),0)
 
+      ifctke=.false.
+      if (param(181).ne.0) ifctke=.true.
+
       ifcdrag=.false.
       if (param(182).ne.0) ifcdrag=.true.
 
@@ -231,6 +234,7 @@ c-----------------------------------------------------------------------
          write (6,*) 'rp_ifdumpops  ',ifdumpops
          write (6,*) 'rp_ifread     ',ifread
          write (6,*) 'rp_ad_qstep   ',ad_qstep
+         write (6,*) 'rp_ifctke     ',ifctke
          write (6,*) 'rp_ifcdrag    ',ifcdrag
          write (6,*) 'rp_iffastc    ',iffastc
          write (6,*) ' '
