@@ -239,16 +239,16 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine drive_ei
+c     subroutine drive_ei
 
-      real mu
+c     real mu
 
-      parameter (ntrain=400)
+c     parameter (ntrain=400)
 
-      do i=0,ntrain
-         mu=0.1+39.9*real(i)/
-      enddo
+c     do i=0,ntrain
+c        mu=0.1+39.9*real(i)/
+c     enddo
 
-      return
-      end
+c     return
+c     end
 c-----------------------------------------------------------------------
