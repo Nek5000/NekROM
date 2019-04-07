@@ -103,11 +103,15 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
+      parameter (lt=lx1*ly1*lz1*lelt)
+
       real ck(0:nb,ls),ux(lt,ls),uub(lt,0:nb)
 
+      nio=-1
       do i=1,ns
          call ps2b(ck(0,i),ux(1,i),uub)
       enddo
+      nio=nid
 
       return
       end
@@ -123,10 +127,12 @@ c-----------------------------------------------------------------------
       real ck(0:nb,ls),usnap(lt,ldim,ls),
      $     uub(lt,0:nb),vvb(lt,0:nb),wwb(lt,0:nb)
 
+      nio=-1
       do i=1,ns
          call pv2b(ck(0,i),usnap(1,1,i),usnap(1,2,i),usnap(1,ldim,i),
      $        uub,vvb,wwb)
       enddo
+      nio=nid
 
       return
       end
@@ -165,7 +171,7 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelt
 
-      call sub3(t1,tt,sb)
+      call sub3(t1,tt,sb,n)
 
       coef(0) = 1.
       if (nio.eq.0) write (6,1) coef(0),coef(0),1.
@@ -352,6 +358,27 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      function h10sip_vd(t1,t2)
+
+      include 'SIZE'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real t1(lt),t2(lt)
+
+      common /scrk3/ t3(lt)
+
+      if (nio.eq.0) write (6,*) 'inside h10sip_vd'
+
+      call axhelm(t3,t1,vdiff,zeros,1,1)
+      h10sip_vd=glsc2(t3,t2,lx1*ly1*lz1*nelt)
+
+      if (nio.eq.0) write (6,*) 'exiting h10sip_vd'
+
+      return
+      end
+c-----------------------------------------------------------------------
       function h10sip(t1,t2)
 
       include 'SIZE'
@@ -451,10 +478,8 @@ c-----------------------------------------------------------------------
       if (.not.ifread) then
          jfield=ifield
          ifield=1
-         if (ifcintp) then
-            ifpod(0)=.true.
-            call gengram(ug(1,1,0),cs0,ns,ldim)
-         endif
+c        ifpod(0)=.true.
+c        call gengram(ug(1,1,0),cs0,ns,ldim)
          if (ifpod(1)) call gengram(ug(1,1,1),us0,ns,ldim)
          ifield=2
          if (ifpod(2)) call gengram(ug(1,1,2),ts0,ns,1)
