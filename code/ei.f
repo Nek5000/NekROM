@@ -188,3 +188,53 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      function csig_laplace(f,g,sig_full)
+
+      include 'SIZE'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real f(lt), g(lt,0:nb), rr(lt,0:nb+1)
+      real sig_full(nb+2,nb+2)
+
+      tolh=1.e-5
+      nmxhi=1000
+
+      call copy(rr(1,0),f,lt)
+      do i=0,nb
+         call copy(rr(1,i+1),g(1,i),lt)
+      enddo
+
+      do i=0,nb+1
+         call hmholtz('ries',rr(1,i),f,ones,zeros,tmask,tmult,2,tolh,
+     $                nmxhi,1)
+      enddo
+
+      mio=nio
+      nio=-1
+      do j=0,nb+1
+         do i=0,nb+1
+            sig_full(i,j)=sip(rr(1,i),rr(1,j))
+         enddo
+      enddo
+      nio=mio
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine comp_rhs(f,g)
+
+      include 'SIZE'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real f(lx1,ly1,lz1,lelt)
+      real g(lx1*ly1*lz1*lelt,0:nb)
+
+      call setf(f)
+      call csga(g,tb)
+
+      return
+      end
