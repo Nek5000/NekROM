@@ -361,6 +361,7 @@ c-----------------------------------------------------------------------
       function h10sip_vd(t1,t2)
 
       include 'SIZE'
+      include 'SOLN'
       include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)

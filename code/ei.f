@@ -168,6 +168,26 @@ c     call chsign(thc_diag,(nb+1)**2)
       return
       end
 c-----------------------------------------------------------------------
+      function eest(theta,sig_full,nr) ! compute error estimate
+
+      include 'SIZE'
+      include 'MOR'
+
+      real theta(nr),sig_full(nr,nr)
+
+      eest=0.
+
+      do j=0,nb
+      do i=0,nb
+         eest=eest+sig_full(i,j)*theta(i)*theta(j)
+      enddo
+      enddo
+
+      eest=sqrt(eest)
+
+      return
+      end
+c-----------------------------------------------------------------------
       function eest_diag() ! compute error estimate
 
       include 'SIZE'
@@ -188,14 +208,15 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine csig_laplace(f,g,sig_full,Nr)
+      subroutine csig_laplace(f,gg,sig_full,Nr)
 
       include 'SIZE'
+      include 'TOTAL'
       include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real f(lt), g(lt,nb)
+      real f(lt), gg(lt,nb)
       real rr(lt,Nr), rg(lt,Nr)
       real sig_full(Nr,Nr)
       real work(lt)
@@ -203,18 +224,29 @@ c-----------------------------------------------------------------------
       tolh=1.e-5
       nmxhi=1000
 
+      write (6,*) 'wp-2.1'
       call copy(rg(1,1),f,lt)
-      do ie=1,lelt
+      write (6,*) 'wp-2.2'
+
+      do ie=1,nelt
          do i=1,nb
-            call copy(work,g(1,i),lt)
+            call copy(work,gg(1,i),lt)
             call emask(work,ie)
             call copy(rg(1,2+(ie-1)*i),work,lt)
          enddo
       enddo
+      write (6,*) 'wp-2.3'
       ! compute riesz representives
       do i=1,Nr
-         call hmholtz('ries',rr(1,i),rg(1,i),ones,zeros,tmask,tmult,2,tolh,
-     $                nmxhi,1)
+         call hmholtz('ries',rr(1,i),rg(1,i),ones,zeros,tmask,tmult,2,
+     $   tolh,nmxhi,1)
+      enddo
+      write (6,*) 'wp-2.4'
+
+      do i=1,nr
+      do j=1,lx1*ly1*lz1*nelv
+         write (6,*) i,j,rr(j,i)
+      enddo
       enddo
 
       mio=nio
@@ -222,15 +254,18 @@ c-----------------------------------------------------------------------
       !  compute Sigma
       do j=1,Nr
          do i=1,Nr
+            write (6,*) i,j,'sip'
             sig_full(i,j)=sip(rr(1,i),rr(1,j))
          enddo
       enddo
       nio=mio
+      write (6,*) 'wp-2.5'
+      call exitt0
 
       return
       end
 c-----------------------------------------------------------------------
-      subroutine crhs_laplace(f,g)
+      subroutine crhs_laplace(f,gg)
 
       include 'SIZE'
       include 'MOR'
@@ -238,26 +273,25 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       real f(lx1,ly1,lz1,lelt)
-      real g(lx1*ly1*lz1*lelt,nb)
+      real gg(lx1*ly1*lz1*lelt,nb)
 
       call setf(f)
-      call csga(g,tb) ! get full g
+      call csga(gg,tb) ! get full g
 
       return
       end
 c-----------------------------------------------------------------------
-      subroutine sett_laplace(coef,tdiff,Nr) ! set thetas
+      subroutine sett_laplace(theta,coef,tdiff,Nr) ! set thetas
 
       include 'SIZE'
       include 'MOR'
 
-      real Nr
       real theta(Nr)
       real coef(nb)
       real tmp(nb)
       real tdiff(lelt)
 
-      theta(1) = 1
+      theta(1) = 1.
 
       do i=1,lelt 
          call cfill(tmp,tdiff(i),nb) 
