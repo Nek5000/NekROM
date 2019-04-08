@@ -188,7 +188,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      function csig_laplace(f,g,sig_full,Nr)
+      subroutine csig_laplace(f,g,sig_full,Nr)
 
       include 'SIZE'
       include 'MOR'
