@@ -65,7 +65,7 @@ c-----------------------------------------------------------------------
 
       mio=nio
       nio=-1
-      csig_diag=vecprod(r1,r2,r3,r1,r2,r3)
+      csig_diag=vip(r1,r2,r3,r1,r2,r3)
       nio=mio
 
       return
