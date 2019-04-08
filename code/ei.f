@@ -223,7 +223,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine comp_rhs(f,g)
+      subroutine crhs_laplace(f,g)
 
       include 'SIZE'
       include 'MOR'
@@ -231,7 +231,7 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       real f(lx1,ly1,lz1,lelt)
-      real g(lx1*ly1*lz1*lelt,0:nb)
+      real g(lx1*ly1*lz1*lelt,nb)
 
       call setf(f)
       call csga(g,tb)
