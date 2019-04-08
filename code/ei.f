@@ -239,31 +239,24 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine sett_diag ! set thetas
+      subroutine sett_laplace(coef,tdiff,Nr) ! set thetas
 
       include 'SIZE'
       include 'MOR'
 
-      call rzero(thb_diag,nb+1)
-      call add2s2(thb_diag,uj(0,1),-5./6,nb+1)
-      call add2s2(thb_diag,uj(0,2), 1./6,nb+1)
-      call add2s2(thb_diag,uj(0,3),-1./3,nb+1)
-      call add2s2(thb_diag,uj(0,4), 1./3,nb+1)
-      call add2s2(thb_diag,uj(0,5),-7./6,nb+1)
-      call add2s2(thb_diag,uj(0,6),11./6,nb+1)
+      real Nr
+      real theta(Nr)
+      real coef(nb)
+      real tmp(nb)
+      real tdiff(lelt)
 
-      s=1./(ad_dt*ad_nsteps)
-      call cmult(thb_diag,s,nb+1)
+      theta(1) = 1
 
-      s=1./ad_re
-      call cmult2(tha_diag,ua,s,nb+1)
-
-      call copy(thc_diag,u2a,(nb+1)**2)
-c     call chsign(thc_diag,(nb+1)**2)
-
-      call add2s2(thc_diag,u2j(0,0,2),-1.*rinstep,(nb+1)**2)
-      call add2s2(thc_diag,u2j(0,0,5),-1.*rinstep,(nb+1)**2)
-      call add2s2(thc_diag,u2j(0,0,6), 2.*rinstep,(nb+1)**2)
+      do i=1,lelt 
+         call cfill(tmp,tdiff(i),nb) 
+         call col2(tmp,coef,nb)
+         call copy(theta(2+(i-1)*nb),coef,nb)
+      enddo
 
       return
       end
