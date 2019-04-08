@@ -211,7 +211,7 @@ c-----------------------------------------------------------------------
             call copy(rg(1,2+(ie-1)*i),work,lt)
          enddo
       enddo
-
+      ! compute riesz representives
       do i=1,Nr
          call hmholtz('ries',rr(1,i),rg(1,i),ones,zeros,tmask,tmult,2,tolh,
      $                nmxhi,1)
@@ -219,6 +219,7 @@ c-----------------------------------------------------------------------
 
       mio=nio
       nio=-1
+      !  compute Sigma
       do j=1,Nr
          do i=1,Nr
             sig_full(i,j)=sip(rr(1,i),rr(1,j))
