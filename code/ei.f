@@ -261,6 +261,7 @@ c-----------------------------------------------------------------------
       do i=1,lelt 
          call cfill(tmp,tdiff(i),nb) 
          call col2(tmp,coef,nb)
+         call chsign(tmp,nb)
          call copy(theta(2+(i-1)*nb),coef,nb)
       enddo
 
