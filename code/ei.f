@@ -188,33 +188,39 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      function csig_laplace(f,g,sig_full)
+      function csig_laplace(f,g,sig_full,Nr)
 
       include 'SIZE'
       include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real f(lt), g(lt,0:nb), rr(lt,0:nb+1)
-      real sig_full(nb+2,nb+2)
+      real f(lt), g(lt,nb)
+      real rr(lt,Nr), rg(lt,Nr)
+      real sig_full(Nr,Nr)
+      real work(lt)
 
       tolh=1.e-5
       nmxhi=1000
 
-      call copy(rr(1,0),f,lt)
-      do i=0,nb
-         call copy(rr(1,i+1),g(1,i),lt)
+      call copy(rg(1,1),f,lt)
+      do ie=1,lelt
+         do i=1,nb
+            call copy(work,g(1,i),lt)
+            call emask(work,ie)
+            call copy(rg(1,2+(ie-1)*i),work,lt)
+         enddo
       enddo
 
-      do i=0,nb+1
-         call hmholtz('ries',rr(1,i),f,ones,zeros,tmask,tmult,2,tolh,
+      do i=1,Nr
+         call hmholtz('ries',rr(1,i),rg(1,i),ones,zeros,tmask,tmult,2,tolh,
      $                nmxhi,1)
       enddo
 
       mio=nio
       nio=-1
-      do j=0,nb+1
-         do i=0,nb+1
+      do j=1,Nr
+         do i=1,Nr
             sig_full(i,j)=sip(rr(1,i),rr(1,j))
          enddo
       enddo
@@ -234,7 +240,7 @@ c-----------------------------------------------------------------------
       real g(lx1*ly1*lz1*lelt,nb)
 
       call setf(f)
-      call csga(g,tb)
+      call csga(g,tb) ! get full g
 
       return
       end
