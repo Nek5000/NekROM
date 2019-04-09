@@ -46,8 +46,8 @@ c-----------------------------------------------------------------------
          if (u(i,1).gt.cmax(i)) cmax(i)=u(i,1)
       enddo
 
-      ! ctke_rom is used to compute instantaneous TKE
-      call ctke_rom(tke,u,savg)
+      ! ctke is used to compute instantaneous TKE
+      call ctke(tke,u,savg)
       if (nio.eq.0) write (6,*) istep,time,tke,'ctke'
 
       if (mod(ad_step,max(ad_iostep,1)).eq.0) then
