@@ -350,7 +350,7 @@ c-----------------------------------------------------------------------
       real rhs(nb)
 
       do i=1,nb
-         call surf_avg(s_bar,a_surf,tb(1,i),2,'f  ')
+         call savg(s_bar,a_surf,tb(1,i),2,'f  ')
          rhs(i)=s_bar*a_surf
       enddo
 
