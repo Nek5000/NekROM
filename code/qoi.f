@@ -280,7 +280,7 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'TOTAL'
 
-      call surf_avg(tsurf,a_surf,tt,1,'W  ')  ! tbar on wall
+      call savg(tsurf,a_surf,tt,1,'W  ')  ! tbar on wall
 
       return
       end
@@ -498,7 +498,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine surf_avg(s_bar,a_surf,s,ifld,cb3)
+      subroutine savg(s_bar,a_surf,s,ifld,cb3)
 
       include 'SIZE'
       include 'TOTAL'
