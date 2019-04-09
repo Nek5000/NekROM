@@ -517,7 +517,7 @@ c-----------------------------------------------------------------------
       do e=1,nelt
       do f=1,2*ndim
          if (cbc(f,e,ifld).eq.cb3) then
-            call facint1(s1,a1,s,area,f,e) ! integrate a() on face f
+            call facint3(s1,a1,s,area,f,e) ! integrate a() on face f
             s_surf = s_surf + s1
             a_surf = a_surf + a1
             n_surf = n_surf + 1
@@ -534,7 +534,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine facint1(s1,a1,s,area,f,e) ! integrate a() on face f
+      subroutine facint3(s1,a1,s,area,f,e) ! integrate a() on face f
 
       include 'SIZE'
       include 'TOPOL'
