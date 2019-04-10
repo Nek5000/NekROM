@@ -8,7 +8,7 @@ c-----------------------------------------------------------------------
       jfield=ifield
       ifield=1
       call seta_laplace(at,at0,'ops/at ')
-      call setb(bt,bt0,'ops/bt ')
+      call setb_laplace(bt,bt0,'ops/bt ')
 
       return
       end
@@ -50,6 +50,43 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine setb_laplace(b,b0,fname)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /scrseta/ wk1(lt)
+
+      real b0(0:nb,0:nb),b(nb,nb)
+
+      character*128 fname
+
+      if (nio.eq.0) write (6,*) 'inside setb'
+
+      n=lx1*ly1*lz1*nelt
+
+      nio=-1
+      do j=0,nb ! form the stiffness matrix of the discrete problem
+      do i=0,nb
+         b0(i,j)=wl2sip(tb(1,i),tb(1,j))
+      enddo
+      enddo
+      nio=nid
+
+      do j=1,nb ! form the stiffness matrix of the discrete problem
+      do i=1,nb
+         b(i,j)=b0(i,j)
+      enddo
+      enddo
+
+      if (nio.eq.0) write (6,*) 'exiting setb'
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine rom_solve_laplace
 
       include 'SIZE'
@@ -82,28 +119,18 @@ c-----------------------------------------------------------------------
       call setbases
       n=lx1*ly1*lz1*nelt
 
-c     do i=1,ns
-c        call copy(tb(1,i),ts(1,i),n)
-c     enddo
+c      do i=1,ns
+c         call copy(tb(1,i),ts(1,i),n)
+c      enddo
 
       call setops_laplace
-
+      
       if (ifpod(1)) call pv2k(uk,us,ub,vb,wb)
       if (ifpod(2)) call ps2k(tk,ts,tb)
 
-      call asnap
+c      call asnap
 
       if (ifdumpops) call dump_all
-
-      if (ifcdrag) call cvdrag_setup
-      if (ifcnuss) call cnuss_setup
-
-      if (isolve.eq.1) then
-         if (nio.eq.0) write(6,*) 
-     $       'solving with constrained optimization'
-c        call comp_hyperpar
-        call hyperpar
-      endif
 
       ad_step = istep
       jfield=ifield
@@ -130,6 +157,8 @@ c        call comp_hyperpar
       enddo
 
       rhs(0)=0.
+
+      call copy(ut,rhs,nb+1)
       call recont(t,rhs)
       call outpost(vx,vy,vz,pr,t,'sol')
 
