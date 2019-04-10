@@ -119,7 +119,7 @@ c-----------------------------------------------------------------------
       call setbases
       n=lx1*ly1*lz1*nelt
 
-      nbs=nint(sqrt(nb))
+      nbs=nint(sqrt(nb*1.0))
       if (nb.ne.nbs*nbs) then
          call exitti('nb not a square of an integer$',nb)
       endif
