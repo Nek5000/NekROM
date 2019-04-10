@@ -119,6 +119,21 @@ c-----------------------------------------------------------------------
       call setbases
       n=lx1*ly1*lz1*nelt
 
+      nbs=nint(sqrt(nb))
+      if (nb.ne.nbs*nbs) then
+         call exitti('nb not a square of an integer$',nb)
+      endif
+
+      do k=1,nbs
+      do j=1,nbs
+      do i=1,n
+         x=xm1(i,1,1,1)
+         y=ym1(i,1,1,1)
+         tb(i,j)=sin(j*pi*x)*sin(k*pi*y)
+      enddo
+      enddo
+      enddo
+
 c      do i=1,ns
 c         call copy(tb(1,i),ts(1,i),n)
 c      enddo
