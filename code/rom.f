@@ -203,7 +203,10 @@ c-----------------------------------------------------------------------
       if (.not.ifmult.or.nsteps.eq.istep) then
          call final
          if (nio.eq.0) write (6,*) 'evalc_time: ',evalc_time
-         if (nio.eq.0) write (6,*) 'rom_time: ',rom_time
+         if (nio.eq.0) write (6,*) 'lu_time:    ',lu_time
+         if (nio.eq.0) write (6,*) 'solve_time: ',solve_time
+         if (nio.eq.0) write (6,*) 'step_time:  ',step_time
+         if (nio.eq.0) write (6,*) 'rom_time:   ',rom_time
       endif
 
       return

@@ -116,8 +116,9 @@ c     parameters and common blocks for MOR
      $                  ifdumpops,ifcdrag,ifrms,ifread,ifforce,ifpod,
      $                  ifbuoy,ifrom,ifcintp,iffastc,ifcnuss,ifctke
 
-      real last_time,misc_time
-      common /mortime/ step_time,last_time,misc_time,evalc_time
+      real last_time,misc_time,lu_time
+      common /mortime/ step_time,last_time,misc_time,evalc_time,
+     $                 solve_time,lu_time
 
       real mtke
       common /morstat/ mtke

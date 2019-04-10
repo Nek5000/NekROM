@@ -13,6 +13,8 @@ c     ifdebug=.false.
 
       if (ad_step.eq.1) then
          step_time = 0.
+         solve_time=0.
+         lu_time=0.
       endif
 
       last_time = dnekclock()
@@ -32,6 +34,7 @@ c     ifdebug=.false.
          if (ifdebug) write (6,*) i,rhs(i),'rhs'
       enddo
 
+      ttime=dnekclock()
       if (ad_step.le.3) then
          call cmult2(fluv,bu,ad_beta(1,icount)/ad_dt,nb*nb)
          call add2s2(fluv,au,1/ad_re,nb*nb)
@@ -39,6 +42,7 @@ c     ifdebug=.false.
          call lu(fluv,nb,nb,irv,icv)
          call copy(invhelmu,fluv,nb*nb)
       endif
+      lu_time=lu_time+dnekclock()-ttime
 
       do j=1,nb
       do i=1,nb
@@ -59,6 +63,7 @@ c     ifdebug=.false.
       enddo
 
       if (isolve.eq.0) then ! standard matrix inversion
+      ttime=dnekclock()
          call solve(rhs(1),fluv,1,nb,nb,irv,icv)
       else if (isolve.eq.1) then ! constrained solve
          call BFGS_freeze(rhs(1),helmu,invhelmu,umax,umin,udis,1e-3,4) 
@@ -66,6 +71,7 @@ c        call BFGS(rhs(1),helmu,invhelmu,umax,umin,udis,1e-3,4)
       else
          call exitti('incorrect isolve specified...')
       endif
+      solve_time=solve_time+dnekclock()-ttime
 
       do i=0,nb
          if (ifdebug) write (6,*) i,rhs(i),'sol'
@@ -111,7 +117,6 @@ c-----------------------------------------------------------------------
                do j=1,nb
                   write(6,*) j,u(j,1),'final'
                enddo
-               write (6,*) 'step_time: ',step_time
             else
                do j=1,nb
                   write(6,*) j,u(j,1)
