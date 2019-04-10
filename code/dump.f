@@ -105,6 +105,7 @@ c-----------------------------------------------------------------------
       call dump_serial(au0,(nb+1)**2,'ops/au ',nid)
       call dump_serial(bu0,(nb+1)**2,'ops/bu ',nid)
       call dump_serial(u,(nb+1)*3,'ops/u ',nid)
+c     call dump_serial(uk,ls*,'ops/u ',nid)
       call dump_global(cul,ncloc,'ops/cu ',wk1,wk2,nid)
 
       if (ifpod(2)) then
