@@ -657,6 +657,36 @@ c     call opmask  (inp1,inp2,inp3)
       return
       end
 c-----------------------------------------------------------------------
+      subroutine binv1(out1,inp1,SCALE)
+C--------------------------------------------------------------------
+C
+C     Compute OUT = (B)-1 * INP   (explicit)
+C
+C--------------------------------------------------------------------
+      include 'SIZE'
+      include 'INPUT'
+      include 'MASS'
+      include 'SOLN'
+
+      real out1  (lt)
+      real inp1  (lt)
+
+      include 'OPCTR'
+      
+      call col2  (inp1,tmask,lx1*ly1*lz1*nelt)
+      call dssum (inp1,lx1,ly1,lz1)
+
+      ntot=lx1*ly1*lz1*nelv
+
+      do i=1,ntot
+         tmp    =binvm1(i,1,1,1)*scale
+         out1(i)=inp1(i)*tmp
+         write(6,*)i,inp1(i),out1(i)
+      enddo   
+
+      return
+      end
+C--------------------------------------------------------------------
       subroutine invmat(a,wk,iwk1,iwk2,n)
 
       real a(n,n)
@@ -748,11 +778,11 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real ga(lt,nb),sb(lt,nb)
+      real ga(lt,0:nb),sb(lt,0:nb)
 
       n=lx1*ly1*lz1*nelv
 
-      do ib=1,nb
+      do ib=0,nb
          call axhelm(ga(1,ib),sb(1,ib),ones,zeros,1,1)
       enddo
 
