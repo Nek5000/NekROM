@@ -125,12 +125,14 @@ c-----------------------------------------------------------------------
          call exitti('nb not a square of an integer$',nb)
       endif
 
+      l=1
       do k=1,nbs
       do j=1,nbs
       do i=1,n
          x=xm1(i,1,1,1)
          y=ym1(i,1,1,1)
-         tb(i,j)=sin(j*pi*x)*sin(k*pi*y)
+         tb(i,l)=sin(j*pi*x)*sin(k*pi*y)
+         l=l+1
       enddo
       enddo
       enddo
