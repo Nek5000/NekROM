@@ -111,13 +111,14 @@ c-----------------------------------------------------------------------
       call rom_init_params
       ifrom(1)=.false.
       ifpod(1)=.false.
-      call rom_init_fields
+      n=lx1*ly1*lz1*nelt
+      call rzero(zeros,n)
+      call rone(ones,n)
 
       call setgram
       call setevec
 
       call setbases
-      n=lx1*ly1*lz1*nelt
 
       nbs=nint(sqrt(nb*1.0))
       if (nb.ne.nbs*nbs) then
