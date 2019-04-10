@@ -355,7 +355,7 @@ c-----------------------------------------------------------------------
       real rhs(nb)
 
       do i=1,nb
-         call savg(s_bar,a_surf,s,2,'f  ')
+         call savg(s_bar,a_surf,tb(1,i),2,'f  ')
          rhs(i)=s_bar*a_surf
       enddo
 

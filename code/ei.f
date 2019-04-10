@@ -177,8 +177,8 @@ c-----------------------------------------------------------------------
 
       eest=0.
 
-      do j=0,nb
-      do i=0,nb
+      do j=1,nr
+      do i=1,nr
          eest=eest+sig_full(i,j)*theta(i)*theta(j)
       enddo
       enddo
@@ -216,34 +216,34 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real f(lt), gg(lt,nb)
+      real f(lt), gg(lt,0:nb)
       real rr(lt,Nr), rg(lt,Nr)
       real sig_full(Nr,Nr)
       real work(lt)
 
-      tolh=1.e-5
+      tolh=1.e-9
       nmxhi=1000
 
-      write (6,*) 'wp-2.1'
       call copy(rg(1,1),f,lt)
-      write (6,*) 'wp-2.2'
 
       do ie=1,nelt
          do i=1,nb
             call copy(work,gg(1,i),lt)
             call emask(work,ie)
-            call copy(rg(1,2+(ie-1)*i),work,lt)
+            call copy(rg(1,1+i+(ie-1)*nb),work,lt)
          enddo
       enddo
-      write (6,*) 'wp-2.3'
       ! compute riesz representives
+c      do i=1,Nr
+c         call hmholtz('ries',rr(1,i),rg(1,i),ones,zeros,tmask,tmult,2,
+c     $   tolh,nmxhi,1)
+c      enddo
       do i=1,Nr
-         call hmholtz('ries',rr(1,i),rg(1,i),ones,zeros,tmask,tmult,2,
-     $   tolh,nmxhi,1)
+         call invs(rr(1,i),rg(1,i),ones,zeros,tolh,nmxhi,'L2 ',Nr)
       enddo
       write (6,*) 'wp-2.4'
 
-      do i=1,nr
+      do i=1,Nr
       do j=1,lx1*ly1*lz1*nelv
          write (6,*) i,j,rr(j,i)
       enddo
@@ -254,13 +254,11 @@ c-----------------------------------------------------------------------
       !  compute Sigma
       do j=1,Nr
          do i=1,Nr
-            write (6,*) i,j,'sip'
             sig_full(i,j)=sip(rr(1,i),rr(1,j))
          enddo
       enddo
       nio=mio
       write (6,*) 'wp-2.5'
-      call exitt0
 
       return
       end
@@ -273,7 +271,7 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       real f(lx1,ly1,lz1,lelt)
-      real gg(lx1*ly1*lz1*lelt,nb)
+      real gg(lx1*ly1*lz1*lelt,0:nb)
 
       call setf(f)
       call csga(gg,tb) ! get full g
@@ -287,18 +285,47 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       real theta(Nr)
-      real coef(nb)
+      real coef(0:nb)
       real tmp(nb)
-      real tdiff(lelt)
+      real tdiff(lx1,ly1,lz1,lelt)
 
       theta(1) = 1.
 
-      do i=1,lelt 
-         call cfill(tmp,tdiff(i),nb) 
-         call col2(tmp,coef,nb)
+      do i=1,nelt 
+         call cfill(tmp,tdiff(1,1,1,i),nb) 
+         call col2(tmp,coef(1),nb)
          call chsign(tmp,nb)
-         call copy(theta(2+(i-1)*nb),coef,nb)
+         call copy(theta(2+(i-1)*nb),tmp,nb)
       enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine invs(r1,g1,h1,h2,tolh,nmxhi,op,nr)
+
+      include 'SIZE'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      common /scrinvop/ u1(lt),u2(lt),u3(lt)
+
+      real g1(lt),h1(1),h2(1)
+      real r1(lt)
+
+      character*3 op
+
+      call copy(u1,g1,lt)
+
+      if (op.eq.'H10') then
+         call exitti('H10 not yet implemented$',1)
+         ! does not converge
+         !call ophinv(r1,r2,r3,g1,g2,g3,h1,h2,tolh,nmxhi)
+      else if (op.eq.'L2 ') then
+         call binv1(r1,g1,1.) 
+      else
+         call exitti('did not provide supported operator$',1)
+      endif
+
+      call copy(g1,u1,lt)
 
       return
       end
