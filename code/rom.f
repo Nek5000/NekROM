@@ -128,12 +128,12 @@ c-----------------------------------------------------------------------
       l=1
       do k=1,nbs
       do j=1,nbs
-      do i=1,n
-         x=xm1(i,1,1,1)
-         y=ym1(i,1,1,1)
-         tb(i,l)=sin(j*pi*x)*sin(k*pi*y)
+         do i=1,n
+            x=xm1(i,1,1,1)
+            y=ym1(i,1,1,1)
+            tb(i,l)=sin(j*pi*x)*sin(k*pi*y)
+         enddo
          l=l+1
-      enddo
       enddo
       enddo
 
