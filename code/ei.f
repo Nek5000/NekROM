@@ -213,6 +213,7 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
+      include 'OPCTR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
@@ -220,9 +221,11 @@ c-----------------------------------------------------------------------
       real rr(lt,Nr), rg(lt,Nr)
       real sig_full(Nr,Nr)
       real work(lt)
+      real tmp(lt)
 
       tolh=1.e-9
       nmxhi=1000
+      n    = lx1*ly1*lz1*nelv
 
       call copy(rg(1,1),f,lt)
 
@@ -233,6 +236,7 @@ c-----------------------------------------------------------------------
             call copy(rg(1,1+i+(ie-1)*nb),work,lt)
          enddo
       enddo
+
       ! compute riesz representives
 c      do i=1,Nr
 c         call hmholtz('ries',rr(1,i),rg(1,i),ones,zeros,tmask,tmult,2,
@@ -241,20 +245,30 @@ c      enddo
       do i=1,Nr
          call invs(rr(1,i),rg(1,i),ones,zeros,tolh,nmxhi,'L2 ',Nr)
       enddo
-      write (6,*) 'wp-2.4'
 
-      do i=1,Nr
+      ! check whether riesz is correct
+      write(6,*)'xi_f'
       do j=1,lx1*ly1*lz1*nelv
-         write (6,*) i,j,rr(j,i)
+         write (6,*) j,rr(j,1),f(j)
+      enddo
+      
+
+
+      write(6,*)'xi_q_j'
+      do i=2,Nr
+      do j=1,lx1*ly1*lz1*nelv
+         write (6,*) i,j,rr(j,i),rg(j,i)
       enddo
       enddo
 
       mio=nio
       nio=-1
       !  compute Sigma
+      write(6,*)'Sigma_full'
       do j=1,Nr
          do i=1,Nr
             sig_full(i,j)=sip(rr(1,i),rr(1,j))
+            write(6,*)i,j,sig_full(i,j)
          enddo
       enddo
       nio=mio

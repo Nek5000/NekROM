@@ -797,7 +797,7 @@ c-----------------------------------------------------------------------
       real g(lx1*ly1*lz1,lelt)
 
       n=lx1*ly1*lz1*nelt
-
+      
       do i=1,nelt
          if (ie.ne.i) call rzero(g(1,i),lx1*ly1*lz1)
       enddo
