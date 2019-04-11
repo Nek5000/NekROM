@@ -65,9 +65,11 @@ c     ifdebug=.false.
       enddo
       enddo
 
-      if (isolve.eq.0) then ! standard matrix inversion
       ttime=dnekclock()
-         call solve(rhs(1),fluv,1,nb,nb,irv,icv)
+      if (isolve.eq.0) then ! standard matrix inversion
+         if (.not.iffasth.or.ad_step.le.2) then
+            call solve(rhs(1),fluv,1,nb,nb,irv,icv)
+         endif
       else if (isolve.eq.1) then ! constrained solve
          call BFGS_freeze(rhs(1),helmu,invhelmu,umax,umin,udis,1e-3,4) 
 c        call BFGS(rhs(1),helmu,invhelmu,umax,umin,udis,1e-3,4) 

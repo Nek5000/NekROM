@@ -422,8 +422,10 @@ c-----------------------------------------------------------------------
       iffastc=.false.
       if (param(191).ne.0) iffastc=.true.
 
+      iffasth=.false.
+      if (param(192).ne.0.and.ips.eq.'HLM') iffasth=.true.
+
       ifcintp=.false.
-      if (param(192).ne.0) ifcintp=.true.
 
       bux=param(193)
       buy=param(194)
@@ -452,7 +454,7 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) then
          write (6,*) 'rp_isolve     ',isolve
-         write (6,*) 'rp_ifl2       ',ifl2
+         write (6,*) 'rp_ips        ',ips
          write (6,*) 'rp_ifavg0     ',ifavg0
          write (6,*) 'rp_ifdumpops  ',ifdumpops
          write (6,*) 'rp_ifread     ',ifread
@@ -461,6 +463,7 @@ c-----------------------------------------------------------------------
          write (6,*) 'rp_ifcdrag    ',ifcdrag
          write (6,*) 'rp_ifcnuss    ',ifcnuss
          write (6,*) 'rp_iffastc    ',iffastc
+         write (6,*) 'rp_iffasth    ',iffasth
          write (6,*) ' '
          write (6,*) 'rp_ifforce    ',ifforce
          write (6,*) 'rp_ifpart     ',ifpart
