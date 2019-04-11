@@ -249,11 +249,6 @@ c-----------------------------------------------------------------------
 
       if (.not.ifmult.or.nsteps.eq.istep) then
          call final
-         if (nio.eq.0) write (6,*) 'evalc_time: ',evalc_time
-         if (nio.eq.0) write (6,*) 'lu_time:    ',lu_time
-         if (nio.eq.0) write (6,*) 'solve_time: ',solve_time
-         if (nio.eq.0) write (6,*) 'step_time:  ',step_time
-         if (nio.eq.0) write (6,*) 'rom_time:   ',rom_time
       endif
 
       return
@@ -836,6 +831,14 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       real t1(0:nb),t2(0:nb)
+
+      if (nid.eq.0) then
+         write (6,*) 'evalc_time: ',evalc_time
+         write (6,*) 'lu_time:    ',lu_time
+         write (6,*) 'solve_time: ',solve_time
+         write (6,*) 'step_time:  ',step_time
+         write (6,*) 'rom_time:   ',rom_time
+      endif
 
       if (ifdumpops) then
          call dump_serial(u,nb+1,'ops/uf ',nid)
