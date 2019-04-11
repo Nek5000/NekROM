@@ -668,6 +668,8 @@ C--------------------------------------------------------------------
       include 'MASS'
       include 'SOLN'
 
+      parameter (lt=lx1*ly1*lz1*lelt)
+
       real out1  (lt)
       real inp1  (lt)
 
