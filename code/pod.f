@@ -225,7 +225,7 @@ c-----------------------------------------------------------------------
       else if (ips.eq.'H10') then
          vip=h10vip(t1,t2,t3,t4,t5,t6)
       else if (ips.eq.'HLM') then
-         vip=hlmvip(t1,t2)
+         vip=hlmvip(t1,t2,t3,t4,t5,t6)
       else
          call exitti('did not provide supported inner product space$')
       endif
