@@ -394,7 +394,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine gengram(gram,s,ms,mdim)
+      subroutine hlmgg(gram,s,ms,mdim)
 
       include 'SIZE'
       include 'TOTAL'
@@ -402,27 +402,142 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
+      common /scrgg/ uu(lt),vv(lt),ww(lt)
+
       real gram(ms,ms)
       real s(lt,mdim,ms)
 
       if (nio.eq.0) write (6,*) 'inside gengram'
 
-      n  = lx1*ly1*lz1*nelt
+      n=lx1*ly1*lz1*nelt
+
+      s1=ad_beta(1,3)/ad_dt
+      if (ifield.eq.1) then
+         s2=1./ad_re
+      else
+         s2=1./ad_pe
+      endif
 
       do j=1,ms
-      do i=1,ms ! Form the Gramian, U=U_K^T A U_K using H^1_0 Norm
-         if (mdim.eq.1) then
-            gram(i,j)=sip(s(1,1,i),s(1,1,j))
-         else
-            gram(i,j)=vip(s(1,1,i),s(1,2,i),s(1,ldim,i),
-     $                    s(1,1,j),s(1,2,j),s(1,ldim,j))
+         call axhelm(uu,s(1,1,j),ones,zeros,1,1)
+         if (mdim.eq.2) then
+            call axhelm(vv,s(1,2,j),ones,zeros,1,1)
+         else if (mdim.eq.3) then
+            call axhelm(ww,s(1,3,j),ones,zeros,1,1)
          endif
-      enddo
-         if (nio.eq.0) write(6,1) j,gram(1,j),ips
+         do i=1,ms ! Form the Gramian, U=U_K^T A U_K using H^1_0 Norm
+            gram(i,j)=s1*glsc2(uu,s(1,1,i),n)
+     $               +s2*glsc3(s(1,1,i),s(1,1,j),n)
+            if (mdim.eq.2) then
+               gram(i,j)=gram(i,j)+s1*glsc2(vv,s(1,2,i),n)
+     $                            +s2*glsc3(s(1,2,i),s(1,2,j),n)
+            else if (mdim.eq.3) then
+               gram(i,j)=gram(i,j)+s1*glsc2(ww,s(1,3,i),n)
+     $                            +s2*glsc3(s(1,3,i),s(1,3,j),n)
+            endif
+         enddo
+         if (nio.eq.0) write(6,1) j,gram(1,j),'HLM'
       enddo
 
       if (nio.eq.0) write (6,*) 'exiting gengram'
     1 format (' gram',i5,1p1e16.6,2x,a3)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine h10gg(gram,s,ms,mdim)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /scrgg/ uu(lt),vv(lt),ww(lt)
+
+      real gram(ms,ms)
+      real s(lt,mdim,ms)
+
+      if (nio.eq.0) write (6,*) 'inside gengram'
+
+      n=lx1*ly1*lz1*nelt
+
+      do j=1,ms
+         call axhelm(uu,s(1,1,j),ones,zeros,1,1)
+         if (mdim.eq.2) then
+            call axhelm(vv,s(1,2,j),ones,zeros,1,1)
+         else if (mdim.eq.3) then
+            call axhelm(ww,s(1,3,j),ones,zeros,1,1)
+         endif
+         do i=1,ms ! Form the Gramian, U=U_K^T A U_K using H^1_0 Norm
+            gram(i,j)=glsc2(uu,s(1,1,i),n)
+            if (mdim.eq.2) then
+               gram(i,j)=gram(i,j)+glsc2(vv,s(1,2,i),n)
+            else if (mdim.eq.3) then
+               gram(i,j)=gram(i,j)+glsc2(ww,s(1,3,i),n)
+            endif
+         enddo
+         if (nio.eq.0) write(6,1) j,gram(1,j),'H10'
+      enddo
+
+      if (nio.eq.0) write (6,*) 'exiting gengram'
+    1 format (' gram',i5,1p1e16.6,2x,a3)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine wl2gg(gram,s,ms,mdim)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /scrgg/ uu(lt),vv(lt),ww(lt)
+
+      real gram(ms,ms)
+      real s(lt,mdim,ms)
+
+      if (nio.eq.0) write (6,*) 'inside gengram'
+
+      n=lx1*ly1*lz1*nelt
+
+      do j=1,ms
+         do i=1,ms ! Form the Gramian, U=U_K^T A U_K using H^1_0 Norm
+            if (mdim.eq.1) then
+               gram(i,j)=sip(s(1,1,i),s(1,1,j))
+            else
+               gram(i,j)=vip(s(1,1,i),s(1,2,i),s(1,ldim,i),
+     $                       s(1,1,j),s(1,2,j),s(1,ldim,j))
+            endif
+         enddo
+         if (nio.eq.0) write(6,1) j,gram(1,j),'L2 '
+      enddo
+
+      if (nio.eq.0) write (6,*) 'exiting gengram'
+    1 format (' gram',i5,1p1e16.6,2x,a3)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine gengram(gram,s,ms,mdim)
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real gram(ms,ms)
+      real s(lt,mdim,ms)
+
+      if (ips.eq.'L2 ') then
+         call wl2gg(gram,s,ms,mdim)
+      else if (ips.eq.'H10') then
+         call h10gg(gram,s,ms,mdim)
+      else
+         call hlmgg(gram,s,ms,mdim)
+      endif
 
       return
       end
