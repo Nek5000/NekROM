@@ -385,11 +385,12 @@ c-----------------------------------------------------------------------
 
       isolve=nint(param(170))
 
-      ifl2=.false.
-      ips='H10'
       if (param(171).eq.0) then
-         ifl2=.true.
          ips='L2 '
+      else if (param(171).eq.1) then
+         ips='H10'
+      else
+         ips='HLM'
       endif
 
       ifavg0=.false.
