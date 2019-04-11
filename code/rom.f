@@ -286,12 +286,7 @@ c-----------------------------------------------------------------------
       if (ifcdrag) call cvdrag_setup
       if (ifcnuss) call cnuss_setup
 
-      if (isolve.eq.1) then
-         if (nio.eq.0) write(6,*) 
-     $       'solving with constrained optimization'
-c        call comp_hyperpar
-        call hyperpar
-      endif
+      call hyperpar
 
       setup_end=dnekclock()
 
