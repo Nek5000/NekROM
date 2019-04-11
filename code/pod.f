@@ -411,12 +411,12 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelt
 
-      s1=ad_beta(1,3)/ad_dt
+      s2=ad_beta(1,3)/ad_dt
 
       if (ifield.eq.1) then
-         s2=1./ad_re
+         s1=1./ad_re
       else
-         s2=1./ad_pe
+         s1=1./ad_pe
       endif
 
       do j=1,ms
