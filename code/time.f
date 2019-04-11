@@ -8,8 +8,8 @@ c-----------------------------------------------------------------------
       real rhs(0:nb)
       logical ifdebug
 
-c     ifdebug=.true.
-c     ifdebug=.false.
+      ifdebug=.true.
+      ifdebug=.false.
 
       if (ad_step.eq.1) then
          step_time = 0.
