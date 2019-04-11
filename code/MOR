@@ -110,12 +110,12 @@ c     parameters and common blocks for MOR
 
       logical ifl2,ifvort,ifdump,ifrecon,ifstep,ifpart,ifavg0,
      $        ifdumpops,ifcdrag,ifrms,ifread,ifforce,ifpod(0:ldimt1),
-     $        ifbuoy,ifrom(0:ldimt1),ifcintp,iffastc,ifcnuss,ifctke
+     $        ifbuoy,ifrom(0:ldimt1),ifcintp,iffastc,ifcnuss,ifctke,
      $        iffasth
 
       common /morflags/ ifl2,ifvort,ifdump,ifrecon,ifstep,ifavg0,
      $                  ifdumpops,ifcdrag,ifrms,ifread,ifforce,ifpod,
-     $                  ifbuoy,ifrom,ifcintp,iffastc,ifcnuss,ifctke
+     $                  ifbuoy,ifrom,ifcintp,iffastc,ifcnuss,ifctke,
      $                  iffasth
 
       real last_time,misc_time,lu_time
