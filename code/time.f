@@ -39,6 +39,9 @@ c     ifdebug=.false.
          call cmult2(fluv,bu,ad_beta(1,icount)/ad_dt,nb*nb)
          call add2s2(fluv,au,1/ad_re,nb*nb)
          call copy(helmu,fluv,nb*nb)
+         if (ad_step.eq.3) then
+            call dump_serial(fluv,nb*nb,'ops/hu ',nid)
+         endif
          call lu(fluv,nb,nb,irv,icv)
          call copy(invhelmu,fluv,nb*nb)
       endif
