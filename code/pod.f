@@ -407,11 +407,12 @@ c-----------------------------------------------------------------------
       real gram(ms,ms)
       real s(lt,mdim,ms)
 
-      if (nio.eq.0) write (6,*) 'inside gengram'
+      if (nio.eq.0) write (6,*) 'inside gengram HLM'
 
       n=lx1*ly1*lz1*nelt
 
       s1=ad_beta(1,3)/ad_dt
+
       if (ifield.eq.1) then
          s2=1./ad_re
       else
@@ -427,13 +428,13 @@ c-----------------------------------------------------------------------
          endif
          do i=1,ms ! Form the Gramian, U=U_K^T A U_K using H^1_0 Norm
             gram(i,j)=s1*glsc2(uu,s(1,1,i),n)
-     $               +s2*glsc3(s(1,1,i),s(1,1,j),n)
+     $               +s2*glsc3(s(1,1,i),s(1,1,j),bm1,n)
             if (mdim.eq.2) then
                gram(i,j)=gram(i,j)+s1*glsc2(vv,s(1,2,i),n)
-     $                            +s2*glsc3(s(1,2,i),s(1,2,j),n)
+     $                            +s2*glsc3(s(1,2,i),s(1,2,j),bm1,n)
             else if (mdim.eq.3) then
                gram(i,j)=gram(i,j)+s1*glsc2(ww,s(1,3,i),n)
-     $                            +s2*glsc3(s(1,3,i),s(1,3,j),n)
+     $                            +s2*glsc3(s(1,3,i),s(1,3,j),bm1,n)
             endif
          enddo
          if (nio.eq.0) write(6,1) j,gram(1,j),'HLM'
