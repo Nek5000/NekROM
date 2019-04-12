@@ -764,11 +764,21 @@ c-----------------------------------------------------------------------
       include 'TSTEP'
       include 'MOR'
 
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /scrsetu/ uu(lt),vv(lt),ww(lt)
+
       if (nio.eq.0) write (6,*) 'inside setu'
 
       jfield=ifield
       ifield=1
-      call pv2b(u,uic,vic,wic,ub,vb,wb)
+      if (ips.eq.'H10') then
+         call h10pv2b(u,uic,vic,wic,ub,vb,wb)
+      else if (ips.eq.'HLM') then
+         call hlmpv2b(u,uic,vic,wic,ub,vb,wb)
+      else
+         call pv2b_debug(u,uic,vic,wic,ub,vb,wb)
+      endif
 
       if (ifpod(2)) then
          call ps2b(ut,tic,tb)

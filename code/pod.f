@@ -153,6 +153,49 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine pv2b_debug(coef,ux,uy,uz,uub,vvb,wwb)
+
+      include 'SIZE'
+      include 'SOLN'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real ux(lt),uy(lt),uz(lt),uub(lt,0:nb),vvb(lt,0:nb),wwb(lt,0:nb)
+
+      common /scrk3/ t1(lt),t2(lt),t3(lt),t4(lt),t5(lt),t6(lt)
+
+      real coef(0:nb)
+
+      if (nio.eq.0) write (6,*) 'inside pv2b'
+
+      n=lx1*ly1*lz1*nelt
+
+      call opsub3(t1,t2,t3,ux,uy,uz,uub,vvb,wwb)
+      call outpost(t1,t2,t3,pr,t,'ttt')
+      call outpost(uub(1,1),vvb(1,1),wwb(1,1),pr,t,'ttt')
+
+      coef(0) = 1.
+      if (nio.eq.0) write (6,1) coef(0),coef(0),1.
+
+      do i=1,nb
+         uu=vip(t1,t2,t3,uub(1,i),vvb(1,i),wwb(1,i))
+         vv=vip(uub(1,i),vvb(1,i),wwb(1,i),t1,t2,t3)
+         ww=vip(uub(1,i),vvb(1,i),wwb(1,i),uub(1,i),vvb(1,i),wwb(1,i))
+         xx=vip(t1,t2,t3,t1,t2,t3)
+         coef(i) = vv/ww
+         write (6,*) uu,vv,ww,xx
+c        if (nio.eq.0) write (6,1) coef(i),vv,ww,ips
+      enddo
+      call exitt0
+
+      if (nio.eq.0) write (6,*) 'exiting pv2b'
+
+    1 format(' h10coef',1p3e16.8,1x,a3)
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine pv2b(coef,ux,uy,uz,uub,vvb,wwb)
 
       include 'SIZE'
@@ -281,6 +324,9 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelt
 
+      call rzero(zeros,n)
+      call rone(ones,n)
+
       call axhelm(t7,t1,ones,zeros,1,1)
       h10vip=glsc2(t7,t4,n)
 
@@ -289,7 +335,7 @@ c-----------------------------------------------------------------------
 
       if (ldim.eq.3) then
          call axhelm(t9,t3,ones,zeros,1,1)
-         h10vip = h10vip + glsc2(t9,t6,n)
+         h10vip=h10vip+glsc2(t9,t6,n)
       endif
 
       return
@@ -459,7 +505,7 @@ c-----------------------------------------------------------------------
       real gram(ms,ms)
       real s(lt,mdim,ms)
 
-      if (nio.eq.0) write (6,*) 'inside gengram'
+      if (nio.eq.0) write (6,*) 'inside gengram H10'
 
       n=lx1*ly1*lz1*nelt
 
@@ -480,8 +526,14 @@ c-----------------------------------------------------------------------
          enddo
          if (nio.eq.0) write(6,1) j,gram(1,j),'H10'
       enddo
+c     do j=1,ms
+c     do i=1,ms
+c        gram(i,j)=h10vip(s(1,1,i),s(1,2,i),s(1,ldim,i),
+c    $                    s(1,1,j),s(1,2,j),s(1,ldim,j))
+c     enddo
+c     enddo
 
-      if (nio.eq.0) write (6,*) 'exiting gengram'
+      if (nio.eq.0) write (6,*) 'exiting gengram H10'
     1 format (' gram',i5,1p1e16.6,2x,a3)
 
       return
@@ -633,6 +685,108 @@ c-----------------------------------------------------------------------
          call cmult(ssb(1,i),s,lx1*ly1*lz1*nelt)
       enddo
       nio=nid
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine h10pv2b(coef,ux,uy,uz,uub,vvb,wwb)
+
+      include 'SIZE'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real ux(lt),uy(lt),uz(lt),uub(lt,0:nb),vvb(lt,0:nb),wwb(lt,0:nb)
+
+      common /scrk3/ t1(lt),t2(lt),t3(lt),t4(lt),t5(lt),t6(lt)
+
+      real coef(0:nb)
+
+      if (nio.eq.0) write (6,*) 'inside h10vpv2b'
+
+      n=lx1*ly1*lz1*nelt
+
+      call opsub3(t1,t2,t3,ux,uy,uz,uub,vvb,wwb)
+
+      coef(0) = 1.
+      if (nio.eq.0) write (6,1) coef(0),coef(0),1.
+
+      do i=1,nb
+         call axhelm(t4,uub(1,i),ones,zeros,1,1)
+         call axhelm(t5,vvb(1,i),ones,zeros,1,1)
+
+         ww = glsc2(t4,uub(1,i),n)+glsc2(t5,vvb(1,i),n)
+         vv = glsc2(t4,t1,n)+glsc2(t5,t2,n)
+
+         if (ldim.eq.3) then
+            call axhelm(t6,wwb(1,i),ones,zeros,1,1)
+            ww = ww + glsc2(t6,wwb(1,i),n)
+            vv = vv + glsc2(t6,t3,n)
+         endif
+
+         coef(i) = vv/ww
+         if (nio.eq.0) write (6,1) coef(i),vv,ww
+      enddo
+
+      if (nio.eq.0) write (6,*) 'exiting h10pv2b'
+
+    1 format(' h10coef',1p3e16.8)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine hlmpv2b(coef,ux,uy,uz,uub,vvb,wwb)
+
+      include 'SIZE'
+      include 'MASS'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real ux(lt),uy(lt),uz(lt),uub(lt,0:nb),vvb(lt,0:nb),wwb(lt,0:nb)
+
+      common /scrk3/ t1(lt),t2(lt),t3(lt),t4(lt),t5(lt),t6(lt)
+
+      real coef(0:nb)
+
+      if (nio.eq.0) write (6,*) 'inside hlmvpv2b'
+
+      n=lx1*ly1*lz1*nelt
+
+      call opsub3(t1,t2,t3,ux,uy,uz,uub,vvb,wwb)
+
+      coef(0) = 1.
+      if (nio.eq.0) write (6,1) coef(0),coef(0),1.
+
+      s1=1./ad_re
+      s2=ad_beta(1,3)/ad_dt
+
+      do i=1,nb
+         call axhelm(t4,uub(1,i),ones,zeros,1,1)
+         call axhelm(t5,vvb(1,i),ones,zeros,1,1)
+
+         ww=s1*(glsc2(t4,uub(1,i),n)+glsc2(t5,vvb(1,i),n))
+         vv=s1*(glsc2(t4,t1,n)+glsc2(t5,t2,n))
+
+         vv=vv+s2*(glsc3(t1,uub(1,i),bm1,n)+glsc3(t2,vvb(1,i),bm1,n))
+         ww=ww+s2*(glsc3(uub(1,i),uub(1,i),bm1,n)
+     $            +glsc3(vvb(1,i),vvb(1,i),bm1,n))
+
+         if (ldim.eq.3) then
+            call axhelm(t6,wwb(1,i),ones,zeros,1,1)
+            ww=ww+s1*glsc2(t6,wwb(1,i),n)
+            vv=vv+s1*glsc2(t6,t3,n)
+            vv=vv+s2*glsc3(t3,wwb(1,i),bm1,n)
+            ww=ww+s2*glsc3(wwb(1,i),wwb(1,i),bm1,n)
+         endif
+
+         coef(i) = vv/ww
+         if (nio.eq.0) write (6,1) coef(i),vv,ww
+      enddo
+
+      if (nio.eq.0) write (6,*) 'exiting hlmpv2b'
+
+    1 format(' hlmcoef',1p3e16.8)
 
       return
       end
