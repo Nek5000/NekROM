@@ -67,8 +67,15 @@ c-----------------------------------------------------------------------
 
       ttime=dnekclock()
       if (isolve.eq.0) then ! standard matrix inversion
-         if (.not.iffasth.or.ad_step.le.2) then
+         if (.not.iffasth.or.ad_step.le.3) then
             call solve(rhs(1),fluv,1,nb,nb,irv,icv)
+         else
+            eps=.03
+            damp=1.-eps*ad_dt
+            do i=1,nb
+            if (rhs(i).gt.umax(i)) rhs(i)=umax(i)+(rhs(i)-umax(i))*damp
+            if (rhs(i).lt.umin(i)) rhs(i)=umin(i)+(rhs(i)-umin(i))*damp
+            enddo
          endif
       else if (isolve.eq.1) then ! constrained solve
          call BFGS_freeze(rhs(1),helmu,invhelmu,umax,umin,udis,1e-3,4) 
