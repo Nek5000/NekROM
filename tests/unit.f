@@ -169,7 +169,7 @@ c-----------------------------------------------------------------------
       euni=sqrt(s1/s2)
 
       if (nio.eq.0) write (6,*) 'euni',euni,s1,s2
-      if (.not.'H10'.and.euni.gt.1.e-13) iexit=iexit+8
+      if (ips.eq.'H10'.and.euni.gt.1.e-13) iexit=iexit+8
 
       call exit(iexit)
 
