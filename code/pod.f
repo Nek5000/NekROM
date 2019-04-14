@@ -172,8 +172,6 @@ c-----------------------------------------------------------------------
       n=lx1*ly1*lz1*nelt
 
       call opsub3(t1,t2,t3,ux,uy,uz,uub,vvb,wwb)
-      call outpost(t1,t2,t3,pr,t,'ttt')
-      call outpost(uub(1,1),vvb(1,1),wwb(1,1),pr,t,'ttt')
 
       coef(0) = 1.
       if (nio.eq.0) write (6,1) coef(0),coef(0),1.
@@ -185,9 +183,7 @@ c-----------------------------------------------------------------------
          xx=vip(t1,t2,t3,t1,t2,t3)
          coef(i) = vv/ww
          write (6,*) uu,vv,ww,xx
-c        if (nio.eq.0) write (6,1) coef(i),vv,ww,ips
       enddo
-      call exitt0
 
       if (nio.eq.0) write (6,*) 'exiting pv2b'
 
