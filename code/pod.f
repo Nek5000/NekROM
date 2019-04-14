@@ -406,15 +406,9 @@ c-----------------------------------------------------------------------
       if (.not.ifread) then
          jfield=ifield
          ifield=1
-c        ifpod(0)=.true.
-c        call gengram(ug(1,1,0),cs0,ns,ldim)
          if (ifpod(1)) call gengram(ug(1,1,1),us0,ns,ldim)
          ifield=2
          if (ifpod(2)) call gengram(ug(1,1,2),ts0,ns,1)
-c        do i=1,ns
-c           call outpost(
-c    $         us(1,1,i),us(1,2,i),us(1,ldim,i),pr,ts(1,i),'sna')
-c        enddo
          ifield=jfield
       endif
       
@@ -570,6 +564,40 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine gengraml2(gram,s,ms,mdim)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /scrgram/ uw(lt),vw(lt),ww(lt)
+      real gram(ms,ms)
+      real s(lt,mdim,ms)
+
+      if (nio.eq.0) write (6,*) 'inside gengraml2'
+
+      n=lx1*ly1*lz1*nelv
+
+      do j=1,ms ! Form the Gramian, U=U_K^T A U_K using L2 Norm
+      do i=1,ms
+         gram(i,j)=glsc3(s(1,1,i),s(1,1,j),bm1,n)
+         if (mdim.ge.2)
+     $      gram(i,j)=gram(i,j)+glsc3(s(1,2,i),s(1,2,j),bm1,n)
+         if (mdim.ge.3)
+     $      gram(i,j)=gram(i,j)+glsc3(s(1,3,i),s(1,3,j),bm1,n)
+      enddo
+         if (nio.eq.0) write (6,1) j,gram(1,j)
+      enddo
+
+      if (nio.eq.0) write (6,*) 'exiting gengraml2'
+
+    1 format (' gram',i5,' ',1p1e16.6)
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine gengram(gram,s,ms,mdim)
 
       include 'SIZE'
@@ -582,7 +610,7 @@ c-----------------------------------------------------------------------
       real s(lt,mdim,ms)
 
       if (ips.eq.'L2 ') then
-         call wl2gg(gram,s,ms,mdim)
+         call gengraml2(gram,s,ms,mdim)
       else if (ips.eq.'H10') then
          call h10gg(gram,s,ms,mdim)
       else
