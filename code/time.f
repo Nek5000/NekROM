@@ -356,28 +356,6 @@ c     call add2s2(rhs,av0,s,nb+1) ! not working...
       return
       end
 c-----------------------------------------------------------------------
-      subroutine setr_laplace(rhs)
-
-      include 'SIZE'
-      include 'MOR'
-
-      parameter (lt=lx1*ly1*lz1*lelt)
-      common /scrrhs/ tmp1(0:nb),tmp2(0:nb),s(lt)
-
-      real rhs(nb)
-      real tmp(nb)
-
-      do i=1,nb
-         call savg(s_bar,a_surf,tb(1,i),2,'f  ')
-         rhs(i)=s_bar*a_surf
-      enddo
-      
-      call ps2b(tmp,g,tb)
-      call mxm(bt,nb,tmp,nb,rhs,1)
-
-      return
-      end
-c-----------------------------------------------------------------------
       subroutine setr_v(rhs,icount)
 
       include 'SIZE'
