@@ -293,6 +293,7 @@ c-----------------------------------------------------------------------
       function h10sip(t1,t2)
 
       include 'SIZE'
+      include 'INPUT'
       include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
@@ -301,7 +302,9 @@ c-----------------------------------------------------------------------
 
       common /scrk3/ t3(lt)
 
-      call axhelm(t3,t1,ones,zeros,1,1)
+      isd=1
+      if (ifaxis) isd=2
+      call axhelm(t3,t1,ones,zeros,1,isd)
       h10sip=glsc2(t3,t2,lx1*ly1*lz1*nelt)
 
       return
@@ -326,11 +329,11 @@ c-----------------------------------------------------------------------
       call axhelm(t7,t1,ones,zeros,1,1)
       h10vip=glsc2(t7,t4,n)
 
-      call axhelm(t8,t2,ones,zeros,1,1)
+      call axhelm(t8,t2,ones,zeros,1,2)
       h10vip=h10vip+glsc2(t8,t5,n)
 
       if (ldim.eq.3) then
-         call axhelm(t9,t3,ones,zeros,1,1)
+         call axhelm(t9,t3,ones,zeros,1,3)
          h10vip=h10vip+glsc2(t9,t6,n)
       endif
 
@@ -500,11 +503,13 @@ c-----------------------------------------------------------------------
       n=lx1*ly1*lz1*nelt
 
       do j=1,ms
-         call axhelm(uu,s(1,1,j),ones,zeros,1,1)
+         isd=1
+         if (ifaxis) isd=2
+         call axhelm(uu,s(1,1,j),ones,zeros,1,isd)
          if (mdim.eq.2) then
-            call axhelm(vv,s(1,2,j),ones,zeros,1,1)
+            call axhelm(vv,s(1,2,j),ones,zeros,1,2)
          else if (mdim.eq.3) then
-            call axhelm(ww,s(1,3,j),ones,zeros,1,1)
+            call axhelm(ww,s(1,3,j),ones,zeros,1,3)
          endif
          do i=1,ms ! Form the Gramian, U=U_K^T A U_K using H^1_0 Norm
             gram(i,j)=glsc2(uu,s(1,1,i),n)
