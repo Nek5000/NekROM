@@ -335,7 +335,7 @@ c-----------------------------------------------------------------------
       call setb(bu,bu0,'ops/bu ')
       call setc(cul,icul,'ops/cu ')
       call setu
-      if (ifpod(2)) then
+      if (ifrom(2)) then
          ifield=2
          call seta(at,at0,'ops/at ')
          call setb(bt,bt0,'ops/bt ')
@@ -780,7 +780,7 @@ c-----------------------------------------------------------------------
          call pv2b_debug(u,uic,vic,wic,ub,vb,wb)
       endif
 
-      if (ifpod(2)) then
+      if (ifrom(2)) then
          call ps2b(ut,tic,tb)
          do i=0,nb
             if (nio.eq.0) write (6,*) 'ut',ut(i,1)
