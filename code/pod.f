@@ -521,12 +521,6 @@ c-----------------------------------------------------------------------
          enddo
          if (nio.eq.0) write(6,1) j,gram(1,j),'H10'
       enddo
-c     do j=1,ms
-c     do i=1,ms
-c        gram(i,j)=h10vip(s(1,1,i),s(1,2,i),s(1,ldim,i),
-c    $                    s(1,1,j),s(1,2,j),s(1,ldim,j))
-c     enddo
-c     enddo
 
       if (nio.eq.0) write (6,*) 'exiting gengram H10'
     1 format (' gram',i5,1p1e16.6,2x,a3)
