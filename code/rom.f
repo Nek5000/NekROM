@@ -766,9 +766,11 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /scrsetu/ uu(lt),vv(lt),ww(lt)
+      common /scrsetu/ uu(lt),vv(lt),ww(lt),tt(lt)
 
       if (nio.eq.0) write (6,*) 'inside setu'
+
+      n=lx1*ly1*lz1*nelv
 
       jfield=ifield
       ifield=1
@@ -787,7 +789,24 @@ c-----------------------------------------------------------------------
          enddo
       endif
 
-      call outpost(uic,vic,wic,pr,t,'uic')
+      call reconv(uu,vv,ww,u)
+      call recont(tt,ut)
+
+      ttime=time
+      jstep=istep
+      time=1.
+      istep=1
+      call outpost(uic,vic,wic,pr,tic,'uic')
+      time=2.
+      istep=2
+      call outpost(uu,vv,ww,pr,tt,'uic')
+      call opsub2(uu,vv,ww,uic,vic,wic)
+      call sub2(tt,tic,n)
+      time=3.
+      istep=3
+      call outpost(uu,vv,ww,pr,tt,'uic')
+      time=ttime
+      istep=jstep
       ifield=jfield
 
       if (nio.eq.0) write (6,*) 'exiting setu'
