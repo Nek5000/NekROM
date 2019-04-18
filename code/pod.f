@@ -303,7 +303,7 @@ c-----------------------------------------------------------------------
       common /scrk3/ t3(lt)
 
       isd=1
-      if (ifaxis) isd=2
+      if (ifaxis.and.ifaziv) isd=2
       call axhelm(t3,t1,ones,zeros,1,isd)
       h10sip=glsc2(t3,t2,lx1*ly1*lz1*nelt)
 
@@ -459,19 +459,23 @@ c-----------------------------------------------------------------------
       endif
 
       do j=1,ms
-         call axhelm(uu,s(1,1,j),ones,zeros,1,1)
-         if (mdim.eq.2) then
-            call axhelm(vv,s(1,2,j),ones,zeros,1,1)
-         else if (mdim.eq.3) then
-            call axhelm(ww,s(1,3,j),ones,zeros,1,1)
+         isd=1
+         if (ifaxis) isd=2
+         call axhelm(uu,s(1,1,j),ones,zeros,1,isd)
+         if (mdim.ge.2) then
+            isd=2
+            if (ifaxis) isd=1
+            call axhelm(vv,s(1,2,j),ones,zeros,1,isd)
          endif
+         if (mdim.eq.3) call axhelm(ww,s(1,3,j),ones,zeros,1,3)
          do i=1,ms ! Form the Gramian, U=U_K^T A U_K using H^1_0 Norm
             gram(i,j)=s1*glsc2(uu,s(1,1,i),n)
      $               +s2*glsc3(s(1,1,i),s(1,1,j),bm1,n)
-            if (mdim.eq.2) then
+            if (mdim.ge.2) then
                gram(i,j)=gram(i,j)+s1*glsc2(vv,s(1,2,i),n)
      $                            +s2*glsc3(s(1,2,i),s(1,2,j),bm1,n)
-            else if (mdim.eq.3) then
+            endif
+            if (mdim.eq.3) then
                gram(i,j)=gram(i,j)+s1*glsc2(ww,s(1,3,i),n)
      $                            +s2*glsc3(s(1,3,i),s(1,3,j),bm1,n)
             endif
@@ -506,16 +510,18 @@ c-----------------------------------------------------------------------
          isd=1
          if (ifaxis) isd=2
          call axhelm(uu,s(1,1,j),ones,zeros,1,isd)
-         if (mdim.eq.2) then
-            call axhelm(vv,s(1,2,j),ones,zeros,1,2)
-         else if (mdim.eq.3) then
-            call axhelm(ww,s(1,3,j),ones,zeros,1,3)
+         if (mdim.ge.2) then
+            isd=2
+            if (ifaxis) isd=1
+            call axhelm(vv,s(1,2,j),ones,zeros,1,isd)
          endif
+         if (mdim.eq.3) call axhelm(ww,s(1,3,j),ones,zeros,1,3)
          do i=1,ms ! Form the Gramian, U=U_K^T A U_K using H^1_0 Norm
             gram(i,j)=glsc2(uu,s(1,1,i),n)
-            if (mdim.eq.2) then
+            if (mdim.ge.2) then
                gram(i,j)=gram(i,j)+glsc2(vv,s(1,2,i),n)
-            else if (mdim.eq.3) then
+            endif
+            if (mdim.eq.3) then
                gram(i,j)=gram(i,j)+glsc2(ww,s(1,3,i),n)
             endif
          enddo
