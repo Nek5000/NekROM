@@ -683,7 +683,6 @@ C--------------------------------------------------------------------
       do i=1,ntot
          tmp    =binvm1(i,1,1,1)*scale
          out1(i)=inp1(i)*tmp
-         write(6,*)i,inp1(i),out1(i)
       enddo   
 
       return
@@ -822,6 +821,7 @@ c-----------------------------------------------------------------------
             do iz=kz1,kz2
             do iy=ky1,ky2
             do ix=kx1,kx2
+               f(ix,iy,iz,ie)=1
                f(ix,iy,iz,ie)=f(ix,iy,iz,ie)*area(l,1,ifc,ie)
                l=l+1
             enddo

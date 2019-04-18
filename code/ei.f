@@ -182,7 +182,11 @@ c-----------------------------------------------------------------------
          eest=eest+sig_full(i,j)*theta(i)*theta(j)
       enddo
       enddo
-
+      
+      if (eest < 0) then
+         write(6,*) 'Warning: eest is negative', eest
+         eest = abs(eest)
+      endif
       eest=sqrt(eest)
 
       return
@@ -247,32 +251,27 @@ c      enddo
       enddo
 
       ! check whether riesz is correct
-      write(6,*)'xi_f'
-      do j=1,lx1*ly1*lz1*nelv
-         write (6,*) j,rr(j,1),f(j)
-      enddo
-      
-
-
-      write(6,*)'xi_q_j'
-      do i=2,Nr
-      do j=1,lx1*ly1*lz1*nelv
-         write (6,*) i,j,rr(j,i),rg(j,i)
-      enddo
-      enddo
+c     write(6,*)'xi_f'
+c     do j=1,lx1*ly1*lz1*nelv
+c        write (6,*) j,rr(j,1),f(j)
+c     enddo
+c     
+c     write(6,*)'xi_q_j'
+c     do i=2,Nr
+c     do j=1,lx1*ly1*lz1*nelv
+c        write (6,*) i,j,rr(j,i),rg(j,i)
+c     enddo
+c     enddo
 
       mio=nio
       nio=-1
       !  compute Sigma
-      write(6,*)'Sigma_full'
       do j=1,Nr
          do i=1,Nr
             sig_full(i,j)=sip(rr(1,i),rr(1,j))
-            write(6,*)i,j,sig_full(i,j)
          enddo
       enddo
       nio=mio
-      write (6,*) 'wp-2.5'
 
       return
       end
@@ -281,13 +280,22 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'
       include 'MOR'
+      include 'TOTAL'
+
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
       real f(lx1,ly1,lz1,lelt)
       real gg(lx1*ly1*lz1*lelt,0:nb)
 
+      n=lx1*ly1*lz1*nelv
       call setf(f)
+c     do i=1,n
+c        x=xm1(i,1,1,1)
+c        y=ym1(i,1,1,1)
+c        f(i,1,1,1) = sin(2*pi*x)*sin(2*pi*y)
+c     enddo
+c     call col2 (f,bm1,n)
       call csga(gg,tb) ! get full g
 
       return
@@ -304,7 +312,6 @@ c-----------------------------------------------------------------------
       real tdiff(lx1,ly1,lz1,lelt)
 
       theta(1) = 1.
-
       do i=1,nelt 
          call cfill(tmp,tdiff(1,1,1,i),nb) 
          call col2(tmp,coef(1),nb)
