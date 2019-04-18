@@ -319,7 +319,7 @@ c-----------------------------------------------------------------------
 
       real t1(lt),t2(lt),t3(lt),t4(lt),t5(lt),t6(lt)
 
-      common /scrk3/ t7(lt),t8(lt),t9(lt)
+      common /scrk4/ t7(lt),t8(lt),t9(lt)
 
       n=lx1*ly1*lz1*nelt
 
