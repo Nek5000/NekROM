@@ -111,6 +111,10 @@ c-----------------------------------------------------------------------
       call rom_init_params
       ifrom(1)=.false.
       ifpod(1)=.false.
+      ifpod(2)=.true.
+      ifrom(2)=.true.
+      call rom_init_fields
+
       n=lx1*ly1*lz1*nelt
       call rzero(zeros,n)
       call rone(ones,n)
@@ -120,26 +124,28 @@ c-----------------------------------------------------------------------
 
       call setbases
 
-      nbs=nint(sqrt(nb*1.0))
-      if (nb.ne.nbs*nbs) then
-         call exitti('nb not a square of an integer$',nb)
-      endif
+c     nbs=nint(sqrt(nb*1.0))
+c     if (nb.ne.nbs*nbs) then
+c        call exitti('nb not a square of an integer$',nb)
+c     endif
 
-      l=1
-      do k=1,nbs
-      do j=1,nbs
-         do i=1,n
-            x=xm1(i,1,1,1)
-            y=ym1(i,1,1,1)
-            tb(i,l)=sin(j*pi*x)*sin(k*pi*y)
-         enddo
-         l=l+1
-      enddo
-      enddo
+c     l=1
+c     do k=1,nbs
+c     do j=1,nbs
+c        do i=1,n
+c           x=xm1(i,1,1,1)
+c           y=ym1(i,1,1,1)
+c           tb(i,l)=sin(j*pi*x)*sin(k*pi*y)
+c        enddo
+c        l=l+1
+c     enddo
+c     enddo
 
-c      do i=1,ns
-c         call copy(tb(1,i),ts(1,i),n)
-c      enddo
+c     call snorm(tb)
+
+      do i=1,ns
+         call copy(tb(1,i),ts(1,i),n)
+      enddo
 
       call setops_laplace
       
@@ -192,20 +198,31 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'
       include 'MOR'
+      include 'TOTAL'
 
       parameter (lt=lx1*ly1*lz1*lelt)
       common /scrrhs/ tmp1(0:nb),tmp2(0:nb),s(lt)
 
       real rhs(nb)
-      real tmp(nb)
+      real tmp(0:nb)
+
+      n=lx1*ly1*lz1*nelv
 
       do i=1,nb
          call savg(s_bar,a_surf,tb(1,i),2,'f  ')
          rhs(i)=s_bar*a_surf
       enddo
-      
-      call ps2b(tmp,g,tb)
-      call mxm(bt,nb,tmp,nb,rhs,1)
+
+c     call rzero(rhs,nb)
+
+c     do i=1,n
+c        x=xm1(i,1,1,1)
+c        y=ym1(i,1,1,1)
+c        g(i,1,1,1) = sin(2*pi*x)*sin(2*pi*y)
+c     enddo
+c     
+c     call ps2b(tmp,g,tb)
+c     call mxm(bt,nb,tmp(1),nb,rhs,1)
 
       return
       end
