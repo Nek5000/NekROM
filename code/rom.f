@@ -90,16 +90,14 @@ c-----------------------------------------------------------------------
       if (ifpod(1)) call pv2k(uk,us,ub,vb,wb)
       if (ifpod(2)) call ps2k(tk,ts,tb)
 
-      call dump_serial(uk,ns*(nb+1),'ops/uk ',nid)
-
       call asnap
-
-      if (ifdumpops) call dump_all
 
       if (ifcdrag) call cvdrag_setup
       if (ifcnuss) call cnuss_setup
 
       call hyperpar
+
+      if (ifdumpops) call dump_all
 
       setup_end=dnekclock()
 
