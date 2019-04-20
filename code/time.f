@@ -70,7 +70,7 @@ c-----------------------------------------------------------------------
          if (.not.iffasth.or.ad_step.le.3) then
             call solve(rhs(1),fluv,1,nb,nb,irv,icv)
          else
-            eps=.03
+            eps=.20
             damp=1.-eps*ad_dt
             do i=1,nb
             if (rhs(i).gt.umax(i)) rhs(i)=umax(i)+(rhs(i)-umax(i))*damp
