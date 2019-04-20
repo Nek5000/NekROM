@@ -101,18 +101,21 @@ c-----------------------------------------------------------------------
 
       common /dumpglobal/ wk1(lcloc),wk2(lcloc)
 
-      call dump_serial(ug(1,1,1),ls*ls,'ops/gu ',nid)
-      call dump_serial(au0,(nb+1)**2,'ops/au ',nid)
-      call dump_serial(bu0,(nb+1)**2,'ops/bu ',nid)
-      call dump_serial(u,(nb+1)*3,'ops/u ',nid)
-c     call dump_serial(uk,ls*,'ops/u ',nid)
-      call dump_global(cul,ncloc,'ops/cu ',wk1,wk2,nid)
+      if (ifpod(1)) then
+         call dump_serial(ug(1,1,1),ls*ls,'ops/gu ',nid)
+         call dump_serial(au0,(nb+1)**2,'ops/au ',nid)
+         call dump_serial(bu0,(nb+1)**2,'ops/bu ',nid)
+         call dump_serial(u,(nb+1)*3,'ops/u ',nid)
+         call dump_serial(uk,ns*(nb+1),'ops/uk ',nid)
+         call dump_global(cul,ncloc,'ops/cu ',wk1,wk2,nid)
+      endif
 
       if (ifpod(2)) then
          call dump_serial(ug(1,1,2),ls*ls,'ops/gt ',nid)
          call dump_serial(at0,(nb+1)**2,'ops/at ',nid)
          call dump_serial(bt0,(nb+1)**2,'ops/bt ',nid)
          call dump_serial(ut,(nb+1)*3,'ops/t ',nid)
+         call dump_serial(tk,ns*(nb+1),'ops/tk ',nid)
          call dump_global(ctl,ncloc,'ops/ct ',wk1,wk2,nid)
       endif
 
