@@ -91,6 +91,7 @@ c-----------------------------------------------------------------------
       if (ifpod(2)) call ps2k(tk,ts,tb)
 
       call asnap
+      call dump_serial(uk,ns*(nb+1),'ops/uk ',nid)
 
       if (ifdumpops) call dump_all
 
