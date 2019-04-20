@@ -35,13 +35,9 @@ c-----------------------------------------------------------------------
       enddo
 
       ttime=dnekclock()
+      call seth(fluv,au,bu,1./ad_re)
+      if (ad_step.eq.3) call dump_serial(fluv,nb*nb,'ops/hu ',nid)
       if (ad_step.le.3) then
-         call cmult2(fluv,bu,ad_beta(1,icount)/ad_dt,nb*nb)
-         call add2s2(fluv,au,1/ad_re,nb*nb)
-         call copy(helmu,fluv,nb*nb)
-         if (ad_step.eq.3) then
-            call dump_serial(fluv,nb*nb,'ops/hu ',nid)
-         endif
          call lu(fluv,nb,nb,irv,icv)
          call copy(invhelmu,fluv,nb*nb)
       endif
@@ -184,12 +180,17 @@ c     Matrices and vectors for advance
       rhs(0)=1.
       call setr_t(rhs(1),icount)
 
+      call seth(flut,at,bt,1./ad_pe)
+      if (ad_step.eq.3) call dump_serial(flut,nb*nb,'ops/ht ',nid)
+      if (ad_step.le.3) then
+         call lu(flut,nb,nb,irt,ict)
+         call copy(invhelmt,flut,nb*nb)
+      endif
+
       if (ad_step.le.3) then
          call cmult2(flut,bt,ad_beta(1,icount)/ad_dt,nb*nb)
          call add2s2(flut,at,1/ad_pe,nb*nb)
          call copy(helmt,flut,nb*nb)
-         call lu(flut,nb,nb,irt,ict)
-         call copy(invhelmt,flut,nb*nb)
       endif
 
       if (isolve.eq.0) then ! standard matrix inversion
@@ -462,6 +463,21 @@ c-----------------------------------------------------------------------
          s=1./real(ad_nsteps)
       endif
 
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine seth(flu,a,b,ad_diff)
+
+      include 'SIZE'
+      include 'MOR'
+
+      real flu(nb,nb),a(nb,nb),b(nb,nb)
+
+      if (ad_step.le.3) then
+         call cmult2(flu,b,ad_beta(1,ad_step)/ad_dt,nb*nb)
+         call add2s2(flu,a,ad_diff,nb*nb)
+      endif
+         
       return
       end
 c-----------------------------------------------------------------------
