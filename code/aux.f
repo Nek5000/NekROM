@@ -508,19 +508,8 @@ c-----------------------------------------------------------------------
          enddo
       endif
 
-      if (nid.eq.0) then
-         open (unit=51,file='umin')
-         do i=1,nb
-            write (51,*) umin(i)
-         enddo
-         close (unit=51)
-
-         open (unit=52,file='umax')
-         do i=1,nb
-            write (52,*) umax(i)
-         enddo
-         close (unit=52)
-      endif
+      call dump_serial(umin,nb,'ops/umin ',nid)
+      call dump_serial(umax,nb,'ops/umax ',nid)
 
       return
       end
