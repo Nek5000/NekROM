@@ -323,9 +323,6 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelt
 
-      call rzero(zeros,n)
-      call rone(ones,n)
-
       call axhelm(t7,t1,ones,zeros,1,1)
       h10vip=glsc2(t7,t4,n)
 
