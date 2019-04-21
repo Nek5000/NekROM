@@ -187,11 +187,6 @@ c     Matrices and vectors for advance
          call copy(invhelmt,flut,nb*nb)
       endif
 
-      if (ad_step.le.3) then
-         call cmult2(flut,bt,ad_beta(1,icount)/ad_dt,nb*nb)
-         call add2s2(flut,at,1/ad_pe,nb*nb)
-         call copy(helmt,flut,nb*nb)
-      endif
 
       if (isolve.eq.0) then ! standard matrix inversion
          call solve(rhs(1),flut,1,nb,nb,irt,ict)
