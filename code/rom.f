@@ -304,6 +304,8 @@ c-----------------------------------------------------------------------
       if (nio.eq.0) write (6,*) 'inside rom_init_fields'
 
       n=lx1*ly1*lz1*nelt
+      jfield=ifield
+      ifield=1
 
       call rone(wm1,n)
       call rone(ones,n)
@@ -356,6 +358,8 @@ c           call outpost(us0(1,1,i),us0(1,2,i),us0(1,ldim,i),
 c    $                   pavg,ts0(1,i),'ss0')
          enddo
       endif
+
+      ifield=jfield
 
       if (nio.eq.0) write (6,*) 'exiting rom_init_fields'
 
