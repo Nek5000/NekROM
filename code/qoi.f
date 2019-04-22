@@ -173,7 +173,7 @@ c-----------------------------------------------------------------------
       common /scrk1/ ux(lt),uy(lt),uz(lt)
 
       if (ifcdrag) then
-         call opcopy(ux,uy,uz,vx,vy,vz)
+         call push_op(vx,vy,vz)
 
          do i=0,nb
             nio = -1
@@ -188,7 +188,7 @@ c-----------------------------------------------------------------------
             endif
          enddo
 
-         call opcopy(vx,vy,vz,ux,uy,uz)
+         call pop_op(vx,vy,vz)
       endif
 
       return
