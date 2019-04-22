@@ -247,7 +247,7 @@ c-----------------------------------------------------------------------
       save    icalld
       data    icalld /0/
 
-      common /scrk4/ work(lx1*ly1*lz1*lelt)
+      common /scrc/ work(lx1*ly1*lz1*lelt)
 
       real cl(lcloc),uu(0:nb)
       integer icl(3,lcloc)

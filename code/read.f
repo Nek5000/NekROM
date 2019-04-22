@@ -40,9 +40,6 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /scrk1/ tmp1(lt),tmp2(lt),tmp3(lt),
-     $               tmp4(lt),tmp5(lt),tmp6(lt,3)
-
       character*128 fname
       character*1   fn1(128)
       character*5   fnum
@@ -168,8 +165,7 @@ c     This routine reads files specificed in fname
       character*128 fname
       character*128 fnlint
 
-      common /scrk5/ uu(lt),vv(lt),ww(lt),t1(lt),t2(lt,ldimt),t3(lt),
-     $               t4(lt),t5(lt),t6(lt)
+      common /scrk2/ t4(lt),t5(lt),t6(lt)
 
       ierr = 0
       call lints(fnlint,fname,128)

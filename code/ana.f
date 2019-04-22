@@ -7,7 +7,6 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /scrk5/ t1(lt),t2(lt),t3(lt)
       common /ctrack/ tlast,tdiff,tke,cmax(0:nb),cmin(0:nb),cavg(0:nb),
      $                cvar(0:nb)
       common /strack/ smax(0:nb),smin(0:nb),savg(0:nb),svar(0:nb)
@@ -85,7 +84,7 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /scrk5/ t1(lt),t2(lt),t3(lt)
+      common /scrana/ t1(lt),t2(lt),t3(lt)
       common /ctrack/ cmax(0:nb), cmin(0:nb)
 
       integer icalld
@@ -165,8 +164,8 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /scrk5/ t1(lt),t2(lt),t3(lt)
-      common /scrk9/ utmp(0:nb)
+      common /scrana/ t1(lt),t2(lt),t3(lt)
+      common /scrss/ utmp(0:nb)
 
       real savg(0:nb), smax(0:nb), smin(0:nb), svar(0:nb)
 
@@ -264,7 +263,7 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /scrk5/ t1(lt),t2(lt),t3(lt)
+      common /scrana/ t1(lt),t2(lt),t3(lt)
       common /ctrack/ cmax(0:nb), cmin(0:nb)
 
       character (len=72) fmt1
@@ -668,7 +667,7 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /scrk5/ t1(lt),t2(lt),t3(lt)
+      common /scrana/ t1(lt),t2(lt),t3(lt)
       common /ctrack/ cmax(0:nb), cmin(0:nb)
 
       integer icalld

@@ -8,9 +8,7 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       real u0(lt,3)
-      common /scrk3/ t4(lt),t5(lt),t6(lt)
-      common /scrk4/ bwm1(lt)
-      common /scrk5/ a1(lt),a2(lt),a3(lt)
+      common /scrk2/ a1(lt),a2(lt),a3(lt)
 
       if (nio.eq.0) write (6,*) 'inside setbases'
 
@@ -126,7 +124,7 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /scrk3/ t1(lt),t2(lt),t3(lt),t4(lt),t5(lt),t6(lt)
+      common /scrp/ t1(lt),t2(lt),t3(lt)
 
       real coef(0:nb),tt(lt),sb(lt,0:nb)
 
@@ -162,7 +160,7 @@ c-----------------------------------------------------------------------
 
       real ux(lt),uy(lt),uz(lt),uub(lt,0:nb),vvb(lt,0:nb),wwb(lt,0:nb)
 
-      common /scrk3/ t1(lt),t2(lt),t3(lt),t4(lt),t5(lt),t6(lt)
+      common /scrp/ t1(lt),t2(lt),t3(lt)
 
       real coef(0:nb)
 
@@ -243,7 +241,7 @@ c-----------------------------------------------------------------------
 
       real t1(lt),t2(lt)
 
-      common /scrk3/ t3(lt)
+      common /scrip/ t3(lt)
 
       call axhelm(t3,t1,vdiff,zeros,1,1)
       h10sip_vd=glsc2(t3,t2,lx1*ly1*lz1*nelt)
@@ -261,7 +259,7 @@ c-----------------------------------------------------------------------
 
       real t1(lt),t2(lt)
 
-      common /scrk3/ t3(lt)
+      common /scrip/ t3(lt)
 
       isd=1
       if (ifaxis.and.ifaziv) isd=2
@@ -280,7 +278,7 @@ c-----------------------------------------------------------------------
 
       real t1(lt),t2(lt),t3(lt),t4(lt),t5(lt),t6(lt)
 
-      common /scrk4/ t7(lt),t8(lt),t9(lt)
+      common /scrip/ t7(lt),t8(lt),t9(lt)
 
       n=lx1*ly1*lz1*nelt
 
@@ -685,7 +683,7 @@ c-----------------------------------------------------------------------
 
       real ux(lt),uy(lt),uz(lt),uub(lt,0:nb),vvb(lt,0:nb),wwb(lt,0:nb)
 
-      common /scrk3/ t1(lt),t2(lt),t3(lt),t4(lt),t5(lt),t6(lt)
+      common /scrp/ t1(lt),t2(lt),t3(lt),t4(lt),t5(lt),t6(lt)
 
       real coef(0:nb)
 
@@ -732,7 +730,7 @@ c-----------------------------------------------------------------------
 
       real ux(lt),uy(lt),uz(lt),uub(lt,0:nb),vvb(lt,0:nb),wwb(lt,0:nb)
 
-      common /scrk3/ t1(lt),t2(lt),t3(lt),t4(lt),t5(lt),t6(lt)
+      common /scrp/ t1(lt),t2(lt),t3(lt),t4(lt),t5(lt),t6(lt)
 
       real coef(0:nb)
 

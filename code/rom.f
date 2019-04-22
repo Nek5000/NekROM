@@ -295,8 +295,6 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /scrk0/ t1(lt),t2(lt),t3(lt),u0(lx1*ly1*lz1*lelt,3)
-
       logical alist
 
       character*128 fname1
@@ -376,8 +374,7 @@ c-----------------------------------------------------------------------
 
       real cux(lt),cuy(lt),cuz(lt)
 
-      common /scrk1/ t1(lt),binv(lt),wk1(lt),wk2(lt),wk3(lt)
-      common /scrcwk/ wk(lcloc),wk4(lt),wk5(lt),wk6(lt)
+      common /scrcwk/ wk(lcloc)
 
       real cl(lcloc),icl(3,lcloc)
 
