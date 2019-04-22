@@ -153,45 +153,6 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine pv2b_debug(coef,ux,uy,uz,uub,vvb,wwb)
-
-      include 'SIZE'
-      include 'SOLN'
-      include 'MOR'
-
-      parameter (lt=lx1*ly1*lz1*lelt)
-
-      real ux(lt),uy(lt),uz(lt),uub(lt,0:nb),vvb(lt,0:nb),wwb(lt,0:nb)
-
-      common /scrk3/ t1(lt),t2(lt),t3(lt),t4(lt),t5(lt),t6(lt)
-
-      real coef(0:nb)
-
-      if (nio.eq.0) write (6,*) 'inside pv2b'
-
-      n=lx1*ly1*lz1*nelt
-
-      call opsub3(t1,t2,t3,ux,uy,uz,uub,vvb,wwb)
-
-      coef(0) = 1.
-      if (nio.eq.0) write (6,1) coef(0),coef(0),1.
-
-      do i=1,nb
-         uu=vip(t1,t2,t3,uub(1,i),vvb(1,i),wwb(1,i))
-         vv=vip(uub(1,i),vvb(1,i),wwb(1,i),t1,t2,t3)
-         ww=vip(uub(1,i),vvb(1,i),wwb(1,i),uub(1,i),vvb(1,i),wwb(1,i))
-         xx=vip(t1,t2,t3,t1,t2,t3)
-         coef(i) = vv/ww
-         write (6,*) uu,vv,ww,xx
-      enddo
-
-      if (nio.eq.0) write (6,*) 'exiting pv2b'
-
-    1 format(' h10coef',1p3e16.8,1x,a3)
-
-      return
-      end
-c-----------------------------------------------------------------------
       subroutine pv2b(coef,ux,uy,uz,uub,vvb,wwb)
 
       include 'SIZE'

@@ -594,7 +594,7 @@ c-----------------------------------------------------------------------
       else if (ips.eq.'HLM') then
          call hlmpv2b(u,uic,vic,wic,ub,vb,wb)
       else
-         call pv2b_debug(u,uic,vic,wic,ub,vb,wb)
+         call pv2b(u,uic,vic,wic,ub,vb,wb)
       endif
 
       if (ifrom(2)) then
