@@ -431,7 +431,7 @@ c-----------------------------------------------------------------------
             call col3(ubt,ub(1,i),ub(1,j),n)
             call col3(vbt,vb(1,i),vb(1,j),n)
             if (ldim.eq.3) call col3(wbt,wb(1,i),wb(1,j),n)
-            call opadds(ux,uy,uz,ubt,vbt,wbt,u2a(i,j),n,1)
+            call opadds(ux,uy,uz,ubt,vbt,wbt,u2a(i,j),n,2)
          enddo
          enddo
          call outpost(ux,uy,uz,pavg,tavg,'rms')
