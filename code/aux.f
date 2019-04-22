@@ -167,6 +167,36 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine push_op(vx,vy,vz)
+
+      include 'SIZE'
+
+      parameter (lt1=lx1*ly1*lz1*lelt)
+
+      common /pushpop/ ux(lt1),uy(lt1),uz(lt1)
+
+      real vx(lt1),vy(lt1),vz(lt1)
+
+      call opcopy(ux,uy,uz,vx,vy,vz)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine pop_op(vx,vy,vz)
+
+      include 'SIZE'
+
+      parameter (lt1=lx1*ly1*lz1*lelt)
+
+      common /pushpop/ ux(lt1),uy(lt1),uz(lt1)
+
+      real vx(lt1),vy(lt1),vz(lt1)
+
+      call opcopy(vx,vy,vz,ux,uy,uz)
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine push_sol(vx,vy,vz,pr,t)
 
       include 'SIZE'
