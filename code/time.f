@@ -422,7 +422,7 @@ c-----------------------------------------------------------------------
          call cmult(u2a,s,(nb+1)**2)
 
          call reconv(ux,uy,uz,ua)
-c        call outpost(ux,uy,uz,pavg,tavg,'avg')
+         call outpost(ux,uy,uz,pavg,tavg,'avg')
 
          call opzero(ux,uy,uz)
          n=lx1*ly1*lz1*nelv
