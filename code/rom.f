@@ -41,9 +41,9 @@ c-----------------------------------------------------------------------
          if (nio.eq.0) write (6,*) 'starting rom_step loop',ad_nsteps
          ad_step = 1
          do i=1,ad_nsteps
+            time=time+dt
             if (ifrom(2)) call rom_step_t
             call rom_step
-            time=time+dt
             ad_step=ad_step+1
          enddo
          icalld=0
