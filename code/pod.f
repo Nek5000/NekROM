@@ -261,9 +261,7 @@ c-----------------------------------------------------------------------
 
       common /scrip/ t3(lt)
 
-      isd=1
-      if (ifaxis.and.ifaziv) isd=2
-      call axhelm(t3,t1,ones,zeros,1,isd)
+      call axhelm(t3,t1,ones,zeros,1,1)
       h10sip=glsc2(t3,t2,lx1*ly1*lz1*nelt)
 
       return
