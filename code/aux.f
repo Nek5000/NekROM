@@ -34,6 +34,31 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine reconu_rms(ux,uy,uz,coef)
+
+      include 'SIZE'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real ux(lt),uy(lt),uz(lt),coef(0:nb,0:nb)
+
+      n=lx1*ly1*lz1*nelv
+
+      call opzero(ux,uy,uz)
+
+      do j=0,nb
+      do i=0,nb
+         call col3(ubt,ub(1,i),ub(1,j),n)
+         call col3(vbt,vb(1,i),vb(1,j),n)
+         if (ldim.eq.3) call col3(wbt,wb(1,i),wb(1,j),n)
+         call opadds(ux,uy,uz,ubt,vbt,wbt,u2a(i,j),n,2)
+      enddo
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine reconv(ux,uy,uz,coef)
 
       include 'SIZE'
