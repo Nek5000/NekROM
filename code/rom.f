@@ -417,7 +417,7 @@ c-----------------------------------------------------------------------
 
       if (ifread.and.nid.eq.0) open (unit=12,file=fnlint)
 
-      if (.not.ifread) then
+      if (.not.ifread.and..not.ifaxis) then
          do i=0,nb
             call set_convect_new(c1v(1,i),c2v(1,i),c3v(1,i),
      $                           ub(1,i),vb(1,i),wb(1,i))

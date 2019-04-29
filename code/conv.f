@@ -38,14 +38,26 @@ c-----------------------------------------------------------------------
       subroutine cct(ct,i,j) ! compute C(u) * t set by setcnv
 
       include 'SIZE'
+      include 'SOLN'
+      include 'INPUT'
+      include 'MASS'
       include 'MOR'
 
       parameter(lt=lx1*ly1*lz1*lelt)
 
       real ct(lt)
 
-      call convect_new(ct,u1v(1,j),.true.,
-     $                 c1v(1,i),c2v(1,i),c3v(1,i),.true.)
+      if (ifaxis) then
+         n=lx1*ly1*lz1*nelv
+         call push_op(vx,vy,vz)
+         call opcopy(vx,vy,vz,ub(1,i),vb(1,i),wb(1,i))
+         call conv1(ct,tb(1,j))
+         call col2(ct,bm1,n)
+         call pop_op(vx,vy,vz)
+      else
+         call convect_new(ct,u1v(1,j),.true.,
+     $                    c1v(1,i),c2v(1,i),c3v(1,i),.true.)
+      endif
 
       return
       end
@@ -53,7 +65,10 @@ c-----------------------------------------------------------------------
       subroutine ccu(cu1,cu2,cu3,i,j) ! compute C(u) * u set by setcnv
 
       include 'SIZE'
+      include 'INPUT'
+      include 'SOLN'
       include 'MOR'
+      include 'MASS'
 
       parameter(lt=lx1*ly1*lz1*lelt)
 
@@ -61,12 +76,23 @@ c-----------------------------------------------------------------------
 
       real cu1(lt),cu2(lt),cu3(lt)
 
-      call convect_new(cu1,u1v(1,j),.true.,
-     $                 c1v(1,i),c2v(1,i),c3v(1,i),.true.)
-      call convect_new(cu2,u2v(1,j),.true.,
-     $                 c1v(1,i),c2v(1,i),c3v(1,i),.true.)
-      if (ldim.eq.3) call convect_new(cu3,u3v(1,j),.true.,
+      if (ifaxis) then
+         n=lx1*ly1*lz1*nelv
+         call push_op(vx,vy,vz)
+         call opcopy(vx,vy,vz,ub(1,i),vb(1,i),wb(1,i))
+         call conv1(cu1,ub(1,j))
+         call conv1(cu2,vb(1,j))
+         call col2(cu1,bm1,n)
+         call col2(cu2,bm1,n)
+         call pop_op(vx,vy,vz)
+      else
+         call convect_new(cu1,u1v(1,j),.true.,
+     $                    c1v(1,i),c2v(1,i),c3v(1,i),.true.)
+         call convect_new(cu2,u2v(1,j),.true.,
+     $                    c1v(1,i),c2v(1,i),c3v(1,i),.true.)
+         if (ldim.eq.3) call convect_new(cu3,u3v(1,j),.true.,
      $                                c1v(1,i),c2v(1,i),c3v(1,i),.true.)
+      endif
 
       if (ifcdrag.and.ifield.eq.1) then
          call opcopy(wk4,wk5,wk6,cu1,cu2,cu3)
