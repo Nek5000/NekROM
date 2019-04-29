@@ -382,6 +382,11 @@ c-----------------------------------------------------------------------
          if (ifpod(2)) call gengram(ug(1,1,2),ts0,ns,1)
          ifield=jfield
       endif
+
+c     call outpost(us0,us0(1,2,1),us0(1,ldim,1),pr,ts0,'one')
+c     i=1057
+c     write (6,*) ug(i,i,1),ug(i,i,2),'ug,tg'
+c     call exitt0
       
       return
       end
