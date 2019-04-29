@@ -115,7 +115,7 @@ c-----------------------------------------------------------------------
       if (mod(ad_step,ad_qstep).eq.0) then
          if (ifctke) call ctke
          if (ifcdrag) call cdrag
-         if (ifcnuss) call cnuss
+         call cnuss
       endif
 
       if (mod(ad_step,ad_iostep).eq.0) then
