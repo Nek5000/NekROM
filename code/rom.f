@@ -615,6 +615,7 @@ c-----------------------------------------------------------------------
 
       call reconv(uu,vv,ww,u)
       call recont(tt,ut)
+      call outpost(uu,vv,ww,pr,tt,'rom')
 
       ttime=time
       jstep=istep
