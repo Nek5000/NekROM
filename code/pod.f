@@ -244,6 +244,7 @@ c-----------------------------------------------------------------------
       common /scrip/ t3(lt)
 
       call axhelm(t3,t1,vdiff,zeros,1,1)
+c     call dssum(t3,lx1,ly1,lz1)
       h10sip_vd=glsc2(t3,t2,lx1*ly1*lz1*nelt)
 
       return
