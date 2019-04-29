@@ -72,19 +72,28 @@ c-----------------------------------------------------------------------
       include 'MOR'
       include 'AVG'
 
+      logical iftmp
+
       if (nio.eq.0) write (6,*) 'inside rom_setup'
 
       setup_start=dnekclock()
 
+      n=lx1*ly1*lz1*nelt
+
       call opcopy(uic,vic,wic,vx,vy,vz)
+      call copy(tic,t,n)
 
       call rom_init_params
+c     iftmp=ifread
+c     ifread=.true.
+
       call rom_init_fields
 
       call setgram
       call setevec
 
       call setbases
+
       call setops
 
       if (ifpod(1)) call pv2k(uk,us,ub,vb,wb)
