@@ -102,7 +102,7 @@ c     ifread=.true.
       call asnap
 
       if (ifcdrag) call cvdrag_setup
-      if (ifcnuss) call cnuss_setup
+      call cnuss_setup
 
       call hyperpar
 
@@ -146,6 +146,8 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
       include 'TSTEP'
+
+      logical iftmp
 
       if (nio.eq.0) write (6,*) 'inside setops'
 
@@ -226,8 +228,7 @@ c-----------------------------------------------------------------------
       ifcdrag=.false.
       if (param(182).ne.0) ifcdrag=.true.
 
-      ifcnuss=.false.
-      if (param(183).ne.0) ifcnuss=.true.
+      inus=min(max(nint(param(183)),0),2)
 
       iffastc=.false.
       if (param(191).ne.0) iffastc=.true.
@@ -271,7 +272,7 @@ c-----------------------------------------------------------------------
          write (6,*) 'rp_ad_qstep   ',ad_qstep
          write (6,*) 'rp_ifctke     ',ifctke
          write (6,*) 'rp_ifcdrag    ',ifcdrag
-         write (6,*) 'rp_ifcnuss    ',ifcnuss
+         write (6,*) 'rp_inus       ',inus
          write (6,*) 'rp_iffastc    ',iffastc
          write (6,*) 'rp_iffasth    ',iffasth
          write (6,*) ' '

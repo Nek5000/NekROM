@@ -248,29 +248,68 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
+      parameter (lt=lx1*ly1*lz1*lelt)
+
       common /cnus1/ tbn(0:nb,0:nb),tbd(0:nb),tsa(0:nb)
+      common /cnus2/ qwall(0:nb)
+      common /scrk0/ tx(lt),ty(lt),tz(lt)
 
-      do j=0,nb
-         do i=0,nb
-            call ctbulk_num(tbn(i,j),ub(1,i),vb(1,i),wb(1,i),tb(1,j))
+      if (inus.eq.1) then
+         do j=0,nb
+            do i=0,nb
+               call ctbulk_num(tbn(i,j),ub(1,i),vb(1,i),wb(1,i),tb(1,j))
+            enddo
+            call ctbulk_den(tbd(j),ub(1,j),vb(1,j),wb(1,j))
+            call ctsurf(tsa(j),tb(1,j))
          enddo
-         call ctbulk_den(tbd(j),ub(1,j),vb(1,j),wb(1,j))
-         call ctsurf(tsa(j),tb(1,j))
-      enddo
 
-      do i=0,nb
-         if (nio.eq.0) write (6,*) i,tsa(i),'tsa'
-      enddo
+         do i=0,nb
+            if (nio.eq.0) write (6,*) i,tsa(i),'tsa'
+         enddo
 
-      do j=0,nb
-      do i=0,nb
-         if (nio.eq.0) write (6,*) i,j,tbn(i,j),'tbn'
-      enddo
-      enddo
+         do j=0,nb
+         do i=0,nb
+            if (nio.eq.0) write (6,*) i,j,tbn(i,j),'tbn'
+         enddo
+         enddo
 
-      do i=0,nb
-         if (nio.eq.0) write (6,*) i,tbd(i),'tbd'
-      enddo
+         do i=0,nb
+            if (nio.eq.0) write (6,*) i,tbd(i),'tbd'
+         enddo
+      else if (inus.eq.2) then
+         do i=0,nb
+            call gradm1(tx,ty,tz,tb(1,i))
+
+            eps=1.e-6
+            ta=0.
+            a=0.
+            do ie=1,nelt
+            do ifc=1,ldim*2
+               call facind(kx1,kx2,ky1,ky2,kz1,kz2,lx1,ly1,lz1,ifc)
+               if (cbc(ifc,ie,2).eq.'t  ') then
+                  x1=xm1(kx1,ky1,kz1,ie)
+                  x2=xm1(kx2,ky2,kz2,ie)
+                  z1=zm1(kx1,ky1,kz1,ie)
+                  z2=zm1(kx2,ky2,kz2,ie)
+                  xa=.5*(x1+x2)
+                  za=.5*(z1+z2)
+                  if (ifaxis.and.xa.gt.-eps) then
+                     ta=ta+facint_v(tx,area,ifc,ie)
+                     a=a+facint_v(ones,area,ifc,ie)
+                  endif
+                  if (ldim.eq.3.and.za.lt.eps) then
+                     ta=ta-facint_v(tz,area,ifc,ie)
+                     a=a+facint_v(ones,area,ifc,ie)
+                  endif
+               endif
+            enddo
+            enddo
+
+            ta=glsum(ta,1)
+            a=glsum(a,1)
+            qwall(i)=ta/a
+         enddo
+      endif
 
       return
       end
@@ -463,35 +502,41 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       common /cnus1/ tbn(0:nb,0:nb),tbd(0:nb),tsa(0:nb)
+      common /cnus2/ qwall(0:nb)
       common /nusvars/ diam
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
       nv=nx1*ny1*nz1*nelv
 
-      qsurf=1.
+      if (inus.eq.1) then
+         qsurf=1.
 
-      rhocp=param(7)
-      cond=param(8)
+         rhocp=param(7)
+         cond=param(8)
 
-      tbulk_num=0.
-      tbulk_den=0.
-      twall=0.
+         tbulk_num=0.
+         tbulk_den=0.
+         twall=0.
 
-      do j=0,nb
-         do i=0,nb
-            tbulk_num=tbulk_num+tbn(i,j)*u(i,1)*ut(j,1)
+         do j=0,nb
+            do i=0,nb
+               tbulk_num=tbulk_num+tbn(i,j)*u(i,1)*ut(j,1)
+            enddo
+            tbulk_den=tbulk_den+tbd(j)*u(j,1)
+            twall=twall+tsa(j)*ut(j,1)
          enddo
-         tbulk_den=tbulk_den+tbd(j)*u(j,1)
-         twall=twall+tsa(j)*ut(j,1)
-      enddo
 
-      tbulk=tbulk_num/tbulk_den
-      h=(twall-tbulk)
-      if (h.gt.0) h=qsurf/h
-      rnus=diam*h/cond
+         tbulk=tbulk_num/tbulk_den
+         h=(twall-tbulk)
+         if (h.gt.0) h=qsurf/h
+         rnus=diam*h/cond
 
-      if (nio.eq.0) write (6,1) istep,time,twall,tbulk,rnus
+         if (nio.eq.0) write (6,1) istep,time,twall,tbulk,rnus
+      else if (inus.eq.2) then
+         rnus=vlsc2(qwall,ut,nb+1)
+         if (nio.eq.0) write (6,*) istep,time,rnus,'nus'
+      endif
 
     1 format (i10,1p1e16.8,1p2e14.6,1p1e16.8,' fluxes')
 
