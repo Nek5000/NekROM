@@ -101,6 +101,8 @@ c     ifread=.true.
 
       call asnap
 
+c     ifread=iftmp
+
       if (ifcdrag) call cvdrag_setup
       call cnuss_setup
 
@@ -340,17 +342,17 @@ c-----------------------------------------------------------------------
             call copy_sol(ub,vb,wb,pb,tb,uavg,vavg,wavg,pavg,tavg)
          endif
 
-         if (ifcintp) then
-            call conv_sol(cxb,cyb,czb,uavg,vavg,wavg)
-            do i=1,ns
-               call conv_sol(cs(1,1,i),cs(1,2,i),cs(1,ldim,i),
-     $                       us(1,1,i),us(1,2,i),us(1,ldim,i))
-               call opsub3(cs0(1,1,i),cs0(1,2,i),cs0(1,ldim,i),
-     $                     cs(1,1,i),cs(1,2,i),cs(1,ldim,i),cxb,cyb,czb)
-               call outpost(cs(1,1,i),cs(1,2,i),cs(1,ldim,i),
-     $                      pavg,tavg,'cnv')
-            enddo
-         endif
+c        if (ifcintp) then
+c           call conv_sol(cxb,cyb,czb,uavg,vavg,wavg)
+c           do i=1,ns
+c              call conv_sol(cs(1,1,i),cs(1,2,i),cs(1,ldim,i),
+c    $                       us(1,1,i),us(1,2,i),us(1,ldim,i))
+c              call opsub3(cs0(1,1,i),cs0(1,2,i),cs0(1,ldim,i),
+c    $                     cs(1,1,i),cs(1,2,i),cs(1,ldim,i),cxb,cyb,czb)
+c              call outpost(cs(1,1,i),cs(1,2,i),cs(1,ldim,i),
+c    $                      pavg,tavg,'cnv')
+c           enddo
+c        endif
 
          call outpost(uavg,vavg,wavg,pavg,tavg,'avg')
          if (ifforce) call gradp(bgx,bgy,bgz,pavg)
