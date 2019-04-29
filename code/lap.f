@@ -208,9 +208,17 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelv
 
+      one=1.
+      pi=4.*atan(one)
+
+      do i=1,n
+         s(i)=sin(pi*xm1(i,1,1,1))*sin(pi*ym1(i,1,1,1))
+      enddo
+
       do i=1,nb
-         call savg(s_bar,a_surf,tb(1,i),2,'f  ')
-         rhs(i)=s_bar*a_surf
+c        call savg(s_bar,a_surf,tb(1,i),2,'f  ')
+c        rhs(i)=s_bar*a_surf
+         rhs(i)=glsc3(tb(1,i),s,bm1,n)
       enddo
 
 c     call rzero(rhs,nb)
