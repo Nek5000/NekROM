@@ -424,16 +424,7 @@ c-----------------------------------------------------------------------
          call reconv(ux,uy,uz,ua)
          call outpost(ux,uy,uz,pavg,tavg,'avg')
 
-         call opzero(ux,uy,uz)
-         n=lx1*ly1*lz1*nelv
-         do j=0,nb
-         do i=0,nb
-            call col3(ubt,ub(1,i),ub(1,j),n)
-            call col3(vbt,vb(1,i),vb(1,j),n)
-            if (ldim.eq.3) call col3(wbt,wb(1,i),wb(1,j),n)
-            call opadds(ux,uy,uz,ubt,vbt,wbt,u2a(i,j),n,2)
-         enddo
-         enddo
+         call reconu_rms(ux,uy,uz,u2a)
          call outpost(ux,uy,uz,pavg,tavg,'rms')
       endif
 
