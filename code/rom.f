@@ -355,7 +355,12 @@ c           enddo
 c        endif
 
          call outpost(uavg,vavg,wavg,pavg,tavg,'avg')
-         if (ifforce) call gradp(bgx,bgy,bgz,pavg)
+c        if (ifforce) call gradp(bgx,bgy,bgz,pavg)
+         if (ifforce) then
+            call cfill(bgx,bux,n)
+            call cfill(bgy,buy,n)
+            if (ldim.eq.3) call cfill(bgz,buz,n)
+         endif
       endif
 
       if (ifrecon) then
@@ -662,7 +667,7 @@ c-----------------------------------------------------------------------
          enddo
       else if (ifforce) then
          do i=1,nb
-            bg(i)=-vip(bgx,bgy,bgz,ub(1,i),vb(1,i),wb(1,i))
+            bg(i)=vip(bgx,bgy,bgz,ub(1,i),vb(1,i),wb(1,i))
             if (nio.eq.0) write (6,*) bg(i),i,'bg'
          enddo
          call outpost(bgx,bgy,bz,pavg,tavg,'bgv')

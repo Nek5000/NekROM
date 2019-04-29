@@ -384,6 +384,10 @@ c     call add2s2(rhs,av0,s,nb+1) ! not working...
          call add2(tmp1(1),bg(1),nb)
       endif
 
+      if (ifforce) then
+         call add2(tmp1(1),bg(1),nb)
+      endif
+
       call shift3(fu,tmp1(1),nb)
 
       call mxm(fu,nb,ad_alpha(1,icount),3,tmp1(1),1)
