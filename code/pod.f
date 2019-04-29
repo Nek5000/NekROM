@@ -271,6 +271,7 @@ c-----------------------------------------------------------------------
       function h10vip(t1,t2,t3,t4,t5,t6)
 
       include 'SIZE'
+      include 'INPUT'
       include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
@@ -281,10 +282,14 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelt
 
-      call axhelm(t7,t1,ones,zeros,1,1)
+      isd=1
+      if (ifaxis) isd=2
+      call axhelm(t7,t1,ones,zeros,1,isd)
       h10vip=glsc2(t7,t4,n)
 
-      call axhelm(t8,t2,ones,zeros,1,2)
+      isd=2
+      if (ifaxis) isd=1
+      call axhelm(t8,t2,ones,zeros,1,isd)
       h10vip=h10vip+glsc2(t8,t5,n)
 
       if (ldim.eq.3) then
@@ -676,6 +681,7 @@ c-----------------------------------------------------------------------
       subroutine h10pv2b(coef,ux,uy,uz,uub,vvb,wwb)
 
       include 'SIZE'
+      include 'INPUT'
       include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
@@ -696,14 +702,18 @@ c-----------------------------------------------------------------------
       if (nio.eq.0) write (6,1) coef(0),coef(0),1.
 
       do i=1,nb
-         call axhelm(t4,uub(1,i),ones,zeros,1,1)
-         call axhelm(t5,vvb(1,i),ones,zeros,1,1)
+         isd=1
+         if (ifaxis) isd=2
+         call axhelm(t4,uub(1,i),ones,zeros,1,isd)
+         isd=2
+         if (ifaxis) isd=1
+         call axhelm(t5,vvb(1,i),ones,zeros,1,isd)
 
          ww = glsc2(t4,uub(1,i),n)+glsc2(t5,vvb(1,i),n)
          vv = glsc2(t4,t1,n)+glsc2(t5,t2,n)
 
          if (ldim.eq.3) then
-            call axhelm(t6,wwb(1,i),ones,zeros,1,1)
+            call axhelm(t6,wwb(1,i),ones,zeros,1,3)
             ww = ww + glsc2(t6,wwb(1,i),n)
             vv = vv + glsc2(t6,t3,n)
          endif
@@ -723,6 +733,7 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'
       include 'MASS'
+      include 'INPUT'
       include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
@@ -746,8 +757,12 @@ c-----------------------------------------------------------------------
       s2=ad_beta(1,3)/ad_dt
 
       do i=1,nb
-         call axhelm(t4,uub(1,i),ones,zeros,1,1)
-         call axhelm(t5,vvb(1,i),ones,zeros,1,1)
+         isd=1
+         if (ifaxis) isd=2
+         call axhelm(t4,uub(1,i),ones,zeros,1,isd)
+         isd=2
+         if (ifaxis) isd=1
+         call axhelm(t5,vvb(1,i),ones,zeros,1,isd)
 
          ww=s1*(glsc2(t4,uub(1,i),n)+glsc2(t5,vvb(1,i),n))
          vv=s1*(glsc2(t4,t1,n)+glsc2(t5,t2,n))
@@ -757,7 +772,7 @@ c-----------------------------------------------------------------------
      $            +glsc3(vvb(1,i),vvb(1,i),bm1,n))
 
          if (ldim.eq.3) then
-            call axhelm(t6,wwb(1,i),ones,zeros,1,1)
+            call axhelm(t6,wwb(1,i),ones,zeros,1,3)
             ww=ww+s1*glsc2(t6,wwb(1,i),n)
             vv=vv+s1*glsc2(t6,t3,n)
             vv=vv+s2*glsc3(t3,wwb(1,i),bm1,n)
