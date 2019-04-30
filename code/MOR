@@ -5,18 +5,21 @@ c     parameters and common blocks for MOR
       common /morgram/ ug(ls,ls,0:ldimt1)
       common /moreig/ evec(ls,nb,0:ldimt1),eval(ls,0:ldimt1)
 
-      common /morconvect/ c1v(lxd*lyd*lzd*lelt,0:nb),
-     $                    c2v(lxd*lyd*lzd*lelt,0:nb),
-     $                    c3v(lxd*lyd*lzd*lelt,0:nb),
-     $                    u1v(lxd*lyd*lzd*lelt,0:nb),
-     $                    u2v(lxd*lyd*lzd*lelt,0:nb),
-     $                    u3v(lxd*lyd*lzd*lelt,0:nb)
+      parameter (lub=nb)
+      parameter (ltb=nb)
 
-      common /morbasis/ ub(lx1*ly1*lz1*lelt,0:nb),
-     $                  vb(lx1*ly1*lz1*lelt,0:nb),
-     $                  wb(lx1*ly1*lz1*lelt,0:nb),
+      common /morconvect/ c1v(lxd*lyd*lzd*lelt,0:lub),
+     $                    c2v(lxd*lyd*lzd*lelt,0:lub),
+     $                    c3v(lxd*lyd*lzd*lelt,0:lub),
+     $                    u1v(lxd*lyd*lzd*lelt,0:lub),
+     $                    u2v(lxd*lyd*lzd*lelt,0:lub),
+     $                    u3v(lxd*lyd*lzd*lelt,0:lub)
+
+      common /morbasis/ ub(lx1*ly1*lz1*lelt,0:lub),
+     $                  vb(lx1*ly1*lz1*lelt,0:lub),
+     $                  wb(lx1*ly1*lz1*lelt,0:lub),
      $                  pb(lx2*ly2*lz2*lelt,0:nb),
-     $                  tb(lx1*ly1*lz1*lelt,0:nb),
+     $                  tb(lx1*ly1*lz1*lelt,0:ltb),
      $                  cxb(lx1*ly1*lz1*lelt,0:nb),
      $                  cyb(lx1*ly1*lz1*lelt,0:nb),
      $                  czb(lx1*ly1*lz1*lelt,0:nb)
@@ -27,11 +30,11 @@ c     parameters and common blocks for MOR
      $               pic(lx1*ly1*lz1*lelt),
      $               tic(lx1*ly1*lz1*lelt)
 
-      common /morbtmp/ ubt(lx1*ly1*lz1*lelt,0:nb),
-     $                 vbt(lx1*ly1*lz1*lelt,0:nb),
-     $                 wbt(lx1*ly1*lz1*lelt,0:nb)
+      common /morbtmp/ ubt(lx1*ly1*lz1*lelt,0:lub),
+     $                 vbt(lx1*ly1*lz1*lelt,0:lub),
+     $                 wbt(lx1*ly1*lz1*lelt,0:lub)
 
-      common /morcoef/ uk(0:nb,ls),tk(0:nb,ls)
+      common /morcoef/ uk(0:lub,ls),tk(0:ltb,ls)
 
       common /morsaveu/ us0(lx1*ly1*lz1*lelt,ldim,ls)
 
@@ -49,47 +52,49 @@ c     parameters and common blocks for MOR
 
       common /morbuoy/ bux,buy,buz
 
-      common /moravg/ ua(0:nb),u2a(0:nb,0:nb),uas(0:nb),uvs(0:nb)
+      common /moravg/ ua(0:lub),u2a(0:lub,0:lub),uas(0:lub),uvs(0:lub)
 
       common /mormsk/ dmask(lx1,ly1,lz1,lelt,lmsk+1)
 
       parameter (lcglo=nb*(nb+1)*(nb+1))
       parameter (lcloc=lcglo/lpmin+1)
 
-      common /morvops/ au0(0:nb,0:nb),bu0(0:nb,0:nb),
-     $                 au(nb,nb),bu(nb,nb),
+      common /morvops/ au0(0:lub,0:lub),bu0(0:lub,0:lub),
+     $                 au(lub,lub),bu(lub,lub),
      $                 cul(lcloc),cultmp(lcloc),
      $                 icul(3,lcloc),icultmp(3,lcloc)
 
-      common /mortops/ at0(0:nb,0:nb),bt0(0:nb,0:nb),
-     $                 at(nb,nb),bt(nb,nb),
+      common /mortops/ at0(0:ltb,0:ltb),bt0(0:ltb,0:ltb),
+     $                 at(ltb,ltb),bt(ltb,ltb),
      $                 ctl(lcloc),ctltmp(lcloc),
      $                 ictl(3,lcloc),ictltmp(3,lcloc)
 
-      common /morcpl/  but0(0:nb,0:nb),buc(nb,0:nb),cintp(nb,0:nb)
+      common /morcpl/  but0(0:lub,0:ltb),buc(lub,0:lub),cintp(lub,0:lub)
 
-      common /morvsol/ u(0:nb,3),uj(0:nb,6),
-     $                 u2(0:nb,0:nb),u2j(0:nb,0:nb,6)
+      common /morvsol/ u(0:lub,3),uj(0:lub,6),
+     $                 u2(0:lub,0:lub),u2j(0:lub,0:lub,6)
 
-      common /mortsol/ ut(0:nb,3),utj(0:nb,6),
-     $                 ut2(0:nb,0:nb),ut2j(0:nb,0:nb,6)
+      common /mortsol/ ut(0:ltb,3),utj(0:ltb,6),
+     $                 ut2(0:ltb,0:ltb),ut2j(0:ltb,0:ltb,6)
 
-      common /morrhs/ cvr(nb,3),ctr(nb,3),usa(0:nb),bg(nb),fu(nb,3)
+      common /morrhs/ cvr(lub,3),ctr(lub,3),usa(0:lub),bg(lub),fu(lub,3)
 
-      common /morsig_diag/ siga_diag(0:nb),sigb_diag(0:nb),
-     $                     sigc_diag(0:nb,0:nb)
+      common /morsig_diag/ siga_diag(0:lub),sigb_diag(0:lub),
+     $                     sigc_diag(0:lub,0:lub)
 
-      common /morth_diag/ tha_diag(0:nb),thb_diag(0:nb),
-     $                    thc_diag(0:nb,0:nb)
+      common /morth_diag/ tha_diag(0:lub),thb_diag(0:lub),
+     $                    thc_diag(0:lub,0:lub)
 
-      common /mortmp/ ctmp((nb*(nb+1)*(nb+1))/lpmin+1)
-      common /moritmp/ itmp1(nb),itmp2(nb)
-      common /morrtmp/ rtmp1(nb,nb)
+      common /mortmp/ ctmp((lub*(lub+1)*(lub+1))/lpmin+1)
+      common /moritmp/ itmp1(lub),itmp2(lub)
+      common /morrtmp/ rtmp1(lub,lub)
 
       common /morfld/ wm1(lx1*ly1*lz1*lelt)
-      common /morqoi/ rnus,rdgx(0:nb),rdgy(0:nb),rdgz(0:nb)
+      common /morqoi/ rnus,rdgx(0:lub),rdgy(0:lub),rdgz(0:lub)
 
-      common /mordrag/ fd1(ldim,0:nb),fd2(ldim,0:nb,0:nb),fd3(ldim,0:nb)
+      common /mordrag/ fd1(ldim,0:lub),fd2(ldim,0:lub,0:lub),
+     $                 fd3(ldim,0:lub)
+
       common /mordarray/ sobj(lx1,ly1,lz1,lelt),g(lx1,ly1,lz1,lelt)
       common /morpar/ ad_dt,ad_re,ad_pe,ad_alpha(3,3),ad_beta(4,3),
      $                tbeta
@@ -99,15 +104,15 @@ c     parameters and common blocks for MOR
 
       common /morivars/ i0,j0,k0,i1,j1,k1,ns,navg,ncloc,npr,npart,isolve
 
-      common /morlu/ fluv(nb,nb),flut(nb,nb)
-      common /morilu/ irv(nb),icv(nb),irt(nb),ict(nb)
+      common /morlu/ fluv(lub,lub),flut(ltb,ltb)
+      common /morilu/ irv(lub),icv(lub),irt(ltb),ict(ltb)
 
       real helmu,invhelmu,helmt,invhelmt,qny, qns
-      common /moropt/ opt_rhs(nb), helmu(nb,nb), invhelmu(nb,nb),
+      common /moropt/ opt_rhs(lub), helmu(lub,lub), invhelmu(lub,lub),
      $               helmt(nb,nb), invhelmt(nb,nb) 
-      common /morhyperpar/ umin(nb), umax(nb), udis(nb),
-     $                     tmin(nb), tmax(nb), tdis(nb)
-      common /morqn/ qns(nb), qny(nb)
+      common /morhyperpar/ umin(lub), umax(lub), udis(lub),
+     $                     tmin(ltb), tmax(ltb), tdis(ltb)
+      common /morqn/ qns(lub), qny(lub)
 
       logical ifl2,ifvort,ifdump,ifrecon,ifstep,ifpart,ifavg0,
      $        ifdumpops,ifcdrag,ifrms,ifread,ifforce,ifpod(0:ldimt1),
@@ -126,7 +131,7 @@ c     parameters and common blocks for MOR
       real mtke
       common /morstat/ mtke
 
-      common /mortest/ ul2(nb),uh10(nb)
+      common /mortest/ ul2(lub),uh10(lub)
 
       character*3 ips
       common /morchar/ ips
