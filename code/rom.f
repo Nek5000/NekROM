@@ -96,8 +96,8 @@ c     ifread=.true.
 
       call setops
 
-      if (ifpod(1)) call pv2k(uk,us,ub,vb,wb)
-      if (ifpod(2)) call ps2k(tk,ts,tb)
+c     if (ifpod(1)) call pv2k(uk,us,ub,vb,wb)
+c     if (ifpod(2)) call ps2k(tk,ts,tb)
 
       call asnap
 
@@ -327,7 +327,7 @@ c-----------------------------------------------------------------------
 
       if (.not.ifread) then
          fname1='file.list '
-         call get_saved_fields(us,ps,ts,ns,fname1)
+         call get_saved_fields(us0,ps,ts,ns,fname1)
 
          fname1='avg.list'
          inquire (file=fname1,exist=alist)
@@ -360,9 +360,12 @@ c        endif
 
       if (ifrecon) then
          do i=1,ns
-            call sub3(us0(1,1,i),us(1,1,i),ub,n)
-            call sub3(us0(1,2,i),us(1,2,i),vb,n)
-            if (ldim.eq.3) call sub3(us0(1,ldim,i),us(1,ldim,i),wb,n)
+c           call sub3(us0(1,1,i),us(1,1,i),ub,n)
+c           call sub3(us0(1,2,i),us(1,2,i),vb,n)
+c           if (ldim.eq.3) call sub3(us0(1,ldim,i),us(1,ldim,i),wb,n)
+            call sub2(us0(1,1,i),ub,n)
+            call sub2(us0(1,2,i),vb,n)
+            if (ldim.eq.3) call sub2(us0(1,ldim,i),wb,n)
             if (ifpod(2)) call sub3(ts0(1,i),ts(1,i),tb,n)
 c           call outpost(us0(1,1,i),us0(1,2,i),us0(1,ldim,i),
 c    $                   pavg,ts0(1,i),'ss0')

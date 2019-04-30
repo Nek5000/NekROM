@@ -19,6 +19,10 @@ before_install:
   - export SOURCE_ROOT=$MOR_DIR/Nek5000
   - (cd Nek5000/tools; ./maketools genmap)
 
+  # Test Julia
+  - echo $TRAVIS_JULIA_VERSION
+  - type -p julia
+
 before_script:
   - export FC=mpif77
   - export CC=mpicc

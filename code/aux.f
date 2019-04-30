@@ -440,26 +440,26 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelt
 
-      do i=1,ns
-         call conv_sol(us0(1,1,i),us0(1,2,i),us0(1,ldim,i),
-     $                 us(1,1,i),us(1,2,i),us(1,ldim,i))
-      enddo
+c     do i=1,ns
+c        call conv_sol(us0(1,1,i),us0(1,2,i),us0(1,ldim,i),
+c    $                 us(1,1,i),us(1,2,i),us(1,ldim,i))
+c     enddo
 
       call opzero(ub,vb,wb,n)
 
-      do j=1,ns
-         call opadd2(ub,vb,wb,us0(1,1,j),us0(1,2,j),us0(1,ldim,j))
-      enddo
+c     do j=1,ns
+c        call opadd2(ub,vb,wb,us0(1,1,j),us0(1,2,j),us0(1,ldim,j))
+c     enddo
 
       s=1./real(ns)
 
       call opcmult(ub,vb,wb,s)
 
 
-      do j=1,ns
-         call opadds(us0(1,1,j),us0(1,2,j),us0(1,ldim,j),
-     $               ub,vb,wb,-1.,n,2)
-      enddo
+c     do j=1,ns
+c        call opadds(us0(1,1,j),us0(1,2,j),us0(1,ldim,j),
+c    $               ub,vb,wb,-1.,n,2)
+c     enddo
 
       call gengram(ug(1,1,2),us0,ns,ldim)
       call genevec(evec(1,1,2),eval(1,2),ug(1,1,2),2)
@@ -494,10 +494,10 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelt
 
-      do i=1,ns
-         call ctd_sol(us0(1,1,i),us0(1,2,i),us0(1,ldim,i),
-     $      us(1,1,i),us(1,2,i),us(1,ldim,i),ps(1,i),ts(1,i))
-      enddo
+c     do i=1,ns
+c        call ctd_sol(us0(1,1,i),us0(1,2,i),us0(1,ldim,i),
+c    $      us(1,1,i),us(1,2,i),us(1,ldim,i),ps(1,i),ts(1,i))
+c     enddo
 
       call gengram(dug,us0,ns,ldim)
       call genevec(dug)
@@ -507,12 +507,12 @@ c-----------------------------------------------------------------------
       enddo
 
       ! ub, vb, wb, are the modes
-      do j=1,ns
-      do i=1,nb
-         call opadds(ub(1,i),vb(1,i),wb(1,i),
-     $      us0(1,1,j),us0(1,2,j),us0(1,ldim,j),evec(j,i,1),n,2)
-      enddo
-      enddo
+c     do j=1,ns
+c     do i=1,nb
+c        call opadds(ub(1,i),vb(1,i),wb(1,i),
+c    $      us0(1,1,j),us0(1,2,j),us0(1,ldim,j),evec(j,i,1),n,2)
+c     enddo
+c     enddo
 
       do i=1,nb
          call outpost(ub(1,i),vb(1,i),wb(1,i),pavg,tavg,'bs3')
@@ -544,8 +544,8 @@ c-----------------------------------------------------------------------
          call axhelm(vw,vb(1,j),ones,zeros,1,1)
          if (ldim.eq.3) call axhelm(ww,wb(1,j),ones,zeros,1,1)
          do i=1,ls
-            work(i,j) = glsc2(us0(1,1,i),uw,n)+glsc2(us0(1,2,i),vw,n)
-            if (ldim.eq.3) work(i,j)=work(i,j)+glsc2(us0(1,ldim,i),ww,n)
+c           work(i,j) = glsc2(us0(1,1,i),uw,n)+glsc2(us0(1,2,i),vw,n)
+c           if (ldim.eq.3) work(i,j)=work(i,j)+glsc2(us0(1,ldim,i),ww,n)
          enddo
          tmp1(j) = vlmin(work(1,j),ls)
          tmp2(j) = vlmax(work(1,j),ls)
