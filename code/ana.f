@@ -685,14 +685,14 @@ c-----------------------------------------------------------------------
       do j=1,ns
          istep=j
          nio = -1
-         call pv2b(u,us(1,1,j),us(1,2,j),us(1,ldim,j)
-     $                    ,ub,vb,wb)
+c        call pv2b(u,us(1,1,j),us(1,2,j),us(1,ldim,j)
+c    $                    ,ub,vb,wb)
          nio = nid
 
          write (fmt1,'("(i7,", i0, "(1pe15.7),1x,a4)")') nb+2
          write (fmt2,'("(i7,", i0, "(1pe15.7),1x,a4)")') nb+3
 
-         call opcopy(t1,t2,t3,us(1,1,j),us(1,2,j),us(1,ldim,j))
+c        call opcopy(t1,t2,t3,us(1,1,j),us(1,2,j),us(1,ldim,j))
          energy=op_glsc2_wt(t1,t2,t3,t1,t2,t3,bm1)
 
          n=lx1*ly1*lz1*nelv
