@@ -20,8 +20,7 @@ before_install:
   - (cd Nek5000/tools; ./maketools genmap)
 
   # Test Julia
-  - echo $TRAVIS_JULIA_VERSION
-  - type -p julia
+  - /usr/bin/env julia --version
 
 before_script:
   - export FC=mpif77
