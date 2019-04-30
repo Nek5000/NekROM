@@ -430,94 +430,13 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine setconvbases
-
-      include 'SIZE'
-      include 'MOR'
-      include 'AVG'
-      include 'TSTEP'
-
-
-      n=lx1*ly1*lz1*nelt
-
-c     do i=1,ns
-c        call conv_sol(us0(1,1,i),us0(1,2,i),us0(1,ldim,i),
-c    $                 us(1,1,i),us(1,2,i),us(1,ldim,i))
-c     enddo
-
-      call opzero(ub,vb,wb,n)
-
-c     do j=1,ns
-c        call opadd2(ub,vb,wb,us0(1,1,j),us0(1,2,j),us0(1,ldim,j))
-c     enddo
-
-      s=1./real(ns)
-
-      call opcmult(ub,vb,wb,s)
-
-
-c     do j=1,ns
-c        call opadds(us0(1,1,j),us0(1,2,j),us0(1,ldim,j),
-c    $               ub,vb,wb,-1.,n,2)
-c     enddo
-
-      call gengram(ug(1,1,2),us0,ns,ldim)
-      call genevec(evec(1,1,2),eval(1,2),ug(1,1,2),2)
-
-      do i=1,nb
-         call opzero(ub(1,i),vb(1,i),wb(1,i))
-      enddo
-
-      ! ub, vb, wb, are the modes
-      do j=1,ns
-      do i=1,nb
-         call opadds(ub(1,i),vb(1,i),wb(1,i),
-     $      us0(1,1,j),us0(1,2,j),us0(1,ldim,j),evec(j,i,1),n,2)
-      enddo
-      enddo
-
-c     itmp=istep
-c     do i=0,nb
-c        istep=i
-c        call outpost(ub(1,i),vb(1,i),wb(1,i),wb(1,i),wb(1,i),'cnv')
-c     enddo
-c     istep=itmp
-
+      subroutine setconvbases ! deprecated
+      call exitti('called deprecated subroutine setconvbases',1)
       return
       end
 c-----------------------------------------------------------------------
       subroutine setdtbases
-
-      include 'SIZE'
-      include 'MOR'
-      include 'AVG'
-
-      n=lx1*ly1*lz1*nelt
-
-c     do i=1,ns
-c        call ctd_sol(us0(1,1,i),us0(1,2,i),us0(1,ldim,i),
-c    $      us(1,1,i),us(1,2,i),us(1,ldim,i),ps(1,i),ts(1,i))
-c     enddo
-
-      call gengram(dug,us0,ns,ldim)
-      call genevec(dug)
-
-      do i=1,nb
-         call opzero(ub(1,i),vb(1,i),wb(1,i),n)
-      enddo
-
-      ! ub, vb, wb, are the modes
-c     do j=1,ns
-c     do i=1,nb
-c        call opadds(ub(1,i),vb(1,i),wb(1,i),
-c    $      us0(1,1,j),us0(1,2,j),us0(1,ldim,j),evec(j,i,1),n,2)
-c     enddo
-c     enddo
-
-      do i=1,nb
-         call outpost(ub(1,i),vb(1,i),wb(1,i),pavg,tavg,'bs3')
-      enddo
-
+      call exitti('called deprecated subroutine setdtbases',1)
       return
       end
 c-----------------------------------------------------------------------
