@@ -44,21 +44,6 @@ c-----------------------------------------------------------------------
             enddo
             call snorm(tb)
          endif
-
-         if (ifcintp) then
-            do i=1,nb
-               call rzero(cxb(1,i),n)
-               call rzero(cyb(1,i),n)
-               if (ldim.eq.3) call rzero(czb(1,i),n)
-            enddo
-            do j=1,ns
-            do i=1,nb
-               call opadds(cxb(1,i),cyb(1,i),czb(1,i),
-     $            cs0(1,1,j),cs0(1,2,j),cs0(1,ldim,j),evec(j,i,0),n,2)
-            enddo
-            enddo
-            call vnorm(cxb,cyb,czb)
-         endif
       endif
 
       if (ifcdrag) then

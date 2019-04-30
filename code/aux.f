@@ -418,15 +418,8 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine setdps ! set grad p of snapshots
-
-      include 'SIZE'
-      include 'MOR'
-
-      do i=1,ns
-         call gradp(dps(1,1,i),dps(1,2,i),dps(1,ldim,i),ps(1,i))
-      enddo
-
+      subroutine setdps
+      call exitti('called deprecated subroutine setdps$',1)
       return
       end
 c-----------------------------------------------------------------------
