@@ -96,8 +96,8 @@ c     ifread=.true.
 
       call setops
 
-      if (ifpod(1)) call pv2k(uk,us,ub,vb,wb)
-      if (ifpod(2)) call ps2k(tk,ts,tb)
+      if (ifpod(1)) call pv2k(uk,us0,ub,vb,wb)
+      if (ifpod(2)) call ps2k(tk,ts0,tb)
 
       call asnap
 

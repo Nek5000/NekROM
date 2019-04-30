@@ -39,8 +39,8 @@ c    $                  us0(lx1*ly1*lz1*lelt,ldim,ls)
       common /morsavep/ ps(lx2*ly2*lz2*lelt,ls),
      $                  dps(lx1*ly1*lz1*lelt,ldim,1)
 
-      common /morsavet/ ts(lx1*ly1*lz1*lelt,ls),
-     $                  ts0(lx1*ly1*lz1*lelt,ls)
+      common /morsavet/ ts0(lx1*ly1*lz1*lelt,ls)
+c    $                  ts0(lx1*ly1*lz1*lelt,ls)
 
       common /morsavec/ cs(lx1*ly1*lz1*lelt,ldim,1),
      $                  cs0(lx1*ly1*lz1*lelt,ldim,1)
