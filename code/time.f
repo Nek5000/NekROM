@@ -282,41 +282,7 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine setcintp
-
-      include 'SIZE'
-      include 'MOR'
-
-      common /scrci/ t1m(ls,nb),t2m(nb,ls),t3m(nb,nb),t4m(nb,ls),
-     $               t5m(ls,nb),t6m(nb,nb),t7m(0:nb,0:nb),
-     $               t1v(0:nb),t2v(0:nb)
-
-      do j=1,ns
-c        call pv2b(t1v,us(1,1,j),us(1,2,j),us(1,ldjm,j),ub,vb,wb)
-         call pv2b(t2v,cs(1,1,j),cs(1,2,j),cs(1,ldjm,j),cxb,cyb,czb)
-         do i=1,nb
-            t1m(i,j)=t1v(i)
-            t2m(j,i)=t1v(i)
-            t4m(j,i)=t2v(i)
-         enddo
-      enddo
-
-      call mxm(t1m,nb,t2m,ns,t3m,nb)
-      call invmat(t3m,rtmp1,itmp1,itmp2,nb)
-      call mxm(t3m,nb,t1m,nb,t4m,ls)
-      call mxm(t4m,nb,t5m,ls,t6m,nb)
-
-      call rzero(t7m,(nb+1)**2)
-
-      t7m(0,0)=1.
-
-      do j=1,nb
-      do i=1,nb
-         t7m(j,i)=t6m(i,j)
-      enddo
-      enddo
-
-      call mxm(bvc,nb,t7m,nb+1,cintp,nb+1)
-
+      call exitti('called deprecated subroutine setcintp$',1)
       return
       end
 c-----------------------------------------------------------------------
