@@ -15,7 +15,11 @@ before_install:
   # Install MPICH
   - sudo apt-get update -qq
   - sudo apt-get install -y libmpich-dev mpich
-  - sudo apt-get install julia
+
+  # Install Julia
+  - wget https://julialang-s3.julialang.org/bin/linux/x64/1.0/julia-1.0.3-linux-x86_64.tar.gz
+  - tar xvzf julia-1.0.3-linux-x86_64.tar.gz
+  - sudo ln -s $HOME/julia-1.0.3/bin/julia /usr/local/bin/julia
 
   # Setup Nek5000
   - git clone --single-branch -b presolve-fix https://github.com/kent0/Nek5000
