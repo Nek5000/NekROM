@@ -198,7 +198,7 @@ c    $      us(1,1,i),us(1,2,i),us(1,ldim,i),ub,vb,wb)
          enddo
 
          ! ctke_fom is used to compute mean TKE
-         call ctke_fom(tmp,us(1,1,i),us(1,2,i),us(1,ldim,i))
+c        call ctke_fom(tmp,us(1,1,i),us(1,2,i),us(1,ldim,i))
          tkes=tkes+tmp
       enddo
 
@@ -208,7 +208,7 @@ c    $      us(1,1,i),us(1,2,i),us(1,ldim,i),ub,vb,wb)
       call cmult(savg,s,nb+1)
 
       do i=1,ns
-         call opadd3(t1,t2,t3,us(1,1,i),us(1,2,i),us(1,ldim,i),ub,vb,wb)
+c        call opadd3(t1,t2,t3,us(1,1,i),us(1,2,i),us(1,ldim,i),ub,vb,wb)
          nio = -1
          call pv2b(utmp,t1,t2,t3,ub,vb,wb)
          nio = nid
