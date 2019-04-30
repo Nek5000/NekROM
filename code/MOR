@@ -33,8 +33,8 @@ c     parameters and common blocks for MOR
 
       common /morcoef/ uk(0:nb,ls),tk(0:nb,ls)
 
-      common /morsave/ us(lx1*ly1*lz1*lelt,ldim,ls),
-     $                 us0(lx1*ly1*lz1*lelt,ldim,ls),
+      common /morsave/ us0(lx1*ly1*lz1*lelt,ldim,ls),
+c    $                 us0(lx1*ly1*lz1*lelt,ldim,ls),
      $                 ps(lx2*ly2*lz2*lelt,ls),
      $                 dps(lx1*ly1*lz1*lelt,ldim,ls),
      $                 ts(lx1*ly1*lz1*lelt,ls),
