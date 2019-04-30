@@ -132,22 +132,18 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /scrp/ t1(lt),t2(lt),t3(lt)
-
       real coef(0:nb),tt(lt),sb(lt,0:nb)
 
       if (nio.eq.0) write (6,*) 'inside ps2b'
 
       n=lx1*ly1*lz1*nelt
 
-      call sub3(t1,tt,sb,n)
-
       coef(0) = 1.
       if (nio.eq.0) write (6,1) coef(0),coef(0),1.
 
       do i=1,nb
          ww=sip(sb(1,i),sb(1,i))
-         vv=sip(sb(1,i),t1)
+         vv=sip(sb(1,i),tt)
          coef(i) = vv/ww
          if (nio.eq.0) write (6,1) coef(i),vv,ww,ips
       enddo
@@ -167,23 +163,18 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       real ux(lt),uy(lt),uz(lt),uub(lt,0:nb),vvb(lt,0:nb),wwb(lt,0:nb)
-
-      common /scrp/ t1(lt),t2(lt),t3(lt)
-
       real coef(0:nb)
 
       if (nio.eq.0) write (6,*) 'inside pv2b'
 
       n=lx1*ly1*lz1*nelt
 
-      call opsub3(t1,t2,t3,ux,uy,uz,uub,vvb,wwb)
-
       coef(0) = 1.
       if (nio.eq.0) write (6,1) coef(0),coef(0),1.
 
       do i=1,nb
          ww=vip(uub(1,i),vvb(1,i),wwb(1,i),uub(1,i),vvb(1,i),wwb(1,i))
-         vv=vip(uub(1,i),vvb(1,i),wwb(1,i),t1,t2,t3)
+         vv=vip(uub(1,i),vvb(1,i),wwb(1,i),ux,uy,uz)
          coef(i) = vv/ww
          if (nio.eq.0) write (6,1) coef(i),vv,ww,ips
       enddo
