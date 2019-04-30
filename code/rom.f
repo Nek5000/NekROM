@@ -258,9 +258,9 @@ c-----------------------------------------------------------------------
       ifrecon=(.not.ifread)
 
       ifpart=.false.
-      ifforce=.false.
       bu2=bux*bux+buy*buy+buz*buz
       ifbuoy=bu2.gt.0..and.ifrom(2)
+      ifforce=bu2.gt.0..and..not.ifrom(2)
       ifcintp=.false.
 
       call compute_BDF_coef(ad_alpha,ad_beta)
