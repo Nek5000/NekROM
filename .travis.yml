@@ -44,6 +44,8 @@ before_script:
 script: $MOR_DIR/tests/test.sh
 jobs:
   include:
+  - stage: integration
+    env: TEST=CYL_L2_INTEG
   - stage: unit
     env: TEST=GRAMMIAN_L2_UNIT
   - env: TEST=INITIAL_CONDITION_L2_UNIT
