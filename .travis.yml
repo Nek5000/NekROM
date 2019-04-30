@@ -28,6 +28,8 @@ before_install:
   - (cd Nek5000/tools; ./maketools genmap)
 
   # Test Julia
+  - julia-1.0.3/bin/julia --version
+  - /usr/bin/julia --version
   - /usr/bin/env julia --version
 
 before_script:
