@@ -96,8 +96,8 @@ c     ifread=.true.
 
       call setops
 
-      if (ifpod(1)) call pv2k(uk,us0,ub,vb,wb)
-      if (ifpod(2)) call ps2k(tk,ts0,tb)
+      if (ifpod(1)) call pv2k(uk,us,ub,vb,wb)
+      if (ifpod(2)) call ps2k(tk,ts,tb)
 
       call asnap
 
@@ -258,9 +258,9 @@ c-----------------------------------------------------------------------
       ifrecon=(.not.ifread)
 
       ifpart=.false.
+      ifforce=.false.
       bu2=bux*bux+buy*buy+buz*buz
       ifbuoy=bu2.gt.0..and.ifrom(2)
-      ifforce=bu2.gt.0..and..not.ifrom(2)
       ifcintp=.false.
 
       call compute_BDF_coef(ad_alpha,ad_beta)
@@ -327,8 +327,7 @@ c-----------------------------------------------------------------------
 
       if (.not.ifread) then
          fname1='file.list '
-c        call get_saved_fields(us,ps,ts,ns,fname1)
-         call get_saved_fields(us0,ps,ts0,ns,fname1)
+         call get_saved_fields(us,ps,ts,ns,fname1)
 
          fname1='avg.list'
          inquire (file=fname1,exist=alist)
@@ -356,20 +355,17 @@ c           enddo
 c        endif
 
          call outpost(uavg,vavg,wavg,pavg,tavg,'avg')
-c        if (ifforce) call gradp(bgx,bgy,bgz,pavg)
-         if (ifforce) then
-            call cfill(bgx,bux,n)
-            call cfill(bgy,buy,n)
-            if (ldim.eq.3) call cfill(bgz,buz,n)
-         endif
+         if (ifforce) call gradp(bgx,bgy,bgz,pavg)
       endif
 
       if (ifrecon) then
          do i=1,ns
-            call sub2(us0(1,1,i),ub,n)
-            call sub2(us0(1,2,i),vb,n)
-            if (ldim.eq.3) call sub2(us0(1,ldim,i),wb,n)
-            if (ifpod(2)) call sub2(ts0(1,i),tb,n)
+            call sub3(us0(1,1,i),us(1,1,i),ub,n)
+            call sub3(us0(1,2,i),us(1,2,i),vb,n)
+            if (ldim.eq.3) call sub3(us0(1,ldim,i),us(1,ldim,i),wb,n)
+            if (ifpod(2)) call sub3(ts0(1,i),ts(1,i),tb,n)
+c           call outpost(us0(1,1,i),us0(1,2,i),us0(1,ldim,i),
+c    $                   pavg,ts0(1,i),'ss0')
          enddo
       endif
 
@@ -666,7 +662,7 @@ c-----------------------------------------------------------------------
          enddo
       else if (ifforce) then
          do i=1,nb
-            bg(i)=vip(bgx,bgy,bgz,ub(1,i),vb(1,i),wb(1,i))
+            bg(i)=-vip(bgx,bgy,bgz,ub(1,i),vb(1,i),wb(1,i))
             if (nio.eq.0) write (6,*) bg(i),i,'bg'
          enddo
          call outpost(bgx,bgy,bz,pavg,tavg,'bgv')

@@ -430,11 +430,94 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine setconvbases ! deprecated
+      subroutine setconvbases
+
+      include 'SIZE'
+      include 'MOR'
+      include 'AVG'
+      include 'TSTEP'
+
+
+      n=lx1*ly1*lz1*nelt
+
+      do i=1,ns
+         call conv_sol(us0(1,1,i),us0(1,2,i),us0(1,ldim,i),
+     $                 us(1,1,i),us(1,2,i),us(1,ldim,i))
+      enddo
+
+      call opzero(ub,vb,wb,n)
+
+      do j=1,ns
+         call opadd2(ub,vb,wb,us0(1,1,j),us0(1,2,j),us0(1,ldim,j))
+      enddo
+
+      s=1./real(ns)
+
+      call opcmult(ub,vb,wb,s)
+
+
+      do j=1,ns
+         call opadds(us0(1,1,j),us0(1,2,j),us0(1,ldim,j),
+     $               ub,vb,wb,-1.,n,2)
+      enddo
+
+      call gengram(ug(1,1,2),us0,ns,ldim)
+      call genevec(evec(1,1,2),eval(1,2),ug(1,1,2),2)
+
+      do i=1,nb
+         call opzero(ub(1,i),vb(1,i),wb(1,i))
+      enddo
+
+      ! ub, vb, wb, are the modes
+      do j=1,ns
+      do i=1,nb
+         call opadds(ub(1,i),vb(1,i),wb(1,i),
+     $      us0(1,1,j),us0(1,2,j),us0(1,ldim,j),evec(j,i,1),n,2)
+      enddo
+      enddo
+
+c     itmp=istep
+c     do i=0,nb
+c        istep=i
+c        call outpost(ub(1,i),vb(1,i),wb(1,i),wb(1,i),wb(1,i),'cnv')
+c     enddo
+c     istep=itmp
+
       return
       end
 c-----------------------------------------------------------------------
-      subroutine setdtbases ! deprecated
+      subroutine setdtbases
+
+      include 'SIZE'
+      include 'MOR'
+      include 'AVG'
+
+      n=lx1*ly1*lz1*nelt
+
+      do i=1,ns
+         call ctd_sol(us0(1,1,i),us0(1,2,i),us0(1,ldim,i),
+     $      us(1,1,i),us(1,2,i),us(1,ldim,i),ps(1,i),ts(1,i))
+      enddo
+
+      call gengram(dug,us0,ns,ldim)
+      call genevec(dug)
+
+      do i=1,nb
+         call opzero(ub(1,i),vb(1,i),wb(1,i),n)
+      enddo
+
+      ! ub, vb, wb, are the modes
+      do j=1,ns
+      do i=1,nb
+         call opadds(ub(1,i),vb(1,i),wb(1,i),
+     $      us0(1,1,j),us0(1,2,j),us0(1,ldim,j),evec(j,i,1),n,2)
+      enddo
+      enddo
+
+      do i=1,nb
+         call outpost(ub(1,i),vb(1,i),wb(1,i),pavg,tavg,'bs3')
+      enddo
+
       return
       end
 c-----------------------------------------------------------------------

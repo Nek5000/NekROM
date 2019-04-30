@@ -291,7 +291,7 @@ c-----------------------------------------------------------------------
      $               t1v(0:nb),t2v(0:nb)
 
       do j=1,ns
-         call pv2b(t1v,us0(1,1,j),us0(1,2,j),us0(1,ldjm,j),ub,vb,wb)
+         call pv2b(t1v,us(1,1,j),us(1,2,j),us(1,ldjm,j),ub,vb,wb)
          call pv2b(t2v,cs(1,1,j),cs(1,2,j),cs(1,ldjm,j),cxb,cyb,czb)
          do i=1,nb
             t1m(i,j)=t1v(i)
@@ -381,10 +381,6 @@ c     call add2s2(rhs,av0,s,nb+1) ! not working...
          call mxm(but0,nb+1,ut(0,1),nb+1,tmp2(0),1)
          call add2(tmp1(1),tmp2(1),nb)
       else if (ifforce) then
-         call add2(tmp1(1),bg(1),nb)
-      endif
-
-      if (ifforce) then
          call add2(tmp1(1),bg(1),nb)
       endif
 

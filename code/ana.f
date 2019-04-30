@@ -185,8 +185,8 @@ c-----------------------------------------------------------------------
 
       do i=1,ns
          if (nio.eq.0) write (6,*) i,'th snapshot:'
-c        call opadd3(t1,t2,t3,
-c    $      us(1,1,i),us(1,2,i),us(1,ldim,i),ub,vb,wb)
+         call opadd3(t1,t2,t3,
+     $      us(1,1,i),us(1,2,i),us(1,ldim,i),ub,vb,wb)
          nio = -1
          call pv2b(utmp,t1,t2,t3,ub,vb,wb)
          nio = nid
@@ -198,7 +198,7 @@ c    $      us(1,1,i),us(1,2,i),us(1,ldim,i),ub,vb,wb)
          enddo
 
          ! ctke_fom is used to compute mean TKE
-c        call ctke_fom(tmp,us(1,1,i),us(1,2,i),us(1,ldim,i))
+         call ctke_fom(tmp,us(1,1,i),us(1,2,i),us(1,ldim,i))
          tkes=tkes+tmp
       enddo
 
@@ -208,7 +208,7 @@ c        call ctke_fom(tmp,us(1,1,i),us(1,2,i),us(1,ldim,i))
       call cmult(savg,s,nb+1)
 
       do i=1,ns
-c        call opadd3(t1,t2,t3,us(1,1,i),us(1,2,i),us(1,ldim,i),ub,vb,wb)
+         call opadd3(t1,t2,t3,us(1,1,i),us(1,2,i),us(1,ldim,i),ub,vb,wb)
          nio = -1
          call pv2b(utmp,t1,t2,t3,ub,vb,wb)
          nio = nid
@@ -685,14 +685,14 @@ c-----------------------------------------------------------------------
       do j=1,ns
          istep=j
          nio = -1
-c        call pv2b(u,us(1,1,j),us(1,2,j),us(1,ldim,j)
-c    $                    ,ub,vb,wb)
+         call pv2b(u,us(1,1,j),us(1,2,j),us(1,ldim,j)
+     $                    ,ub,vb,wb)
          nio = nid
 
          write (fmt1,'("(i7,", i0, "(1pe15.7),1x,a4)")') nb+2
          write (fmt2,'("(i7,", i0, "(1pe15.7),1x,a4)")') nb+3
 
-c        call opcopy(t1,t2,t3,us(1,1,j),us(1,2,j),us(1,ldim,j))
+         call opcopy(t1,t2,t3,us(1,1,j),us(1,2,j),us(1,ldim,j))
          energy=op_glsc2_wt(t1,t2,t3,t1,t2,t3,bm1)
 
          n=lx1*ly1*lz1*nelv
