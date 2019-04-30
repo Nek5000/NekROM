@@ -11,7 +11,7 @@ fi
 mkdir ops
 
 name="$(echo $1 | perl -pe 's/_(L2|H10)_/_/g')(${ifl2})"
-$MOR_DIR/tests/test_template.sh 'call rom_update'
+$MOR_DIR/tests/test_template.sh rom_update
 
 ls ../../data/cyl_rect/cyl0.f* > file.list
 ls ../../data/cyl_rect/avgcyl0.f* > avg.list
