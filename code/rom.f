@@ -342,33 +342,16 @@ c-----------------------------------------------------------------------
             call copy_sol(ub,vb,wb,pb,tb,uavg,vavg,wavg,pavg,tavg)
          endif
 
-c        if (ifcintp) then
-c           call conv_sol(cxb,cyb,czb,uavg,vavg,wavg)
-c           do i=1,ns
-c              call conv_sol(cs(1,1,i),cs(1,2,i),cs(1,ldim,i),
-c    $                       us(1,1,i),us(1,2,i),us(1,ldim,i))
-c              call opsub3(cs0(1,1,i),cs0(1,2,i),cs0(1,ldim,i),
-c    $                     cs(1,1,i),cs(1,2,i),cs(1,ldim,i),cxb,cyb,czb)
-c              call outpost(cs(1,1,i),cs(1,2,i),cs(1,ldim,i),
-c    $                      pavg,tavg,'cnv')
-c           enddo
-c        endif
-
          call outpost(uavg,vavg,wavg,pavg,tavg,'avg')
          if (ifforce) call gradp(bgx,bgy,bgz,pavg)
       endif
 
       if (ifrecon) then
          do i=1,ns
-c           call sub3(us0(1,1,i),us(1,1,i),ub,n)
-c           call sub3(us0(1,2,i),us(1,2,i),vb,n)
-c           if (ldim.eq.3) call sub3(us0(1,ldim,i),us(1,ldim,i),wb,n)
             call sub2(us0(1,1,i),ub,n)
             call sub2(us0(1,2,i),vb,n)
             if (ldim.eq.3) call sub2(us0(1,ldim,i),wb,n)
             if (ifpod(2)) call sub2(ts0(1,i),tb,n)
-c           call outpost(us0(1,1,i),us0(1,2,i),us0(1,ldim,i),
-c    $                   pavg,ts0(1,i),'ss0')
          enddo
       endif
 
