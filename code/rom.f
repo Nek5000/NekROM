@@ -327,7 +327,8 @@ c-----------------------------------------------------------------------
 
       if (.not.ifread) then
          fname1='file.list '
-         call get_saved_fields(us,ps,ts,ns,fname1)
+c        call get_saved_fields(us,ps,ts,ns,fname1)
+         call get_saved_fields(us0,ps,ts0,ns,fname1)
 
          fname1='avg.list'
          inquire (file=fname1,exist=alist)
@@ -365,12 +366,10 @@ c        if (ifforce) call gradp(bgx,bgy,bgz,pavg)
 
       if (ifrecon) then
          do i=1,ns
-            call sub3(us0(1,1,i),us(1,1,i),ub,n)
-            call sub3(us0(1,2,i),us(1,2,i),vb,n)
-            if (ldim.eq.3) call sub3(us0(1,ldim,i),us(1,ldim,i),wb,n)
-            if (ifpod(2)) call sub3(ts0(1,i),ts(1,i),tb,n)
-c           call outpost(us0(1,1,i),us0(1,2,i),us0(1,ldim,i),
-c    $                   pavg,ts0(1,i),'ss0')
+            call sub2(us0(1,1,i),ub,n)
+            call sub2(us0(1,2,i),vb,n)
+            if (ldim.eq.3) call sub2(us0(1,ldim,i),wb,n)
+            if (ifpod(2)) call sub2(ts0(1,i),tb,n)
          enddo
       endif
 

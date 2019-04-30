@@ -62,7 +62,7 @@ c-----------------------------------------------------------------------
          call get_saved_fields(us,ps,ts,nn,'bas.list ')
          do i=0,nb
             call copy_sol(ub(1,i),vb(1,i),wb(1,i),pb(1,i),tb(1,i),
-     $       us(1,1,i+1),us(1,2,i+1),us(1,ldim,i+1),ps(1,i+1),ts(1,i+1))
+     $   us0(1,1,i+1),us0(1,2,i+1),us0(1,ldim,i+1),ps(1,i+1),ts0(1,i+1))
          enddo
          if (nn.lt.nb) call exitti(
      $   'number of files in bas.list fewer than nb',nb-nn)

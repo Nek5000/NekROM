@@ -185,8 +185,8 @@ c-----------------------------------------------------------------------
 
       do i=1,ns
          if (nio.eq.0) write (6,*) i,'th snapshot:'
-         call opadd3(t1,t2,t3,
-     $      us(1,1,i),us(1,2,i),us(1,ldim,i),ub,vb,wb)
+c        call opadd3(t1,t2,t3,
+c    $      us(1,1,i),us(1,2,i),us(1,ldim,i),ub,vb,wb)
          nio = -1
          call pv2b(utmp,t1,t2,t3,ub,vb,wb)
          nio = nid
