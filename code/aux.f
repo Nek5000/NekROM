@@ -494,60 +494,63 @@ c-----------------------------------------------------------------------
 
       ! eps is the free parameter
       ! 1e-2 is used in the paper
-      ep = 1e-2
+      ep = 1.e-2
 
       n  = lx1*ly1*lz1*nelt
       if (ifpod(1)) then
+         call cfill(umin,1.e9,nb)
+         call cfill(umax,-1.e9,nb)
+         do j=1,nb
+         do i=1,ns
+            if (uk(i,j).lt.umin(i)) umin(i)=uk(i,j)
+            if (uk(i,j).gt.umax(i)) umax(i)=uk(i,j)
+         enddo
+         enddo
          do j=1,nb                    ! compute hyper-parameter
-            tmp1(j) = vlmin(uk(j,:),ns)
-            tmp2(j) = vlmax(uk(j,:),ns)
             delta(j) = tmp2(j)-tmp1(j)
             umin(j) = tmp1(j) - ep * delta(j)
             umax(j) = tmp2(j) + ep * delta(j)
-            write(6,*) j,umin(j),umax(j)
+            if (nio.eq.0) write (6,*) j,umin(j),umax(j)
          enddo
 
          ! compute distance between umax and umin
          call sub3(udis,umax,umin,nb)
 
-         if (nid.eq.0) then
+         if (nio.eq.0) then
             do i=1,nb
-               write(6,*)i,udis(i)
+               write (6,*) i,udis(i)
             enddo
          endif
-
-         if (nid.eq.0) then
-            open (unit=51,file='umin')
-            do i=1,nb
-               write (51,*) umin(i)
-            enddo
-            close (unit=51)
-
-            open (unit=52,file='umax')
-            do i=1,nb
-               write (52,*) umax(i)
-            enddo
-            close (unit=52)
-         endif
+         call dump_serial(umin,nb,'ops/umin ',nid)
+         call dump_serial(umax,nb,'ops/umax ',nid)
       endif   
 
       if (ifpod(2)) then
+         call cfill(tmin,1.e9,nb)
+         call cfill(tmax,-1.e9,nb)
+         do j=1,nb
+         do i=1,ns
+            if (uk(i,j).lt.tmin(i)) tmin(i)=tk(i,j)
+            if (uk(i,j).gt.tmax(i)) tmax(i)=tk(i,j)
+         enddo
+         enddo
          do j=1,nb                    ! compute hyper-parameter
-            tmp1(j) = vlmin(tk(j,:),ls)
-            tmp2(j) = vlmax(tk(j,:),ls)
             delta(j) = tmp2(j)-tmp1(j)
             tmin(j) = tmp1(j) - ep * delta(j)
             tmax(j) = tmp2(j) + ep * delta(j)
-            write(6,*) j,tmin(j),tmax(j)
+            if (nio.eq.0) write (6,*) j,tmin(j),tmax(j)
          enddo
 
          ! compute distance between umax and umin
          call sub3(tdis,tmax,tmin,nb)
-         if (nid.eq.0) then
+         if (nio.eq.0) then
             do i=1,nb
-               write(6,*)i,tdis(i)
+               write (6,*) i,tdis(i)
             enddo
          endif
+
+         call dump_serial(tmin,nb,'ops/tmin ',nid)
+         call dump_serial(tmax,nb,'ops/tmax ',nid)
 
          if (nid.eq.0) then
             open (unit=51,file='tmin')
@@ -563,9 +566,6 @@ c-----------------------------------------------------------------------
             close (unit=52)
          endif
       endif   
-
-
-
 
       return
       end
