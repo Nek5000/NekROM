@@ -84,8 +84,6 @@ c-----------------------------------------------------------------------
       call copy(tic,t,n)
 
       call rom_init_params
-c     iftmp=ifread
-c     ifread=.true.
 
       call rom_init_fields
 
@@ -100,8 +98,6 @@ c     ifread=.true.
       if (ifpod(2)) call ps2k(tk,ts0,tb)
 
       call asnap
-
-c     ifread=iftmp
 
       if (ifcdrag) call cvdrag_setup
       call cnuss_setup
