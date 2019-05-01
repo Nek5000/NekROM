@@ -248,6 +248,7 @@ c-----------------------------------------------------------------------
       ifforce=.false.
       bu2=bux*bux+buy*buy+buz*buz
       ifbuoy=bu2.gt.0..and.ifrom(2)
+      ifforce=bu2.gt.0..and..not.ifrom(2)
       ifcintp=.false.
 
       call compute_BDF_coef(ad_alpha,ad_beta)
@@ -330,7 +331,11 @@ c-----------------------------------------------------------------------
          endif
 
          call outpost(uavg,vavg,wavg,pavg,tavg,'avg')
-         if (ifforce) call gradp(bgx,bgy,bgz,pavg)
+         if (ifforce) then
+            call cfill(bgx,bux,n)
+            call cfill(bgy,buy,n)
+            if (ldim.eq.3) call cfill(bgz,buz,n)
+         endif
       endif
 
       if (ifrecon) then
@@ -635,12 +640,11 @@ c-----------------------------------------------------------------------
          enddo
       else if (ifforce) then
          do i=1,nb
-            bg(i)=-vip(bgx,bgy,bgz,ub(1,i),vb(1,i),wb(1,i))
+            bg(i)=vip(bgx,bgy,bgz,ub(1,i),vb(1,i),wb(1,i))
             if (nio.eq.0) write (6,*) bg(i),i,'bg'
          enddo
          call outpost(bgx,bgy,bz,pavg,tavg,'bgv')
       endif
-
 
       if (nio.eq.0) write (6,*) 'exiting setg'
 
