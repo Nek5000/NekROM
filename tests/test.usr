@@ -59,6 +59,7 @@ c-----------------------------------------------------------------------
       subroutine usrdat2
       include 'SIZE'
       include 'TOTAL'
+      include 'MOR'
 
       n=lx1*ly1*lz1*nelv
 
