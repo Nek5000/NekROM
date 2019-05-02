@@ -38,6 +38,7 @@ c-----------------------------------------------------------------------
       call seth(fluv,au,bu,1./ad_re)
       if (ad_step.eq.3) call dump_serial(fluv,nb*nb,'ops/hu ',nid)
       if (ad_step.le.3) then
+         call copy(helmu,fluv,nb*nb)
          call lu(fluv,nb,nb,irv,icv)
          call copy(invhelmu,fluv,nb*nb)
       endif
@@ -183,6 +184,7 @@ c     Matrices and vectors for advance
       call seth(flut,at,bt,1./ad_pe)
       if (ad_step.eq.3) call dump_serial(flut,nb*nb,'ops/ht ',nid)
       if (ad_step.le.3) then
+         call copy(helmt,flut,nb*nb)
          call lu(flut,nb,nb,irt,ict)
          call copy(invhelmt,flut,nb*nb)
       endif
