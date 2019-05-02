@@ -489,6 +489,7 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       real ep
+      real wk(nb)
 
       ! eps is the free parameter
       ! 1e-2 is used in the paper
@@ -496,20 +497,25 @@ c-----------------------------------------------------------------------
 
       n  = lx1*ly1*lz1*nelt
       if (ifpod(1)) then
-         call cfill(umin,1.e9,nb)
-         call cfill(umax,-1.e9,nb)
-         do j=1,ns
-         do i=1,nb
-            if (uk(i,j).lt.umin(i)) umin(i)=uk(i,j)
-            if (uk(i,j).gt.umax(i)) umax(i)=uk(i,j)
-         enddo
-         enddo
-         do j=1,nb                    ! compute hyper-parameter
-            d= umax(j)-umin(j)
-            umin(j) = umin(j) - ep * d
-            umax(j) = umax(j) + ep * d
-            if (nio.eq.0) write (6,*) j,umin(j),umax(j)
-         enddo
+         if (ifread) then
+            call read_serial(umin,nb,'ops/umin ',wk,nid)
+            call read_serial(umax,nb,'ops/umax ',wk,nid)
+         else
+            call cfill(umin,1.e9,nb)
+            call cfill(umax,-1.e9,nb)
+            do j=1,ns
+            do i=1,nb
+               if (uk(i,j).lt.umin(i)) umin(i)=uk(i,j)
+               if (uk(i,j).gt.umax(i)) umax(i)=uk(i,j)
+            enddo
+            enddo
+            do j=1,nb                    ! compute hyper-parameter
+               d= umax(j)-umin(j)
+               umin(j) = umin(j) - ep * d
+               umax(j) = umax(j) + ep * d
+               if (nio.eq.0) write (6,*) j,umin(j),umax(j)
+            enddo
+         endif
 
          ! compute distance between umax and umin
          call sub3(udis,umax,umin,nb)
@@ -554,9 +560,10 @@ c-----------------------------------------------------------------------
             enddo
          endif
 
-         call dump_serial(tmin,nb,'ops/tmin ',nid)
-         call dump_serial(tmax,nb,'ops/tmax ',nid)
-
+         if (.not.ifread) then
+            call dump_serial(tmin,nb,'ops/tmin ',nid)
+            call dump_serial(tmax,nb,'ops/tmax ',nid)
+         endif
       endif   
 
       return
