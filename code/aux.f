@@ -557,19 +557,6 @@ c-----------------------------------------------------------------------
          call dump_serial(tmin,nb,'ops/tmin ',nid)
          call dump_serial(tmax,nb,'ops/tmax ',nid)
 
-         if (nid.eq.0) then
-            open (unit=51,file='tmin')
-            do i=1,nb
-               write (51,*) tmin(i)
-            enddo
-            close (unit=51)
-
-            open (unit=52,file='tmax')
-            do i=1,nb
-               write (52,*) tmax(i)
-            enddo
-            close (unit=52)
-         endif
       endif   
 
       return
