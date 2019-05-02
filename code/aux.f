@@ -519,27 +519,34 @@ c-----------------------------------------------------------------------
                write (6,*) i,udis(i)
             enddo
          endif
-         call dump_serial(umin,nb,'ops/umin ',nid)
-         call dump_serial(umax,nb,'ops/umax ',nid)
+         if (.not.ifread) then
+            call dump_serial(umin,nb,'ops/umin ',nid)
+            call dump_serial(umax,nb,'ops/umax ',nid)
+         endif
       endif   
 
       if (ifpod(2)) then
-         call cfill(tmin,1.e9,nb)
-         call cfill(tmax,-1.e9,nb)
-         do j=1,ns
-         do i=1,nb
-            if (uk(i,j).lt.tmin(i)) tmin(i)=tk(i,j)
-            if (uk(i,j).gt.tmax(i)) tmax(i)=tk(i,j)
-         enddo
-         enddo
-         do j=1,nb                    ! compute hyper-parameter
-            d= tmax(j)-tmin(j)
-            tmin(j) = tmin(j) - ep * d
-            tmax(j) = tmax(j) + ep * d
-            if (nio.eq.0) write (6,*) j,tmin(j),tmax(j)
-         enddo
+         if (ifread) then
+            call read_serial(tmin,nb,'ops/tmin ',wk,nid)
+            call read_serial(tmax,nb,'ops/tmax ',wk,nid)
+         else
+            call cfill(tmin,1.e9,nb)
+            call cfill(tmax,-1.e9,nb)
+            do j=1,ns
+            do i=1,nb
+               if (uk(i,j).lt.tmin(i)) tmin(i)=tk(i,j)
+               if (uk(i,j).gt.tmax(i)) tmax(i)=tk(i,j)
+            enddo
+            enddo
+            do j=1,nb                    ! compute hyper-parameter
+               d= tmax(j)-tmin(j)
+               tmin(j) = tmin(j) - ep * d
+               tmax(j) = tmax(j) + ep * d
+               if (nio.eq.0) write (6,*) j,tmin(j),tmax(j)
+            enddo
+         endif
 
-         ! compute distance between umax and umin
+         ! compute distance between tmax and tmin
          call sub3(tdis,tmax,tmin,nb)
          if (nio.eq.0) then
             do i=1,nb
