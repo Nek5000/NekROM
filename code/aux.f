@@ -500,8 +500,8 @@ c-----------------------------------------------------------------------
       if (ifpod(1)) then
          call cfill(umin,1.e9,nb)
          call cfill(umax,-1.e9,nb)
-         do j=1,nb
-         do i=1,ns
+         do j=1,ns
+         do i=1,nb
             if (uk(i,j).lt.umin(i)) umin(i)=uk(i,j)
             if (uk(i,j).gt.umax(i)) umax(i)=uk(i,j)
          enddo
@@ -528,8 +528,8 @@ c-----------------------------------------------------------------------
       if (ifpod(2)) then
          call cfill(tmin,1.e9,nb)
          call cfill(tmax,-1.e9,nb)
-         do j=1,nb
-         do i=1,ns
+         do j=1,ns
+         do i=1,nb
             if (uk(i,j).lt.tmin(i)) tmin(i)=tk(i,j)
             if (uk(i,j).gt.tmax(i)) tmax(i)=tk(i,j)
          enddo
