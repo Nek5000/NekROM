@@ -507,9 +507,9 @@ c-----------------------------------------------------------------------
          enddo
          enddo
          do j=1,nb                    ! compute hyper-parameter
-            delta(j) = tmp2(j)-tmp1(j)
-            umin(j) = tmp1(j) - ep * delta(j)
-            umax(j) = tmp2(j) + ep * delta(j)
+            delta(j) = umax(j)-umin(j)
+            umin(j) = umin(j) - ep * delta(j)
+            umax(j) = umax(j) + ep * delta(j)
             if (nio.eq.0) write (6,*) j,umin(j),umax(j)
          enddo
 
@@ -535,9 +535,9 @@ c-----------------------------------------------------------------------
          enddo
          enddo
          do j=1,nb                    ! compute hyper-parameter
-            delta(j) = tmp2(j)-tmp1(j)
-            tmin(j) = tmp1(j) - ep * delta(j)
-            tmax(j) = tmp2(j) + ep * delta(j)
+            delta(j) = tmax(j)-tmin(j)
+            tmin(j) = tmin(j) - ep * delta(j)
+            tmax(j) = tmax(j) + ep * delta(j)
             if (nio.eq.0) write (6,*) j,tmin(j),tmax(j)
          enddo
 
