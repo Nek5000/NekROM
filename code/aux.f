@@ -489,8 +489,6 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       real ep
-      real uw(lt),vw(lt),ww(lt)
-      real tmp1(nb),tmp2(nb),delta(nb)
 
       ! eps is the free parameter
       ! 1e-2 is used in the paper
@@ -507,9 +505,9 @@ c-----------------------------------------------------------------------
          enddo
          enddo
          do j=1,nb                    ! compute hyper-parameter
-            delta(j) = umax(j)-umin(j)
-            umin(j) = umin(j) - ep * delta(j)
-            umax(j) = umax(j) + ep * delta(j)
+            d= umax(j)-umin(j)
+            umin(j) = umin(j) - ep * d
+            umax(j) = umax(j) + ep * d
             if (nio.eq.0) write (6,*) j,umin(j),umax(j)
          enddo
 
@@ -535,9 +533,9 @@ c-----------------------------------------------------------------------
          enddo
          enddo
          do j=1,nb                    ! compute hyper-parameter
-            delta(j) = tmax(j)-tmin(j)
-            tmin(j) = tmin(j) - ep * delta(j)
-            tmax(j) = tmax(j) + ep * delta(j)
+            d= tmax(j)-tmin(j)
+            tmin(j) = tmin(j) - ep * d
+            tmax(j) = tmax(j) + ep * d
             if (nio.eq.0) write (6,*) j,tmin(j),tmax(j)
          enddo
 
