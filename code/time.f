@@ -122,13 +122,14 @@ c-----------------------------------------------------------------------
       if (mod(ad_step,ad_iostep).eq.0) then
          if (nio.eq.0) then
             write (6,*)'ad_step:',ad_step,ad_iostep,npp,nid,step_time
-            if (ad_step.eq.ad_nsteps) then
+            if (ifrom(1)) then
                do j=1,nb
-                  write(6,*) j,u(j,1),'final'
+                  write(6,*) j,u(j,1),'romu'
                enddo
-            else
+            endif
+            if (ifrom(2)) then
                do j=1,nb
-                  write(6,*) j,u(j,1)
+                  write(6,*) j,ut(j,1),'romt'
                enddo
             endif
          endif
