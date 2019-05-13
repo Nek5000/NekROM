@@ -84,7 +84,6 @@ c-----------------------------------------------------------------------
       call copy(tic,t,n)
 
       call rom_init_params
-
       call rom_init_fields
 
       call setgram
@@ -238,10 +237,10 @@ c-----------------------------------------------------------------------
          ifpod(i)=.false.
          ifrom(i)=.false.
       enddo
-      ifpod(1)=.true.
-      ifpod(2)=(ifheat.and..not.ifread)
-      ifrom(1)=.true.
-      ifrom(2)=(param(174).ne.0)
+      ifpod(1)=ifparam(174).ge.0.
+      ifpod(2)=(ifheat.and..not.ifread.and.param(174).ne.0.)
+      ifrom(1)=ifpod(1)
+      ifrom(2)=ifpod(2)
 
       ifvort=.false. ! default to false for now
       ifdump=((.not.ifheat).or.ifrom(2))
