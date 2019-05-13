@@ -245,6 +245,8 @@ c-----------------------------------------------------------------------
       ifrom(1)=ifpod(1)
       ifrom(2)=ifpod(2)
 
+      ifpod(1)=ifpod(1).or.ifrom(2)
+
       ifvort=.false. ! default to false for now
       ifdump=((.not.ifheat).or.ifrom(2))
       ifrecon=(.not.ifread)
