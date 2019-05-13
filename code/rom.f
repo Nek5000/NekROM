@@ -237,7 +237,7 @@ c-----------------------------------------------------------------------
          ifpod(i)=.false.
          ifrom(i)=.false.
       enddo
-      ifpod(1)=ifparam(174).ge.0.
+      ifpod(1)=param(174).ge.0.
       ifpod(2)=(ifheat.and..not.ifread.and.param(174).ne.0.)
       ifrom(1)=ifpod(1)
       ifrom(2)=ifpod(2)
