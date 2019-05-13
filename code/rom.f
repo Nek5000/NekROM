@@ -319,7 +319,7 @@ c-----------------------------------------------------------------------
 
       if (.not.ifread) then
          fname1='file.list '
-         call get_saved_fields(us0,ps,ts0,ns,fname1)
+         call get_saved_fields(us0,ps,ts0,ns,timek,fname1)
 
          fname1='avg.list'
          inquire (file=fname1,exist=alist)
