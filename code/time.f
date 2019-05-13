@@ -124,12 +124,12 @@ c-----------------------------------------------------------------------
             write (6,*)'ad_step:',ad_step,ad_iostep,npp,nid,step_time
             if (ifrom(1)) then
                do j=1,nb
-                  write(6,*) j,u(j,1),'romu'
+                  write(6,*) j,time,u(j,1),'romu'
                enddo
             endif
             if (ifrom(2)) then
                do j=1,nb
-                  write(6,*) j,ut(j,1),'romt'
+                  write(6,*) j,time,ut(j,1),'romt'
                enddo
             endif
          endif
