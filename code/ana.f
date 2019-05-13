@@ -173,7 +173,7 @@ c-----------------------------------------------------------------------
       character (len=72) fmt2
       character*8 fname
 
-      call exitti('called deprecated subroutine',nb)
+      call exitti('called deprecated subroutine$',nb)
 
       call cfill(smax,-1e10,nb+1)
       call cfill(smin,1e10,nb+1)

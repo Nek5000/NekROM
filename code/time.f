@@ -78,7 +78,7 @@ c-----------------------------------------------------------------------
          call BFGS_freeze(rhs(1),helmu,invhelmu,umax,umin,udis,1e-3,4) 
 c        call BFGS(rhs(1),helmu,invhelmu,umax,umin,udis,1e-3,4) 
       else
-         call exitti('incorrect isolve specified...')
+         call exitti('incorrect isolve specified...$',1solve)
       endif
       solve_time=solve_time+dnekclock()-ttime
 
@@ -190,14 +190,13 @@ c     Matrices and vectors for advance
          call copy(invhelmt,flut,nb*nb)
       endif
 
-
       if (isolve.eq.0) then ! standard matrix inversion
          call solve(rhs(1),flut,1,nb,nb,irt,ict)
       else if (isolve.eq.1) then ! constrained solve
          call BFGS_freeze(rhs(1),helmt,invhelmt,tmax,tmin,tdis,1e-3,4) 
 c        call BFGS(rhs(1),helmt,invhelmt,tmax,tmin,tdis,1e-3,4) 
       else
-         call exitti('incorrect isolve specified...')
+         call exitti('incorrect isolve specified...$',isolve)
       endif
 
       call shift3(ut,rhs,nb+1)

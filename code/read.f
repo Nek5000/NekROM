@@ -65,7 +65,7 @@ c-----------------------------------------------------------------------
      $   us0(1,1,i+1),us0(1,2,i+1),us0(1,ldim,i+1),ps(1,i+1),ts0(1,i+1))
          enddo
          if (nn.lt.nb) call exitti(
-     $   'number of files in bas.list fewer than nb',nb-nn)
+     $   'number of files in bas.list fewer than nb$',nb-nn)
       else
          do i=0,nb 
             len=ltrunc(session,132)

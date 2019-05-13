@@ -424,12 +424,12 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine setconvbases ! deprecated
-      call exitti('called deprecated subroutine setconvbases',1)
+      call exitti('called deprecated subroutine setconvbases$',1)
       return
       end
 c-----------------------------------------------------------------------
       subroutine setdtbases
-      call exitti('called deprecated subroutine setdtbases',1)
+      call exitti('called deprecated subroutine setdtbases$',1)
       return
       end
 c-----------------------------------------------------------------------

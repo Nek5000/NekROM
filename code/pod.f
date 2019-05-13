@@ -188,7 +188,7 @@ c-----------------------------------------------------------------------
       else if (ips.eq.'HLM') then
          sip=hlmsip(t1,t2)
       else
-         call exitti('did not provide supported inner product space$')
+         call exitti('did not provide supported inner product space$',1)
       endif
 
       return
@@ -210,7 +210,7 @@ c-----------------------------------------------------------------------
       else if (ips.eq.'HLM') then
          vip=hlmvip(t1,t2,t3,t4,t5,t6)
       else
-         call exitti('did not provide supported inner product space$')
+         call exitti('did not provide supported inner product space$',1)
       endif
 
       return

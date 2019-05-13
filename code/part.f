@@ -156,7 +156,7 @@ c-----------------------------------------------------------------------
       npb=nb/npart
 
       if (npb*npart.ne.nb)
-     $   call exitti('nb not divisible by npart',npart)
+     $   call exitti('nb not divisible by npart$',npart)
 
       call opcopy(ubt,vbt,wbt,ub,vb,wb)
 
