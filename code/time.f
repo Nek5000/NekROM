@@ -359,6 +359,50 @@ c     call add2s2(rhs,av0,s,nb+1) ! not working...
 
       call add2(rhs,tmp1(1),nb)
 
+      ! artificial viscosity
+
+c     call mxm(au0,nb+1,u,nb+1,tmp1,1)
+      do i=1,nb
+         tmp1(i)=au(i,i)*u(i,1)
+      enddo
+
+      a=5.
+      s=.01
+      pad=.05
+
+      s=-s/ad_re
+
+      call cmult(tmp1,s,nb+1)
+
+      call rzero(tmp2,nb+1)
+
+      eps=1.e-2
+
+      do i=1,nb
+         um=(umax(i)+umin(i))*.5
+         ud=(umax(i)-umin(i))*.5*(1.+pad)
+         d=(u(i,1)-um)/ud
+         tmp2(i)=(cosh(d*acosh(2.))-1.)**a
+c        if (u(i,1).gt.umax(i)) then
+c           d=u(i,1)/umax(i)-1.
+c           tmp2(i)=d*d
+c           tmp2(i)=d
+c           tmp2(i)=exp(d)-1.
+c           tmp2(i)=exp(d*d)-1.
+c           tmp2(i)=log(d)
+c        endif
+c        if (u(i,1).lt.umin(i)) then
+c           d=u(i,1)/umin(i)-1.
+c           tmp2(i)=d*d
+c           tmp2(i)=d
+c           tmp2(i)=exp(d)-1.
+c           tmp2(i)=exp(d*d)-1.
+c           tmp2(i)=log(d)
+c        endif
+      enddo
+
+      call addcol3(rhs,tmp1(1),tmp2(1),nb)
+
       return
       end
 c-----------------------------------------------------------------------
@@ -371,6 +415,8 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       common /scravg/ ux(lt),uy(lt),uz(lt)
+
+      real tmp1(nb),tmp2(nb)
 
       if (ad_step.eq.1) then
          call rzero(ua,nb+1)
@@ -396,6 +442,7 @@ c-----------------------------------------------------------------------
          call reconu_rms(ux,uy,uz,u2a)
          call outpost(ux,uy,uz,pavg,tavg,'rms')
       endif
+
 
       return
       end
