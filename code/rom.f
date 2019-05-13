@@ -199,6 +199,9 @@ c-----------------------------------------------------------------------
       if (ifavg0.and.(nb.eq.ls))
      $   call exitti('nb == ls results in linear dependent bases$',nb)
 
+      if (nb.gt.ls)
+     $   call exitti('nb > ls is undefined configuration$',nb)
+
       ifdumpops=.false.
       ifread=.false.
       np173=nint(param(173))
