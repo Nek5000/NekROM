@@ -78,7 +78,7 @@ c-----------------------------------------------------------------------
          call BFGS_freeze(rhs(1),helmu,invhelmu,umax,umin,udis,1e-3,4) 
 c        call BFGS(rhs(1),helmu,invhelmu,umax,umin,udis,1e-3,4) 
       else
-         call exitti('incorrect isolve specified...$',1solve)
+         call exitti('incorrect isolve specified...$',isolve)
       endif
       solve_time=solve_time+dnekclock()-ttime
 
