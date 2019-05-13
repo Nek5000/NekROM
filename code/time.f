@@ -368,7 +368,7 @@ c        call mxm(au0,nb+1,u,nb+1,tmp1,1)
          enddo
 
          a=5.
-         s=.01
+         s=3.
          pad=.05
 
          s=-s/ad_re
@@ -383,23 +383,23 @@ c        call mxm(au0,nb+1,u,nb+1,tmp1,1)
             um=(umax(i)+umin(i))*.5
             ud=(umax(i)-umin(i))*.5*(1.+pad)
             d=(u(i,1)-um)/ud
-            tmp2(i)=(cosh(d*acosh(2.))-1.)**a
-c           if (u(i,1).gt.umax(i)) then
-c              d=u(i,1)/umax(i)-1.
+c           tmp2(i)=(cosh(d*acosh(2.))-1.)**a
+            if (u(i,1).gt.umax(i)) then
+               d=(u(i,1)/umax(i)-1.)/(1+pad)
 c              tmp2(i)=d*d
 c              tmp2(i)=d
-c              tmp2(i)=exp(d)-1.
+               tmp2(i)=exp(d)-1.
 c              tmp2(i)=exp(d*d)-1.
 c              tmp2(i)=log(d)
-c           endif
-c           if (u(i,1).lt.umin(i)) then
-c              d=u(i,1)/umin(i)-1.
+            endif
+            if (u(i,1).lt.umin(i)) then
+               d=(u(i,1)/umin(i)-1.)/(1+pad)
 c              tmp2(i)=d*d
 c              tmp2(i)=d
-c              tmp2(i)=exp(d)-1.
+               tmp2(i)=exp(d)-1.
 c              tmp2(i)=exp(d*d)-1.
 c              tmp2(i)=log(d)
-c           endif
+            endif
          enddo
 
          call addcol3(rhs,tmp1(1),tmp2(1),nb)
