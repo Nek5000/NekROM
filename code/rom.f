@@ -231,6 +231,9 @@ c-----------------------------------------------------------------------
       buy=param(194)
       buz=param(195)
 
+      ifavisc=.false.
+      if (param(196).ne.0.) ifavisc=.true.
+
       do i=0,ldimt1
          ifpod(i)=.false.
          ifrom(i)=.false.
@@ -265,6 +268,7 @@ c-----------------------------------------------------------------------
          write (6,*) 'rp_inus       ',inus
          write (6,*) 'rp_iffastc    ',iffastc
          write (6,*) 'rp_iffasth    ',iffasth
+         write (6,*) 'rp_ifavisc    ',ifavisc
          write (6,*) ' '
          write (6,*) 'rp_ifforce    ',ifforce
          write (6,*) 'rp_ifpart     ',ifpart

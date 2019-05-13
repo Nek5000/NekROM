@@ -361,47 +361,49 @@ c     call add2s2(rhs,av0,s,nb+1) ! not working...
 
       ! artificial viscosity
 
-c     call mxm(au0,nb+1,u,nb+1,tmp1,1)
-      do i=1,nb
-         tmp1(i)=au(i,i)*u(i,1)
-      enddo
+      if (ifavisc) then
+c        call mxm(au0,nb+1,u,nb+1,tmp1,1)
+         do i=1,nb
+            tmp1(i)=au(i,i)*u(i,1)
+         enddo
 
-      a=5.
-      s=.01
-      pad=.05
+         a=5.
+         s=.01
+         pad=.05
 
-      s=-s/ad_re
+         s=-s/ad_re
 
-      call cmult(tmp1,s,nb+1)
+         call cmult(tmp1,s,nb+1)
 
-      call rzero(tmp2,nb+1)
+         call rzero(tmp2,nb+1)
 
-      eps=1.e-2
+         eps=1.e-2
 
-      do i=1,nb
-         um=(umax(i)+umin(i))*.5
-         ud=(umax(i)-umin(i))*.5*(1.+pad)
-         d=(u(i,1)-um)/ud
-         tmp2(i)=(cosh(d*acosh(2.))-1.)**a
-c        if (u(i,1).gt.umax(i)) then
-c           d=u(i,1)/umax(i)-1.
-c           tmp2(i)=d*d
-c           tmp2(i)=d
-c           tmp2(i)=exp(d)-1.
-c           tmp2(i)=exp(d*d)-1.
-c           tmp2(i)=log(d)
-c        endif
-c        if (u(i,1).lt.umin(i)) then
-c           d=u(i,1)/umin(i)-1.
-c           tmp2(i)=d*d
-c           tmp2(i)=d
-c           tmp2(i)=exp(d)-1.
-c           tmp2(i)=exp(d*d)-1.
-c           tmp2(i)=log(d)
-c        endif
-      enddo
+         do i=1,nb
+            um=(umax(i)+umin(i))*.5
+            ud=(umax(i)-umin(i))*.5*(1.+pad)
+            d=(u(i,1)-um)/ud
+            tmp2(i)=(cosh(d*acosh(2.))-1.)**a
+c           if (u(i,1).gt.umax(i)) then
+c              d=u(i,1)/umax(i)-1.
+c              tmp2(i)=d*d
+c              tmp2(i)=d
+c              tmp2(i)=exp(d)-1.
+c              tmp2(i)=exp(d*d)-1.
+c              tmp2(i)=log(d)
+c           endif
+c           if (u(i,1).lt.umin(i)) then
+c              d=u(i,1)/umin(i)-1.
+c              tmp2(i)=d*d
+c              tmp2(i)=d
+c              tmp2(i)=exp(d)-1.
+c              tmp2(i)=exp(d*d)-1.
+c              tmp2(i)=log(d)
+c           endif
+         enddo
 
-      call addcol3(rhs,tmp1(1),tmp2(1),nb)
+         call addcol3(rhs,tmp1(1),tmp2(1),nb)
+      endif
 
       return
       end
