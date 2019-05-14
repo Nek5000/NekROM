@@ -267,14 +267,10 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelt
 
-      isd=1
-      if (ifaxis) isd=2
-      call axhelm(t7,t1,ones,zeros,1,isd)
+      call axhelm(t7,t1,ones,zeros,1,1)
       h10vip=glsc2(t7,t4,n)
 
-      isd=2
-      if (ifaxis) isd=1
-      call axhelm(t8,t2,ones,zeros,1,isd)
+      call axhelm(t8,t2,ones,zeros,1,2)
       h10vip=h10vip+glsc2(t8,t5,n)
 
       if (ldim.eq.3) then
@@ -404,14 +400,8 @@ c-----------------------------------------------------------------------
       endif
 
       do j=1,ms
-         isd=1
-         if (ifaxis) isd=2
-         call axhelm(uu,s(1,1,j),ones,zeros,1,isd)
-         if (mdim.ge.2) then
-            isd=2
-            if (ifaxis) isd=1
-            call axhelm(vv,s(1,2,j),ones,zeros,1,isd)
-         endif
+         call axhelm(uu,s(1,1,j),ones,zeros,1,1)
+         if (mdim.ge.2) call axhelm(vv,s(1,2,j),ones,zeros,1,2)
          if (mdim.eq.3) call axhelm(ww,s(1,3,j),ones,zeros,1,3)
          do i=1,ms ! Form the Gramian, U=U_K^T A U_K using H^1_0 Norm
             gram(i,j)=s1*glsc2(uu,s(1,1,i),n)
@@ -452,14 +442,8 @@ c-----------------------------------------------------------------------
       n=lx1*ly1*lz1*nelt
 
       do j=1,ms
-         isd=1
-         if (ifaxis) isd=2
-         call axhelm(uu,s(1,1,j),ones,zeros,1,isd)
-         if (mdim.ge.2) then
-            isd=2
-            if (ifaxis) isd=1
-            call axhelm(vv,s(1,2,j),ones,zeros,1,isd)
-         endif
+         call axhelm(uu,s(1,1,j),ones,zeros,1,1)
+         if (mdim.ge.2) call axhelm(vv,s(1,2,j),ones,zeros,1,2)
          if (mdim.eq.3) call axhelm(ww,s(1,3,j),ones,zeros,1,3)
          do i=1,ms ! Form the Gramian, U=U_K^T A U_K using H^1_0 Norm
             gram(i,j)=glsc2(uu,s(1,1,i),n)
@@ -687,12 +671,8 @@ c-----------------------------------------------------------------------
       if (nio.eq.0) write (6,1) coef(0),coef(0),1.
 
       do i=1,nb
-         isd=1
-         if (ifaxis) isd=2
-         call axhelm(t4,uub(1,i),ones,zeros,1,isd)
-         isd=2
-         if (ifaxis) isd=1
-         call axhelm(t5,vvb(1,i),ones,zeros,1,isd)
+         call axhelm(t4,uub(1,i),ones,zeros,1,1)
+         call axhelm(t5,vvb(1,i),ones,zeros,1,2)
 
          ww = glsc2(t4,uub(1,i),n)+glsc2(t5,vvb(1,i),n)
          vv = glsc2(t4,t1,n)+glsc2(t5,t2,n)
@@ -742,12 +722,8 @@ c-----------------------------------------------------------------------
       s2=ad_beta(1,3)/ad_dt
 
       do i=1,nb
-         isd=1
-         if (ifaxis) isd=2
-         call axhelm(t4,uub(1,i),ones,zeros,1,isd)
-         isd=2
-         if (ifaxis) isd=1
-         call axhelm(t5,vvb(1,i),ones,zeros,1,isd)
+         call axhelm(t4,uub(1,i),ones,zeros,1,1)
+         call axhelm(t5,vvb(1,i),ones,zeros,1,2)
 
          ww=s1*(glsc2(t4,uub(1,i),n)+glsc2(t5,vvb(1,i),n))
          vv=s1*(glsc2(t4,t1,n)+glsc2(t5,t2,n))
