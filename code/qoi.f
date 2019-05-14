@@ -638,3 +638,43 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine cubar_setup
+
+      include 'SIZE'
+      include 'MASS'
+      include 'MOR'
+
+      common /morubar/ uu(0:nb),vv(0:nb),ww(0:nb)
+
+      n=lx1*ly1*lz1*nelv
+
+      do i=0,nb
+         uu(i)=glsc2(ub(1,i),bm1,n)
+         vv(i)=glsc2(vb(1,i),bm1,n)
+         if (ldim.eq.3) ww(i)=glsc2(wb(1,i),bm1,n)
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine cubar
+
+      include 'SIZE'
+      include 'MASS'
+      include 'TSTEP'
+      include 'MOR'
+
+      common /morubar/ uu(0:nb),vv(0:nb),ww(0:nb)
+
+      n=lx1*ly1*lz1*nelv
+
+      vol=glsum(bm1,n)
+      ubar=glsc2(uu,u,nb+1)/vol
+      vbar=glsc2(vv,v,nb+1)/vol
+      if (ldim.eq.3) wbar=glsc2(ww,w,nb+1)/vol
+
+      if (nio.eq.0) write (6,*) ad_step,time,ubar,'ubar'
+
+      return
+      end
+c-----------------------------------------------------------------------

@@ -97,6 +97,7 @@ c-----------------------------------------------------------------------
 
       if (ifcdrag) call cvdrag_setup
       call cnuss_setup
+      call cubar_setup
 
       if (nio.eq.0) write (6,*) 'end setup for qoi'
 
