@@ -93,15 +93,23 @@ c-----------------------------------------------------------------------
 
       call setops
 
+      if (nio.eq.0) write (6,*) 'begin setup for qoi'
+
+      if (ifcdrag) call cvdrag_setup
+      call cnuss_setup
+
+      if (nio.eq.0) write (6,*) 'end setup for qoi'
+
+      if (nio.eq.0) write (6,*) 'begin range setup'
+
       if (ifpod(1)) call pv2k(uk,us0,ub,vb,wb)
       if (ifpod(2)) call ps2k(tk,ts0,tb)
 
       call asnap
 
-      if (ifcdrag) call cvdrag_setup
-      call cnuss_setup
-
       call hyperpar
+
+      if (nio.eq.0) write (6,*) 'end range setup'
 
       if (ifdumpops) call dump_all
 
