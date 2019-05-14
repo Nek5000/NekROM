@@ -51,7 +51,7 @@ c-----------------------------------------------------------------------
          n=lx1*ly1*lz1*nelv
          call push_op(vx,vy,vz)
          call opcopy(vx,vy,vz,ub(1,i),vb(1,i),wb(1,i))
-         call conv1(ct,tb(1,j))
+         call conv1d(ct,tb(1,j))
          call col2(ct,bm1,n)
          call pop_op(vx,vy,vz)
       else
@@ -80,8 +80,8 @@ c-----------------------------------------------------------------------
          n=lx1*ly1*lz1*nelv
          call push_op(vx,vy,vz)
          call opcopy(vx,vy,vz,ub(1,i),vb(1,i),wb(1,i))
-         call conv1(cu1,ub(1,j))
-         call conv1(cu2,vb(1,j))
+         call conv1d(cu1,ub(1,j))
+         call conv1d(cu2,vb(1,j))
          call col2(cu1,bm1,n)
          call col2(cu2,bm1,n)
          call pop_op(vx,vy,vz)
