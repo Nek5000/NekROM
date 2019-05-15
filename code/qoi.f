@@ -669,9 +669,9 @@ c-----------------------------------------------------------------------
       n=lx1*ly1*lz1*nelv
 
       vol=glsum(bm1,n)
-      ubar=glsc2(uu,u,nb+1)/vol
-      vbar=glsc2(vv,v,nb+1)/vol
-      if (ldim.eq.3) wbar=glsc2(ww,w,nb+1)/vol
+      ubar=vlsc2(uu,u,nb+1)/vol
+      vbar=vlsc2(vv,v,nb+1)/vol
+      if (ldim.eq.3) wbar=vlsc2(ww,w,nb+1)/vol
 
       if (nio.eq.0) write (6,*) ad_step,time,ubar,'ubar'
 
