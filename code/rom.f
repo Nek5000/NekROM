@@ -593,6 +593,8 @@ c-----------------------------------------------------------------------
 
       jfield=ifield
       ifield=1
+
+      call opsub2(uic,vic,wic,ub,vb,wb)
       if (ips.eq.'H10') then
          call h10pv2b(u,uic,vic,wic,ub,vb,wb)
       else if (ips.eq.'HLM') then
@@ -600,13 +602,16 @@ c-----------------------------------------------------------------------
       else
          call pv2b(u,uic,vic,wic,ub,vb,wb)
       endif
+      call opadd2(uic,vic,wic,ub,vb,wb)
 
+      call sub2(tic,tb,n)
       if (ifrom(2)) then
          call ps2b(ut,tic,tb)
          do i=0,nb
             if (nio.eq.0) write (6,*) 'ut',ut(i,1)
          enddo
       endif
+      call add2(tic,tb,n)
 
       call reconv(uu,vv,ww,u)
       call recont(tt,ut)
