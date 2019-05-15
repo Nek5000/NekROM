@@ -665,7 +665,7 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelt
 
-      call opsub3(t1,t2,t3,ux,uy,uz,uub,vvb,wwb)
+      call opcopy(t1,t2,t3,ux,uy,uz)
 
       coef(0) = 1.
       if (nio.eq.0) write (6,1) coef(0),coef(0),1.
@@ -713,7 +713,7 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelt
 
-      call opsub3(t1,t2,t3,ux,uy,uz,uub,vvb,wwb)
+      call opcopy(t1,t2,t3,ux,uy,uz)
 
       coef(0) = 1.
       if (nio.eq.0) write (6,1) coef(0),coef(0),1.
