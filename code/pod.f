@@ -135,7 +135,7 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'exiting ps2b'
 
-    1 format(' h10coef',1p3e16.8,1x,a3)
+    1 format(' coef',1p3e16.8,1x,a3)
 
       return
       end
