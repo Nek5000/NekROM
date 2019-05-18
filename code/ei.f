@@ -1,0 +1,200 @@
+c-----------------------------------------------------------------------
+      subroutine cres(res,sigma,theta,n,l)
+
+      real sigma(l,l),theta(l)
+
+      call set_theta
+
+      res=0.
+
+      do j=1,n
+      do i=1,n
+         res=res+sigma(i,j)*theta(i)*theta(j)
+      enddo
+      enddo
+
+      if (res.le.0) call exitti('negative semidefinite residual$',n)
+
+      res=sqrt(res)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine set_xi
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /poisson/ bqr(lx1*ly1*lz1*lelt)
+      common /eires/ xi(lt,lres),theta(lt,lres),sigma(lres,lres)
+      common /eiivar/ nres
+
+      n=lx1*ly1*lz1*nelv
+
+      if (ifield.eq.1) then
+         call exitti('(set_ritz_a) ifield.eq.1 not supported...$',nb)
+      else
+         if (ips.eq.'L2 ') then
+            do i=1,nb
+               call axhelm(xi(1,i),tb(1,i),ones,zeros,1,1)
+               call binv1(xi(1,i))
+            enddo
+            call copy(xi(1,nb+1),bqr,n)
+            call binv1(xi(1,nb+1))
+         else
+            do i=0,nb
+               call copy(xi(1,i),tb(1,i),n)
+            enddo
+         endif
+      endif
+
+c     do i=0,nb
+c        call outpost(ub(1,i),vb(1,i),wb(1,i),pr,tb(1,i),'bas')
+c     enddo
+
+      do i=1,nres
+         call outpost(vx,vy,vz,pr,xi(1,i),'sxi')
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine set_sigma
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      common /eires/ xi(lt,lres),theta(lt,lres),sigma(lres,lres)
+      common /eiivar/ nres
+
+      n=lx1*ly1*lz1*nelv
+
+      if (nres.gt.lres) call exitti('nres > lres$',nres)
+      if (nres.le.0) call exitti('nres <= 0$',nres)
+
+      call set_xi
+
+      do i=1,nres
+      do j=1,nres
+         sigma(i,j)=glsc3(xi(1,i),xi(1,j),bm1,n)
+         write (6,*) i,j,sigma(i,j),'sigma'
+      enddo
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine set_theta
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      common /eires/ xi(lt,lres),theta(lres),sigma(lres,lres)
+      common /eiivar/ nres
+
+      n=lx1*ly1*lz1*nelv
+
+      do i=1,nb
+         theta(i)=ut(i,1)
+      enddo
+
+      theta(nb+1)=-1.
+
+      do i=1,nres
+         write (6,*) i,theta(i),'theta'
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine rom_poisson(res)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+      include 'AVG'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /eires/ xi(lt,lres),theta(lt,lres),sigma(lres,lres)
+      common /eiivar/ nres
+
+c     Matrices and vectors for advance
+      real tmp(0:nb),rhs(0:nb)
+
+      common /scrrstep/ t1(lt),t2(lt),t3(lt),work(lt)
+
+      common /nekmpi/ nidd,npp,nekcomm,nekgroup,nekreal
+
+      if (ad_step.eq.1) then
+         step_time = 0.
+      endif
+
+      last_time = dnekclock()
+
+      n=lx1*ly1*lz1*nelt
+
+      ifflow=.false.
+      ifheat=.true.
+
+      param(174)=-1.
+
+      call rom_init_params
+      call rom_init_fields
+
+      call setgram
+      call setevec
+
+      call setbases
+
+      call setops
+      call dump_all
+
+      nres=nb+1
+      call set_sigma
+
+      rhs(0)=1.
+      call setr_poisson(rhs(1),icount)
+
+      call add2sxy(flut,0.,at,1./ad_pe,nb*nb)
+      call lu(flut,nb,nb,irt,ict)
+
+      call solve(rhs(1),flut,1,nb,nb,irt,ict)
+
+      call recont(t,rhs)
+      call copy(ut,rhs,nb+1)
+      call outpost(vx,vy,vz,pr,t,'sol')
+
+      call cres(res,sigma,theta,nres,lres)
+
+      step_time=step_time+dnekclock()-last_time
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine setr_poisson(rhs)
+
+      include 'SIZE'
+      include 'MOR'
+
+      common /scrrhs/ tmp(0:nb)
+      common /poisson/ bqr(lx1*ly1*lz1*lelt)
+
+      real rhs(nb)
+
+      n=lx1*ly1*lz1*nelv
+
+      do i=1,nb
+         rhs(i)=glsc2(bqr,tb(1,i),n)
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
