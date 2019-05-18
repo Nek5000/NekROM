@@ -612,7 +612,7 @@ c     call opmask  (inp1,inp2,inp3)
       return
       end
 c-----------------------------------------------------------------------
-      subroutine binv1(out1,inp1,SCALE)
+      subroutine binv1(out1)
 C--------------------------------------------------------------------
 C
 C     Compute OUT = (B)-1 * INP   (explicit)
@@ -625,20 +625,15 @@ C--------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real out1  (lt)
-      real inp1  (lt)
+      real out1(lt)
 
       include 'OPCTR'
+
+      n=lx1*ly1*lz1*nelv
       
-      call col2  (inp1,tmask,lx1*ly1*lz1*nelt)
-      call dssum (inp1,lx1,ly1,lz1)
-
-      ntot=lx1*ly1*lz1*nelv
-
-      do i=1,ntot
-         tmp    =binvm1(i,1,1,1)*scale
-         out1(i)=inp1(i)*tmp
-      enddo   
+      call col2(out1,tmask,n) ! disable mask for now
+      call dssum(out1,lx1,ly1,lz1)
+      call col2(out1,binvm1,n)
 
       return
       end
