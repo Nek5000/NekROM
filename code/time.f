@@ -110,8 +110,8 @@ c-----------------------------------------------------------------------
 
       real vort(lt)
 
-      call setavg
-      call setj
+      call setuavg
+      call setuj
 
       if (mod(ad_step,ad_qstep).eq.0) then
          if (ifctke) call ctke
@@ -203,6 +203,33 @@ c        call BFGS(rhs(1),helmt,invhelmt,tmax,tmin,tdis,1e-3,4)
       call shift3(ut,rhs,nb+1)
 
       step_time=step_time+dnekclock()-last_time
+
+      call postt
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine postt
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+      include 'AVG'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      common /scrrstep/ t1(lt),t2(lt),t3(lt),work(lt)
+      common /nekmpi/ nidd,npp,nekcomm,nekgroup,nekreal
+
+      call settavg
+      call settj
+
+      if (mod(ad_step,ad_iostep).eq.0) then
+         if (nio.eq.0) then
+            do j=1,nb
+               write(6,*) j,time,ut(j,1),'romt'
+            enddo
+         endif
+      endif
 
       return
       end
@@ -408,7 +435,7 @@ c              tmp2(i)=log(d)
       return
       end
 c-----------------------------------------------------------------------
-      subroutine setavg
+      subroutine setuavg
 
       include 'SIZE'
       include 'MOR'
@@ -449,7 +476,33 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine setj
+      subroutine settavg
+
+      include 'SIZE'
+      include 'MOR'
+      include 'AVG'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /scravg/ ux(lt),uy(lt),uz(lt)
+
+      real tmp1(nb),tmp2(nb)
+
+      if (ad_step.eq.1) then
+         call rzero(uta,nb+1)
+      endif
+
+      call add2(uta,ut,nb+1)
+
+      if (ad_step.eq.ad_nsteps) then
+         s=1./real(ad_nsteps)
+         call cmult(uta,s,nb+1)
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine setuj
 
       include 'SIZE'
       include 'MOR'
@@ -465,6 +518,19 @@ c-----------------------------------------------------------------------
          enddo
          enddo
          s=1./real(ad_nsteps)
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine settj
+
+      include 'SIZE'
+      include 'MOR'
+
+      if (ad_step.eq.3) call copy(utj,ut,3*(nb+1))
+      if (ad_step.eq.ad_nsteps) then
+         call copy(utj(0,4),ut,3*(nb+1))
       endif
 
       return
