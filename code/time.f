@@ -507,7 +507,7 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
 
-      if (ad_step.eq.3) call copy(uj,u,3*(nb+1))
+      if (ad_step.eq.2) call copy(uj,u,3*(nb+1))
       if (ad_step.eq.ad_nsteps) then
          call copy(uj(0,4),u,3*(nb+1))
          do k=1,6
@@ -517,7 +517,6 @@ c-----------------------------------------------------------------------
          enddo
          enddo
          enddo
-         s=1./real(ad_nsteps)
       endif
 
       return
@@ -528,7 +527,7 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
 
-      if (ad_step.eq.3) call copy(utj,ut,3*(nb+1))
+      if (ad_step.eq.2) call copy(utj,ut,3*(nb+1))
       if (ad_step.eq.ad_nsteps) then
          call copy(utj(0,4),ut,3*(nb+1))
       endif
