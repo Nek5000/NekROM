@@ -11,6 +11,8 @@ c-----------------------------------------------------------------------
 
       logical ifmult
 
+      parameter (lt=lx1*ly1*lz1*lelt)
+
       common /romup/ rom_time
       common /poisson/ bqr(lx1*ly1*lz1*lelt)
       common /eires/ xi(lt,lres),theta(lt,lres),sigma(lres,lres)
