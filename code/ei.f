@@ -6,9 +6,9 @@ c-----------------------------------------------------------------------
 
       real sigma(l,l),theta(l)
 
-      if (eqn.eq.'POI')
+      if (eqn.eq.'POI') then
          call set_theta_poisson
-      else if (eqn.eq.'HEA')
+      else if (eqn.eq.'HEA') then
          call set_theta_heat
       endif
 
@@ -274,15 +274,15 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
 
-      betaj(6)
+      real betaj(6)
 
       ! ad_beta(4,3)
 
       betaj(1)=ad_beta(1+1,1)+ad_beta(2+1,2)+ad_beta(3+1,3)
       betaj(2)=ad_beta(0+1,1)+ad_beta(1+1,2)+ad_beta(2+1,3)
-              +ad_beta(3+1,3)
+     $        +ad_beta(3+1,3)
       betaj(3)=ad_beta(0+1,2)+ad_beta(1+1,3)+ad_beta(2+1,3)
-              +ad_beta(3+1,3)
+     $        +ad_beta(3+1,3)
 
       betaj(4)=ad_beta(0+1,3)+ad_beta(1+1,3)+ad_beta(2+1,3)
       betaj(5)=ad_beta(0+1,3)+ad_beta(1+1,3)
