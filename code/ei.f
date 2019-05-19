@@ -118,6 +118,12 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelv
 
+      if (eqn.eq.'POI') then
+         nres=nb+1
+      else if (eqn.eq.'HEA') then
+         nres=(nb+1)*2+1
+      endif
+
       if (nres.gt.lres) call exitti('nres > lres$',nres)
       if (nres.le.0) call exitti('nres <= 0$',nres)
 
