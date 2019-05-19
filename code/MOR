@@ -124,7 +124,7 @@ c     parameters and common blocks for MOR
 
       common /mortest/ ul2(lub),uh10(lub)
 
-      character*3 ips
-      common /morchar/ ips
+      character*3 ips, eqn
+      common /morchar/ ips,eqn
 
       common /morid/ ones(lx1*ly1*lz1*lelt),zeros(lx1*ly1*lz1*lelt)
