@@ -65,8 +65,8 @@ c     parameters and common blocks for MOR
       common /morvsol/ u(0:lub,3),uj(0:lub,6),
      $                 u2(0:lub,0:lub),u2j(0:lub,0:lub,6)
 
-      common /mortsol/ ut(0:lub,3),utj(0:lub,6),
-     $                 ut2(0:lub,0:lub),ut2j(0:lub,0:lub,6)
+      common /mortsol/ ut(0:ltb,3),utj(0:ltb,6),
+     $                 ut2(0:ltb,0:lub),ut2j(0:ltb,0:ltb,6)
 
       common /morrhs/ cvr(lub,3),ctr(lub,3),usa(0:lub),bg(lub),fu(lub,3)
 
