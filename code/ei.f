@@ -51,14 +51,6 @@ c-----------------------------------------------------------------------
          endif
       endif
 
-c     do i=0,nb
-c        call outpost(ub(1,i),vb(1,i),wb(1,i),pr,tb(1,i),'bas')
-c     enddo
-
-      do i=1,nres
-         call outpost(vx,vy,vz,pr,xi(1,i),'sxi')
-      enddo
-
       return
       end
 c-----------------------------------------------------------------------
@@ -82,7 +74,6 @@ c-----------------------------------------------------------------------
       do i=1,nres
       do j=1,nres
          sigma(i,j)=glsc3(xi(1,i),xi(1,j),bm1,n)
-         write (6,*) i,j,sigma(i,j),'sigma'
       enddo
       enddo
 
@@ -106,10 +97,6 @@ c-----------------------------------------------------------------------
       enddo
 
       theta(nb+1)=-1.
-
-      do i=1,nres
-         write (6,*) i,theta(i),'theta'
-      enddo
 
       return
       end
@@ -170,7 +157,6 @@ c     Matrices and vectors for advance
 
       call recont(t,rhs)
       call copy(ut,rhs,nb+1)
-      call outpost(vx,vy,vz,pr,t,'sol')
 
       call cres(res,sigma,theta,nres,lres)
 
