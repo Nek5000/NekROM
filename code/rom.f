@@ -12,6 +12,10 @@ c-----------------------------------------------------------------------
       logical ifmult
 
       common /romup/ rom_time
+      common /poisson/ bqr(lx1*ly1*lz1*lelt)
+      common /eires/ xi(lt,lres),theta(lt,lres),sigma(lres,lres)
+      common /eiivar/ nres
+      common /eivar/ res
 
       stime=dnekclock()
 
@@ -28,6 +32,11 @@ c-----------------------------------------------------------------------
       ifield=1
 
       ifmult=.not.ifrom(2).and.ifheat
+
+      if (ifrom(2).and..not.ifrom(1)) then
+         eqn='HEA'
+         call set_sigma
+      endif
 
       if (ifmult) then
          if (ifflow) call exitti(
@@ -47,6 +56,10 @@ c-----------------------------------------------------------------------
             ad_step=ad_step+1
          enddo
          icalld=0
+      endif
+
+      if (ifrom(2).and..not.ifrom(1)) then
+         call cres(res,sigma,theta,nres,lres)
       endif
 
       ifield=jfield
