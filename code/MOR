@@ -43,7 +43,8 @@ c     parameters and common blocks for MOR
 
       common /morbuoy/ bux,buy,buz
 
-      common /moravg/ ua(0:lub),u2a(0:lub,0:lub),uas(0:lub),uvs(0:lub)
+      common /moruavg/ ua(0:lub),u2a(0:lub,0:lub),uas(0:lub),uvs(0:lub)
+      common /mortavg/ uta(0:lub)
 
       common /mormsk/ dmask(lx1,ly1,lz1,lelt,lmsk+1)
 
