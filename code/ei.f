@@ -44,20 +44,19 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelv
 
+      l=1
       if (ifield.eq.1) then
          call exitti('(set_ritz_a) ifield.eq.1 not supported...$',nb)
       else
          if (ips.eq.'L2 ') then
             do i=1,nb
-               call axhelm(xi(1,i),tb(1,i),ones,zeros,1,1)
-               call binv1(xi(1,i))
+               call axhelm(xi(1,l),tb(1,i),ones,zeros,1,1)
+               call binv1(xi(1,l))
+               l=l+1
             enddo
-            call copy(xi(1,nb+1),qq,n)
-            call binv1(xi(1,nb+1))
+            call copy(xi(1,l),qq,n)
          else
-            do i=0,nb
-               call copy(xi(1,i),tb(1,i),n)
-            enddo
+            call exitti('(set_xi_poisson) ips!=L2 not supported...$',nb)
          endif
       endif
 
@@ -153,11 +152,17 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelv
 
+      l=1
       do i=1,nb
-         theta(i)=ut(i,1)
+         theta(l)=ut(i,1)
+         l=l+1
       enddo
 
-      theta(nb+1)=-1.
+      theta(l)=-1.
+
+      do i=1,l
+         write (6,*) i,theta(i),'theta'
+      enddo
 
       return
       end
@@ -236,7 +241,6 @@ c     Matrices and vectors for advance
       call setops
       call dump_all
 
-      nres=nb+1
       call set_sigma
 
       rhs(0)=1.
@@ -261,8 +265,6 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'
       include 'MOR'
-
-      common /scrrhs/ tmp(0:nb)
 
       real rhs(nb)
 
