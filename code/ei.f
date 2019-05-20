@@ -72,7 +72,7 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /eires/ xi(lt,lres),theta(lt,lres),sigma(lres,lres)
+      common /eires/ xi(lt,lres),theta(lres),sigma(lres,lres)
       common /eiivar/ nres
 
       n=lx1*ly1*lz1*nelv
