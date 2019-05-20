@@ -196,7 +196,6 @@ c        call BFGS(rhs(1),helmt,invhelmt,tmax,tmin,tdis,1e-3,4)
 
       step_time=step_time+dnekclock()-last_time
 
-
       return
       end
 c-----------------------------------------------------------------------
