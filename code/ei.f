@@ -52,7 +52,7 @@ c-----------------------------------------------------------------------
                call axhelm(xi(1,i),tb(1,i),ones,zeros,1,1)
                call binv1(xi(1,i))
             enddo
-            call copy(xi(1,nb+1),bqr,n)
+            call copy(xi(1,nb+1),qq,n)
             call binv1(xi(1,nb+1))
          else
             do i=0,nb
