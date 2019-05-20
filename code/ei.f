@@ -4,7 +4,11 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
 
-      real sigma(l,l),theta(l)
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /eires/ xi(lt,lres),theta(lres),sigma(lres,lres)
+      common /eiivar/ nres
+      common /eivar/ res
 
       if (eqn.eq.'POI') then
          call set_theta_poisson
