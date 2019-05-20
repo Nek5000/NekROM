@@ -37,9 +37,10 @@ c     parameters and common blocks for MOR
       common /morpsnap/ ps(lx2*ly2*lz2*lelt,ls)
       common /mortsnap/ ts0(lx1*ly1*lz1*lelt,ls)
 
-      common /morbg/   bgx(lx1*ly1*lz1*lelt),
-     $                 bgy(lx1*ly1*lz1*lelt),
-     $                 bgz(lx1*ly1*lz1*lelt)
+      common /morforce/   bgx(lx1*ly1*lz1*lelt),
+     $                    bgy(lx1*ly1*lz1*lelt),
+     $                    bgz(lx1*ly1*lz1*lelt),
+     $                    bqr(lx1*ly1*lz1*lelt)
 
       common /morbuoy/ bux,buy,buz
 
