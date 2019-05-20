@@ -343,12 +343,6 @@ c     call add2s2(rhs,av0,s,nb+1) ! not working...
          call add2(rhs,rq,nb)
       endif
 
-c     do i=1,nb
-c        write (6,*) i,tmp(i),'rhs(i)'
-c     enddo
-
-c     call exitt0
-
       return
       end
 c-----------------------------------------------------------------------
@@ -449,8 +443,6 @@ c-----------------------------------------------------------------------
 
       common /scravg/ ux(lt),uy(lt),uz(lt)
 
-      real tmp1(nb),tmp2(nb)
-
       if (ad_step.eq.1) then
          call rzero(ua,nb+1)
          call rzero(u2a,(nb+1)**2)
@@ -485,12 +477,6 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
       include 'AVG'
-
-      parameter (lt=lx1*ly1*lz1*lelt)
-
-      common /scravg/ ux(lt),uy(lt),uz(lt)
-
-      real tmp1(nb),tmp2(nb)
 
       if (ad_step.eq.1) then
          call rzero(uta,nb+1)
