@@ -192,7 +192,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine rom_poisson(res)
+      subroutine rom_poisson
 
       include 'SIZE'
       include 'TOTAL'
