@@ -26,6 +26,7 @@ c-----------------------------------------------------------------------
          enddo
 
          ! ub, vb, wb, are the modes
+         if (ifrom(1)) then
          do j=1,ns
          do i=1,nb
             call opadds(ub(1,i),vb(1,i),wb(1,i),
@@ -34,6 +35,9 @@ c-----------------------------------------------------------------------
          enddo
 
          call vnorm(ub,vb,wb)
+         else
+            call opcopy(ub,vb,wb,uic,vic,wic)
+         endif
 
          if (ifrom(2)) then
             do i=1,nb
