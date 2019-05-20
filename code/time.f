@@ -339,11 +339,22 @@ c     call add2s2(rhs,av0,s,nb+1) ! not working...
       enddo
 
       call evalc(tmp(1),ctl,ictl,ut)
+
       call shift3(ctr,tmp(1),nb)
 
       call mxm(ctr,nb,ad_alpha(1,icount),3,tmp(1),1)
 
       call sub2(rhs,tmp(1),nb)
+
+      if (ifsource) then
+         call add2(rhs,rq,nb)
+      endif
+
+c     do i=1,nb
+c        write (6,*) i,tmp(i),'rhs(i)'
+c     enddo
+
+c     call exitt0
 
       return
       end

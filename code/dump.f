@@ -126,6 +126,10 @@ c-----------------------------------------------------------------------
          call dump_global(ctl,ncloc,'ops/ct ',wk1,wk2,nid)
       endif
 
+      if (ifbuoy) then
+         call dump_serial(but0,(nb+1)**2,'ops/but ',nid)
+      endif
+
       ttmp=time
       itmp=istep
       do i=0,nb

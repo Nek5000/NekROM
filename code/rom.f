@@ -364,11 +364,6 @@ c-----------------------------------------------------------------------
          endif
 
          call outpost(uavg,vavg,wavg,pavg,tavg,'avg')
-         if (ifforce) then
-            call cfill(bgx,bux,n)
-            call cfill(bgy,buy,n)
-            if (ldim.eq.3) call cfill(bgz,buz,n)
-         endif
       endif
 
       if (ifrecon) then
@@ -671,6 +666,10 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
+      common /scrsetg/ wk1(lt),wk2(lt),wk3(lt)
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
       if (nio.eq.0) write (6,*) 'inside setg'
 
       call rzero(rg,nb)
@@ -679,16 +678,26 @@ c-----------------------------------------------------------------------
       if (ifbuoy) then
          do j=0,nb
          do i=0,nb
-            but0(i,j)=bux*sip(tb(1,j),ub(1,i))+buy*sip(tb(1,j),vb(1,i))
-            if (ldim.eq.3) but0(i,j)=but0(i,j)+buz*sip(tb(1,j),wb(1,i))
+            call col3(wk1,ub(1,i),tb(1,j),n)
+            call col3(wk2,vb(1,i),tb(1,j),n)
+            if (ldim.eq.3) call col3(wk3,wb(1,i),tb(1,j),n)
+            but0(i,j)=op_glsc2_wt(wk1,wk2,wk3,gx,gy,gz,bm1)
          enddo
          enddo
-      else if (ifforce) then
-         do i=1,nb
-            rg(i)=vip(bgx,bgy,bgz,ub(1,i),vb(1,i),wb(1,i))
-            if (nio.eq.0) write (6,*) rg(i),i,'rg'
-         enddo
-         call outpost(bgx,bgy,bz,pavg,tavg,'bgv')
+      endif
+      if (ifforce) then
+         if (ifrom(1)) then
+            do i=1,nb
+               rf(i)=vip(fx,fy,fz,ub(1,i),vb(1,i),wb(1,i))
+               if (nio.eq.0) write (6,*) rf(i),i,'rf'
+            enddo
+            call outpost(fx,fy,fz,pavg,tavg,'frc')
+         endif
+         if (ifrom(2)) then
+            do i=1,nb
+               rq(i)=sip(qq,tb(1,i))
+            enddo
+         endif
       endif
 
       if (nio.eq.0) write (6,*) 'exiting setg'

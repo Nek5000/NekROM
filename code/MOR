@@ -37,10 +37,13 @@ c     parameters and common blocks for MOR
       common /morpsnap/ ps(lx2*ly2*lz2*lelt,ls)
       common /mortsnap/ ts0(lx1*ly1*lz1*lelt,ls)
 
-      common /morforce/   bgx(lx1*ly1*lz1*lelt),
-     $                    bgy(lx1*ly1*lz1*lelt),
-     $                    bgz(lx1*ly1*lz1*lelt),
-     $                    bqr(lx1*ly1*lz1*lelt)
+      common /morforce/ fx(lx1*ly1*lz1*lelt),
+     $                  fy(lx1*ly1*lz1*lelt),
+     $                  fz(lx1*ly1*lz1*lelt),
+     $                  gx(lx1*ly1*lz1*lelt),
+     $                  gy(lx1*ly1*lz1*lelt),
+     $                  gz(lx1*ly1*lz1*lelt),
+     $                  qq(lx1*ly1*lz1*lelt)
 
       common /morbuoy/ bux,buy,buz
 
@@ -71,7 +74,7 @@ c     parameters and common blocks for MOR
      $                 ut2(0:ltb,0:lub),ut2j(0:ltb,0:ltb,6)
 
       common /morrhs/ cvr(lub,3),ctr(lub,3),usa(0:lub),rg(lub),
-     $                fu(lub,3),rq(lut)
+     $                rf(lub),fu(lub,3),rq(ltb)
 
       common /morsig_diag/ siga_diag(0:lub),sigb_diag(0:lub),
      $                     sigc_diag(0:lub,0:lub)
@@ -110,12 +113,12 @@ c     parameters and common blocks for MOR
       logical ifl2,ifvort,ifdump,ifrecon,ifstep,ifpart,ifavg0,
      $        ifdumpops,ifcdrag,ifrms,ifread,ifforce,ifpod(0:ldimt1),
      $        ifbuoy,ifrom(0:ldimt1),ifcintp,iffastc,ifcnuss,ifctke,
-     $        iffasth,ifavisc
+     $        iffasth,ifavisc,ifsource
 
       common /morflags/ ifl2,ifvort,ifdump,ifrecon,ifstep,ifavg0,
      $                  ifdumpops,ifcdrag,ifrms,ifread,ifforce,ifpod,
      $                  ifbuoy,ifrom,ifcintp,iffastc,ifcnuss,ifctke,
-     $                  iffasth,ifavisc
+     $                  iffasth,ifavisc,ifsource
 
       real last_time,misc_time,lu_time
       common /mortime/ step_time,last_time,misc_time,evalc_time,

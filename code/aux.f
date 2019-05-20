@@ -756,39 +756,3 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine setf(f)
-
-      include 'SIZE'
-      include 'TOTAL'
-
-      real f(lx1,ly1,lz1,lelt)
-
-      do ie=1,nelt
-      do ifc=1,2*ldim
-         call facind(kx1,kx2,ky1,ky2,kz1,kz2,lx1,ly1,lz1,ifc)
-         if (cbc(ifc,ie,2).eq.'f  ') then
-            l=1
-            do iz=kz1,kz2
-            do iy=ky1,ky2
-            do ix=kx1,kx2
-               f(ix,iy,iz,ie)=1
-               f(ix,iy,iz,ie)=f(ix,iy,iz,ie)*area(l,1,ifc,ie)
-               l=l+1
-            enddo
-            enddo
-            enddo
-         else
-            do iz=kz1,kz2
-            do iy=ky1,ky2
-            do ix=kx1,kx2
-               f(ix,iy,iz,ie)=0.
-            enddo
-            enddo
-            enddo
-         endif
-      enddo
-      enddo
-
-      return
-      end
-c-----------------------------------------------------------------------
