@@ -37,6 +37,7 @@ c-----------------------------------------------------------------------
 
       if (ifrom(2).and..not.ifrom(1)) then
          eqn='HEA'
+         ifield=2
          call set_sigma
       endif
 
@@ -61,6 +62,7 @@ c-----------------------------------------------------------------------
       endif
 
       if (ifrom(2).and..not.ifrom(1)) then
+         ifield=2
          call cres(res,sigma,theta,nres,lres)
       endif
 
