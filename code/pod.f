@@ -35,7 +35,7 @@ c-----------------------------------------------------------------------
 
          call vnorm(ub,vb,wb)
 
-         if (ifpod(2)) then
+         if (ifrom(2)) then
             do i=1,nb
                call rzero(tb(1,i),n)
                do j=1,ns
