@@ -674,7 +674,7 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'inside setg'
 
-      call rzero(bg,nb)
+      call rzero(rg,nb)
       call rzero(but0,(nb+1)**2)
 
       if (ifbuoy) then
@@ -686,8 +686,8 @@ c-----------------------------------------------------------------------
          enddo
       else if (ifforce) then
          do i=1,nb
-            bg(i)=vip(bgx,bgy,bgz,ub(1,i),vb(1,i),wb(1,i))
-            if (nio.eq.0) write (6,*) bg(i),i,'bg'
+            rg(i)=vip(bgx,bgy,bgz,ub(1,i),vb(1,i),wb(1,i))
+            if (nio.eq.0) write (6,*) rg(i),i,'rg'
          enddo
          call outpost(bgx,bgy,bz,pavg,tavg,'bgv')
       endif

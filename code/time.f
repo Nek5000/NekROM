@@ -377,7 +377,7 @@ c     call add2s2(rhs,av0,s,nb+1) ! not working...
          call mxm(but0,nb+1,ut(0,1),nb+1,tmp2(0),1)
          call add2(tmp1(1),tmp2(1),nb)
       else if (ifforce) then
-         call add2(tmp1(1),bg(1),nb)
+         call add2(tmp1(1),rg(1),nb)
       endif
 
       call shift3(fu,tmp1(1),nb)
