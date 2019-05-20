@@ -176,8 +176,9 @@ c-----------------------------------------------------------------------
 
       l=1
       call set_betaj(betaj)
-      call mxm(uj,lub+1,betaj,6,theta(l),1)
-      l=l+lub+1
+      call mxm(utj,nb+1,betaj,6,theta(l),1)
+
+      l=l+nb+1
       do i=0,nb
          theta(l)=uta(i)
          l=l+1
