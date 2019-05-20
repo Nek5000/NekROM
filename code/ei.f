@@ -83,16 +83,15 @@ c-----------------------------------------------------------------------
       else
          if (ips.eq.'L2 ') then
             do i=0,nb
-               call copy(xi(l,i),tb(1,i),n)
+               call copy(xi(1,l),tb(1,i),n)
                l=l+1
             enddo
             do i=0,nb
-               call axhelm(xi(l,i),tb(1,i),ones,zeros,1,1)
-               call binv1(xi(l,i))
+               call axhelm(xi(1,l),tb(1,i),ones,zeros,1,1)
+               call binv1(xi(1,l))
                l=l+1
             enddo
-            call copy(xi(l,nb+2),bqr,n)
-            call binv1(xi(l,nb+2))
+            call copy(xi(1,l),qq,n)
             l=l+1
          else
             do i=0,nb
