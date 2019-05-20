@@ -39,7 +39,6 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /poisson/ bqr(lx1*ly1*lz1*lelt)
       common /eires/ xi(lt,lres),theta(lt,lres),sigma(lres,lres)
       common /eiivar/ nres
 
@@ -265,7 +264,6 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       common /scrrhs/ tmp(0:nb)
-      common /poisson/ bqr(lx1*ly1*lz1*lelt)
 
       real rhs(nb)
 
