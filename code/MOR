@@ -70,7 +70,8 @@ c     parameters and common blocks for MOR
       common /mortsol/ ut(0:ltb,3),utj(0:ltb,6),
      $                 ut2(0:ltb,0:lub),ut2j(0:ltb,0:ltb,6)
 
-      common /morrhs/ cvr(lub,3),ctr(lub,3),usa(0:lub),bg(lub),fu(lub,3)
+      common /morrhs/ cvr(lub,3),ctr(lub,3),usa(0:lub),bg(lub),
+     $                fu(lub,3),q(lut)
 
       common /morsig_diag/ siga_diag(0:lub),sigb_diag(0:lub),
      $                     sigc_diag(0:lub,0:lub)
