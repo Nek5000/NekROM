@@ -92,12 +92,10 @@ c     if (ifdebug) call exitt0
 
       step_time=step_time+dnekclock()-last_time
 
-      call pp
-
       return
       end
 c-----------------------------------------------------------------------
-      subroutine pp
+      subroutine postu
 
       include 'SIZE'
       include 'TOTAL'
@@ -122,15 +120,9 @@ c-----------------------------------------------------------------------
 
       if (mod(ad_step,ad_iostep).eq.0) then
          if (nio.eq.0) then
-            write (6,*)'ad_step:',ad_step,ad_iostep,npp,nid,step_time
             if (ifrom(1)) then
                do j=1,nb
                   write(6,*) j,time,u(j,1),'romu'
-               enddo
-            endif
-            if (ifrom(2)) then
-               do j=1,nb
-                  write(6,*) j,time,ut(j,1),'romt'
                enddo
             endif
          endif
@@ -204,7 +196,6 @@ c        call BFGS(rhs(1),helmt,invhelmt,tmax,tmin,tdis,1e-3,4)
 
       step_time=step_time+dnekclock()-last_time
 
-      call postt
 
       return
       end
@@ -224,10 +215,12 @@ c-----------------------------------------------------------------------
       call settj
 
       if (mod(ad_step,ad_iostep).eq.0) then
-         if (nio.eq.0) then
-            do j=1,nb
-               write(6,*) j,time,ut(j,1),'romt'
-            enddo
+         if (ifrom(2)) then
+            if (nio.eq.0) then
+               do j=1,nb
+                  write(6,*) j,time,ut(j,1),'romt'
+               enddo
+            endif
          endif
       endif
 

@@ -46,6 +46,8 @@ c-----------------------------------------------------------------------
          if (istep.gt.0) then
             if (ifrom(2)) call rom_step_t
             call rom_step
+            call postu
+            call postt
             call reconv(vx,vy,vz,u) ! reconstruct velocity to be used in h-t
          endif
       else
@@ -55,6 +57,8 @@ c-----------------------------------------------------------------------
             time=time+dt
             if (ifrom(2)) call rom_step_t
             call rom_step
+            call postu
+            call postt
             ad_step=ad_step+1
          enddo
          icalld=0
