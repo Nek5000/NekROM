@@ -612,12 +612,19 @@ c-----------------------------------------------------------------------
       ifield=1
 
       call opsub2(uic,vic,wic,ub,vb,wb)
-      if (ips.eq.'H10') then
-         call h10pv2b(u,uic,vic,wic,ub,vb,wb)
-      else if (ips.eq.'HLM') then
-         call hlmpv2b(u,uic,vic,wic,ub,vb,wb)
+      if (ifrom(1)) then
+         if (ips.eq.'H10') then
+            call h10pv2b(u,uic,vic,wic,ub,vb,wb)
+         else if (ips.eq.'HLM') then
+            call hlmpv2b(u,uic,vic,wic,ub,vb,wb)
+         else
+            call pv2b(u,uic,vic,wic,ub,vb,wb)
+         endif
       else
-         call pv2b(u,uic,vic,wic,ub,vb,wb)
+         call rzero(u,(nb+1)*3)
+         u(0,1)=1.
+         u(0,2)=1.
+         u(0,3)=1.
       endif
       call opadd2(uic,vic,wic,ub,vb,wb)
 
