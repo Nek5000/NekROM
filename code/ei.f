@@ -18,8 +18,8 @@ c-----------------------------------------------------------------------
 
       res=0.
 
-      do j=1,n
-      do i=1,n
+      do j=1,nres
+      do i=1,nres
          res=res+sigma(i,j)*theta(i)*theta(j)
       enddo
       enddo
