@@ -251,7 +251,7 @@ c     Matrices and vectors for advance
       call recont(t,rhs)
       call copy(ut,rhs,nb+1)
 
-      call cres(res,sigma,theta,nres,lres)
+      call cres
 
       step_time=step_time+dnekclock()-last_time
 
