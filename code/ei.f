@@ -94,9 +94,7 @@ c-----------------------------------------------------------------------
             call copy(xi(1,l),qq,n)
             l=l+1
          else
-            do i=0,nb
-               call copy(xi(1,i),tb(1,i),n)
-            enddo
+            call exitti('(set_xi_heat) ips != L2 not supported...$',ips)
          endif
       endif
 
