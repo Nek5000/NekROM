@@ -66,7 +66,7 @@ c-----------------------------------------------------------------------
 
       if (ifrom(2).and..not.ifrom(1)) then
          ifield=2
-         call cres(res,sigma,theta,nres,lres)
+         call cres
       endif
 
       ifield=jfield

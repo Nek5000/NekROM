@@ -1,5 +1,5 @@
 c-----------------------------------------------------------------------
-      subroutine cres(res,sigma,theta,n,l)
+      subroutine cres
 
       include 'SIZE'
       include 'MOR'
