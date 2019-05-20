@@ -189,7 +189,7 @@ c-----------------------------------------------------------------------
          call setb(bt,bt0,'ops/bt ')
          call setc(ctl,ictl,'ops/ct ')
       endif
-      call setg
+      call setf
       ifield=jfield
 
       if (nio.eq.0) write (6,*) 'exiting setops'
@@ -258,10 +258,6 @@ c-----------------------------------------------------------------------
 
       ifcintp=.false.
 
-      bux=param(193)
-      buy=param(194)
-      buz=param(195)
-
       ifavisc=.false.
       if (param(196).ne.0.) ifavisc=.true.
 
@@ -280,11 +276,11 @@ c-----------------------------------------------------------------------
       ifdump=((.not.ifheat).or.ifrom(2))
       ifrecon=(.not.ifread)
 
+      ifforce=param(193).ne.0.
+      ifsource=param(194).ne.0.
+      ifbuoy=param(195).ne.0.
+
       ifpart=.false.
-      ifforce=.false.
-      bu2=bux*bux+buy*buy+buz*buz
-      ifbuoy=bu2.gt.0..and.ifrom(2)
-      ifforce=bu2.gt.0..and..not.(ifrom(1).and.ifrom(2))
       ifcintp=.false.
 
       call compute_BDF_coef(ad_alpha,ad_beta)
@@ -304,11 +300,12 @@ c-----------------------------------------------------------------------
          write (6,*) 'rp_ifavisc    ',ifavisc
          write (6,*) ' '
          write (6,*) 'rp_ifforce    ',ifforce
+         write (6,*) 'rp_ifsource   ',ifsource
+         write (6,*) 'rp_ifbuoy     ',ifbuoy
          write (6,*) 'rp_ifpart     ',ifpart
          write (6,*) 'rp_ifrecon    ',ifrecon
          write (6,*) 'rp_ifdump     ',ifdump
          write (6,*) 'rp_ifvort     ',ifvort
-         write (6,*) 'rp_ifbuoy     ',ifbuoy
          write (6,*) 'rp_ifcintp    ',ifcintp
          do i=0,ldimt1
             write (6,*) 'rp_ifpod(',i,')   ',ifpod(i)
@@ -661,23 +658,27 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine setg
+      subroutine setf
 
       include 'SIZE'
       include 'SOLN'
       include 'MOR'
+      include 'MASS'
       include 'AVG'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /scrsetg/ wk1(lt),wk2(lt),wk3(lt)
+      common /scrsetf/ wk1(lt),wk2(lt),wk3(lt)
 
-      parameter (lt=lx1*ly1*lz1*lelt)
+      if (nio.eq.0) write (6,*) 'inside setf'
 
-      if (nio.eq.0) write (6,*) 'inside setg'
-
+      call rzero(rf,nb)
+      call rzero(rq,nb)
       call rzero(rg,nb)
+
       call rzero(but0,(nb+1)**2)
+
+      n=lx1*ly1*lz1*nelv
 
       if (ifbuoy) then
          do j=0,nb
@@ -689,22 +690,25 @@ c-----------------------------------------------------------------------
          enddo
          enddo
       endif
-      if (ifforce) then
-         if (ifrom(1)) then
-            do i=1,nb
-               rf(i)=vip(fx,fy,fz,ub(1,i),vb(1,i),wb(1,i))
-               if (nio.eq.0) write (6,*) rf(i),i,'rf'
-            enddo
-            call outpost(fx,fy,fz,pavg,tavg,'frc')
-         endif
-         if (ifrom(2)) then
-            do i=1,nb
-               rq(i)=sip(qq,tb(1,i))
-            enddo
-         endif
+
+      call outpost(gx,gy,gz,pr,t,'ggg')
+c     call exitt0
+
+      if (ifforce.and.ifrom(1)) then
+         do i=1,nb
+            rf(i)=wl2vip(fx,fy,fz,ub(1,i),vb(1,i),wb(1,i))
+            if (nio.eq.0) write (6,*) rf(i),i,'rf'
+         enddo
+         call outpost(fx,fy,fz,pavg,tavg,'frc')
       endif
 
-      if (nio.eq.0) write (6,*) 'exiting setg'
+      if (ifsource.and.ifrom(2)) then
+         do i=1,nb
+            rq(i)=wl2sip(qq,tb(1,i))
+         enddo
+      endif
+
+      if (nio.eq.0) write (6,*) 'exiting setf'
 
       return
       end
