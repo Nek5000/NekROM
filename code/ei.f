@@ -270,7 +270,7 @@ c-----------------------------------------------------------------------
       n=lx1*ly1*lz1*nelv
 
       do i=1,nb
-         rhs(i)=glsc2(bqr,tb(1,i),n)
+         rhs(i)=wl2sip(qq,tb(1,i))
       enddo
 
       return
