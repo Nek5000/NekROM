@@ -45,7 +45,7 @@ c-----------------------------------------------------------------------
      $   'error: running rom_update with ifflow = .true.$',nelv)
          if (istep.gt.0) then
             if (ifrom(2)) call rom_step_t
-            call rom_step
+            if (ifrom(1)) call rom_step
             call postu
             call postt
             call reconv(vx,vy,vz,u) ! reconstruct velocity to be used in h-t
@@ -56,7 +56,7 @@ c-----------------------------------------------------------------------
          do i=1,ad_nsteps
             time=time+dt
             if (ifrom(2)) call rom_step_t
-            call rom_step
+            if (ifrom(1)) call rom_step
             call postu
             call postt
             ad_step=ad_step+1
