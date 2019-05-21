@@ -701,7 +701,7 @@ c-----------------------------------------------------------------------
          call outpost(vx,vy,vz,pavg,wk1,'qqq')
       endif
 
-      if (ifbuoy,.and.ifrom(1).and.ifrom(2)) then ! assume gx,gy,gz has mass
+      if (ifbuoy.and.ifrom(1).and.ifrom(2)) then ! assume gx,gy,gz has mass
          do j=0,nb
          do i=0,nb
             but0(i,j)=op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),
