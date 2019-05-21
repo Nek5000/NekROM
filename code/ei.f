@@ -51,10 +51,13 @@ c-----------------------------------------------------------------------
          if (ips.eq.'L2 ') then
             do i=1,nb
                call axhelm(xi(1,l),tb(1,i),ones,zeros,1,1)
+c              call invcol2(xi(1,l),bm1,n)
                call binv1(xi(1,l))
                l=l+1
             enddo
             call copy(xi(1,l),qq,n)
+c           call invcol2(xi(1,l),bm1,n)
+            call binv1(xi(1,l))
          else
             call exitti('(set_xi_poisson) ips!=L2 not supported...$',nb)
          endif
@@ -271,7 +274,8 @@ c-----------------------------------------------------------------------
       n=lx1*ly1*lz1*nelv
 
       do i=1,nb
-         rhs(i)=wl2sip(qq,tb(1,i))
+c        rhs(i)=wl2sip(qq,tb(1,i))
+         rhs(i)=glsc2(qq,tb(1,i),n)
       enddo
 
       return

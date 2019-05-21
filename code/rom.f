@@ -703,8 +703,10 @@ c     call exitt0
       endif
 
       if (ifsource.and.ifrom(2)) then
+         call copy(wk1,qq,n)
+         call binv1(wk1)
          do i=1,nb
-            rq(i)=wl2sip(qq,tb(1,i))
+            rq(i)=wl2sip(wk1,tb(1,i))
          enddo
       endif
 
