@@ -680,34 +680,37 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelv
 
-      if (ifbuoy) then
+      if (ifbuoy) then ! assume gx,gy,gz has mass
          do j=0,nb
          do i=0,nb
-            call col3(wk1,ub(1,i),tb(1,j),n)
-            call col3(wk2,vb(1,i),tb(1,j),n)
-            if (ldim.eq.3) call col3(wk3,wb(1,i),tb(1,j),n)
-            but0(i,j)=op_glsc2_wt(wk1,wk2,wk3,gx,gy,gz,bm1)
+            but0(i,j)=op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),
+     $                            gx,gy,gz,tb(1,j))
+            if (nio.eq.0) write (6,*) rg(i),i,'rg'
          enddo
          enddo
+         call opcopy(wk1,wk2,wk3,gx,gy,gz)
+         call outpost(wk1,wk2,wk3,pavg,tavg,'ggg')
       endif
 
-      call outpost(gx,gy,gz,pr,t,'ggg')
-c     call exitt0
-
-      if (ifforce.and.ifrom(1)) then
+      if (ifforce.and.ifrom(1)) then ! assume fx,fy,fz has mass
          do i=1,nb
-            rf(i)=wl2vip(fx,fy,fz,ub(1,i),vb(1,i),wb(1,i))
+            rf(i)=glsc2(ub(1,i),fx,n)+glsc2(vb(1,i),fy,n)
+            if (ldim.eq.3) rf(i)=rf(i)+glsc2(wb(1,i),fz,n)
             if (nio.eq.0) write (6,*) rf(i),i,'rf'
          enddo
-         call outpost(fx,fy,fz,pavg,tavg,'frc')
+         call opcopy(wk1,wk2,wk3,fx,fy,fz)
+         call opbinv1(wk1,wk2,wk3,wk1,wk2,wk3,1.)
+         call outpost(wk1,wk2,wk3,pavg,tavg,'fff')
       endif
 
-      if (ifsource.and.ifrom(2)) then
-         call copy(wk1,qq,n)
-         call binv1(wk1)
+      if (ifsource.and.ifrom(2)) then ! assume qq has mass
          do i=1,nb
-            rq(i)=wl2sip(wk1,tb(1,i))
+            rq(i)=glsc2(qq,tb(1,i),n)
+            if (nio.eq.0) write (6,*) rq(i),i,'rq'
          enddo
+         call copyo(wk1,qq,n)
+         call binv1(wk1)
+         call outpost(vx,vy,vz,pavg,wk1,'qqq')
       endif
 
       if (nio.eq.0) write (6,*) 'exiting setf'
