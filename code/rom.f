@@ -696,7 +696,7 @@ c-----------------------------------------------------------------------
             rq(i)=glsc2(qq,tb(1,i),n)
             if (nio.eq.0) write (6,*) rq(i),i,'rq'
          enddo
-         call copyo(wk1,qq,n)
+         call copy(wk1,qq,n)
          call binv1(wk1)
          call outpost(vx,vy,vz,pavg,wk1,'qqq')
       endif
