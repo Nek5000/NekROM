@@ -680,18 +680,6 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelv
 
-      if (ifbuoy) then ! assume gx,gy,gz has mass
-         do j=0,nb
-         do i=0,nb
-            but0(i,j)=op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),
-     $                            gx,gy,gz,tb(1,j))
-            if (nio.eq.0) write (6,*) rg(i),i,'rg'
-         enddo
-         enddo
-         call opcopy(wk1,wk2,wk3,gx,gy,gz)
-         call outpost(wk1,wk2,wk3,pavg,tavg,'ggg')
-      endif
-
       if (ifforce.and.ifrom(1)) then ! assume fx,fy,fz has mass
          do i=1,nb
             rf(i)=glsc2(ub(1,i),fx,n)+glsc2(vb(1,i),fy,n)
@@ -711,6 +699,18 @@ c-----------------------------------------------------------------------
          call copyo(wk1,qq,n)
          call binv1(wk1)
          call outpost(vx,vy,vz,pavg,wk1,'qqq')
+      endif
+
+      if (ifbuoy,.and.ifrom(1).and.ifrom(2)) then ! assume gx,gy,gz has mass
+         do j=0,nb
+         do i=0,nb
+            but0(i,j)=op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),
+     $                            gx,gy,gz,tb(1,j))
+            if (nio.eq.0) write (6,*) rg(i),i,'rg'
+         enddo
+         enddo
+         call opcopy(wk1,wk2,wk3,gx,gy,gz)
+         call outpost(wk1,wk2,wk3,pavg,tavg,'ggg')
       endif
 
       if (nio.eq.0) write (6,*) 'exiting setf'
