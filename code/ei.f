@@ -92,6 +92,7 @@ c-----------------------------------------------------------------------
                l=l+1
             enddo
             call copy(xi(1,l),qq,n)
+            call binv1(xi(1,l))
             l=l+1
          else
             call exitti('(set_xi_heat) ips != L2 not supported...$',ips)
