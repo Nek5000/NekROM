@@ -84,6 +84,8 @@ c-----------------------------------------------------------------------
          if (ips.eq.'L2 ') then
             do i=0,nb
                call copy(xi(1,l),tb(1,i),n)
+               call col2(xi(1,l),bm1,n)
+               call binv1(xi(1,l))
                l=l+1
             enddo
             do i=0,nb
