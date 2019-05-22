@@ -496,9 +496,15 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
 
-      if (ad_step.eq.2) call copy(uj,u,3*(nb+1))
+      if (ad_step.eq.2) then
+         call copy(uj(0,1),u(0,3),nb+1)
+         call copy(uj(0,2),u(0,2),nb+1)
+         call copy(uj(0,3),u(0,1),nb+1)
+      endif
       if (ad_step.eq.ad_nsteps) then
-         call copy(uj(0,4),u,3*(nb+1))
+         call copy(uj(0,4),u(0,3),nb+1)
+         call copy(uj(0,5),u(0,2),nb+1)
+         call copy(uj(0,6),u(0,1),nb+1)
          do k=1,6
          do j=0,nb
          do i=0,nb
@@ -516,9 +522,16 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
 
-      if (ad_step.eq.2) call copy(utj,ut,3*(nb+1))
+      if (ad_step.eq.2) then
+         call copy(utj(0,1),ut(0,3),nb+1)
+         call copy(utj(0,2),ut(0,2),nb+1)
+         call copy(utj(0,3),ut(0,1),nb+1)
+      endif
+
       if (ad_step.eq.ad_nsteps) then
-         call copy(utj(0,4),ut,3*(nb+1))
+         call copy(utj(0,4),ut(0,3),nb+1)
+         call copy(utj(0,5),ut(0,2),nb+1)
+         call copy(utj(0,6),ut(0,1),nb+1)
       endif
 
       return
