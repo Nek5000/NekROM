@@ -108,6 +108,52 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine set_xi_ad
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /eires/ xi(lt,lres),theta(lres),sigma(lres,lres)
+      common /eiivar/ nres
+
+      n=lx1*ly1*lz1*nelv
+
+      l=1
+      if (ifield.eq.1) then
+         call exitti('(set_ritz_a) ifield.eq.1 not supported...$',nb)
+      else
+         if (ips.eq.'L2 ') then
+            do i=0,nb
+               call copy(xi(1,l),tb(1,i),n)
+               l=l+1
+            enddo
+            call push_op(vx,vy,vz)
+            call opcopy(vx,vy,vz,ub,vb,wb)
+            do i=0,nb
+               call convop(xi(1,l),tb(1,i))
+               l=l+1
+            enddo
+            call pop_op(vx,vy,vz)
+            do i=0,nb
+               call axhelm(xi(1,l),tb(1,i),ones,zeros,1,1)
+               call binv1(xi(1,l))
+               l=l+1
+            enddo
+         else
+            call exitti('(set_xi_heat) ips != L2 not supported...$',ips)
+         endif
+      endif
+
+      if ((l-1).gt.nres) then
+         call exitti('increase nres$',l-1)
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine set_sigma
 
       include 'SIZE'
@@ -124,6 +170,8 @@ c-----------------------------------------------------------------------
          nres=nb+1
       else if (eqn.eq.'HEA') then
          nres=(nb+1)*2+1
+      else if (eqn.eq.'ADE') then
+         nres=(nb+1)*3
       endif
 
       if (nres.gt.lres) call exitti('nres > lres$',nres)
@@ -133,6 +181,8 @@ c-----------------------------------------------------------------------
          call set_xi_poisson
       else if (eqn.eq.'HEA') then
          call set_xi_heat
+      else if (eqn.eq.'ADE') then
+         call set_xi_ad
       endif
 
       do i=1,nres
@@ -196,6 +246,41 @@ c-----------------------------------------------------------------------
       theta(l)=-1.
 
       l=l+1
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine set_theta_ad
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      common /eires/ xi(lt,lres),theta(lres),sigma(lres,lres),
+     $               alphaj(6),betaj(6)
+
+      common /eiivar/ nres
+
+      n=lx1*ly1*lz1*nelv
+
+      l=1
+      call set_betaj(betaj)
+      call mxm(utj,nb+1,betaj,6,theta(l),1)
+
+      l=l+nb+1
+
+      call set_alphaj(alphaj)
+      call mxm(utj,nb+1,alphaj,6,theta(l),1)
+      do i=0,nb
+         theta(l)=theta(l)+uta(i)
+         l=l+1
+      enddo
+
+      do i=0,nb
+         theta(l)=param(8)*uta(i)
+         l=l+1
+      enddo
 
       return
       end
@@ -278,6 +363,27 @@ c-----------------------------------------------------------------------
 c        rhs(i)=wl2sip(qq,tb(1,i))
          rhs(i)=glsc2(qq,tb(1,i),n)
       enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine set_alphaj(alphaj)
+
+      include 'SIZE'
+      include 'MOR'
+
+      real alphaj(6)
+
+      ! ad_alpha(3,3)
+
+      alphaj(1)=ad_alpha(1,1)+ad_alpha(2,2)+ad_alpha(3,3)
+      alphaj(2)=ad_alpha(1,2)-ad_alpha(1,3)
+      alphaj(3)=0.
+      alphaj(4)=-ad_alpha(3,3)
+      alphaj(5)=-ad_alpha(2,3)-ad_alpha(3,3)
+      alphaj(6)=0.
+
+      call cmult(alphaj,1./(1.*ad_nsteps),6)
 
       return
       end

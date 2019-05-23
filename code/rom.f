@@ -35,7 +35,6 @@ c-----------------------------------------------------------------------
       ifmult=.not.ifrom(2).and.ifheat
 
       if (ifrom(2).and..not.ifrom(1)) then
-         eqn='HEA'
          ifield=2
          call set_sigma
       endif
