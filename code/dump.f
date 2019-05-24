@@ -99,7 +99,11 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
+      parameter (lt=lx1*ly1*lz1*lelt)
+
       common /dumpglobal/ wk1(lcloc),wk2(lcloc)
+      common /eiivar/ nres
+      common /eires/ xi(lt,lres),theta(lres),sigma(lres,lres)
 
       if (ifpod(1)) then
          call dump_serial(ug(1,1,1),ls*ls,'ops/gu ',nid)
@@ -131,6 +135,17 @@ c-----------------------------------------------------------------------
 
       if (ifbuoy) then
          call dump_serial(but0,(nb+1)**2,'ops/but ',nid)
+      endif
+
+      if (ifei) then
+         l=1
+         do j=1,nres
+         do i=1,nres
+            wm1(l)=sigma(i,j)
+            l=l+1
+         enddo
+         enddo
+         call dump_serial(wm1,nres*nres,'ops/sigma ',nid)
       endif
 
       ttmp=time

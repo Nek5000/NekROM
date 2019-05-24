@@ -34,11 +34,6 @@ c-----------------------------------------------------------------------
 
       ifmult=.not.ifrom(2).and.ifheat
 
-      if (ifrom(2).and..not.ifrom(1)) then
-         ifield=2
-         call set_sigma
-      endif
-
       if (ifmult) then
          if (ifflow) call exitti(
      $   'error: running rom_update with ifflow = .true.$',nelv)
@@ -128,6 +123,8 @@ c-----------------------------------------------------------------------
       call asnap
 
       call hyperpar
+
+      if (ifei) call set_sigma
 
       if (nio.eq.0) write (6,*) 'end range setup'
 
@@ -238,6 +235,8 @@ c-----------------------------------------------------------------------
       else if (np173.eq.2) then
          ifread=.true.
       endif
+
+      ifei=nint(param(175)).ne.0
 
       ad_qstep=nint(param(180))+ad_iostep*max(1-nint(param(180)),0)
 

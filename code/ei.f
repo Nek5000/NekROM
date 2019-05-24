@@ -50,7 +50,7 @@ c-----------------------------------------------------------------------
 
       l=1
       if (ifield.eq.1) then
-         call exitti('(set_xi_poisson) ifield.eq.1 not supported...$',nb)
+        call exitti('(set_xi_poisson) ifield.eq.1 not supported...$',nb)
       else
          if (ips.eq.'L2 ') then
             do i=1,nb
@@ -200,7 +200,7 @@ c    $                     ub(1,i),vb(1,i),wb(1,i))
             call pop_op(vx,vy,vz)
             do i=0,nb ! todo investigate possible source of error for ifaxis
                call copy(xi_u(1,1,l),xi_u(1,1,i+1),n)
-               call axhelm(xi_u(1,1,l),xi_u(1,i),ones,zeros,1,1)
+               call axhelm(xi_u(1,1,l),xi_u(1,1,l),ones,zeros,1,1)
                call binv1(xi_u(1,1,l))
                l=l+1
             enddo
@@ -225,8 +225,11 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
+
       common /eires/ xi(lt,lres),theta(lres),sigma(lres,lres)
       common /eiivar/ nres
+      common /eiresu/ xi_u(lt,ldim,lres),theta_u(lres),
+     $                sigma_u(lres,lres)
 
       n=lx1*ly1*lz1*nelv
 
@@ -241,37 +244,40 @@ c-----------------------------------------------------------------------
       if (nres.gt.lres) call exitti('nres > lres$',nres)
       if (nres.le.0) call exitti('nres <= 0$',nres)
 
-      if (eqn.eq.'POI') then
-         call set_xi_poisson
-      else if (eqn.eq.'HEA') then
-         call set_xi_heat
-      else if (eqn.eq.'ADE') then
-         call set_xi_ad
-      else if (eqn.eq.'NSE') then
-         call set_xi_ns
-      endif
+      if (ifread) then
+      else
+         if (eqn.eq.'POI') then
+            call set_xi_poisson
+         else if (eqn.eq.'HEA') then
+            call set_xi_heat
+         else if (eqn.eq.'ADE') then
+            call set_xi_ad
+         else if (eqn.eq.'NSE') then
+            call set_xi_ns
+         endif
 
-      if (ifield.eq.2) then
-         do i=1,nres
-         do j=1,nres
-            sigma(i,j)=glsc3(xi(1,i),xi(1,j),bm1,n)
-         enddo
-         enddo
-      else if (ifield.eq.1) then
-         if (.true.) then ! if using voritcity residual
+         if (ifield.eq.2) then
             do i=1,nres
             do j=1,nres
-               sigma(i,j)=glsc3(xi_u(1,1,i),xi_i(1,1,j),bm1,n)
+               sigma(i,j)=glsc3(xi(1,i),xi(1,j),bm1,n)
             enddo
             enddo
-         else
-            do i=1,nres
-            do j=1,nres
-               sigma(i,j)=
-     $           op_glsc2_wt(xi_u(1,1,i),xi_u(1,2,i),xi_u(1,ldim,i),
+         else if (ifield.eq.1) then
+            if (.true.) then ! if using voritcity residual
+               do i=1,nres
+               do j=1,nres
+                  sigma(i,j)=glsc3(xi_u(1,1,i),xi_u(1,1,j),bm1,n)
+               enddo
+               enddo
+            else
+               do i=1,nres
+               do j=1,nres
+                  sigma(i,j)=
+     $               op_glsc2_wt(xi_u(1,1,i),xi_u(1,2,i),xi_u(1,ldim,i),
      $                       xi_u(1,1,j),xi_u(1,2,j),xi_u(1,ldim,j),bm1)
-            enddo
-            enddo
+               enddo
+               enddo
+            endif
          endif
       endif
 
@@ -335,6 +341,41 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine set_theta_ad
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      common /eires/ xi(lt,lres),theta(lres),sigma(lres,lres),
+     $               alphaj(6),betaj(6)
+
+      common /eiivar/ nres
+
+      n=lx1*ly1*lz1*nelv
+
+      l=1
+      call set_betaj(betaj)
+      call mxm(utj,nb+1,betaj,6,theta(l),1)
+
+      l=l+nb+1
+
+      call set_alphaj(alphaj)
+      call mxm(utj,nb+1,alphaj,6,theta(l),1)
+      do i=0,nb
+         theta(l)=theta(l)+uta(i)
+         l=l+1
+      enddo
+
+      do i=0,nb
+         theta(l)=param(8)*uta(i)
+         l=l+1
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine set_theta_ns
 
       include 'SIZE'
       include 'TOTAL'
