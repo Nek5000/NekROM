@@ -1,4 +1,99 @@
 c-----------------------------------------------------------------------
+      subroutine offline_mode ! offline-wrapper for MOR
+
+      include 'SIZE'
+      include 'INPUT'
+
+      param(173)=1.
+      call rom_setup
+
+      ! todo add timing
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine online_mode ! online-wrapper for MOR
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      integer icalld
+      save    icalld
+      data    icalld /0/
+
+      logical ifmult
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /romup/ rom_time
+      common /eires/ xi(lt,lres),theta(lres),sigma(lres,lres)
+      common /eiivar/ nres
+      common /eivar/ res
+
+      stime=dnekclock()
+
+      if (icalld.eq.0) then
+         ttime=time
+         rom_time=0.
+         param(173)=2.
+         icalld=1
+         call rom_setup
+         ifei=.true.
+         time=ttime
+      endif
+
+      ad_step = istep
+      jfield=ifield
+      ifield=1
+
+      ifmult=.not.ifrom(2).and.ifheat
+
+      if (ifmult) then
+         if (ifflow) call exitti(
+     $   'error: running rom_update with ifflow = .true.$',nelv)
+         if (istep.gt.0) then
+            if (ifrom(2)) call rom_step_t
+            if (ifrom(1)) call rom_step
+            call postu
+            call postt
+            call reconv(vx,vy,vz,u) ! reconstruct velocity to be used in h-t
+         endif
+      else
+         if (nio.eq.0) write (6,*) 'starting rom_step loop',ad_nsteps
+         ad_step = 1
+         do i=1,ad_nsteps
+            time=time+dt
+            if (ifrom(2)) call rom_step_t
+            if (ifrom(1)) call rom_step
+            call postu
+            call postt
+            ad_step=ad_step+1
+         enddo
+         icalld=0
+      endif
+
+      if (ifrom(2).and..not.ifrom(1)) then
+         ifield=2
+         call cres
+      endif
+
+      ifield=jfield
+
+      dtime=dnekclock()-stime
+      rom_time=rom_time+dtime
+
+      if (ifmult) then
+         if (nio.eq.0) write (6,*) 'romd_time: ',dtime
+      endif
+
+      if (.not.ifmult.or.nsteps.eq.istep) then
+         call final
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine cres
 
       include 'SIZE'
