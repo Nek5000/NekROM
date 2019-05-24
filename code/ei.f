@@ -14,6 +14,8 @@ c-----------------------------------------------------------------------
          call set_theta_poisson
       else if (eqn.eq.'HEA') then
          call set_theta_heat
+      else if (eqn.eq.'ADE') then
+         call set_theta_ad
       endif
 
       res=0.
