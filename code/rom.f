@@ -705,7 +705,7 @@ c-----------------------------------------------------------------------
          do i=0,nb
             but0(i,j)=op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),
      $                            gx,gy,gz,tb(1,j))
-            if (nio.eq.0) write (6,*) rg(i),i,'rg'
+            if (nio.eq.0) write (6,*) i,j,but0(i,j),'but0'
          enddo
          enddo
          call opcopy(wk1,wk2,wk3,gx,gy,gz)
