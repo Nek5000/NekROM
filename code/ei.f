@@ -50,7 +50,7 @@ c-----------------------------------------------------------------------
 
       l=1
       if (ifield.eq.1) then
-         call exitti('(set_ritz_a) ifield.eq.1 not supported...$',nb)
+         call exitti('(set_xi_poisson) ifield.eq.1 not supported...$',nb)
       else
          if (ips.eq.'L2 ') then
             do i=1,nb
@@ -83,7 +83,7 @@ c-----------------------------------------------------------------------
 
       l=1
       if (ifield.eq.1) then
-         call exitti('(set_ritz_a) ifield.eq.1 not supported...$',nb)
+         call exitti('(set_xi_heat) ifield.eq.1 not supported...$',nb)
       else
          if (ips.eq.'L2 ') then
             do i=0,nb
@@ -127,7 +127,7 @@ c-----------------------------------------------------------------------
 
       l=1
       if (ifield.eq.1) then
-         call exitti('(set_ritz_a) ifield.eq.1 not supported...$',nb)
+         call exitti('(set_xi_ad) ifield.eq.1 not supported...$',nb)
       else
          if (ips.eq.'L2 ') then
             do i=0,nb
@@ -147,7 +147,7 @@ c-----------------------------------------------------------------------
                l=l+1
             enddo
          else
-            call exitti('(set_xi_heat) ips != L2 not supported...$',ips)
+            call exitti('(set_xi_ad) ips != L2 not supported...$',ips)
          endif
       endif
 
