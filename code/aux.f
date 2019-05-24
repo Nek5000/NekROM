@@ -631,7 +631,11 @@ C--------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelv
       
-      call col2(out1,tmask,n) ! disable mask for now
+      if (ifield.eq.1) then
+         call col2(out1,v1mask,n) ! disable mask for now
+      else
+         call col2(out1,tmask,n) ! disable mask for now
+      endif
       call dssum(out1,lx1,ly1,lz1)
       call col2(out1,binvm1,n)
 
