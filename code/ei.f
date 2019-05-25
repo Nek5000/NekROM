@@ -311,6 +311,14 @@ c-----------------------------------------------------------------------
       if (nres.le.0) call exitti('nres <= 0$',nres)
 
       if (ifread) then
+         call read_serial(sigtmp,nres*nres,'ops/sigma ',sigma,nid)
+         l=1
+         do j=1,nres
+         do i=1,nres
+            sigma(i,j)=sigtmp(l,1)
+            l=l+1
+         enddo
+         enddo
       else
          if (eqn.eq.'POI') then
             call set_xi_poisson
