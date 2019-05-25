@@ -76,7 +76,8 @@ c-----------------------------------------------------------------------
             call chcopy(fn1(7+len),fnum,5)
 
             call restart_filen(fname,11+len)
-            call opcopy(ub(1,i),vb(1,i),wb(1,i),vx,vy,vz)
+            call copy_sol(ub(1,i),vb(1,i),wb(1,i),pb(1,i),tb(1,i),
+     $                    vx,vy,vz,pr,t)
          enddo
       endif
 
