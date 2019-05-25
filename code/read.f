@@ -4,7 +4,7 @@ c-----------------------------------------------------------------------
       character*128 fname
       character*128 fntrunc
 
-      real a(n)
+      real a(n),wk(n)
 
       if (nid.eq.0) then
          call blank(fntrunc,128)
