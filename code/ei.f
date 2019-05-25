@@ -421,7 +421,7 @@ c-----------------------------------------------------------------------
 
       l=l+nb+1
 
-      call set_alphaj(alphaj)
+      call set_alphaj
       call mxm(utj,nb+1,alphaj,6,theta(l),1)
       do i=0,nb
          theta(l)=theta(l)+uta(i)
@@ -447,7 +447,7 @@ c-----------------------------------------------------------------------
       n=lx1*ly1*lz1*nelv
 
       l=1
-      call set_betaj(betaj)
+      call set_betaj
       call mxm(utj,nb+1,betaj,6,theta(l),1)
 
       l=l+nb+1
@@ -546,12 +546,10 @@ c        rhs(i)=wl2sip(qq,tb(1,i))
       return
       end
 c-----------------------------------------------------------------------
-      subroutine set_alphaj(alphaj)
+      subroutine set_alphaj
 
       include 'SIZE'
       include 'MOR'
-
-      real alphaj(6)
 
       ! ad_alpha(3,3)
 
@@ -567,12 +565,10 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine set_betaj(betaj)
+      subroutine set_betaj
 
       include 'SIZE'
       include 'MOR'
-
-      real betaj(6)
 
       ! ad_beta(4,3)
 
