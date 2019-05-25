@@ -110,6 +110,16 @@ c     parameters and common blocks for MOR
      $                     tmin(ltb), tmax(ltb), tdis(ltb)
       common /morqn/ qns(nb), qny(nb)
 
+      ! Error Indicator
+
+      common /eires/ xi(lx1*ly1*lz1*lelt,lres),theta(lres),
+     $               sigma(lres,lres),alphaj(6),betaj(6),
+     $               sigtmp(lres,lres)
+
+      common /eiivar/ nres
+      common /eiresu/ xi_u(lx1*ly1*lz1*lelt,ldim,lres),theta_u(lres),
+     $                sigma_u(lres,lres)
+
       logical ifl2,ifvort,ifdump,ifrecon,ifstep,ifpart,ifavg0,
      $        ifdumpops,ifcdrag,ifrms,ifread,ifforce,ifpod(0:ldimt1),
      $        ifbuoy,ifrom(0:ldimt1),ifcintp,iffastc,ifcnuss,ifctke,

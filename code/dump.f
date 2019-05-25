@@ -102,8 +102,6 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       common /dumpglobal/ wk1(lcloc),wk2(lcloc)
-      common /eiivar/ nres
-      common /eires/ xi(lt,lres),theta(lres),sigma(lres,lres)
 
       if (ifpod(1)) then
          call dump_serial(ug(1,1,1),ls*ls,'ops/gu ',nid)

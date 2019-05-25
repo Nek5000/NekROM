@@ -14,9 +14,6 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       common /romup/ rom_time
-      common /eires/ xi(lt,lres),theta(lres),sigma(lres,lres)
-      common /eiivar/ nres
-      common /eivar/ res
 
       stime=dnekclock()
 

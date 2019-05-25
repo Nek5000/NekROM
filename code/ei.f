@@ -27,9 +27,6 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       common /romup/ rom_time
-      common /eires/ xi(lt,lres),theta(lres),sigma(lres,lres)
-      common /eiivar/ nres
-      common /eivar/ res
 
       stime=dnekclock()
 
@@ -101,10 +98,6 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /eires/ xi(lt,lres),theta(lres),sigma(lres,lres)
-      common /eiivar/ nres
-      common /eivar/ res
-
       if (eqn.eq.'POI') then
          call set_theta_poisson
       else if (eqn.eq.'HEA') then
@@ -138,9 +131,6 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /eires/ xi(lt,lres),theta(lres),sigma(lres,lres)
-      common /eiivar/ nres
-
       n=lx1*ly1*lz1*nelv
 
       l=1
@@ -170,9 +160,6 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
-
-      common /eires/ xi(lt,lres),theta(lres),sigma(lres,lres)
-      common /eiivar/ nres
 
       n=lx1*ly1*lz1*nelv
 
@@ -214,9 +201,6 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
-
-      common /eires/ xi(lt,lres),theta(lres),sigma(lres,lres)
-      common /eiivar/ nres
 
       n=lx1*ly1*lz1*nelv
 
@@ -261,12 +245,7 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /eires/ xi(lt,lres),theta(lres),sigma(lres,lres)
-      common /eiresu/ xi_u(lt,ldim,lres),theta_u(lres),
-     $                sigma_u(lres,lres)
       common /screi/ wk1(lt),wk2(lt),wk3(lt)
-
-      common /eiivar/ nres
 
       n=lx1*ly1*lz1*nelv
 
@@ -320,11 +299,6 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
-
-      common /eires/ xi(lt,lres),theta(lres),sigma(lres,lres)
-      common /eiivar/ nres
-      common /eiresu/ xi_u(lt,ldim,lres),theta_u(lres),
-     $                sigma_u(lres,lres)
 
       n=lx1*ly1*lz1*nelv
 
@@ -386,8 +360,6 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
-      common /eires/ xi(lt,lres),theta(lres),sigma(lres,lres)
-      common /eiivar/ nres
 
       n=lx1*ly1*lz1*nelv
 
@@ -413,8 +385,6 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
-      common /eires/ xi(lt,lres),theta(lres),sigma(lres,lres),betaj(6)
-      common /eiivar/ nres
 
       n=lx1*ly1*lz1*nelv
 
@@ -442,10 +412,6 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
-      common /eires/ xi(lt,lres),theta(lres),sigma(lres,lres),
-     $               alphaj(6),betaj(6)
-
-      common /eiivar/ nres
 
       n=lx1*ly1*lz1*nelv
 
@@ -477,10 +443,6 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
-      common /eires/ xi(lt,lres),theta(lres),sigma(lres,lres),
-     $               alphaj(6),betaj(6)
-
-      common /eiivar/ nres
 
       n=lx1*ly1*lz1*nelv
 
@@ -513,9 +475,6 @@ c-----------------------------------------------------------------------
       include 'AVG'
 
       parameter (lt=lx1*ly1*lz1*lelt)
-
-      common /eires/ xi(lt,lres),theta(lres),sigma(lres,lres)
-      common /eiivar/ nres
 
 c     Matrices and vectors for advance
       real tmp(0:nb),rhs(0:nb)
