@@ -139,11 +139,11 @@ c-----------------------------------------------------------------------
          l=1
          do j=1,nres
          do i=1,nres
-            wm1(l)=sigma(i,j)
+            sigtmp(l,1)=sigma(i,j)
             l=l+1
          enddo
          enddo
-         call dump_serial(wm1,nres*nres,'ops/sigma ',nid)
+         call dump_serial(sigtmp,nres*nres,'ops/sigma ',nid)
       endif
 
       ttmp=time
