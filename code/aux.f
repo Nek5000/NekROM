@@ -334,10 +334,11 @@ c-----------------------------------------------------------------------
 
       call opcopy(vx,vy,vz,ux,uy,uz)
       call copy(pr,pp,lx2*ly2*lz2*nelv)
+      call copy(t,tt,lx1*ly1*lz1*nelv)
 
-      do idim=1,ldimt
-         call copy(t(1,idim),tt(1,idim),lx1*ly1*lz1*nelt)
-      enddo
+c     do idim=1,ldimt
+c        call copy(t(1,idim),tt(1,idim),lx1*ly1*lz1*nelt)
+c     enddo
 
       return
       end
