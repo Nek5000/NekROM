@@ -261,8 +261,8 @@ c-----------------------------------------------------------------------
          ifrom(i)=.false.
       enddo
       ifpod(1)=param(174).ge.0.
-      ifpod(2)=(ifheat.and..not.ifread.and.param(174).ne.0.)
-      ifrom(1)=ifpod(1)
+      ifpod(2)=(ifheat.and.param(174).ne.0.)
+      ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
       ifrom(2)=ifpod(2)
 
       ifpod(1)=ifpod(1).or.ifrom(2)
