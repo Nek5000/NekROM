@@ -55,10 +55,7 @@ c-----------------------------------------------------------------------
          icalld=0
       endif
 
-      if (ifrom(2).and..not.ifrom(1)) then
-         ifield=2
-         call cres
-      endif
+      if (ifei) call cres
 
       ifield=jfield
 
