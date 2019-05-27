@@ -623,6 +623,7 @@ C--------------------------------------------------------------------
       include 'INPUT'
       include 'MASS'
       include 'SOLN'
+      include 'TSTEP'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
