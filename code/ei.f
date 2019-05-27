@@ -242,9 +242,11 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /screi/ wk1(lt),wk2(lt),wk3(lt)
+      common /screi/ wk1(lt),wk2(lt),wk3(lt),wk4(lt),wk5(lt)
 
       n=lx1*ly1*lz1*nelv
+
+      if (nio.eq.0) write (6,*) 'inside set_xi_ns'
 
       l=1
       if (ifield.eq.1) then
@@ -254,25 +256,40 @@ c              call opcopy(xi_u(1,1,l),xi_u(1,2,l),xi_u(1,ldim,l),
 c    $                     ub(1,i),vb(1,i),wb(1,i))
                call comp_vort3(xi_u(1,1,l),wk1,wk2,
      $                         ub(1,i),vb(1,i),wb(1,i))
+               call outpost(xi_u(1,1,l),wk1,wk2,pr,t,'xib')
                l=l+1
             enddo
             call push_op(vx,vy,vz)
             do j=0,nb
                call opcopy(vx,vy,vz,ub(1,j),vb(1,j),wb(1,j))
                do i=0,nb
-                  call convop(xi_u(1,1,l),ub(1,i))
-                  call convop(xi_u(1,2,l),vb(1,i))
-                  if (ldim.eq.3) call convop(xi_u(1,ldim,l),wb(1,i))
-                  call comp_vort3(xi_u(1,1,l),wk1,wk2,
-     $               xi_u(1,1,l),xi_u(1,2,l),xi_u(1,ldim,l))
-                  l=l+1
+                  if (ifaxis) then
+                  else
+c                    call convect_new(xi_u(1,1,l),ub(1,i),.false.,
+c    $                                ub(1,j),vb(1,j),wb(1,j),.false.)
+c                    call convect_new(xi_u(1,2,l),vb(1,i),.false.,
+c    $                                ub(1,j),vb(1,j),wb(1,j),.false.)
+c                    call invcol2(xi_u(1,1,l),bm1,n)  ! local mass inverse
+c                    call invcol2(xi_u(1,2,l),bm1,n)  ! local mass inverse
+                     call convect_new(wk1,ub(1,i),.false.,
+     $                                ub(1,j),vb(1,j),wb(1,j),.false.)
+                     call convect_new(wk2,vb(1,i),.false.,
+     $                                ub(1,j),vb(1,j),wb(1,j),.false.)
+                     call invcol2(wk1,bm1,n)  ! local mass inverse
+                     call invcol2(wk2,bm1,n)  ! local mass inverse
+                     call comp_vort3(xi_u(1,1,l),wk4,wk5,wk1,wk2,wk3)
+c                   call outpost(xi_u(1,1,l),xi_u(1,2,l),wk2,pr,t,'xic')
+                    call outpost(xi_u(1,1,l),xi_u(1,2,l),wk2,pr,t,'xic')
+                     l=l+1
+                  endif
                enddo
             enddo
             call pop_op(vx,vy,vz)
             do i=0,nb ! todo investigate possible source of error for ifaxis
-               call copy(xi_u(1,1,l),xi_u(1,1,i+1),n)
-               call axhelm(xi_u(1,1,l),xi_u(1,1,l),ones,zeros,1,1)
+               call copy(wk1,xi_u(1,1,i+1),n)
+               call axhelm(xi_u(1,1,l),wk1,ones,zeros,1,1)
                call binv1(xi_u(1,1,l))
+               call outpost(xi_u(1,1,l),wk1,wk2,pr,t,'xia')
                l=l+1
             enddo
          else
@@ -305,6 +322,8 @@ c-----------------------------------------------------------------------
          nres=(nb+1)*2+1
       else if (eqn.eq.'ADE') then
          nres=(nb+1)*3
+      else if (eqn.eq.'NSE') then
+         nres=(nb+1)*2+(nb+1)**2
       endif
 
       if (nres.gt.lres) call exitti('nres > lres$',nres)
@@ -339,9 +358,10 @@ c-----------------------------------------------------------------------
          else if (ifield.eq.1) then
             if (.true.) then ! if using voritcity residual
                do i=1,nres
-               do j=1,nres
-                  sigma(i,j)=glsc3(xi_u(1,1,i),xi_u(1,1,j),bm1,n)
-               enddo
+                  do j=1,nres
+                     sigma(i,j)=glsc3(xi_u(1,1,i),xi_u(1,1,j),bm1,n)
+                  enddo
+                  write (6,*) i,sigma(1,i),'sigma'
                enddo
             else
                do i=1,nres
@@ -458,15 +478,21 @@ c-----------------------------------------------------------------------
       l=l+nb+1
 
       call set_alphaj(alphaj)
-      call mxm(utj,nb+1,alphaj,6,theta(l),1)
+      call mxm(ut2j,(nb+1)**2,alphaj,6,theta(l),1)
+      do j=0,nb
       do i=0,nb
-         theta(l)=theta(l)+uta(i)
+         theta(l)=theta(l)+u2a(i,j)
          l=l+1
+      enddo
       enddo
 
       do i=0,nb
-         theta(l)=param(8)*uta(i)
+         theta(l)=param(2)*ua(i)
          l=l+1
+      enddo
+
+      do i=1,nres
+         if (nio.eq.0) write (6,*) theta(i),'theta'
       enddo
 
       return
