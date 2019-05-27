@@ -256,7 +256,7 @@ c              call opcopy(xi_u(1,1,l),xi_u(1,2,l),xi_u(1,ldim,l),
 c    $                     ub(1,i),vb(1,i),wb(1,i))
                call comp_vort3(xi_u(1,1,l),wk1,wk2,
      $                         ub(1,i),vb(1,i),wb(1,i))
-               call outpost(xi_u(1,1,l),wk1,wk2,pr,t,'xib')
+c              call outpost(xi_u(1,1,l),wk1,wk2,pr,t,'xib')
                l=l+1
             enddo
             call push_op(vx,vy,vz)
@@ -279,7 +279,7 @@ c                    call invcol2(xi_u(1,2,l),bm1,n)  ! local mass inverse
                      call invcol2(wk2,bm1,n)  ! local mass inverse
                      call comp_vort3(xi_u(1,1,l),wk4,wk5,wk1,wk2,wk3)
 c                   call outpost(xi_u(1,1,l),xi_u(1,2,l),wk2,pr,t,'xic')
-                    call outpost(xi_u(1,1,l),xi_u(1,2,l),wk2,pr,t,'xic')
+c                   call outpost(xi_u(1,1,l),xi_u(1,2,l),wk2,pr,t,'xic')
                      l=l+1
                   endif
                enddo
@@ -289,7 +289,7 @@ c                   call outpost(xi_u(1,1,l),xi_u(1,2,l),wk2,pr,t,'xic')
                call copy(wk1,xi_u(1,1,i+1),n)
                call axhelm(xi_u(1,1,l),wk1,ones,zeros,1,1)
                call binv1(xi_u(1,1,l))
-               call outpost(xi_u(1,1,l),wk1,wk2,pr,t,'xia')
+c              call outpost(xi_u(1,1,l),wk1,wk2,pr,t,'xia')
                l=l+1
             enddo
          else
