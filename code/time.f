@@ -372,7 +372,7 @@ c     call add2s2(rhs,av0,s,nb+1) ! not working...
 
       if (ifbuoy) then
          call mxm(but0,nb+1,ut(0,1),nb+1,tmp2(0),1)
-         call add2(tmp1(1),tmp2(1),nb)
+         call add2s2(tmp1(1),tmp2(1),ad_ra,nb)
       else if (ifforce) then
          call add2(tmp1(1),rg(1),nb)
       endif

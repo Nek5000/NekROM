@@ -368,6 +368,8 @@ c-----------------------------------------------------------------------
          enddo
       endif
 
+      if (ifbuoy) call set_ra
+
       ifield=jfield
 
       if (nio.eq.0) write (6,*) 'exiting rom_init_fields'
@@ -736,6 +738,19 @@ c-----------------------------------------------------------------------
          call dump_serial(uas,nb+1,'ops/uas ',nid)
          call dump_serial(uvs,nb+1,'ops/uvs ',nid)
       endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine set_ra
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      ad_ra=sqrt(op_glsc2_wt(gx,gy,gz,gx,gy,gz,bm1)/volvm1)
+      s=1./ad_ra
+      call opcmult(gx,gy,gz,s)
 
       return
       end
