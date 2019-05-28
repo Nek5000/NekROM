@@ -21,6 +21,12 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelt
 
+      if (nb.eq.0) then
+         rhs(0)=1.
+         call shift3(u,rhs,nb+1)
+         return
+      endif
+
       icount = min0(max(1,ad_step),3)
 
       rhs(0)=1.
@@ -164,6 +170,12 @@ c     Matrices and vectors for advance
 
       if (ad_step.eq.1) then
          step_time = 0.
+      endif
+
+      if (nb.eq.0) then
+         rhs(0)=1.
+         call shift3(ut,rhs,nb+1)
+         return
       endif
 
       last_time = dnekclock()
