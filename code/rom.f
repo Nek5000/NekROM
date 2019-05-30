@@ -749,9 +749,18 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
-      ad_ra=sqrt(op_glsc2_wt(gx,gy,gz,gx,gy,gz,bm1)/volvm1)
+      common /scrra/ binv(lx1,ly1,lz1,lelt)
+
+      n=lx1*ly1*lz1*lelt
+
+      call rone(binv,n)
+      call invcol2(binv,bm1,n)
+
+      ad_ra=sqrt(op_glsc2_wt(gx,gy,gz,gx,gy,gz,binv)/glsum(bm1,n))
+      write (6,*) ad_ra,'ad_ra'
       s=1./ad_ra
       call opcmult(gx,gy,gz,s)
+c     ad_ra=1.
 
       return
       end

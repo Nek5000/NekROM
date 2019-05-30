@@ -280,13 +280,13 @@ c              call outpost(xi_u(1,1,l),wk1,wk2,pr,t,'xib')
                call opcopy(vx,vy,vz,ub(1,j),vb(1,j),wb(1,j))
                do i=0,nb
                   if (ifaxis) then
+                     call conv1d(wk1,ub(1,i))
+                     call conv1d(wk2,vb(1,i))
+                     call rzero(wk3,n)
+                     call comp_vort3(xi_u(1,1,l),wk4,wk5,wk1,wk2,wk3)
+c                    call outpost(xi_u(1,1,l),wk1,wk2,pr,t,'xic')
+                     l=l+1
                   else
-c                    call convect_new(xi_u(1,1,l),ub(1,i),.false.,
-c    $                                ub(1,j),vb(1,j),wb(1,j),.false.)
-c                    call convect_new(xi_u(1,2,l),vb(1,i),.false.,
-c    $                                ub(1,j),vb(1,j),wb(1,j),.false.)
-c                    call invcol2(xi_u(1,1,l),bm1,n)  ! local mass inverse
-c                    call invcol2(xi_u(1,2,l),bm1,n)  ! local mass inverse
                      call convect_new(wk1,ub(1,i),.false.,
      $                                ub(1,j),vb(1,j),wb(1,j),.false.)
                      call convect_new(wk2,vb(1,i),.false.,
@@ -294,8 +294,7 @@ c                    call invcol2(xi_u(1,2,l),bm1,n)  ! local mass inverse
                      call invcol2(wk1,bm1,n)  ! local mass inverse
                      call invcol2(wk2,bm1,n)  ! local mass inverse
                      call comp_vort3(xi_u(1,1,l),wk4,wk5,wk1,wk2,wk3)
-c                   call outpost(xi_u(1,1,l),xi_u(1,2,l),wk2,pr,t,'xic')
-c                   call outpost(xi_u(1,1,l),xi_u(1,2,l),wk2,pr,t,'xic')
+c                    call outpost(xi_u(1,1,l),wk1,wk2,pr,t,'xic')
                      l=l+1
                   endif
                enddo
@@ -308,6 +307,18 @@ c                   call outpost(xi_u(1,1,l),xi_u(1,2,l),wk2,pr,t,'xic')
 c              call outpost(xi_u(1,1,l),wk1,wk2,pr,t,'xia')
                l=l+1
             enddo
+            if (ifbuoy) then
+               do i=0,nb
+                  call opcopy(wk1,wk2,wk3,gx,gy,gz)
+                  call opcolv(wk1,wk2,wk3,tb(1,i))
+                  call invcol2(wk1,bm1,n)
+                  call invcol2(wk2,bm1,n)
+                  if (ldim.eq.3) call invcol2(wk3,bm1,n)
+                  call comp_vort3(xi_u(1,1,l),wk4,wk5,wk1,wk2,wk3)
+c                 call outpost(xi_u(1,1,l),wk1,wk2,pr,t,'xig')
+                  l=l+1
+               enddo
+            endif
          else
             call exitti('(set_xi_ns) ips != L2 not supported...$',ips)
          endif
@@ -341,6 +352,7 @@ c-----------------------------------------------------------------------
          if (ifrom(1)) nres=(nb+1)*2 + (nb+1)**2
       else if (eqn.eq.'NSE') then
          nres=(nb+1)*2+(nb+1)**2
+         if (ifbuoy) nres=nres+nb+1
       endif
 
       if (nres.gt.lres) call exitti('nres > lres$',nres)
@@ -524,6 +536,13 @@ c-----------------------------------------------------------------------
          theta(l)=param(2)*ua(i)
          l=l+1
       enddo
+
+      if (ifbuoy) then
+         do i=0,nb
+            theta(l)=ad_ra*uta(i)
+            l=l+1
+         enddo
+      endif
 
       do i=1,nres
          if (nio.eq.0) write (6,*) theta(i),'theta'
