@@ -369,12 +369,16 @@ c-----------------------------------------------------------------------
          enddo
       else
          if (eqn.eq.'POI') then
+            ifield=2
             call set_xi_poisson
          else if (eqn.eq.'HEA') then
+            ifield=2
             call set_xi_heat
          else if (eqn.eq.'ADE') then
+            ifield=2
             call set_xi_ad
          else if (eqn.eq.'NSE') then
+            ifield=1
             call set_xi_ns
          endif
 
