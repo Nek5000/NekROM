@@ -259,7 +259,8 @@ c-----------------------------------------------------------------------
       enddo
       ifpod(1)=param(174).ge.0.
       ifpod(2)=(ifheat.and.param(174).ne.0.)
-      ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
+c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
+      ifrom(1)=ifpod(1)
       ifrom(2)=ifpod(2)
 
       ifpod(1)=ifpod(1).or.ifrom(2)
