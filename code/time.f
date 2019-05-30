@@ -121,7 +121,7 @@ c-----------------------------------------------------------------------
          if (ifctke) call ctke
          if (ifcdrag) call cdrag
          call cnuss
-         call cubar
+c        call cubar
       endif
 
       if (mod(ad_step,ad_iostep).eq.0) then
