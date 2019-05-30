@@ -211,11 +211,27 @@ c-----------------------------------------------------------------------
                l=l+1
             enddo
             call push_op(vx,vy,vz)
-            call opcopy(vx,vy,vz,ub,vb,wb)
-            do i=0,nb
-               call convop(xi(1,l),tb(1,i))
-               l=l+1
-            enddo
+            if (ifrom(1)) then
+               do j=0,nb
+                  call opcopy(vx,vy,vz,ub(1,j),vb(1,j),wb(1,j))
+                  do i=0,nb
+                     if (ifaxis) then
+                        call conv1d(xi(1,l),tb(1,i))
+                     else
+                        call convect_new(xi(1,l),tb(1,i),.false.,
+     $                                  ub(1,j),vb(1,j),wb(1,j),.false.)
+                        call invcol2(wk1,bm1,n)  ! local mass inverse
+                     endif
+                     l=l+1
+                  enddo
+               enddo
+            else
+               call opcopy(vx,vy,vz,ub,vb,wb)
+               do i=0,nb
+                  call convop(xi(1,l),tb(1,i))
+                  l=l+1
+               enddo
+            endif
             call pop_op(vx,vy,vz)
             do i=0,nb
                call axhelm(xi(1,l),tb(1,i),ones,zeros,1,1)
@@ -322,6 +338,7 @@ c-----------------------------------------------------------------------
          nres=(nb+1)*2+1
       else if (eqn.eq.'ADE') then
          nres=(nb+1)*3
+         if (ifrom(1)) nres=(nb+1)*2 + (nb+1)**2
       else if (eqn.eq.'NSE') then
          nres=(nb+1)*2+(nb+1)**2
       endif
@@ -447,11 +464,28 @@ c-----------------------------------------------------------------------
       l=l+nb+1
 
       call set_alphaj
-      call mxm(utj,nb+1,alphaj,6,theta(l),1)
-      do i=0,nb
-         theta(l)=theta(l)+uta(i)
-         l=l+1
-      enddo
+
+      if (ifrom(1)) then
+c        call mxm(uutj,(nb+1)**2,alphaj,6,theta(l),1)
+         call mxm(utuj,(nb+1)**2,alphaj,6,theta(l),1)
+      else
+         call mxm(utj,nb+1,alphaj,6,theta(l),1)
+      endif
+
+      if (ifrom(1)) then
+         do j=0,nb
+         do i=0,nb
+c           theta(l)=theta(l)+uuta(i,j)
+            theta(l)=theta(l)+utua(i,j)
+            l=l+1
+         enddo
+         enddo
+      else
+         do i=0,nb
+            theta(l)=theta(l)+uta(i)
+            l=l+1
+         enddo
+      endif
 
       do i=0,nb
          theta(l)=param(8)*uta(i)

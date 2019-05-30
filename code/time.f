@@ -491,13 +491,24 @@ c-----------------------------------------------------------------------
 
       if (ad_step.eq.1) then
          call rzero(uta,nb+1)
+         call rzero(uuta,(nb+1)**2)
+         call rzero(utua,(nb+1)**2)
       endif
 
       call add2(uta,ut,nb+1)
 
+      do j=0,nb
+      do i=0,nb
+         uuta(i,j)=uuta(i,j)+u(i,1)*ut(j,1)
+         utua(i,j)=utua(i,j)+u(j,1)*ut(i,1)
+      enddo
+      enddo
+
       if (ad_step.eq.ad_nsteps) then
          s=1./real(ad_nsteps)
          call cmult(uta,s,nb+1)
+         call cmult(uuta,s,(nb+1)**2)
+         call cmult(utua,s,(nb+1)**2)
       endif
 
       return
@@ -544,6 +555,15 @@ c-----------------------------------------------------------------------
          call copy(utj(0,4),ut(0,3),nb+1)
          call copy(utj(0,5),ut(0,2),nb+1)
          call copy(utj(0,6),ut(0,1),nb+1)
+
+         do k=1,6
+         do j=0,nb
+         do i=0,nb
+            uutj(i,j,k)=uj(i,k)*utj(j,k)
+            utuj(i,j,k)=uj(j,k)*utj(i,k)
+         enddo
+         enddo
+         enddo
       endif
 
       return
