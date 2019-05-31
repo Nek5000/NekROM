@@ -26,6 +26,6 @@ test
 .01
 Z
 
-./nek5000 > test.log.1
+./nek5000 | tee test.log.1
 
 ../../tests/tdragx
