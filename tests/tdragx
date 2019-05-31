@@ -1,0 +1,47 @@
+#!/usr/bin/env julia
+
+run(pipeline(`grep dragx test.log.1`,`sed 's/dragx//g'`,"dragx.log"));
+data=readdlm("dragx.log");
+dragx=data[:,4];
+time=data[:,1];
+println(mean(dragx));
+println(sqrt(var(dragx)));
+
+n=length(dragx);
+p=fft(dragx);
+nuniq=ceil(Int,(n+1)/2);
+p=abs.(p[1:nuniq]);
+p=p/n;
+p=p.^2;
+
+if n % 2 > 0
+    p[2:length(p)]=p[2:length(p)]*2
+else
+    p[2:(length(p)-1)]=p[2:(length(p)-1)]*2
+end
+
+fs=1/(time[2]-time[1]);
+freq=(0:(nuniq-1))*(fs/n);
+(amp,ind)=findmax(p[2:end]);
+
+println("freq=$(freq[ind+1] / 2), amp=$amp");
+
+pm=p[ind];
+p0=p[ind+1];
+pp=p[ind+2];
+
+d=(time[2]-time[1])*2;
+
+fs=-d*(pp-pm)/(2*(pp-2*p0+pm))+freq[ind+1]/2;
+ps=-(pp-pm)^2/(8*(pp-2*p0+pm))+p0;
+println("freq=$fs, amp=$ps");
+
+icode=0
+
+ff=0.19500000000017736;
+pp=1.6003422088828877e-5;
+
+if abs(fs-ff)/ff > 1.e-6; icode+=1; end
+if abs(ps-pp)/pp > 1.e-6; icode+=2; end
+
+exit(code=icode)
