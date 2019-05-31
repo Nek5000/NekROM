@@ -57,6 +57,6 @@ ss=0.19677834721044413;
 
 if abs(cd-cc)/cc > 1.e-6; icode+=1; end
 if abs(ps-pp)/pp > 1.e-6; icode+=2; end
-if abs(st-fs)/ss > 1.e-6; icode+=4; end
+if abs(fs-ss)/ss > 1.e-6; icode+=4; end
 
 exit(icode)
