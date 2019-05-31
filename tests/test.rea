@@ -175,8 +175,8 @@
    0.00000     p171 MOR: 0 -> L2 POD, else -> H10 POD
    1.00000     p172 MOR: 0 -> mode 0 = IC, else -> mode 0 = average
    1.00000     p173 MOR: 0 -> gen ops, 1 -> dump ops, 2 -> read ops
-   0.00000     p174
-   0.00000     p175
+   0.00000     p174 MOR: < 0 -> temp, == 0 -> vel, > 0 -> vel + temp
+   0.00000     p175 MOR: !0 = -> error indicator
    0.00000     p176
    0.00000     p177
    0.00000     p178
@@ -193,11 +193,11 @@
    0.00000     p189
    0.00000     p190 MOR: != 0 -> error estimate
    0.00000     p191 MOR: != 0 -> fast c-evaluation
-   0.00000     p192
-   0.00000     p193
-   0.00000     p194
+   0.00000     p192 MOR: != 0 -> forcing  (set fx,fy,fz with mass)
+   0.00000     p193 MOR: != 0 -> source   (set qq with mass)
+   0.00000     p194 MOR: != 0 -> buoyancy (set gx,gy,gz with mass)
    0.00000     p195
-   0.00000     p196
+   0.00000     p196 MOR: != 0 -> artificial viscosity
    0.00000     p197
    0.00000     p198
    0.00000     p199
