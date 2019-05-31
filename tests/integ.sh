@@ -19,7 +19,7 @@ ls bas/bascyl0.f* > bas.list
 
 cp ../../data/cyl_rect/cyl0.f01000 r0.f00001
 
-$SOURCE_ROOT/bin/makenek test
+USR=$MOR_USR $SOURCE_ROOT/bin/makenek test
 
 $SOURCE_ROOT/bin/genmap << Z
 test
