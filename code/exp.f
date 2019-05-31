@@ -122,7 +122,6 @@ c-----------------------------------------------------------------------
       setup_start=dnekclock()
 
       call rom_init_params
-      ifrecon=.false.
       call rom_init_fields
 
       call setbases_heat

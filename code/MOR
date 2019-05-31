@@ -123,15 +123,15 @@ c     parameters and common blocks for MOR
       common /eiresu/ xi_u(lx1*ly1*lz1*lelt,ldim,lres),theta_u(lres),
      $                sigma_u(lres,lres)
 
-      logical ifl2,ifvort,ifdump,ifrecon,ifstep,ifpart,ifavg0,
+      logical ifl2,ifvort,ifdump,ifstep,ifpart,ifavg0,
      $        ifdumpops,ifcdrag,ifrms,ifread,ifforce,ifpod(0:ldimt1),
      $        ifbuoy,ifrom(0:ldimt1),ifcintp,iffastc,ifcnuss,ifctke,
-     $        iffasth,ifavisc,ifsource,ifei
+     $        iffasth,ifavisc,ifsource,ifei,ifsub0
 
-      common /morflags/ ifl2,ifvort,ifdump,ifrecon,ifstep,ifavg0,
+      common /morflags/ ifl2,ifvort,ifdump,ifstep,ifavg0,
      $                  ifdumpops,ifcdrag,ifrms,ifread,ifforce,ifpod,
      $                  ifbuoy,ifrom,ifcintp,iffastc,ifcnuss,ifctke,
-     $                  iffasth,ifavisc,ifsource,ifei
+     $                  iffasth,ifavisc,ifsource,ifei,ifsub0
 
       real last_time,misc_time,lu_time
       common /mortime/ step_time,last_time,misc_time,evalc_time,

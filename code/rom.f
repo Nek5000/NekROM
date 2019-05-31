@@ -267,7 +267,6 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
 
       ifvort=.false. ! default to false for now
       ifdump=((.not.ifheat).or.ifrom(2))
-      ifrecon=(.not.ifread)
 
       ifforce=param(193).ne.0.
       ifsource=param(194).ne.0.
@@ -296,7 +295,6 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
          write (6,*) 'rp_ifsource   ',ifsource
          write (6,*) 'rp_ifbuoy     ',ifbuoy
          write (6,*) 'rp_ifpart     ',ifpart
-         write (6,*) 'rp_ifrecon    ',ifrecon
          write (6,*) 'rp_ifdump     ',ifdump
          write (6,*) 'rp_ifvort     ',ifvort
          write (6,*) 'rp_ifcintp    ',ifcintp
@@ -360,7 +358,10 @@ c-----------------------------------------------------------------------
          call outpost(uavg,vavg,wavg,pavg,tavg,'avg')
       endif
 
-      if (ifrecon) then
+      ifsub0=.true.
+c     ifsub0=.false.
+
+      if (ifsub0) then
          do i=1,ns
             call sub2(us0(1,1,i),ub,n)
             call sub2(us0(1,2,i),vb,n)
