@@ -44,8 +44,6 @@ before_script:
 script: $MOR_DIR/tests/test.sh
 jobs:
   include:
-  - stage: integration
-    env: TEST=CYL_L2_INTEG
   - stage: unit
     env: TEST=GRAMMIAN_L2_UNIT
   - env: TEST=INITIAL_CONDITION_L2_UNIT
@@ -57,6 +55,8 @@ jobs:
   - env: TEST=A0_H10_UNIT
   - env: TEST=B0_H10_UNIT
   - env: TEST=C0_H10_UNIT
+  - stage: integration
+    env: TEST=CYL_L2_INTEG
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
