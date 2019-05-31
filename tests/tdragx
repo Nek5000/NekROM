@@ -1,5 +1,15 @@
 #!/usr/bin/env julia
 
+using Pkg
+
+Pkg.add("DelimitedFiles")
+Pkg.add("FFTW")
+Pkg.add("Statistics")
+
+using DelimitedFiles
+using FFTW
+using Statistics
+
 run(pipeline(`grep dragx test.log.1`,`sed 's/dragx//g'`,"dragx.log"));
 data=readdlm("dragx.log");
 dragx=data[:,4];
