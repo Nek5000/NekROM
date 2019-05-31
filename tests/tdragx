@@ -14,8 +14,7 @@ run(pipeline(`grep dragx test.log.1`,`sed 's/dragx//g'`,"dragx.log"));
 data=readdlm("dragx.log");
 dragx=data[:,4];
 time=data[:,1];
-println(mean(dragx));
-println(sqrt(var(dragx)));
+println("Re=100, C_D=$(mean(dragx)*2), peak-to-peak=$(sqrt(var(dragx)*2))");
 
 n=length(dragx);
 p=fft(dragx);
@@ -33,8 +32,11 @@ end
 fs=1/(time[2]-time[1]);
 freq=(0:(nuniq-1))*(fs/n);
 (amp,ind)=findmax(p[2:end]);
+fs=freq[ind+1]/2;
 
-println("freq=$(freq[ind+1] / 2), amp=$amp");
+cd=sqrt(p[1])*2;
+
+println("Re=100, C_D=$cd, peak-to-peak=$(sqrt(amp)*2), St=$fs");
 
 pm=p[ind];
 p0=p[ind+1];
@@ -43,15 +45,18 @@ pp=p[ind+2];
 d=(time[2]-time[1])*2;
 
 fs=-d*(pp-pm)/(2*(pp-2*p0+pm))+freq[ind+1]/2;
-ps=-(pp-pm)^2/(8*(pp-2*p0+pm))+p0;
-println("freq=$fs, amp=$ps");
+ps=-(pp-pm)^2/(8*(pp-2*p0+pm))+p0; ps=sqrt(ps)*2.;
+
+println("Re=100, C_D=$cd, peak-to-peak=$ps, St=$fs");
 
 icode=0
 
-ff=0.19677834721044413;
-pp=1.6003422088828877e-5;
+cc=1.7116331982476;
+pp=0.008000855476467221;
+ss=0.19677834721044413;
 
-if abs(fs-ff)/ff > 1.e-6; icode+=1; end
+if abs(cd-cc)/cc > 1.e-6; icode+=1; end
 if abs(ps-pp)/pp > 1.e-6; icode+=2; end
+if abs(st-ss)/ss > 1.e-6; icode+=4; end
 
 exit(icode)
