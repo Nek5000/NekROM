@@ -15,7 +15,7 @@ c-----------------------------------------------------------------------
       n=lx1*ly1*lz1*nelt
 
       if (ifread) then
-         call loadbases(ub,vb,wb,nb)
+         call loadbases
       else
          n=lx1*ly1*lz1*nelt
 
@@ -26,6 +26,7 @@ c-----------------------------------------------------------------------
          enddo
 
          ! ub, vb, wb, are the modes
+         if (ifrom(1)) then
          do j=1,ns
          do i=1,nb
             call opadds(ub(1,i),vb(1,i),wb(1,i),
@@ -34,8 +35,11 @@ c-----------------------------------------------------------------------
          enddo
 
          call vnorm(ub,vb,wb)
+         else
+            call opcopy(ub,vb,wb,uic,vic,wic)
+         endif
 
-         if (ifpod(2)) then
+         if (ifrom(2)) then
             do i=1,nb
                call rzero(tb(1,i),n)
                do j=1,ns
@@ -117,29 +121,25 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /scrp/ t1(lt),t2(lt),t3(lt)
-
       real coef(0:nb),tt(lt),sb(lt,0:nb)
 
       if (nio.eq.0) write (6,*) 'inside ps2b'
 
       n=lx1*ly1*lz1*nelt
 
-      call sub3(t1,tt,sb,n)
-
       coef(0) = 1.
       if (nio.eq.0) write (6,1) coef(0),coef(0),1.
 
       do i=1,nb
          ww=sip(sb(1,i),sb(1,i))
-         vv=sip(sb(1,i),t1)
+         vv=sip(sb(1,i),tt)
          coef(i) = vv/ww
          if (nio.eq.0) write (6,1) coef(i),vv,ww,ips
       enddo
 
       if (nio.eq.0) write (6,*) 'exiting ps2b'
 
-    1 format(' h10coef',1p3e16.8,1x,a3)
+    1 format(' coef',1p3e16.8,1x,a3)
 
       return
       end
@@ -153,22 +153,18 @@ c-----------------------------------------------------------------------
 
       real ux(lt),uy(lt),uz(lt),uub(lt,0:nb),vvb(lt,0:nb),wwb(lt,0:nb)
 
-      common /scrp/ t1(lt),t2(lt),t3(lt)
-
       real coef(0:nb)
 
       if (nio.eq.0) write (6,*) 'inside pv2b'
 
       n=lx1*ly1*lz1*nelt
 
-      call opsub3(t1,t2,t3,ux,uy,uz,uub,vvb,wwb)
-
       coef(0) = 1.
       if (nio.eq.0) write (6,1) coef(0),coef(0),1.
 
       do i=1,nb
          ww=vip(uub(1,i),vvb(1,i),wwb(1,i),uub(1,i),vvb(1,i),wwb(1,i))
-         vv=vip(uub(1,i),vvb(1,i),wwb(1,i),t1,t2,t3)
+         vv=vip(uub(1,i),vvb(1,i),wwb(1,i),ux,uy,uz)
          coef(i) = vv/ww
          if (nio.eq.0) write (6,1) coef(i),vv,ww,ips
       enddo
@@ -196,7 +192,7 @@ c-----------------------------------------------------------------------
       else if (ips.eq.'HLM') then
          sip=hlmsip(t1,t2)
       else
-         call exitti('did not provide supported inner product space$')
+         call exitti('did not provide supported inner product space$',1)
       endif
 
       return
@@ -218,7 +214,7 @@ c-----------------------------------------------------------------------
       else if (ips.eq.'HLM') then
          vip=hlmvip(t1,t2,t3,t4,t5,t6)
       else
-         call exitti('did not provide supported inner product space$')
+         call exitti('did not provide supported inner product space$',1)
       endif
 
       return
@@ -275,14 +271,10 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelt
 
-      isd=1
-      if (ifaxis) isd=2
-      call axhelm(t7,t1,ones,zeros,1,isd)
+      call axhelm(t7,t1,ones,zeros,1,1)
       h10vip=glsc2(t7,t4,n)
 
-      isd=2
-      if (ifaxis) isd=1
-      call axhelm(t8,t2,ones,zeros,1,isd)
+      call axhelm(t8,t2,ones,zeros,1,2)
       h10vip=h10vip+glsc2(t8,t5,n)
 
       if (ldim.eq.3) then
@@ -412,14 +404,8 @@ c-----------------------------------------------------------------------
       endif
 
       do j=1,ms
-         isd=1
-         if (ifaxis) isd=2
-         call axhelm(uu,s(1,1,j),ones,zeros,1,isd)
-         if (mdim.ge.2) then
-            isd=2
-            if (ifaxis) isd=1
-            call axhelm(vv,s(1,2,j),ones,zeros,1,isd)
-         endif
+         call axhelm(uu,s(1,1,j),ones,zeros,1,1)
+         if (mdim.ge.2) call axhelm(vv,s(1,2,j),ones,zeros,1,2)
          if (mdim.eq.3) call axhelm(ww,s(1,3,j),ones,zeros,1,3)
          do i=1,ms ! Form the Gramian, U=U_K^T A U_K using H^1_0 Norm
             gram(i,j)=s1*glsc2(uu,s(1,1,i),n)
@@ -460,14 +446,8 @@ c-----------------------------------------------------------------------
       n=lx1*ly1*lz1*nelt
 
       do j=1,ms
-         isd=1
-         if (ifaxis) isd=2
-         call axhelm(uu,s(1,1,j),ones,zeros,1,isd)
-         if (mdim.ge.2) then
-            isd=2
-            if (ifaxis) isd=1
-            call axhelm(vv,s(1,2,j),ones,zeros,1,isd)
-         endif
+         call axhelm(uu,s(1,1,j),ones,zeros,1,1)
+         if (mdim.ge.2) call axhelm(vv,s(1,2,j),ones,zeros,1,2)
          if (mdim.eq.3) call axhelm(ww,s(1,3,j),ones,zeros,1,3)
          do i=1,ms ! Form the Gramian, U=U_K^T A U_K using H^1_0 Norm
             gram(i,j)=glsc2(uu,s(1,1,i),n)
@@ -689,18 +669,14 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelt
 
-      call opsub3(t1,t2,t3,ux,uy,uz,uub,vvb,wwb)
+      call opcopy(t1,t2,t3,ux,uy,uz)
 
       coef(0) = 1.
       if (nio.eq.0) write (6,1) coef(0),coef(0),1.
 
       do i=1,nb
-         isd=1
-         if (ifaxis) isd=2
-         call axhelm(t4,uub(1,i),ones,zeros,1,isd)
-         isd=2
-         if (ifaxis) isd=1
-         call axhelm(t5,vvb(1,i),ones,zeros,1,isd)
+         call axhelm(t4,uub(1,i),ones,zeros,1,1)
+         call axhelm(t5,vvb(1,i),ones,zeros,1,2)
 
          ww = glsc2(t4,uub(1,i),n)+glsc2(t5,vvb(1,i),n)
          vv = glsc2(t4,t1,n)+glsc2(t5,t2,n)
@@ -741,7 +717,7 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelt
 
-      call opsub3(t1,t2,t3,ux,uy,uz,uub,vvb,wwb)
+      call opcopy(t1,t2,t3,ux,uy,uz)
 
       coef(0) = 1.
       if (nio.eq.0) write (6,1) coef(0),coef(0),1.
@@ -750,12 +726,8 @@ c-----------------------------------------------------------------------
       s2=ad_beta(1,3)/ad_dt
 
       do i=1,nb
-         isd=1
-         if (ifaxis) isd=2
-         call axhelm(t4,uub(1,i),ones,zeros,1,isd)
-         isd=2
-         if (ifaxis) isd=1
-         call axhelm(t5,vvb(1,i),ones,zeros,1,isd)
+         call axhelm(t4,uub(1,i),ones,zeros,1,1)
+         call axhelm(t5,vvb(1,i),ones,zeros,1,2)
 
          ww=s1*(glsc2(t4,uub(1,i),n)+glsc2(t5,vvb(1,i),n))
          vv=s1*(glsc2(t4,t1,n)+glsc2(t5,t2,n))

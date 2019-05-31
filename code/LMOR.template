@@ -3,5 +3,6 @@
       parameter (ls=100) ! number of snapshots
       parameter (nb=20)  ! number of basis vectors
 
+      parameter (lres=1) ! max length of xi & theta
       parameter (lk=1)   ! largest wave number for pdrag calculation
       parameter (lmsk=1) ! number of partitions

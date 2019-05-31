@@ -1,5 +1,18 @@
 c-----------------------------------------------------------------------
-      subroutine rom_update_ei
+      subroutine offline_mode ! offline-wrapper for MOR
+
+      include 'SIZE'
+      include 'INPUT'
+
+      param(173)=1.
+      call rom_setup
+
+      ! todo add timing
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine online_mode ! online-wrapper for MOR
 
       include 'SIZE'
       include 'TOTAL'
@@ -9,344 +22,655 @@ c-----------------------------------------------------------------------
       save    icalld
       data    icalld /0/
 
-      common /rom_update/ rom_time
+      logical ifmult
 
-      if (icalld.eq.0) then
-         call opcopy(uic,vic,wic,vx,vy,vz)
-         rom_time=0.
-         icalld=1
-      endif
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /romup/ rom_time
 
       stime=dnekclock()
+
+      if (icalld.eq.0) then
+         ttime=time
+         rom_time=0.
+         param(173)=2.
+         icalld=1
+         call rom_setup
+         ifei=.true.
+         time=ttime
+      endif
 
       ad_step = istep
       jfield=ifield
       ifield=1
 
-      call rom_setup
-      call sets_diag
+      ifmult=.not.ifrom(2).and.ifheat
 
-      if (nio.eq.0) write (6,*) 'starting rom_step loop',ad_nsteps
+      if (ifmult) then
+         if (ifflow) call exitti(
+     $   'error: running rom_update with ifflow = .true.$',nelv)
+         if (istep.gt.0) then
+            if (ifrom(2)) call rom_step_t
+            if (ifrom(1)) call rom_step
+            call postu
+            call postt
+            call reconv(vx,vy,vz,u) ! reconstruct velocity to be used in h-t
+         endif
+      else
+         if (nio.eq.0) write (6,*) 'starting rom_step loop',ad_nsteps
+         ad_step = 1
+         do i=1,ad_nsteps
+            time=time+dt
+            if (ifrom(2)) call rom_step_t
+            if (ifrom(1)) call rom_step
+            call postu
+            call postt
+            ad_step=ad_step+1
+         enddo
+         icalld=0
+      endif
 
-      ad_step = 1
-      do i=1,ad_nsteps
-         call rom_step
-         time=time+dt
-         ad_step=ad_step+1
-      enddo
-
-      call sett_diag
-
-      if (nio.eq.0) write (6,*) eest_diag(),ad_re,'error_estimate'
+      if (ifei) call cres
 
       ifield=jfield
 
       dtime=dnekclock()-stime
       rom_time=rom_time+dtime
 
-      return
-      end
-c-----------------------------------------------------------------------
-      function csig_diag(g1,g2,g3,h1,h2,op)
-
-      include 'SIZE'
-
-      character*3 op
-
-      parameter (lt=lx1*ly1*lz1*lelt)
-
-      common /scrsig/ r1(lt),r2(lt),r3(lt)
-      real g1(lt),g2(lt),g3(lt),h1(lt),h2(lt)
-
-      tolh=1.e-5
-      nmxhi=1000
-
-      call invop(r1,r2,r3,g1,g2,g3,h1,h2,tolh,nmxhi,op)
-
-      mio=nio
-      nio=-1
-      csig_diag=vip(r1,r2,r3,r1,r2,r3)
-      nio=mio
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine invop(r1,r2,r3,g1,g2,g3,h1,h2,tolh,nmxhi,op)
-
-      include 'SIZE'
-
-      parameter (lt=lx1*ly1*lz1*lelt)
-      common /scrinvop/ u1(lt),u2(lt),u3(lt)
-
-      real g1(1),g2(1),g3(1),h1(1),h2(1)
-      real r1(1),r2(1),r3(1)
-
-      character*3 op
-
-      call opcopy(u1,u2,u3,g1,g2,g3)
-
-      if (op.eq.'H10') then
-         call exitti('H10 not yet implemented$',1)
-         ! does not converge
-         call ophinv(r1,r2,r3,g1,g2,g3,h1,h2,tolh,nmxhi)
-      else if (op.eq.'L2 ') then
-         call opbinv1(r1,r2,r3,g1,g2,g3,1.)
-      else
-         call exitti('did not provide supported operator$',1)
+      if (ifmult) then
+         if (nio.eq.0) write (6,*) 'romd_time: ',dtime
       endif
 
-      call opcopy(g1,g2,g3,u1,u2,u3)
+      if (.not.ifmult.or.nsteps.eq.istep) then
+         call final
+      endif
 
       return
       end
 c-----------------------------------------------------------------------
-      subroutine sets_diag ! set sigmas
+      subroutine cres
 
       include 'SIZE'
       include 'MOR'
-      include 'MASS'
-      include 'INPUT'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /scrsets/ g1(lt),g2(lt),g3(lt)
+      if (eqn.eq.'POI') then
+         call set_theta_poisson
+      else if (eqn.eq.'HEA') then
+         call set_theta_heat
+      else if (eqn.eq.'ADE') then
+         call set_theta_ad
+      else if (eqn.eq.'NSE') then
+         call set_theta_ns
+      endif
+
+      res=0.
+
+      do j=1,nres
+      do i=1,nres
+         res=res+sigma(i,j)*theta(i)*theta(j)
+      enddo
+      enddo
+
+      if (res.le.0) call exitti('negative semidefinite residual$',n)
+
+      res=sqrt(res)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine set_xi_poisson
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      n=lx1*ly1*lz1*nelv
+
+      l=1
+      if (ifield.eq.1) then
+        call exitti('(set_xi_poisson) ifield.eq.1 not supported...$',nb)
+      else
+         if (ips.eq.'L2 ') then
+            do i=1,nb
+               call axhelm(xi(1,l),tb(1,i),ones,zeros,1,1)
+               call binv1(xi(1,l))
+               l=l+1
+            enddo
+            call copy(xi(1,l),qq,n)
+            call binv1(xi(1,l))
+         else
+            call exitti('(set_xi_poisson) ips!=L2 not supported...$',nb)
+         endif
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine set_xi_heat
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      n=lx1*ly1*lz1*nelv
+
+      l=1
+      if (ifield.eq.1) then
+         call exitti('(set_xi_heat) ifield.eq.1 not supported...$',nb)
+      else
+         if (ips.eq.'L2 ') then
+            do i=0,nb
+               call copy(xi(1,l),tb(1,i),n)
+               call col2(xi(1,l),bm1,n)
+               call binv1(xi(1,l))
+               l=l+1
+            enddo
+            do i=0,nb
+               call axhelm(xi(1,l),tb(1,i),ones,zeros,1,1)
+               call binv1(xi(1,l))
+               l=l+1
+            enddo
+            call copy(xi(1,l),qq,n)
+            call binv1(xi(1,l))
+            l=l+1
+         else
+            call exitti('(set_xi_heat) ips != L2 not supported...$',ips)
+         endif
+      endif
+
+      if ((l-1).gt.nres) then
+         call exitti('increase nres$',l-1)
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine set_xi_ad
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      n=lx1*ly1*lz1*nelv
+
+      l=1
+      if (ifield.eq.1) then
+         call exitti('(set_xi_ad) ifield.eq.1 not supported...$',nb)
+      else
+         if (ips.eq.'L2 ') then
+            do i=0,nb
+               call copy(xi(1,l),tb(1,i),n)
+               l=l+1
+            enddo
+            call push_op(vx,vy,vz)
+            if (ifrom(1)) then
+               do j=0,nb
+                  call opcopy(vx,vy,vz,ub(1,j),vb(1,j),wb(1,j))
+                  do i=0,nb
+                     if (ifaxis) then
+                        call conv1d(xi(1,l),tb(1,i))
+                     else
+                        call convect_new(xi(1,l),tb(1,i),.false.,
+     $                                  ub(1,j),vb(1,j),wb(1,j),.false.)
+                        call invcol2(wk1,bm1,n)  ! local mass inverse
+                     endif
+                     l=l+1
+                  enddo
+               enddo
+            else
+               call opcopy(vx,vy,vz,ub,vb,wb)
+               do i=0,nb
+                  call convop(xi(1,l),tb(1,i))
+                  l=l+1
+               enddo
+            endif
+            call pop_op(vx,vy,vz)
+            do i=0,nb
+               call axhelm(xi(1,l),tb(1,i),ones,zeros,1,1)
+               call binv1(xi(1,l))
+               l=l+1
+            enddo
+         else
+            call exitti('(set_xi_ad) ips != L2 not supported...$',ips)
+         endif
+      endif
+
+      if ((l-1).gt.nres) then
+         call exitti('increase nres$',l-1)
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine set_xi_ns
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /screi/ wk1(lt),wk2(lt),wk3(lt),wk4(lt),wk5(lt)
+
+      n=lx1*ly1*lz1*nelv
+
+      if (nio.eq.0) write (6,*) 'inside set_xi_ns'
+
+      l=1
+      if (ifield.eq.1) then
+         if (ips.eq.'L2 ') then
+            do i=0,nb
+c              call opcopy(xi_u(1,1,l),xi_u(1,2,l),xi_u(1,ldim,l),
+c    $                     ub(1,i),vb(1,i),wb(1,i))
+               call comp_vort3(xi_u(1,1,l),wk1,wk2,
+     $                         ub(1,i),vb(1,i),wb(1,i))
+c              call outpost(xi_u(1,1,l),wk1,wk2,pr,t,'xib')
+               l=l+1
+            enddo
+            call push_op(vx,vy,vz)
+            do j=0,nb
+               call opcopy(vx,vy,vz,ub(1,j),vb(1,j),wb(1,j))
+               do i=0,nb
+                  if (ifaxis) then
+                     call conv1d(wk1,ub(1,i))
+                     call conv1d(wk2,vb(1,i))
+                     call rzero(wk3,n)
+                     call comp_vort3(xi_u(1,1,l),wk4,wk5,wk1,wk2,wk3)
+c                    call outpost(xi_u(1,1,l),wk1,wk2,pr,t,'xic')
+                     l=l+1
+                  else
+                     call convect_new(wk1,ub(1,i),.false.,
+     $                                ub(1,j),vb(1,j),wb(1,j),.false.)
+                     call convect_new(wk2,vb(1,i),.false.,
+     $                                ub(1,j),vb(1,j),wb(1,j),.false.)
+                     call invcol2(wk1,bm1,n)  ! local mass inverse
+                     call invcol2(wk2,bm1,n)  ! local mass inverse
+                     call comp_vort3(xi_u(1,1,l),wk4,wk5,wk1,wk2,wk3)
+c                    call outpost(xi_u(1,1,l),wk1,wk2,pr,t,'xic')
+                     l=l+1
+                  endif
+               enddo
+            enddo
+            call pop_op(vx,vy,vz)
+            do i=0,nb ! todo investigate possible source of error for ifaxis
+               call copy(wk1,xi_u(1,1,i+1),n)
+               call axhelm(xi_u(1,1,l),wk1,ones,zeros,1,1)
+               call binv1(xi_u(1,1,l))
+c              call outpost(xi_u(1,1,l),wk1,wk2,pr,t,'xia')
+               l=l+1
+            enddo
+            if (ifbuoy) then
+               do i=0,nb
+                  call opcopy(wk1,wk2,wk3,gx,gy,gz)
+                  call opcolv(wk1,wk2,wk3,tb(1,i))
+                  call invcol2(wk1,bm1,n)
+                  call invcol2(wk2,bm1,n)
+                  if (ldim.eq.3) call invcol2(wk3,bm1,n)
+                  call comp_vort3(xi_u(1,1,l),wk4,wk5,wk1,wk2,wk3)
+c                 call outpost(xi_u(1,1,l),wk1,wk2,pr,t,'xig')
+                  l=l+1
+               enddo
+            endif
+         else
+            call exitti('(set_xi_ns) ips != L2 not supported...$',ips)
+         endif
+      else
+         call exitti('(set_xi_ns) ifield.ne.1 not supported...$',nb)
+      endif
+
+      if ((l-1).gt.nres) then
+         call exitti('increase nres$',l-1)
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine set_sigma
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      n=lx1*ly1*lz1*nelv
+
+      if (eqn.eq.'POI') then
+         nres=nb+1
+      else if (eqn.eq.'HEA') then
+         nres=(nb+1)*2+1
+      else if (eqn.eq.'ADE') then
+         nres=(nb+1)*3
+         if (ifrom(1)) nres=(nb+1)*2 + (nb+1)**2
+      else if (eqn.eq.'NSE') then
+         nres=(nb+1)*2+(nb+1)**2
+         if (ifbuoy) nres=nres+nb+1
+      endif
+
+      if (nres.gt.lres) call exitti('nres > lres$',nres)
+      if (nres.le.0) call exitti('nres <= 0$',nres)
+
+      if (ifread) then
+         call read_serial(sigtmp,nres*nres,'ops/sigma ',sigma,nid)
+         l=1
+         do j=1,nres
+         do i=1,nres
+            sigma(i,j)=sigtmp(l,1)
+            l=l+1
+         enddo
+         enddo
+      else
+         if (eqn.eq.'POI') then
+            ifield=2
+            call set_xi_poisson
+         else if (eqn.eq.'HEA') then
+            ifield=2
+            call set_xi_heat
+         else if (eqn.eq.'ADE') then
+            ifield=2
+            call set_xi_ad
+         else if (eqn.eq.'NSE') then
+            ifield=1
+            call set_xi_ns
+         endif
+
+         if (ifield.eq.2) then
+            do i=1,nres
+            do j=1,nres
+               sigma(i,j)=glsc3(xi(1,i),xi(1,j),bm1,n)
+            enddo
+            enddo
+         else if (ifield.eq.1) then
+            if (.true.) then ! if using voritcity residual
+               do i=1,nres
+                  do j=1,nres
+                     sigma(i,j)=glsc3(xi_u(1,1,i),xi_u(1,1,j),bm1,n)
+                  enddo
+                  write (6,*) i,sigma(1,i),'sigma'
+               enddo
+            else
+               do i=1,nres
+               do j=1,nres
+                  sigma(i,j)=
+     $               op_glsc2_wt(xi_u(1,1,i),xi_u(1,2,i),xi_u(1,ldim,i),
+     $                       xi_u(1,1,j),xi_u(1,2,j),xi_u(1,ldim,j),bm1)
+               enddo
+               enddo
+            endif
+         endif
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine set_theta_poisson
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      n=lx1*ly1*lz1*nelv
+
+      l=1
+      do i=1,nb
+         theta(l)=ut(i,1)
+         l=l+1
+      enddo
+
+      theta(l)=-1.
+
+      do i=1,l
+         write (6,*) i,theta(i),'theta'
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine set_theta_heat
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      n=lx1*ly1*lz1*nelv
+
+      l=1
+      call set_betaj(betaj)
+      call mxm(utj,nb+1,betaj,6,theta(l),1)
+
+      l=l+nb+1
+      do i=0,nb
+         theta(l)=uta(i)
+         l=l+1
+      enddo
+
+      theta(l)=-1.
+
+      l=l+1
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine set_theta_ad
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      n=lx1*ly1*lz1*nelv
+
+      l=1
+      call set_betaj(betaj)
+      call mxm(utj,nb+1,betaj,6,theta(l),1)
+
+      l=l+nb+1
+
+      call set_alphaj
+
+      if (ifrom(1)) then
+c        call mxm(uutj,(nb+1)**2,alphaj,6,theta(l),1)
+         call mxm(utuj,(nb+1)**2,alphaj,6,theta(l),1)
+      else
+         call mxm(utj,nb+1,alphaj,6,theta(l),1)
+      endif
+
+      if (ifrom(1)) then
+         do j=0,nb
+         do i=0,nb
+c           theta(l)=theta(l)+uuta(i,j)
+            theta(l)=theta(l)+utua(i,j)
+            l=l+1
+         enddo
+         enddo
+      else
+         do i=0,nb
+            theta(l)=theta(l)+uta(i)
+            l=l+1
+         enddo
+      endif
+
+      do i=0,nb
+         theta(l)=param(8)*uta(i)
+         l=l+1
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine set_theta_ns
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      n=lx1*ly1*lz1*nelv
+
+      l=1
+      call set_betaj
+      call mxm(utj,nb+1,betaj,6,theta(l),1)
+
+      l=l+nb+1
+
+      call set_alphaj(alphaj)
+      call mxm(ut2j,(nb+1)**2,alphaj,6,theta(l),1)
+      do j=0,nb
+      do i=0,nb
+         theta(l)=theta(l)+u2a(i,j)
+         l=l+1
+      enddo
+      enddo
+
+      do i=0,nb
+         theta(l)=param(2)*ua(i)
+         l=l+1
+      enddo
+
+      if (ifbuoy) then
+         do i=0,nb
+            theta(l)=ad_ra*uta(i)
+            l=l+1
+         enddo
+      endif
+
+      do i=1,nres
+         if (nio.eq.0) write (6,*) theta(i),'theta'
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine rom_poisson
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+      include 'AVG'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+c     Matrices and vectors for advance
+      real tmp(0:nb),rhs(0:nb)
+
+      common /scrrstep/ t1(lt),t2(lt),t3(lt),work(lt)
+
+      common /nekmpi/ nidd,npp,nekcomm,nekgroup,nekreal
+
+      if (ad_step.eq.1) then
+         step_time = 0.
+      endif
+
+      last_time = dnekclock()
 
       n=lx1*ly1*lz1*nelt
 
-      ifprojfld(1)=.false.
+      eqn='POI'
 
-      do j=0,nb
-         call col3(g1,ub(1,j),bm1,n)
-         call col3(g2,vb(1,j),bm1,n)
-         if (ldim.eq.3) call col3(g3,wb(1,j),bm1,n)
-         sigb_diag(j)=csig_diag(g1,g2,g3,ones,zeros,ips)
+      ifflow=.false.
+      ifheat=.true.
 
-         call axhelm(g1,ub(1,j),ones,zeros,1,1)
-         call axhelm(g2,vb(1,j),ones,zeros,1,1)
-         if (ldim.eq.3) call axhelm(g3,wb(1,j),ones,zeros,1,1)
-         siga_diag(j)=csig_diag(g1,g2,g3,ones,zeros,ips)
+      param(174)=-1.
 
-         call setcnv_c(ub(1,j),vb(1,j),wb(1,j))
-         do i=0,nb
-            call setcnv_u(ub(1,i),vb(1,i),wb(1,i))
-            call ccu(g1,g2,g3)
-            sigc_diag(i,j)=csig_diag(g1,g2,g3,ones,zeros,ips)
-         enddo
-      enddo
+      call rom_init_params
+      call rom_init_fields
 
-      if (param(94).gt.0) ifprojfld(1)=.true.
+      call setgram
+      call setevec
 
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine sett_diag ! set thetas
+      call setbases
 
-      include 'SIZE'
-      include 'MOR'
+      call setops
+      call dump_all
 
-      call rzero(thb_diag,nb+1)
-      call add2s2(thb_diag,uj(0,1),-5./6,nb+1)
-      call add2s2(thb_diag,uj(0,2), 1./6,nb+1)
-      call add2s2(thb_diag,uj(0,3),-1./3,nb+1)
-      call add2s2(thb_diag,uj(0,4), 1./3,nb+1)
-      call add2s2(thb_diag,uj(0,5),-7./6,nb+1)
-      call add2s2(thb_diag,uj(0,6),11./6,nb+1)
+      call set_sigma
 
-      s=1./(ad_dt*ad_nsteps)
-      call cmult(thb_diag,s,nb+1)
+      rhs(0)=1.
+      call setr_poisson(rhs(1),icount)
 
-      s=1./ad_re
-      call cmult2(tha_diag,ua,s,nb+1)
+      call add2sxy(flut,0.,at,1./ad_pe,nb*nb)
+      call lu(flut,nb,nb,irt,ict)
 
-      call copy(thc_diag,u2a,(nb+1)**2)
-c     call chsign(thc_diag,(nb+1)**2)
+      call solve(rhs(1),flut,1,nb,nb,irt,ict)
 
-      call add2s2(thc_diag,u2j(0,0,2),-1.*rinstep,(nb+1)**2)
-      call add2s2(thc_diag,u2j(0,0,5),-1.*rinstep,(nb+1)**2)
-      call add2s2(thc_diag,u2j(0,0,6), 2.*rinstep,(nb+1)**2)
+      call recont(t,rhs)
+      call copy(ut,rhs,nb+1)
+
+      call cres
+
+      step_time=step_time+dnekclock()-last_time
 
       return
       end
 c-----------------------------------------------------------------------
-      function eest(theta,sig_full,nr) ! compute error estimate
+      subroutine setr_poisson(rhs)
 
       include 'SIZE'
       include 'MOR'
 
-      real theta(nr),sig_full(nr,nr)
-
-      eest=0.
-
-      do j=1,nr
-      do i=1,nr
-         eest=eest+sig_full(i,j)*theta(i)*theta(j)
-      enddo
-      enddo
-      
-      if (eest < 0) then
-         write(6,*) 'Warning: eest is negative', eest
-         eest = abs(eest)
-      endif
-      eest=sqrt(eest)
-
-      return
-      end
-c-----------------------------------------------------------------------
-      function eest_diag() ! compute error estimate
-
-      include 'SIZE'
-      include 'MOR'
-
-      eest=0.
-
-      do j=0,nb
-         eest=eest+sigb_diag(j)*thb_diag(j)**2
-         eest=eest+siga_diag(j)*tha_diag(j)**2
-         do i=0,nb
-            eest=eest+sigc_diag(i,j)*thc_diag(i,j)**2
-         enddo
-      enddo
-
-      eest_diag=sqrt(eest)
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine csig_laplace(f,gg,sig_full,Nr)
-
-      include 'SIZE'
-      include 'TOTAL'
-      include 'MOR'
-      include 'OPCTR'
-
-      parameter (lt=lx1*ly1*lz1*lelt)
-
-      real f(lt), gg(lt,0:nb)
-      real rr(lt,Nr), rg(lt,Nr)
-      real sig_full(Nr,Nr)
-      real work(lt)
-      real tmp(lt)
-
-      tolh=1.e-9
-      nmxhi=1000
-      n    = lx1*ly1*lz1*nelv
-
-      call copy(rg(1,1),f,lt)
-
-      do ie=1,nelt
-         do i=1,nb
-            call copy(work,gg(1,i),lt)
-            call emask(work,ie)
-            call copy(rg(1,1+i+(ie-1)*nb),work,lt)
-         enddo
-      enddo
-
-      ! compute riesz representives
-c      do i=1,Nr
-c         call hmholtz('ries',rr(1,i),rg(1,i),ones,zeros,tmask,tmult,2,
-c     $   tolh,nmxhi,1)
-c      enddo
-      do i=1,Nr
-         call invs(rr(1,i),rg(1,i),ones,zeros,tolh,nmxhi,'L2 ',Nr)
-      enddo
-
-      ! check whether riesz is correct
-c     write(6,*)'xi_f'
-c     do j=1,lx1*ly1*lz1*nelv
-c        write (6,*) j,rr(j,1),f(j)
-c     enddo
-c     
-c     write(6,*)'xi_q_j'
-c     do i=2,Nr
-c     do j=1,lx1*ly1*lz1*nelv
-c        write (6,*) i,j,rr(j,i),rg(j,i)
-c     enddo
-c     enddo
-
-      mio=nio
-      nio=-1
-      !  compute Sigma
-      do j=1,Nr
-         do i=1,Nr
-            sig_full(i,j)=sip(rr(1,i),rr(1,j))
-         enddo
-      enddo
-      nio=mio
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine crhs_laplace(f,gg)
-
-      include 'SIZE'
-      include 'MOR'
-      include 'TOTAL'
-
-
-      parameter (lt=lx1*ly1*lz1*lelt)
-
-      real f(lx1,ly1,lz1,lelt)
-      real gg(lx1*ly1*lz1*lelt,0:nb)
+      real rhs(nb)
 
       n=lx1*ly1*lz1*nelv
-      call setf(f)
-c     do i=1,n
-c        x=xm1(i,1,1,1)
-c        y=ym1(i,1,1,1)
-c        f(i,1,1,1) = sin(2*pi*x)*sin(2*pi*y)
-c     enddo
-c     call col2 (f,bm1,n)
-      call csga(gg,tb) ! get full g
 
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine sett_laplace(theta,coef,tdiff,Nr) ! set thetas
-
-      include 'SIZE'
-      include 'MOR'
-
-      real theta(Nr)
-      real coef(0:nb)
-      real tmp(nb)
-      real tdiff(lx1,ly1,lz1,lelt)
-
-      theta(1) = 1.
-      do i=1,nelt 
-         call cfill(tmp,tdiff(1,1,1,i),nb) 
-         call col2(tmp,coef(1),nb)
-         call chsign(tmp,nb)
-         call copy(theta(2+(i-1)*nb),tmp,nb)
+      do i=1,nb
+c        rhs(i)=wl2sip(qq,tb(1,i))
+         rhs(i)=glsc2(qq,tb(1,i),n)
       enddo
 
       return
       end
 c-----------------------------------------------------------------------
-      subroutine invs(r1,g1,h1,h2,tolh,nmxhi,op,nr)
+      subroutine set_alphaj
 
       include 'SIZE'
+      include 'MOR'
 
-      parameter (lt=lx1*ly1*lz1*lelt)
-      common /scrinvop/ u1(lt),u2(lt),u3(lt)
+      ! ad_alpha(3,3)
 
-      real g1(lt),h1(1),h2(1)
-      real r1(lt)
+      alphaj(1)=ad_alpha(1,1)+ad_alpha(2,2)+ad_alpha(3,3)
+      alphaj(2)=ad_alpha(1,2)-ad_alpha(1,3)
+      alphaj(3)=0.
+      alphaj(4)=-ad_alpha(3,3)
+      alphaj(5)=-ad_alpha(2,3)-ad_alpha(3,3)
+      alphaj(6)=0.
 
-      character*3 op
+      call cmult(alphaj,1./(1.*ad_nsteps),6)
 
-      call copy(u1,g1,lt)
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine set_betaj
 
-      if (op.eq.'H10') then
-         call exitti('H10 not yet implemented$',1)
-         ! does not converge
-         !call ophinv(r1,r2,r3,g1,g2,g3,h1,h2,tolh,nmxhi)
-      else if (op.eq.'L2 ') then
-         call binv1(r1,g1,1.) 
-      else
-         call exitti('did not provide supported operator$',1)
-      endif
+      include 'SIZE'
+      include 'MOR'
 
-      call copy(g1,u1,lt)
+      ! ad_beta(4,3)
+
+      betaj(1)=ad_beta(1+1,1)+ad_beta(2+1,2)+ad_beta(3+1,3)
+      betaj(2)=ad_beta(0+1,1)+ad_beta(1+1,2)+ad_beta(2+1,3)
+     $        +ad_beta(3+1,3)
+      betaj(3)=ad_beta(0+1,2)+ad_beta(1+1,3)+ad_beta(2+1,3)
+     $        +ad_beta(3+1,3)
+
+      betaj(4)=ad_beta(0+1,3)+ad_beta(1+1,3)+ad_beta(2+1,3)
+      betaj(5)=ad_beta(0+1,3)+ad_beta(1+1,3)
+      betaj(6)=ad_beta(0+1,3)
+
+      call cmult(betaj,1./(ad_dt*ad_nsteps),6)
 
       return
       end

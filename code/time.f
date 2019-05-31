@@ -21,6 +21,12 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelt
 
+      if (nb.eq.0) then
+         rhs(0)=1.
+         call shift3(u,rhs,nb+1)
+         return
+      endif
+
       icount = min0(max(1,ad_step),3)
 
       rhs(0)=1.
@@ -38,6 +44,7 @@ c-----------------------------------------------------------------------
       call seth(fluv,au,bu,1./ad_re)
       if (ad_step.eq.3) call dump_serial(fluv,nb*nb,'ops/hu ',nid)
       if (ad_step.le.3) then
+         call copy(helmu,fluv,nb*nb)
          call lu(fluv,nb,nb,irv,icv)
          call copy(invhelmu,fluv,nb*nb)
       endif
@@ -77,7 +84,7 @@ c-----------------------------------------------------------------------
          call BFGS_freeze(rhs(1),helmu,invhelmu,umax,umin,udis,1e-3,4) 
 c        call BFGS(rhs(1),helmu,invhelmu,umax,umin,udis,1e-3,4) 
       else
-         call exitti('incorrect isolve specified...')
+         call exitti('incorrect isolve specified...$',isolve)
       endif
       solve_time=solve_time+dnekclock()-ttime
 
@@ -91,12 +98,10 @@ c     if (ifdebug) call exitt0
 
       step_time=step_time+dnekclock()-last_time
 
-      call pp
-
       return
       end
 c-----------------------------------------------------------------------
-      subroutine pp
+      subroutine postu
 
       include 'SIZE'
       include 'TOTAL'
@@ -109,25 +114,21 @@ c-----------------------------------------------------------------------
 
       real vort(lt)
 
-      call setavg
-      call setj
+      call setuavg
+      call setuj
 
       if (mod(ad_step,ad_qstep).eq.0) then
          if (ifctke) call ctke
          if (ifcdrag) call cdrag
          call cnuss
+c        call cubar
       endif
 
       if (mod(ad_step,ad_iostep).eq.0) then
          if (nio.eq.0) then
-            write (6,*)'ad_step:',ad_step,ad_iostep,npp,nid,step_time
-            if (ad_step.eq.ad_nsteps) then
+            if (ifrom(1)) then
                do j=1,nb
-                  write(6,*) j,u(j,1),'final'
-               enddo
-            else
-               do j=1,nb
-                  write(6,*) j,u(j,1)
+                  write(6,*) j,time,u(j,1),'romu'
                enddo
             endif
          endif
@@ -171,6 +172,12 @@ c     Matrices and vectors for advance
          step_time = 0.
       endif
 
+      if (nb.eq.0) then
+         rhs(0)=1.
+         call shift3(ut,rhs,nb+1)
+         return
+      endif
+
       last_time = dnekclock()
 
       n=lx1*ly1*lz1*nelt
@@ -183,10 +190,10 @@ c     Matrices and vectors for advance
       call seth(flut,at,bt,1./ad_pe)
       if (ad_step.eq.3) call dump_serial(flut,nb*nb,'ops/ht ',nid)
       if (ad_step.le.3) then
+         call copy(helmt,flut,nb*nb)
          call lu(flut,nb,nb,irt,ict)
          call copy(invhelmt,flut,nb*nb)
       endif
-
 
       if (isolve.eq.0) then ! standard matrix inversion
          call solve(rhs(1),flut,1,nb,nb,irt,ict)
@@ -194,12 +201,39 @@ c     Matrices and vectors for advance
          call BFGS_freeze(rhs(1),helmt,invhelmt,tmax,tmin,tdis,1e-3,4) 
 c        call BFGS(rhs(1),helmt,invhelmt,tmax,tmin,tdis,1e-3,4) 
       else
-         call exitti('incorrect isolve specified...')
+         call exitti('incorrect isolve specified...$',isolve)
       endif
 
       call shift3(ut,rhs,nb+1)
 
       step_time=step_time+dnekclock()-last_time
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine postt
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+      include 'AVG'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      common /scrrstep/ t1(lt),t2(lt),t3(lt),work(lt)
+      common /nekmpi/ nidd,npp,nekcomm,nekgroup,nekreal
+
+      call settavg
+      call settj
+
+      if (mod(ad_step,ad_iostep).eq.0) then
+         if (ifrom(2)) then
+            if (nio.eq.0) then
+               do j=1,nb
+                  write(6,*) j,time,ut(j,1),'romt'
+               enddo
+            endif
+         endif
+      endif
 
       return
       end
@@ -309,11 +343,16 @@ c     call add2s2(rhs,av0,s,nb+1) ! not working...
       enddo
 
       call evalc(tmp(1),ctl,ictl,ut)
+
       call shift3(ctr,tmp(1),nb)
 
       call mxm(ctr,nb,ad_alpha(1,icount),3,tmp(1),1)
 
       call sub2(rhs,tmp(1),nb)
+
+      if (ifsource) then
+         call add2(rhs,rq,nb)
+      endif
 
       return
       end
@@ -345,9 +384,9 @@ c     call add2s2(rhs,av0,s,nb+1) ! not working...
 
       if (ifbuoy) then
          call mxm(but0,nb+1,ut(0,1),nb+1,tmp2(0),1)
-         call add2(tmp1(1),tmp2(1),nb)
+         call add2s2(tmp1(1),tmp2(1),ad_ra,nb)
       else if (ifforce) then
-         call add2(tmp1(1),bg(1),nb)
+         call add2(tmp1(1),rg(1),nb)
       endif
 
       call shift3(fu,tmp1(1),nb)
@@ -356,10 +395,56 @@ c     call add2s2(rhs,av0,s,nb+1) ! not working...
 
       call add2(rhs,tmp1(1),nb)
 
+      ! artificial viscosity
+
+      if (ifavisc) then
+c        call mxm(au0,nb+1,u,nb+1,tmp1,1)
+         do i=1,nb
+            tmp1(i)=au(i,i)*u(i,1)
+         enddo
+
+         a=5.
+         s=3.
+         pad=.05
+
+         s=-s/ad_re
+
+         call cmult(tmp1,s,nb+1)
+
+         call rzero(tmp2,nb+1)
+
+         eps=1.e-2
+
+         do i=1,nb
+            um=(umax(i)+umin(i))*.5
+            ud=(umax(i)-umin(i))*.5*(1.+pad)
+            d=(u(i,1)-um)/ud
+c           tmp2(i)=(cosh(d*acosh(2.))-1.)**a
+            if (u(i,1).gt.umax(i)) then
+               d=(u(i,1)/umax(i)-1.)/(1+pad)
+c              tmp2(i)=d*d
+c              tmp2(i)=d
+               tmp2(i)=exp(d)-1.
+c              tmp2(i)=exp(d*d)-1.
+c              tmp2(i)=log(d)
+            endif
+            if (u(i,1).lt.umin(i)) then
+               d=(u(i,1)/umin(i)-1.)/(1+pad)
+c              tmp2(i)=d*d
+c              tmp2(i)=d
+               tmp2(i)=exp(d)-1.
+c              tmp2(i)=exp(d*d)-1.
+c              tmp2(i)=log(d)
+            endif
+         enddo
+
+         call addcol3(rhs,tmp1(1),tmp2(1),nb)
+      endif
+
       return
       end
 c-----------------------------------------------------------------------
-      subroutine setavg
+      subroutine setuavg
 
       include 'SIZE'
       include 'MOR'
@@ -394,17 +479,55 @@ c-----------------------------------------------------------------------
          call outpost(ux,uy,uz,pavg,tavg,'rms')
       endif
 
+
       return
       end
 c-----------------------------------------------------------------------
-      subroutine setj
+      subroutine settavg
+
+      include 'SIZE'
+      include 'MOR'
+      include 'AVG'
+
+      if (ad_step.eq.1) then
+         call rzero(uta,nb+1)
+         call rzero(uuta,(nb+1)**2)
+         call rzero(utua,(nb+1)**2)
+      endif
+
+      call add2(uta,ut,nb+1)
+
+      do j=0,nb
+      do i=0,nb
+         uuta(i,j)=uuta(i,j)+u(i,1)*ut(j,1)
+         utua(i,j)=utua(i,j)+u(j,1)*ut(i,1)
+      enddo
+      enddo
+
+      if (ad_step.eq.ad_nsteps) then
+         s=1./real(ad_nsteps)
+         call cmult(uta,s,nb+1)
+         call cmult(uuta,s,(nb+1)**2)
+         call cmult(utua,s,(nb+1)**2)
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine setuj
 
       include 'SIZE'
       include 'MOR'
 
-      if (ad_step.eq.3) call copy(uj,u,3*(nb+1))
+      if (ad_step.eq.2) then
+         call copy(uj(0,1),u(0,3),nb+1)
+         call copy(uj(0,2),u(0,2),nb+1)
+         call copy(uj(0,3),u(0,1),nb+1)
+      endif
       if (ad_step.eq.ad_nsteps) then
-         call copy(uj(0,4),u,3*(nb+1))
+         call copy(uj(0,4),u(0,3),nb+1)
+         call copy(uj(0,5),u(0,2),nb+1)
+         call copy(uj(0,6),u(0,1),nb+1)
          do k=1,6
          do j=0,nb
          do i=0,nb
@@ -412,7 +535,35 @@ c-----------------------------------------------------------------------
          enddo
          enddo
          enddo
-         s=1./real(ad_nsteps)
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine settj
+
+      include 'SIZE'
+      include 'MOR'
+
+      if (ad_step.eq.2) then
+         call copy(utj(0,1),ut(0,3),nb+1)
+         call copy(utj(0,2),ut(0,2),nb+1)
+         call copy(utj(0,3),ut(0,1),nb+1)
+      endif
+
+      if (ad_step.eq.ad_nsteps) then
+         call copy(utj(0,4),ut(0,3),nb+1)
+         call copy(utj(0,5),ut(0,2),nb+1)
+         call copy(utj(0,6),ut(0,1),nb+1)
+
+         do k=1,6
+         do j=0,nb
+         do i=0,nb
+            uutj(i,j,k)=uj(i,k)*utj(j,k)
+            utuj(i,j,k)=uj(j,k)*utj(i,k)
+         enddo
+         enddo
+         enddo
       endif
 
       return

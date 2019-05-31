@@ -11,6 +11,8 @@ c-----------------------------------------------------------------------
 
       logical ifmult
 
+      parameter (lt=lx1*ly1*lz1*lelt)
+
       common /romup/ rom_time
 
       stime=dnekclock()
@@ -34,7 +36,9 @@ c-----------------------------------------------------------------------
      $   'error: running rom_update with ifflow = .true.$',nelv)
          if (istep.gt.0) then
             if (ifrom(2)) call rom_step_t
-            call rom_step
+            if (ifrom(1)) call rom_step
+            call postu
+            call postt
             call reconv(vx,vy,vz,u) ! reconstruct velocity to be used in h-t
          endif
       else
@@ -43,11 +47,15 @@ c-----------------------------------------------------------------------
          do i=1,ad_nsteps
             time=time+dt
             if (ifrom(2)) call rom_step_t
-            call rom_step
+            if (ifrom(1)) call rom_step
+            call postu
+            call postt
             ad_step=ad_step+1
          enddo
          icalld=0
       endif
+
+      if (ifei) call cres
 
       ifield=jfield
 
@@ -84,9 +92,6 @@ c-----------------------------------------------------------------------
       call copy(tic,t,n)
 
       call rom_init_params
-c     iftmp=ifread
-c     ifread=.true.
-
       call rom_init_fields
 
       call setgram
@@ -96,17 +101,26 @@ c     ifread=.true.
 
       call setops
 
-c     if (ifpod(1)) call pv2k(uk,us,ub,vb,wb)
-c     if (ifpod(2)) call ps2k(tk,ts,tb)
-
-      call asnap
-
-c     ifread=iftmp
+      if (nio.eq.0) write (6,*) 'begin setup for qoi'
 
       if (ifcdrag) call cvdrag_setup
       call cnuss_setup
+      call cubar_setup
+
+      if (nio.eq.0) write (6,*) 'end setup for qoi'
+
+      if (nio.eq.0) write (6,*) 'begin range setup'
+
+      if (ifpod(1)) call pv2k(uk,us0,ub,vb,wb)
+      if (ifpod(2)) call ps2k(tk,ts0,tb)
+
+      call asnap
 
       call hyperpar
+
+      if (ifei) call set_sigma
+
+      if (nio.eq.0) write (6,*) 'end range setup'
 
       if (ifdumpops) call dump_all
 
@@ -165,16 +179,7 @@ c-----------------------------------------------------------------------
          call setb(bt,bt0,'ops/bt ')
          call setc(ctl,ictl,'ops/ct ')
       endif
-      if (ifcintp) then
-         do j=0,nb
-         do i=1,nb
-            buc(i,j)=wl2vip(ub(1,i),vb(1,i),wb(1,i),
-     $                      cxb(1,j),cyb(1,j),czb(1,j))
-         enddo
-         enddo
-         call setcintp
-      endif
-      call setg
+      call setf
       ifield=jfield
 
       if (nio.eq.0) write (6,*) 'exiting setops'
@@ -213,6 +218,9 @@ c-----------------------------------------------------------------------
       if (ifavg0.and.(nb.eq.ls))
      $   call exitti('nb == ls results in linear dependent bases$',nb)
 
+      if (nb.gt.ls)
+     $   call exitti('nb > ls is undefined configuration$',nb)
+
       ifdumpops=.false.
       ifread=.false.
       np173=nint(param(173))
@@ -221,6 +229,8 @@ c-----------------------------------------------------------------------
       else if (np173.eq.2) then
          ifread=.true.
       endif
+
+      ifei=nint(param(175)).ne.0
 
       ad_qstep=nint(param(180))+ad_iostep*max(1-nint(param(180)),0)
 
@@ -240,27 +250,29 @@ c-----------------------------------------------------------------------
 
       ifcintp=.false.
 
-      bux=param(193)
-      buy=param(194)
-      buz=param(195)
+      ifavisc=.false.
+      if (param(196).ne.0.) ifavisc=.true.
 
       do i=0,ldimt1
          ifpod(i)=.false.
          ifrom(i)=.false.
       enddo
-      ifpod(1)=.true.
-      ifpod(2)=(ifheat.and..not.ifread)
-      ifrom(1)=.true.
-      ifrom(2)=(param(174).ne.0)
+      ifpod(1)=param(174).ge.0.
+      ifpod(2)=(ifheat.and.param(174).ne.0.)
+c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
+      ifrom(1)=ifpod(1)
+      ifrom(2)=ifpod(2)
+
+      ifpod(1)=ifpod(1).or.ifrom(2)
 
       ifvort=.false. ! default to false for now
       ifdump=((.not.ifheat).or.ifrom(2))
-      ifrecon=(.not.ifread)
+
+      ifforce=param(193).ne.0.
+      ifsource=param(194).ne.0.
+      ifbuoy=param(195).ne.0.
 
       ifpart=.false.
-      ifforce=.false.
-      bu2=bux*bux+buy*buy+buz*buz
-      ifbuoy=bu2.gt.0..and.ifrom(2)
       ifcintp=.false.
 
       call compute_BDF_coef(ad_alpha,ad_beta)
@@ -277,13 +289,14 @@ c-----------------------------------------------------------------------
          write (6,*) 'rp_inus       ',inus
          write (6,*) 'rp_iffastc    ',iffastc
          write (6,*) 'rp_iffasth    ',iffasth
+         write (6,*) 'rp_ifavisc    ',ifavisc
          write (6,*) ' '
          write (6,*) 'rp_ifforce    ',ifforce
+         write (6,*) 'rp_ifsource   ',ifsource
+         write (6,*) 'rp_ifbuoy     ',ifbuoy
          write (6,*) 'rp_ifpart     ',ifpart
-         write (6,*) 'rp_ifrecon    ',ifrecon
          write (6,*) 'rp_ifdump     ',ifdump
          write (6,*) 'rp_ifvort     ',ifvort
-         write (6,*) 'rp_ifbuoy     ',ifbuoy
          write (6,*) 'rp_ifcintp    ',ifcintp
          do i=0,ldimt1
             write (6,*) 'rp_ifpod(',i,')   ',ifpod(i)
@@ -327,7 +340,7 @@ c-----------------------------------------------------------------------
 
       if (.not.ifread) then
          fname1='file.list '
-         call get_saved_fields(us0,ps,ts0,ns,fname1)
+         call get_saved_fields(us0,ps,ts0,ns,timek,fname1)
 
          fname1='avg.list'
          inquire (file=fname1,exist=alist)
@@ -343,10 +356,12 @@ c-----------------------------------------------------------------------
          endif
 
          call outpost(uavg,vavg,wavg,pavg,tavg,'avg')
-         if (ifforce) call gradp(bgx,bgy,bgz,pavg)
       endif
 
-      if (ifrecon) then
+      ifsub0=.true.
+c     ifsub0=.false.
+
+      if (ifsub0) then
          do i=1,ns
             call sub2(us0(1,1,i),ub,n)
             call sub2(us0(1,2,i),vb,n)
@@ -354,6 +369,8 @@ c-----------------------------------------------------------------------
             if (ifpod(2)) call sub2(ts0(1,i),tb,n)
          enddo
       endif
+
+      if (ifbuoy) call set_ra
 
       ifield=jfield
 
@@ -584,20 +601,32 @@ c-----------------------------------------------------------------------
 
       jfield=ifield
       ifield=1
-      if (ips.eq.'H10') then
-         call h10pv2b(u,uic,vic,wic,ub,vb,wb)
-      else if (ips.eq.'HLM') then
-         call hlmpv2b(u,uic,vic,wic,ub,vb,wb)
-      else
-         call pv2b(u,uic,vic,wic,ub,vb,wb)
-      endif
 
+      call opsub2(uic,vic,wic,ub,vb,wb)
+      if (ifrom(1)) then
+         if (ips.eq.'H10') then
+            call h10pv2b(u,uic,vic,wic,ub,vb,wb)
+         else if (ips.eq.'HLM') then
+            call hlmpv2b(u,uic,vic,wic,ub,vb,wb)
+         else
+            call pv2b(u,uic,vic,wic,ub,vb,wb)
+         endif
+      else
+         call rzero(u,(nb+1)*3)
+         u(0,1)=1.
+         u(0,2)=1.
+         u(0,3)=1.
+      endif
+      call opadd2(uic,vic,wic,ub,vb,wb)
+
+      call sub2(tic,tb,n)
       if (ifrom(2)) then
          call ps2b(ut,tic,tb)
          do i=0,nb
             if (nio.eq.0) write (6,*) 'ut',ut(i,1)
          enddo
       endif
+      call add2(tic,tb,n)
 
       call reconv(uu,vv,ww,u)
       call recont(tt,ut)
@@ -625,37 +654,62 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine setg
+      subroutine setf
 
       include 'SIZE'
       include 'SOLN'
       include 'MOR'
+      include 'MASS'
       include 'AVG'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      if (nio.eq.0) write (6,*) 'inside setg'
+      common /scrsetf/ wk1(lt),wk2(lt),wk3(lt)
 
-      call rzero(bg,nb)
+      if (nio.eq.0) write (6,*) 'inside setf'
+
+      call rzero(rf,nb)
+      call rzero(rq,nb)
+      call rzero(rg,nb)
+
       call rzero(but0,(nb+1)**2)
 
-      if (ifbuoy) then
-         do j=0,nb
-         do i=0,nb
-            but0(i,j)=bux*sip(tb(1,j),ub(1,i))+buy*sip(tb(1,j),vb(1,i))
-            if (ldim.eq.3) but0(i,j)=but0(i,j)+buz*sip(tb(1,j),wb(1,i))
-         enddo
-         enddo
-      else if (ifforce) then
+      n=lx1*ly1*lz1*nelv
+
+      if (ifforce.and.ifrom(1)) then ! assume fx,fy,fz has mass
          do i=1,nb
-            bg(i)=-vip(bgx,bgy,bgz,ub(1,i),vb(1,i),wb(1,i))
-            if (nio.eq.0) write (6,*) bg(i),i,'bg'
+            rf(i)=glsc2(ub(1,i),fx,n)+glsc2(vb(1,i),fy,n)
+            if (ldim.eq.3) rf(i)=rf(i)+glsc2(wb(1,i),fz,n)
+            if (nio.eq.0) write (6,*) rf(i),i,'rf'
          enddo
-         call outpost(bgx,bgy,bz,pavg,tavg,'bgv')
+         call opcopy(wk1,wk2,wk3,fx,fy,fz)
+         call opbinv1(wk1,wk2,wk3,wk1,wk2,wk3,1.)
+         call outpost(wk1,wk2,wk3,pavg,tavg,'fff')
       endif
 
+      if (ifsource.and.ifrom(2)) then ! assume qq has mass
+         do i=1,nb
+            rq(i)=glsc2(qq,tb(1,i),n)
+            if (nio.eq.0) write (6,*) rq(i),i,'rq'
+         enddo
+         call copy(wk1,qq,n)
+         call binv1(wk1)
+         call outpost(vx,vy,vz,pavg,wk1,'qqq')
+      endif
 
-      if (nio.eq.0) write (6,*) 'exiting setg'
+      if (ifbuoy.and.ifrom(1).and.ifrom(2)) then ! assume gx,gy,gz has mass
+         do j=0,nb
+         do i=0,nb
+            but0(i,j)=op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),
+     $                            gx,gy,gz,tb(1,j))
+            if (nio.eq.0) write (6,*) i,j,but0(i,j),'but0'
+         enddo
+         enddo
+         call opcopy(wk1,wk2,wk3,gx,gy,gz)
+         call outpost(wk1,wk2,wk3,pavg,tavg,'ggg')
+      endif
+
+      if (nio.eq.0) write (6,*) 'exiting setf'
 
       return
       end
@@ -686,6 +740,28 @@ c-----------------------------------------------------------------------
          call dump_serial(uas,nb+1,'ops/uas ',nid)
          call dump_serial(uvs,nb+1,'ops/uvs ',nid)
       endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine set_ra
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      common /scrra/ binv(lx1,ly1,lz1,lelt)
+
+      n=lx1*ly1*lz1*lelt
+
+      call rone(binv,n)
+      call invcol2(binv,bm1,n)
+
+      ad_ra=sqrt(op_glsc2_wt(gx,gy,gz,gx,gy,gz,binv)/glsum(bm1,n))
+      write (6,*) ad_ra,'ad_ra'
+      s=1./ad_ra
+      call opcmult(gx,gy,gz,s)
+c     ad_ra=1.
 
       return
       end

@@ -4,7 +4,7 @@ c-----------------------------------------------------------------------
       character*128 fname
       character*128 fntrunc
 
-      real a(n)
+      real a(n),wk(n)
 
       if (nid.eq.0) then
          call blank(fntrunc,128)
@@ -59,13 +59,13 @@ c-----------------------------------------------------------------------
 
       if (ifexist) then
          nn=nb+1
-         call get_saved_fields(us0,ps,ts0,nn,'bas.list ')
+         call get_saved_fields(us0,ps,ts0,nn,timek,'bas.list ')
          do i=0,nb
             call copy_sol(ub(1,i),vb(1,i),wb(1,i),pb(1,i),tb(1,i),
      $   us0(1,1,i+1),us0(1,2,i+1),us0(1,ldim,i+1),ps(1,i+1),ts0(1,i+1))
          enddo
          if (nn.lt.nb) call exitti(
-     $   'number of files in bas.list fewer than nb',nb-nn)
+     $   'number of files in bas.list fewer than nb$',nb-nn)
       else
          do i=0,nb 
             len=ltrunc(session,132)
@@ -76,7 +76,8 @@ c-----------------------------------------------------------------------
             call chcopy(fn1(7+len),fnum,5)
 
             call restart_filen(fname,11+len)
-            call opcopy(ub(1,i),vb(1,i),wb(1,i),vx,vy,vz)
+            call copy_sol(ub(1,i),vb(1,i),wb(1,i),pb(1,i),tb(1,i),
+     $                    vx,vy,vz,pr,t)
          enddo
       endif
 
@@ -149,7 +150,7 @@ c     This routine reads files specificed in fname
       return
       end
 c-----------------------------------------------------------------------
-      subroutine get_saved_fields(usave,psave,tsave,nsave,fname)
+      subroutine get_saved_fields(usave,psave,tsave,nsave,timek,fname)
 
 c     This routine reads files specificed in fname
 
@@ -162,6 +163,8 @@ c     This routine reads files specificed in fname
       parameter (lt2=lx2*ly2*lz2*lelt)
 
       real usave(lt,ldim,nsave),psave(lt2,nsave),tsave(lt,ldimt,nsave)
+      real timek(nsave)
+
       character*128 fname
       character*128 fnlint
 
@@ -190,16 +193,17 @@ c     This routine reads files specificed in fname
          if (nio.eq.0) write (6,*) ipass,' '
 
          if (indx1(initc,'done ',5).eq.0) then ! We're not done
+            icount = icount+1
             nfiles = 1
             ttmp=time
             call restart(nfiles)  ! Note -- time is reset.
+            timek(icount)=time
             time=ttmp
 
             ip=ipass
             call add_sol(uavg,vavg,wavg,pavg,tavg,vx,vy,vz,pr,t)
             call copy_sol(usave(1,1,ip),usave(1,2,ip),usave(1,ldim,ip),
      $                    psave(1,ip),tsave(1,1,ip),vx,vy,vz,pr,t)
-            icount = icount+1
          else
             goto 999
          endif

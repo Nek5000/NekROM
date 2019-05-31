@@ -334,10 +334,11 @@ c-----------------------------------------------------------------------
 
       call opcopy(vx,vy,vz,ux,uy,uz)
       call copy(pr,pp,lx2*ly2*lz2*nelv)
+      call copy(t,tt,lx1*ly1*lz1*nelv)
 
-      do idim=1,ldimt
-         call copy(t(1,idim),tt(1,idim),lx1*ly1*lz1*nelt)
-      enddo
+c     do idim=1,ldimt
+c        call copy(t(1,idim),tt(1,idim),lx1*ly1*lz1*nelt)
+c     enddo
 
       return
       end
@@ -424,12 +425,12 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine setconvbases ! deprecated
-      call exitti('called deprecated subroutine setconvbases',1)
+      call exitti('called deprecated subroutine setconvbases$',1)
       return
       end
 c-----------------------------------------------------------------------
       subroutine setdtbases
-      call exitti('called deprecated subroutine setdtbases',1)
+      call exitti('called deprecated subroutine setdtbases$',1)
       return
       end
 c-----------------------------------------------------------------------
@@ -489,83 +490,82 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       real ep
-      real uw(lt),vw(lt),ww(lt)
-      real tmp1(nb),tmp2(nb),delta(nb)
+      real wk(nb)
 
       ! eps is the free parameter
       ! 1e-2 is used in the paper
-      ep = 1e-2
+      ep = 1.e-2
 
       n  = lx1*ly1*lz1*nelt
       if (ifpod(1)) then
-         do j=1,nb                    ! compute hyper-parameter
-            tmp1(j) = vlmin(uk(j,:),ns)
-            tmp2(j) = vlmax(uk(j,:),ns)
-            delta(j) = tmp2(j)-tmp1(j)
-            umin(j) = tmp1(j) - ep * delta(j)
-            umax(j) = tmp2(j) + ep * delta(j)
-            write(6,*) j,umin(j),umax(j)
-         enddo
+         if (ifread) then
+            call read_serial(umin,nb,'ops/umin ',wk,nid)
+            call read_serial(umax,nb,'ops/umax ',wk,nid)
+         else
+            call cfill(umin,1.e9,nb)
+            call cfill(umax,-1.e9,nb)
+            do j=1,ns
+            do i=1,nb
+               if (uk(i,j).lt.umin(i)) umin(i)=uk(i,j)
+               if (uk(i,j).gt.umax(i)) umax(i)=uk(i,j)
+            enddo
+            enddo
+            do j=1,nb                    ! compute hyper-parameter
+               d= umax(j)-umin(j)
+               umin(j) = umin(j) - ep * d
+               umax(j) = umax(j) + ep * d
+               if (nio.eq.0) write (6,*) j,umin(j),umax(j)
+            enddo
+         endif
 
          ! compute distance between umax and umin
          call sub3(udis,umax,umin,nb)
 
-         if (nid.eq.0) then
+         if (nio.eq.0) then
             do i=1,nb
-               write(6,*)i,udis(i)
+               write (6,*) i,udis(i)
             enddo
          endif
-
-         if (nid.eq.0) then
-            open (unit=51,file='umin')
-            do i=1,nb
-               write (51,*) umin(i)
-            enddo
-            close (unit=51)
-
-            open (unit=52,file='umax')
-            do i=1,nb
-               write (52,*) umax(i)
-            enddo
-            close (unit=52)
+         if (.not.ifread) then
+            call dump_serial(umin,nb,'ops/umin ',nid)
+            call dump_serial(umax,nb,'ops/umax ',nid)
          endif
       endif   
 
       if (ifpod(2)) then
-         do j=1,nb                    ! compute hyper-parameter
-            tmp1(j) = vlmin(tk(j,:),ls)
-            tmp2(j) = vlmax(tk(j,:),ls)
-            delta(j) = tmp2(j)-tmp1(j)
-            tmin(j) = tmp1(j) - ep * delta(j)
-            tmax(j) = tmp2(j) + ep * delta(j)
-            write(6,*) j,tmin(j),tmax(j)
-         enddo
-
-         ! compute distance between umax and umin
-         call sub3(tdis,tmax,tmin,nb)
-         if (nid.eq.0) then
+         if (ifread) then
+            call read_serial(tmin,nb,'ops/tmin ',wk,nid)
+            call read_serial(tmax,nb,'ops/tmax ',wk,nid)
+         else
+            call cfill(tmin,1.e9,nb)
+            call cfill(tmax,-1.e9,nb)
+            do j=1,ns
             do i=1,nb
-               write(6,*)i,tdis(i)
+               if (uk(i,j).lt.tmin(i)) tmin(i)=tk(i,j)
+               if (uk(i,j).gt.tmax(i)) tmax(i)=tk(i,j)
+            enddo
+            enddo
+            do j=1,nb                    ! compute hyper-parameter
+               d= tmax(j)-tmin(j)
+               tmin(j) = tmin(j) - ep * d
+               tmax(j) = tmax(j) + ep * d
+               if (nio.eq.0) write (6,*) j,tmin(j),tmax(j)
             enddo
          endif
 
-         if (nid.eq.0) then
-            open (unit=51,file='tmin')
+         ! compute distance between tmax and tmin
+         call sub3(tdis,tmax,tmin,nb)
+         if (nio.eq.0) then
             do i=1,nb
-               write (51,*) tmin(i)
+               write (6,*) i,tdis(i)
             enddo
-            close (unit=51)
+         endif
 
-            open (unit=52,file='tmax')
-            do i=1,nb
-               write (52,*) tmax(i)
-            enddo
-            close (unit=52)
+         if (.not.ifread) then
+            call dump_serial(tmin,nb,'ops/tmin ',nid)
+            call dump_serial(tmax,nb,'ops/tmax ',nid)
          endif
       endif   
-
-
-
 
       return
       end
@@ -613,7 +613,7 @@ c     call opmask  (inp1,inp2,inp3)
       return
       end
 c-----------------------------------------------------------------------
-      subroutine binv1(out1,inp1,SCALE)
+      subroutine binv1(out1)
 C--------------------------------------------------------------------
 C
 C     Compute OUT = (B)-1 * INP   (explicit)
@@ -623,23 +623,23 @@ C--------------------------------------------------------------------
       include 'INPUT'
       include 'MASS'
       include 'SOLN'
+      include 'TSTEP'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real out1  (lt)
-      real inp1  (lt)
+      real out1(lt)
 
       include 'OPCTR'
+
+      n=lx1*ly1*lz1*nelv
       
-      call col2  (inp1,tmask,lx1*ly1*lz1*nelt)
-      call dssum (inp1,lx1,ly1,lz1)
-
-      ntot=lx1*ly1*lz1*nelv
-
-      do i=1,ntot
-         tmp    =binvm1(i,1,1,1)*scale
-         out1(i)=inp1(i)*tmp
-      enddo   
+      if (ifield.eq.1) then
+         call col2(out1,v1mask,n) ! disable mask for now
+      else
+         call col2(out1,tmask,n) ! disable mask for now
+      endif
+      call dssum(out1,lx1,ly1,lz1)
+      call col2(out1,binvm1,n)
 
       return
       end
@@ -757,42 +757,6 @@ c-----------------------------------------------------------------------
       
       do i=1,nelt
          if (ie.ne.i) call rzero(g(1,i),lx1*ly1*lz1)
-      enddo
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine setf(f)
-
-      include 'SIZE'
-      include 'TOTAL'
-
-      real f(lx1,ly1,lz1,lelt)
-
-      do ie=1,nelt
-      do ifc=1,2*ldim
-         call facind(kx1,kx2,ky1,ky2,kz1,kz2,lx1,ly1,lz1,ifc)
-         if (cbc(ifc,ie,2).eq.'f  ') then
-            l=1
-            do iz=kz1,kz2
-            do iy=ky1,ky2
-            do ix=kx1,kx2
-               f(ix,iy,iz,ie)=1
-               f(ix,iy,iz,ie)=f(ix,iy,iz,ie)*area(l,1,ifc,ie)
-               l=l+1
-            enddo
-            enddo
-            enddo
-         else
-            do iz=kz1,kz2
-            do iy=ky1,ky2
-            do ix=kx1,kx2
-               f(ix,iy,iz,ie)=0.
-            enddo
-            enddo
-            enddo
-         endif
-      enddo
       enddo
 
       return
