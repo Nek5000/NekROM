@@ -103,7 +103,7 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'begin setup for qoi'
 
-      if (ifcdrag) call cvdrag_setup
+      call cvdrag_setup
       call cnuss_setup
       call cubar_setup
 
@@ -389,7 +389,7 @@ c-----------------------------------------------------------------------
 
       real cux(lt),cuy(lt),cuz(lt)
 
-      common /scrcwk/ wk(lcloc)
+      common /scrcwk/ wk(lcloc),wk2(0:lub)
 
       real cl(lcloc),icl(3,lcloc)
 
@@ -418,6 +418,9 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelv
 
+      write (6,*) 'file=',fnlint
+      if (ifread.and.ifcdrag)
+     $   call read_serial(fd2,(nb+1)**2,'qoi/fd2 ',wk2,nid)
       if (ifread.and.nid.eq.0) open (unit=12,file=fnlint)
 
       if (.not.ifread.and..not.ifaxis) then
@@ -487,6 +490,7 @@ c              if (nio.eq.0) write (6,*) l,mcloc,'mcloc'
       if (ifread.and.nid.eq.0) close (unit=12)
 
       if (nio.eq.0) write (6,*) 'conv_time: ',dnekclock()-conv_time
+      if (nio.eq.0) write (6,*) 'ncloc=',ncloc
 
       if (nio.eq.0) write (6,*) 'exiting setc'
 

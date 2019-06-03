@@ -170,25 +170,31 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /scrk1/ ux(lt),uy(lt),uz(lt)
+      common /scrk1/ ux(lt),uy(lt),uz(lt),w(lub+1)
 
       if (ifcdrag) then
-         call push_op(vx,vy,vz)
+         if (ifread) then
+            call read_serial(rdgx,nb+1,'qoi/rdgx ',w,nid)
+            call read_serial(rdgy,nb+1,'qoi/rdgy ',w,nid)
+            if (ldim.eq.3) call read_serial(rdgz,nb+1,'qoi/rdgz ',w,nid)
+         else
+            call push_op(vx,vy,vz)
 
-         do i=0,nb
-            nio = -1
-            call opcopy(vx,vy,vz,ub(1,i),vb(1,i),wb(1,i))
-            call torque_calc(1.,x0,.true.,.false.)
-            rdgx(i)=dragvx(1)
-            rdgy(i)=dragvy(1)
-            rdgz(i)=dragvz(1)
-            nio = nid
-            if (nio.eq.0) then
-               write (6,*) i,rdgx(i),rdgy(i),rdgz(i),'dragi'
-            endif
-         enddo
+            do i=0,nb
+               nio = -1
+               call opcopy(vx,vy,vz,ub(1,i),vb(1,i),wb(1,i))
+               call torque_calc(1.,x0,.true.,.false.)
+               rdgx(i)=dragvx(1)
+               rdgy(i)=dragvy(1)
+               rdgz(i)=dragvz(1)
+               nio = nid
+               if (nio.eq.0) then
+                  write (6,*) i,rdgx(i),rdgy(i),rdgz(i),'dragi'
+               endif
+            enddo
 
-         call pop_op(vx,vy,vz)
+            call pop_op(vx,vy,vz)
+         endif
       endif
 
       return
