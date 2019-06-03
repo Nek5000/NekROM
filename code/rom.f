@@ -253,6 +253,9 @@ c-----------------------------------------------------------------------
       ifavisc=.false.
       if (param(196).ne.0.) ifavisc=.true.
 
+      ifsub0=.true.
+      if (param(197).ne.0.) ifsub0=.false.
+
       do i=0,ldimt1
          ifpod(i)=.false.
          ifrom(i)=.false.
@@ -357,9 +360,6 @@ c-----------------------------------------------------------------------
 
          call outpost(uavg,vavg,wavg,pavg,tavg,'avg')
       endif
-
-      ifsub0=.true.
-c     ifsub0=.false.
 
       if (ifsub0) then
          do i=1,ns
