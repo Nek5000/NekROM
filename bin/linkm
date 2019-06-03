@@ -22,6 +22,7 @@ cat $MOR_DIR/code/makefile_usr.inc >> $cwd/makefile_usr.inc
 cp -n $MOR_DIR/code/LMOR.template LMOR
 cp -n $MOR_DIR/code/SIZE.template SIZE
 
-# create ops directory for dumping operators
+# create directories for dumping
 
 mkdir ops &> /dev/null
+mkdir qoi &> /dev/null
