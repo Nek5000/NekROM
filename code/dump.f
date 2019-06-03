@@ -113,6 +113,16 @@ c-----------------------------------------------------------------------
          call dump_serial(umax,nb,'ops/umax ',nid)
          call dump_serial(timek,ns,'ops/timek ',nid)
          call dump_global(cul,ncloc,'ops/cu ',wk1,wk2,nid)
+
+         if (ifcdrag) then
+            call dump_serial(rdgx,nb+1,'qoi/rdgx ',nid)
+            call dump_serial(rdgy,nb+1,'qoi/rdgy ',nid)
+            if (ldim.eq.3) call dump_serial(rdgz,nb+1,'qoi/rdgz ',nid)
+
+            call dump_serial(fd1,ldim*(nb+1),'qoi/fd1 ',nid)
+            call dump_serial(fd2,ldim*(nb+1)**2,'qoi/fd2 ',nid)
+            call dump_serial(fd3,ldim*(nb+1),'qoi/fd3 ',nid)
+         endif
       endif
 
       if (ifpod(2)) then
