@@ -138,12 +138,9 @@ c-----------------------------------------------------------------------
          call dump_global(ctl,ncloc,'ops/ct ',wk1,wk2,nid)
       endif
 
-      if (ifforce) call dump_serial(rf,nb,'ops/rf ',nid)
+      if (ifforce)  call dump_serial(rf,nb,'ops/rf ',nid)
       if (ifsource) call dump_serial(rq,nb,'ops/rq ',nid)
-
-      if (ifbuoy) then
-         call dump_serial(but0,(nb+1)**2,'ops/but ',nid)
-      endif
+      if (ifbuoy)   call dump_serial(but0,(nb+1)**2,'ops/but ',nid)
 
       if (ifei) then
          l=1
