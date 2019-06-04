@@ -79,18 +79,17 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine ctke_fom(tke,ux,uy,uz)
+      subroutine ctke_fom(tke,ux,uy,uz,uavg,vavg,wavg)
 
       include 'SIZE'
       include 'MOR'
       include 'MASS'
-      include 'AVG'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
       common /scrns/ ud(lt),vd(lt),wd(lt)
 
-      real ux(lt),uy(lt),uz(lt)
+      real ux(lt),uy(lt),uz(lt),uavg(lt),vavg(lt),wavg(lt)
 
       call opsub3(ud,vd,wd,ux,uy,uz,uavg,vavg,wavg)
       tke = .5*op_glsc2_wt(ud,vd,wd,ud,vd,wd,bm1)
