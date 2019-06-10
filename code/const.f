@@ -448,7 +448,7 @@ c            call add2(uu,qns,nb)
             call sub3(qny,qngradf,qgo,nb) 
 
             ! update approximate Hessian by two rank-one update if chekbc = 0
-            if (chekbc .ne. 0) then
+            if (chekbc .ne. 1) then
                call Hessian_update(B_qn,qns,qny,nb)
             endif
 
