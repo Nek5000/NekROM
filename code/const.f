@@ -12,14 +12,12 @@
       real uu(nb), rhs(nb)
       real amax(nb), amin(nb), adis(nb)
       real bpar, par
+      real tmp(nb,nb)
 
       ! parameter for barrier function
       integer par_step, jmax, bflag, bstep
       integer chekbc ! flag for checking boundary
       real bctol
-
-      real tmp(nb,nb),tmp1(nb,nb),tmp2(nb,nb),tmp3(nb,nb)
-      real tmp4(nb),tmp5(nb),tmp6(nb,nb),tmp7(nb,nb)
 
 c      if (nio.eq.0) write (6,*) 'inside BFGS_freeze'
 
@@ -47,11 +45,11 @@ c        use helm from BDF3/EXT3 as intial approximation
 c        compute quasi-Newton step
          do j=1,100
 
-            call copy(tmp3(1,1),B_qn(1,1),nb*nb)
-            call lu(tmp3,nb,nb,irv,icv)
+            call copy(tmp(1,1),B_qn(1,1),nb*nb)
+            call lu(tmp,nb,nb,irv,icv)
             call copy(qns,qngradf,nb)
             call chsign(qns,nb)
-            call solve(qns,tmp3,1,nb,nb,irv,icv)
+            call solve(qns,tmp,1,nb,nb,irv,icv)
 
 c            if (j .eq. 1) then
 c               call copy(qns,qngradf,nb)
@@ -376,14 +374,13 @@ c-----------------------------------------------------------------------
       real amax(nb), amin(nb), adis(nb)
       real bpar, par
       real alphak
+      real tmp(nb,nb)
 
       ! parameter for barrier function
       integer par_step, jmax, bflag, bstep
       integer chekbc ! flag for checking boundary
       real bctol
 
-      real tmp(nb,nb),tmp1(nb,nb),tmp2(nb,nb),tmp3(nb,nb)
-      real tmp4(nb),tmp5(nb),tmp6(nb,nb),tmp7(nb,nb)
 
 c      if (nio.eq.0) write (6,*) 'inside BFGS'
 
@@ -412,11 +409,11 @@ c        use helm from BDF3/EXT3 as intial approximation
 c        compute quasi-Newton step
          do j=1,100
 
-            call copy(tmp3(1,1),B_qn(1,1),nb*nb)
-            call lu(tmp3,nb,nb,irv,icv)
+            call copy(tmp(1,1),B_qn(1,1),nb*nb)
+            call lu(tmp,nb,nb,irv,icv)
             call copy(qns,qngradf,nb)
             call chsign(qns,nb)
-            call solve(qns,tmp3,1,nb,nb,irv,icv)
+            call solve(qns,tmp,1,nb,nb,irv,icv)
 
 c            call add2(uu,qns,nb)
             call backtrackr(uu,qns,rhs,helm,invhelm,1e-2,0.5,alphak,amax,
