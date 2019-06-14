@@ -7,7 +7,6 @@
       real B_qn(nb,nb), helm(nb,nb), invhelm(nb,nb)
       real qgo(nb), qngradf(nb), ngf
       real fo,qnf,qndf
-      real yy(nb,nb),ys,sBs
       real ww(nb), pert
       real uu(nb), rhs(nb)
       real amax(nb), amin(nb), adis(nb)
@@ -368,7 +367,6 @@ c-----------------------------------------------------------------------
       real B_qn(nb,nb), helm(nb,nb), invhelm(nb,nb)
       real qgo(nb), qngradf(nb), ngf
       real fo,qnf,qndf
-      real yy(nb,nb),ys,sBs
       real ww(nb), pert
       real uu(nb), rhs(nb)
       real amax(nb), amin(nb), adis(nb)
