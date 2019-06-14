@@ -102,7 +102,7 @@ c            write(6,*)'f and old f',j,qnf,fo,qndf,ngf
 
            if (mod(ad_step,ad_iostep).eq.0) then
               if (nio.eq.0) write (6,*) 'const_ana'
-              call cpod_ana(uu,par,j)
+              call cpod_ana(uu,par,j,ngf,qndf)
             endif
 
             if (ngf .lt. 1e-4 .OR. qndf .lt. 1e-6  ) then
@@ -114,13 +114,6 @@ c     update solution
          par = par*0.1
 
       enddo
-
-      if (mod(ad_step,ad_iostep).eq.0) then
-         if (nio.eq.0) then
-            write(6,*)'ad_step, par, jmax, ngf, qndf:',
-     $               ad_step,par,jmax,ngf,qndf 
-         endif
-      endif
 
       call copy(rhs,uu,nb)
 
@@ -365,14 +358,14 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       real B_qn(nb,nb), helm(nb,nb), invhelm(nb,nb)
+      real tmp(nb,nb)
       real qgo(nb), qngradf(nb), ngf
-      real fo,qnf,qndf
+      real fo, qnf, qndf
       real ww(nb), pert
       real uu(nb), rhs(nb)
       real amax(nb), amin(nb), adis(nb)
       real bpar, par
       real alphak
-      real tmp(nb,nb)
 
       ! parameter for barrier function
       integer par_step, jmax, bflag, bstep
@@ -452,6 +445,10 @@ c            write(6,*)'f and old f',j,qnf,fo,qndf,ngf
             chekbc = 0
             
             jmax = max(j,jmax)
+            if (mod(ad_step,ad_iostep).eq.0) then
+               if (nio.eq.0) write (6,*) 'const_ana'
+               call cpod_ana(uu,par,j,ngf,qndf)
+            endif
 
             if (ngf .lt. 1e-4 .OR. qndf .lt. 1e-6  ) then 
                exit
@@ -461,14 +458,6 @@ c     update solution
          enddo
          par = par*0.1
       enddo
-
-      if (mod(ad_step,ad_iostep).eq.0) then
-         if (nio.eq.0) then
-            write(6,*)'ad_step, par, jmax, ngf, qndf:',
-     $               ad_step,par,jmax,ngf,qndf 
-         endif
-      endif
-
       call copy(rhs,uu,nb)
 
 c      if (nio.eq.0) write (6,*) 'exitting BFGS'
@@ -531,7 +520,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine cpod_ana(uu,par,qstep)
+      subroutine cpod_ana(uu,par,qstep,ngf,qndf)
 
       include 'SIZE'
       include 'TOTAL'
@@ -539,10 +528,11 @@ c-----------------------------------------------------------------------
 
       real uu(nb)
       real par
+      real ngf, qndf
       integer qstep 
 
       if (nio.eq.0) then
-         write (6,*)'ad_step:',ad_step,ad_iostep,par,iter
+         write (6,*)'ad_step:',ad_step,ad_iostep,par,qndf,ngf,qndf
          if (ad_step.eq.ad_nsteps) then
             do j=1,nb
                write(6,*) j,uu(j),'final'
