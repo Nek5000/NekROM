@@ -27,17 +27,11 @@ c      if (nio.eq.0) write (6,*) 'inside BFGS_freeze'
   
       jmax = 0
       bctol = 1e-8
-
       bflag = 1 ! 1 for using logarithmic, 2 for inverse
+
       par = bpar
       par_step = bstep 
    
-      ! invhelm for computing qnf
-c     if (ad_step.le.3) then 
-c        call copy(invhelm(1,1),helm(1,1),nb*nb)
-c        call lu(invhelm,nb,nb,irv,icv)
-c     endif
-
       ! BFGS method with barrier function starts
       do k=1,par_step
 
@@ -403,10 +397,6 @@ c      if (nio.eq.0) write (6,*) 'inside BFGS'
       par_step = bstep 
    
       ! invhelm for computing qnf
-c     if (ad_step.le.3) then 
-c        call copy(invhelm(1,1),helm(1,1),nb*nb)
-c        call lu(invhelm,nb,nb,irv,icv)
-c     endif
 
       ! BFGS method with barrier function starts
       do k=1,par_step
