@@ -45,7 +45,7 @@ c-----------------------------------------------------------------------
       if (ad_step.eq.3) call dump_serial(fluv,nb*nb,'ops/hu ',nid)
       if (ad_step.le.3) then
          call copy(helmu,fluv,nb*nb)
-         call lu(fluv,nb,nb,irv,icv)
+         call dgetrf(nb,nb,fluv,lub,ipiv,info)
          call copy(invhelmu,fluv,nb*nb)
       endif
       lu_time=lu_time+dnekclock()-ttime
@@ -71,7 +71,9 @@ c-----------------------------------------------------------------------
       ttime=dnekclock()
       if (isolve.eq.0) then ! standard matrix inversion
          if (.not.iffasth.or.ad_step.le.3) then
-            call solve(rhs(1),fluv,1,nb,nb,irv,icv)
+c           call dgetrf(nb,nb,fluv,lub,ipiv,info)
+c           call dgetrs('N',nb,1,fluv,lub,ipiv,rhs(1),nb,info)
+            call dgetrs('N',nb,1,fluv,lub,ipiv,rhs(1),nb,info)
          else
             eps=.20
             damp=1.-eps*ad_dt
@@ -191,12 +193,12 @@ c     Matrices and vectors for advance
       if (ad_step.eq.3) call dump_serial(flut,nb*nb,'ops/ht ',nid)
       if (ad_step.le.3) then
          call copy(helmt,flut,nb*nb)
-         call lu(flut,nb,nb,irt,ict)
+         call dgetrf(nb,nb,flut,lub,ipiv,info)
          call copy(invhelmt,flut,nb*nb)
       endif
 
       if (isolve.eq.0) then ! standard matrix inversion
-         call solve(rhs(1),flut,1,nb,nb,irt,ict)
+         call dgetrs('N',nb,1,flut,lub,ipiv,rhs(1),nb,info)
       else if (isolve.eq.1) then ! constrained solve
          call BFGS_freeze(rhs(1),helmt,invhelmt,tmax,tmin,tdis,1e-3,4) 
 c        call BFGS(rhs(1),helmt,invhelmt,tmax,tmin,tdis,1e-3,4) 
