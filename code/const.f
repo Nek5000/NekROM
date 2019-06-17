@@ -532,7 +532,7 @@ c-----------------------------------------------------------------------
       integer qstep 
 
       if (nio.eq.0) then
-         write (6,*)'ad_step:',ad_step,ad_iostep,par,qndf,ngf,qndf
+         write (6,*)'ad_step:',ad_step,ad_iostep,par,qstep,ngf,qndf
          if (ad_step.eq.ad_nsteps) then
             do j=1,nb
                write(6,*) j,uu(j),'final'
