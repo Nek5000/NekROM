@@ -79,18 +79,17 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine ctke_fom(tke,ux,uy,uz)
+      subroutine ctke_fom(tke,ux,uy,uz,uavg,vavg,wavg)
 
       include 'SIZE'
       include 'MOR'
       include 'MASS'
-      include 'AVG'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
       common /scrns/ ud(lt),vd(lt),wd(lt)
 
-      real ux(lt),uy(lt),uz(lt)
+      real ux(lt),uy(lt),uz(lt),uavg(lt),vavg(lt),wavg(lt)
 
       call opsub3(ud,vd,wd,ux,uy,uz,uavg,vavg,wavg)
       tke = .5*op_glsc2_wt(ud,vd,wd,ud,vd,wd,bm1)
@@ -613,6 +612,32 @@ c     call opmask  (inp1,inp2,inp3)
       return
       end
 c-----------------------------------------------------------------------
+      subroutine binv1_nom(out1)
+C--------------------------------------------------------------------
+C
+C     Compute OUT = (B)-1 * INP   (explicit)
+C
+C--------------------------------------------------------------------
+      include 'SIZE'
+      include 'INPUT'
+      include 'MASS'
+      include 'SOLN'
+      include 'TSTEP'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real out1(lt)
+
+      include 'OPCTR'
+
+      n=lx1*ly1*lz1*nelv
+
+      call dssum(out1,lx1,ly1,lz1)
+      call col2(out1,binvm1,n)
+
+      return
+      end
+C--------------------------------------------------------------------
       subroutine binv1(out1)
 C--------------------------------------------------------------------
 C
@@ -757,6 +782,75 @@ c-----------------------------------------------------------------------
       
       do i=1,nelt
          if (ie.ne.i) call rzero(g(1,i),lx1*ly1*lz1)
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine set_surf(s,f) ! set surface term using flux
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      real s(lx1,ly1,lz1,lelt)
+      real f(lx1,ly1,lz1,lelt)
+
+      n=lx1*ly1*lz1*nelv
+
+      call rzero(s,n)
+
+      do ie=1,nelv
+      do ifc=1,2*ldim
+         ia=0
+         call facind(kx1,kx2,ky1,ky2,kz1,kz2,lx1,ly1,lz1,ifc)
+         do iz=kz1,kz2
+         do iy=ky1,ky2
+         do ix=kx1,kx2
+            ia=ia+1
+            s(ix,iy,iz,ie)=s(ix,iy,iz,ie)
+     $                    +f(ix,iy,iz,ie)*area(ia,1,ifc,ie)
+         enddo
+         enddo
+         enddo
+      enddo
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine set_gradn(gn,s) ! set grad s . n
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      common /scrgn/ sx(lx1,ly1,lz1,lelt),
+     $               sy(lx1,ly1,lz1,lelt),
+     $               sz(lx1,ly1,lz1,lelt)
+
+      real gn(lx1,ly1,lz1,lelt)
+
+      n=lx1*ly1*lz1*nelv
+
+      call rzero(gn,n)
+      call gradm1(sx,sy,sz,s)
+
+      do ie=1,nelv
+      do ifc=1,2*ldim
+         ia=0
+         if (cbc(ifc,ie,2).ne.'E  ') then
+            call facind(kx1,kx2,ky1,ky2,kz1,kz2,lx1,ly1,lz1,ifc)
+            do iz=kz1,kz2
+            do iy=ky1,ky2
+            do ix=kx1,kx2
+               ia=ia+1
+               gn(ix,iy,iz,ie)=sx(ix,iy,iz,ie)*unx(ia,1,ifc,ie)
+     $                        +sy(ix,iy,iz,ie)*uny(ia,1,ifc,ie)
+     $                        +sz(ix,iy,iz,ie)*unz(ia,1,ifc,ie)
+            enddo
+            enddo
+            enddo
+         endif
+      enddo
       enddo
 
       return

@@ -8,7 +8,7 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       real u0(lt,3)
-      common /scrk2/ a1(lt),a2(lt),a3(lt)
+      common /scrk2/ a1(lt),a2(lt),a3(lt),wk(nb+1)
 
       if (nio.eq.0) write (6,*) 'inside setbases'
 
@@ -51,14 +51,19 @@ c-----------------------------------------------------------------------
       endif
 
       if (ifcdrag) then
-         do i=0,nb
-            call lap2d(a1,ub(1,i))
-            call lap2d(a2,vb(1,i))
-            if (ldim.eq.3) call lap2d(a3,wb(1,i))
-            call opcmult(a1,a2,a3,param(2))
-            call cint(fd1(1,i),ub(1,i),vb(1,i),wb(1,i))
-            call cint(fd3(1,i),a1,a2,a3)
-         enddo
+         if (ifread) then
+            call read_serial(fd1,nb+1,'qoi/fd1 ',wk,nid)
+            call read_serial(fd3,nb+1,'qoi/fd3 ',wk,nid)
+         else
+            do i=0,nb
+               call lap2d(a1,ub(1,i))
+               call lap2d(a2,vb(1,i))
+               if (ldim.eq.3) call lap2d(a3,wb(1,i))
+               call opcmult(a1,a2,a3,param(2))
+               call cint(fd1(1,i),ub(1,i),vb(1,i),wb(1,i))
+               call cint(fd3(1,i),a1,a2,a3)
+            enddo
+         endif
       endif
 
       if (nio.eq.0) write (6,*) 'exiting setbases'

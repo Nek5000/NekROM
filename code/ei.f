@@ -128,6 +128,8 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
+      common /scrxi/ wk(lt)
+
       n=lx1*ly1*lz1*nelv
 
       l=1
@@ -142,6 +144,13 @@ c-----------------------------------------------------------------------
             enddo
             call copy(xi(1,l),qq,n)
             call binv1(xi(1,l))
+            l=l+1
+            do i=1,nb
+               call set_gradn(wk,tb(1,i))
+               call set_surf(xi(1,l),wk)
+               call binv1_nom(xi(1,l))
+               l=l+1
+            enddo
          else
             call exitti('(set_xi_poisson) ips!=L2 not supported...$',nb)
          endif
@@ -345,6 +354,7 @@ c-----------------------------------------------------------------------
 
       if (eqn.eq.'POI') then
          nres=nb+1
+         nres=nb+1+nb
       else if (eqn.eq.'HEA') then
          nres=(nb+1)*2+1
       else if (eqn.eq.'ADE') then
@@ -428,8 +438,15 @@ c-----------------------------------------------------------------------
       enddo
 
       theta(l)=-1.
+      l=l+1
 
-      do i=1,l
+      do i=1,nb
+         theta(l)=-ut(i,1)
+         theta(l)=0.
+         l=l+1
+      enddo
+
+      do i=1,l-1
          write (6,*) i,theta(i),'theta'
       enddo
 
