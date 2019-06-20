@@ -370,6 +370,7 @@ c-----------------------------------------------------------------------
       ! parameter for barrier function
       integer par_step, jmax, bflag, bstep
       integer chekbc ! flag for checking boundary
+      integer uHcount
       real bctol
 
 
@@ -390,6 +391,7 @@ c      if (nio.eq.0) write (6,*) 'inside BFGS'
       do k=1,par_step
 
          chekbc = 0
+         uHcount = 0
 
 c        use helm from BDF3/EXT3 as intial approximation
          call copy(B_qn(1,1),helm(1,1),nb*nb)
@@ -427,6 +429,7 @@ c            call add2(uu,qns,nb)
 
             ! update approximate Hessian by two rank-one update if chekbc = 0
             if (chekbc .ne. 1) then
+               uHcount = uHcount + 1
                call Hessian_update(B_qn,qns,qny,nb)
             endif
 
@@ -443,7 +446,7 @@ c            write(6,*)'f and old f',j,qnf,fo,qndf,ngf
 
             if (mod(ad_step,ad_iostep).eq.0) then
                if (nio.eq.0) write (6,*) 'const_ana'
-               call cpod_ana(uu,par,j,ngf,qndf)
+               call cpod_ana(uu,par,j,uHcount,ngf,qndf)
             endif
             ! reset chekbc 
             chekbc = 0
@@ -524,7 +527,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine cpod_ana(uu,par,qstep,ngf,qndf)
+      subroutine cpod_ana(uu,par,qstep,uhcount,ngf,qndf)
 
       include 'SIZE'
       include 'TOTAL'
@@ -534,9 +537,11 @@ c-----------------------------------------------------------------------
       real par
       real ngf, qndf
       integer qstep 
+      integer uhcount
 
       if (nio.eq.0) then
-         write (6,*)'ad_step:',ad_step,ad_iostep,par,qstep,ngf,qndf
+         write (6,*)'ad_step:',ad_step,ad_iostep,par,qstep,uhcount,
+     $            ngf,qndf
          if (ad_step.eq.ad_nsteps) then
             do j=1,nb
                write(6,*) j,uu(j),'final'
