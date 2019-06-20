@@ -445,10 +445,6 @@ c            write(6,*)'f and old f',j,qnf,fo,qndf,ngf
             chekbc = 0
             
             jmax = max(j,jmax)
-            if (mod(ad_step,ad_iostep).eq.0) then
-               if (nio.eq.0) write (6,*) 'const_ana'
-               call cpod_ana(uu,par,j,ngf,qndf)
-            endif
 
             if (ngf .lt. 1e-4 .OR. qndf .lt. 1e-6  ) then 
                exit
@@ -457,6 +453,10 @@ c            write(6,*)'f and old f',j,qnf,fo,qndf,ngf
 c     update solution
          enddo
          par = par*0.1
+         if (mod(ad_step,ad_iostep).eq.0) then
+            if (nio.eq.0) write (6,*) 'const_ana'
+            call cpod_ana(uu,par,j,ngf,qndf)
+         endif
       enddo
       call copy(rhs,uu,nb)
 
