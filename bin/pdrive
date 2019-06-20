@@ -1,0 +1,85 @@
+#!/usr/bin/env julia
+
+using Plots
+using LaTeXStrings; pgfplots()
+
+function sweep!(err,res,ptrain,n)
+    for i in 1:ntrain
+        open("mu","w") do f
+            write(f,"$(ptrain[i])");
+        end
+        run(`nek poisson`);
+        res[i,:]=readdlm("res.log");
+        err[i,:]=readdlm("err.log");
+    end
+end
+
+base="/Users/kaneko/Developer/MOR/docs/ei/assets/";
+
+ntrain=51;
+ptrain=(0:ntrain-1).*0.1;
+
+rmax=1.e9;
+tol=1.e-7;
+
+ncount=1;
+ind=1;
+
+err=Array{Float64}(undef,ntrain,2);
+res=Array{Float64}(undef,ntrain,2);
+nit=10;
+
+mu=Array{Float64}(undef,nit);
+eres=Array{Float64}(undef,nit);
+eerr=Array{Float64}(undef,nit);
+
+for j in 1:nit
+    global ncount
+    global ind
+    global mu
+    global v
+
+    open("mu","w") do f
+        write(f,"$(ptrain[ind])");
+    end
+
+    tgt="snaps/snap0.f"*lpad("$ncount",5,"0");
+    run(`./mn poisson`);
+    run(`nek poisson`); mv("poisson0.f00001",tgt,force=true);
+
+    run(`./rep $ncount`);
+    run(`./mn prom`);
+    sweep!(err,res,ptrain,ntrain);
+
+    t=vcat(err[:,2],res[:,2]);
+    (ymax,_)=findmax(t); ymax=log(ymax)
+    (ymin,_)=findmin(t); ymin=log(ymin);
+    yl=[ymin,ymax+(ymax-ymin)*.2];
+    yl=exp.(yl);
+
+    scatter(err[:,1],err[:,2],label=L"||u-u_g||");
+    scatter!(res[:,1],res[:,2],yscale=:log10,ylim=yl,label=L"\Delta");
+
+    title!("Iteration $ncount");
+    xlabel!(L"\mu");
+    ylabel!("Error");
+
+    savefig(base*"err"*lpad("$ncount",2,"0")*".pdf");
+    ncount=ncount+1;
+
+    (eerr[j],ind)=findmax(err[:,2]);
+    (eres[j],ind)=findmax(res[:,2]);
+    mu[j]=ptrain[ind];
+end
+
+for i=1:nit
+    println("iteration: $i $(eerr[i]) $(mu[i])");
+end
+
+scatter(eerr,yscale=:log10,label=L"||u-u_g||");
+scatter!(eres,yscale=:log10,label=L"\Delta");
+title!("Maximum Error vs. Iteration Number");
+xlabel!("Iteration");
+ylabel!("Max Error");
+
+savefig(base*"iteration.pdf");
