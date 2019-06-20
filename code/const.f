@@ -441,6 +441,10 @@ c            call add2(uu,qns,nb)
             qndf = abs(qnf-fo)/abs(fo) 
 c            write(6,*)'f and old f',j,qnf,fo,qndf,ngf
 
+            if (mod(ad_step,ad_iostep).eq.0) then
+               if (nio.eq.0) write (6,*) 'const_ana'
+               call cpod_ana(uu,par,j,ngf,qndf)
+            endif
             ! reset chekbc 
             chekbc = 0
             
@@ -453,10 +457,6 @@ c            write(6,*)'f and old f',j,qnf,fo,qndf,ngf
 c     update solution
          enddo
          par = par*0.1
-         if (mod(ad_step,ad_iostep).eq.0) then
-            if (nio.eq.0) write (6,*) 'const_ana'
-            call cpod_ana(uu,par,j,ngf,qndf)
-         endif
       enddo
       call copy(rhs,uu,nb)
 
@@ -511,6 +511,10 @@ c-----------------------------------------------------------------------
          enddo
 
          call comp_qnf(uu,rhs,helm,invhelm,fk1,amax,amin,bpar,bflag)
+         
+         if (mod(ad_step,ad_iostep).eq.0) then
+            if (nio.eq.0) write(6,*)'# lnsrch:',counter
+         endif   
 
          if (alphak < 1e-4) then
             exit
