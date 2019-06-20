@@ -8,7 +8,7 @@ function sweep!(err,res,ptrain,n)
         open("mu","w") do f
             write(f,"$(ptrain[i])");
         end
-        run(`nek poisson`);
+        run(`nekmpi poisson 1`);
         res[i,:]=readdlm("res.log");
         err[i,:]=readdlm("err.log");
     end
@@ -45,7 +45,7 @@ for j in 1:nit
 
     tgt="snaps/snap0.f"*lpad("$ncount",5,"0");
     run(`./mn poisson`);
-    run(`nek poisson`); mv("poisson0.f00001",tgt,force=true);
+    run(`nekmpi poisson 1`); mv("poisson0.f00001",tgt,force=true);
 
     run(`./rep $ncount`);
     run(`./mn prom`);
