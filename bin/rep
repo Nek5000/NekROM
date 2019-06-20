@@ -1,0 +1,4 @@
+#!/bin/bash
+
+echo $1
+sed -i.bu "s/parameter (ls=[0-9]*)/parameter (ls=$1)/" LMOR
