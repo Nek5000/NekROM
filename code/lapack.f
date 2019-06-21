@@ -581,3 +581,387 @@ c-----------------------------------------------------------------------
 *
       end
 c-----------------------------------------------------------------------
+       SUBROUTINE dtrti2( UPLO, DIAG, N, A, LDA, INFO )
+*
+*  -- LAPACK computational routine (version 3.7.0) --
+*  -- LAPACK is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*     December 2016
+*
+*     .. Scalar Arguments ..
+      CHARACTER          DIAG, UPLO
+      INTEGER            INFO, LDA, N
+*     ..
+*     .. Array Arguments ..
+      DOUBLE PRECISION   A( lda, * )
+*     ..
+*
+*  =====================================================================
+*
+*     .. Parameters ..
+      DOUBLE PRECISION   ONE
+      parameter( one = 1.0d+0 )
+*     ..
+*     .. Local Scalars ..
+      LOGICAL            NOUNIT, UPPER
+      INTEGER            J
+      DOUBLE PRECISION   AJJ
+*     ..
+*     .. External Functions ..
+      LOGICAL            LSAME
+      EXTERNAL           lsame
+*     ..
+*     .. External Subroutines ..
+      EXTERNAL           dscal, dtrmv, xerbla
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC          max
+*     ..
+*     .. Executable Statements ..
+*
+*     Test the input parameters.
+*
+      info = 0
+      upper = lsame( uplo, 'U' )
+      nounit = lsame( diag, 'N' )
+      IF( .NOT.upper .AND. .NOT.lsame( uplo, 'L' ) ) THEN
+         info = -1
+      ELSE IF( .NOT.nounit .AND. .NOT.lsame( diag, 'U' ) ) THEN
+         info = -2
+      ELSE IF( n.LT.0 ) THEN
+         info = -3
+      ELSE IF( lda.LT.max( 1, n ) ) THEN
+         info = -5
+      END IF
+      IF( info.NE.0 ) THEN
+         CALL xerbla( 'DTRTI2', -info )
+         RETURN
+      END IF
+*
+      IF( upper ) THEN
+*
+*        Compute inverse of upper triangular matrix.
+*
+         DO 10 j = 1, n
+            IF( nounit ) THEN
+               a( j, j ) = one / a( j, j )
+               ajj = -a( j, j )
+            ELSE
+               ajj = -one
+            END IF
+*
+*           Compute elements 1:j-1 of j-th column.
+*
+            CALL dtrmv( 'Upper', 'No transpose', diag, j-1, a, lda,
+     $                  a( 1, j ), 1 )
+            CALL dscal( j-1, ajj, a( 1, j ), 1 )
+   10    CONTINUE
+      ELSE
+*
+*        Compute inverse of lower triangular matrix.
+*
+         DO 20 j = n, 1, -1
+            IF( nounit ) THEN
+               a( j, j ) = one / a( j, j )
+               ajj = -a( j, j )
+            ELSE
+               ajj = -one
+            END IF
+            IF( j.LT.n ) THEN
+*
+*              Compute elements j+1:n of j-th column.
+*
+               CALL dtrmv( 'Lower', 'No transpose', diag, n-j,
+     $                     a( j+1, j+1 ), lda, a( j+1, j ), 1 )
+               CALL dscal( n-j, ajj, a( j+1, j ), 1 )
+            END IF
+   20    CONTINUE
+      END IF
+*
+      RETURN
+*
+*     End of DTRTI2
+*
+      END
+*  =====================================================================
+      SUBROUTINE dtrtri( UPLO, DIAG, N, A, LDA, INFO )
+*
+*  -- LAPACK computational routine (version 3.7.0) --
+*  -- LAPACK is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*     December 2016
+*
+*     .. Scalar Arguments ..
+      CHARACTER          DIAG, UPLO
+      INTEGER            INFO, LDA, N
+*     ..
+*     .. Array Arguments ..
+      DOUBLE PRECISION   A( lda, * )
+*     ..
+*
+*  =====================================================================
+*
+*     .. Parameters ..
+      DOUBLE PRECISION   ONE, ZERO
+      parameter( one = 1.0d+0, zero = 0.0d+0 )
+*     ..
+*     .. Local Scalars ..
+      LOGICAL            NOUNIT, UPPER
+      INTEGER            J, JB, NB, NN
+*     ..
+*     .. External Functions ..
+      LOGICAL            LSAME
+      INTEGER            ILAENV
+      EXTERNAL           lsame, ilaenv
+*     ..
+*     .. External Subroutines ..
+      EXTERNAL           dtrmm, dtrsm, dtrti2, xerbla
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC          max, min
+*     ..
+*     .. Executable Statements ..
+*
+*     Test the input parameters.
+*
+      info = 0
+      upper = lsame( uplo, 'U' )
+      nounit = lsame( diag, 'N' )
+      IF( .NOT.upper .AND. .NOT.lsame( uplo, 'L' ) ) THEN
+         info = -1
+      ELSE IF( .NOT.nounit .AND. .NOT.lsame( diag, 'U' ) ) THEN
+         info = -2
+      ELSE IF( n.LT.0 ) THEN
+         info = -3
+      ELSE IF( lda.LT.max( 1, n ) ) THEN
+         info = -5
+      END IF
+      IF( info.NE.0 ) THEN
+         CALL xerbla( 'DTRTRI', -info )
+         RETURN
+      END IF
+*
+*     Quick return if possible
+*
+      IF( n.EQ.0 )
+     $   RETURN
+*
+*     Check for singularity if non-unit.
+*
+      IF( nounit ) THEN
+         DO 10 info = 1, n
+            IF( a( info, info ).EQ.zero )
+     $         RETURN
+   10    CONTINUE
+         info = 0
+      END IF
+*
+*     Determine the block size for this environment.
+*
+      nb = ilaenv( 1, 'DTRTRI', uplo // diag, n, -1, -1, -1 )
+      IF( nb.LE.1 .OR. nb.GE.n ) THEN
+*
+*        Use unblocked code
+*
+         CALL dtrti2( uplo, diag, n, a, lda, info )
+      ELSE
+*
+*        Use blocked code
+*
+         IF( upper ) THEN
+*
+*           Compute inverse of upper triangular matrix
+*
+            DO 20 j = 1, n, nb
+               jb = min( nb, n-j+1 )
+*
+*              Compute rows 1:j-1 of current block column
+*
+               CALL dtrmm( 'Left', 'Upper', 'No transpose', diag, j-1,
+     $                     jb, one, a, lda, a( 1, j ), lda )
+               CALL dtrsm( 'Right', 'Upper', 'No transpose', diag, j-1,
+     $                     jb, -one, a( j, j ), lda, a( 1, j ), lda )
+*
+*              Compute inverse of current diagonal block
+*
+               CALL dtrti2( 'Upper', diag, jb, a( j, j ), lda, info )
+   20       CONTINUE
+         ELSE
+*
+*           Compute inverse of lower triangular matrix
+*
+            nn = ( ( n-1 ) / nb )*nb + 1
+            DO 30 j = nn, 1, -nb
+               jb = min( nb, n-j+1 )
+               IF( j+jb.LE.n ) THEN
+*
+*                 Compute rows j+jb:n of current block column
+*
+                  CALL dtrmm( 'Left', 'Lower', 'No transpose', diag,
+     $                        n-j-jb+1, jb, one, a( j+jb, j+jb ), lda,
+     $                        a( j+jb, j ), lda )
+                  CALL dtrsm( 'Right', 'Lower', 'No transpose', diag,
+     $                        n-j-jb+1, jb, -one, a( j, j ), lda,
+     $                        a( j+jb, j ), lda )
+               END IF
+*
+*              Compute inverse of current diagonal block
+*
+               CALL dtrti2( 'Lower', diag, jb, a( j, j ), lda, info )
+   30       CONTINUE
+         END IF
+      END IF
+*
+      RETURN
+*
+*     End of DTRTRI
+*
+      END
+*  =====================================================================
+      SUBROUTINE dgetri( N, A, LDA, IPIV, WORK, LWORK, INFO )
+*
+*  -- LAPACK computational routine (version 3.7.0) --
+*  -- LAPACK is a software package provided by Univ. of Tennessee,    --
+*  -- Univ. of California Berkeley, Univ. of Colorado Denver and NAG Ltd..--
+*     December 2016
+*
+*     .. Scalar Arguments ..
+      INTEGER            INFO, LDA, LWORK, N
+*     ..
+*     .. Array Arguments ..
+      INTEGER            IPIV( * )
+      DOUBLE PRECISION   A( lda, * ), WORK( * )
+*     ..
+*
+*  =====================================================================
+*
+*     .. Parameters ..
+      DOUBLE PRECISION   ZERO, ONE
+      parameter( zero = 0.0d+0, one = 1.0d+0 )
+*     ..
+*     .. Local Scalars ..
+      LOGICAL            LQUERY
+      INTEGER            I, IWS, J, JB, JJ, JP, LDWORK, LWKOPT, NB,
+     $                   nbmin, nn
+*     ..
+*     .. External Functions ..
+      INTEGER            ILAENV
+      EXTERNAL           ilaenv
+*     ..
+*     .. External Subroutines ..
+      EXTERNAL           dgemm, dgemv, dswap, dtrsm, dtrtri, xerbla
+*     ..
+*     .. Intrinsic Functions ..
+      INTRINSIC          max, min
+*     ..
+*     .. Executable Statements ..
+*
+*     Test the input parameters.
+*
+      info = 0
+      nb = ilaenv( 1, 'DGETRI', ' ', n, -1, -1, -1 )
+      lwkopt = n*nb
+      work( 1 ) = lwkopt
+      lquery = ( lwork.EQ.-1 )
+      IF( n.LT.0 ) THEN
+         info = -1
+      ELSE IF( lda.LT.max( 1, n ) ) THEN
+         info = -3
+      ELSE IF( lwork.LT.max( 1, n ) .AND. .NOT.lquery ) THEN
+         info = -6
+      END IF
+      IF( info.NE.0 ) THEN
+         CALL xerbla( 'DGETRI', -info )
+         RETURN
+      ELSE IF( lquery ) THEN
+         RETURN
+      END IF
+*
+*     Quick return if possible
+*
+      IF( n.EQ.0 )
+     $   RETURN
+*
+*     Form inv(U).  If INFO > 0 from DTRTRI, then U is singular,
+*     and the inverse is not computed.
+*
+      CALL dtrtri( 'Upper', 'Non-unit', n, a, lda, info )
+      IF( info.GT.0 )
+     $   RETURN
+*
+      nbmin = 2
+      ldwork = n
+      IF( nb.GT.1 .AND. nb.LT.n ) THEN
+         iws = max( ldwork*nb, 1 )
+         IF( lwork.LT.iws ) THEN
+            nb = lwork / ldwork
+            nbmin = max( 2, ilaenv( 2, 'DGETRI', ' ', n, -1, -1, -1 ) )
+         END IF
+      ELSE
+         iws = n
+      END IF
+*
+*     Solve the equation inv(A)*L = inv(U) for inv(A).
+*
+      IF( nb.LT.nbmin .OR. nb.GE.n ) THEN
+*
+*        Use unblocked code.
+*
+         DO 20 j = n, 1, -1
+*
+*           Copy current column of L to WORK and replace with zeros.
+*
+            DO 10 i = j + 1, n
+               work( i ) = a( i, j )
+               a( i, j ) = zero
+   10       CONTINUE
+*
+*           Compute current column of inv(A).
+*
+            IF( j.LT.n )
+     $         CALL dgemv( 'No transpose', n, n-j, -one, a( 1, j+1 ),
+     $                     lda, work( j+1 ), 1, one, a( 1, j ), 1 )
+   20    CONTINUE
+      ELSE
+*
+*        Use blocked code.
+*
+         nn = ( ( n-1 ) / nb )*nb + 1
+         DO 50 j = nn, 1, -nb
+            jb = min( nb, n-j+1 )
+*
+*           Copy current block column of L to WORK and replace with
+*           zeros.
+*
+            DO 40 jj = j, j + jb - 1
+               DO 30 i = jj + 1, n
+                  work( i+( jj-j )*ldwork ) = a( i, jj )
+                  a( i, jj ) = zero
+   30          CONTINUE
+   40       CONTINUE
+*
+*           Compute current block column of inv(A).
+*
+            IF( j+jb.LE.n )
+     $         CALL dgemm( 'No transpose', 'No transpose', n, jb,
+     $                     n-j-jb+1, -one, a( 1, j+jb ), lda,
+     $                     work( j+jb ), ldwork, one, a( 1, j ), lda )
+            CALL dtrsm( 'Right', 'Lower', 'No transpose', 'Unit', n, jb,
+     $                  one, work( j ), ldwork, a( 1, j ), lda )
+   50    CONTINUE
+      END IF
+*
+*     Apply column interchanges.
+*
+      DO 60 j = n - 1, 1, -1
+         jp = ipiv( j )
+         IF( jp.NE.j )
+     $      CALL dswap( n, a( 1, j ), 1, a( 1, jp ), 1 )
+   60 CONTINUE
+*
+      work( 1 ) = iws
+      RETURN
+*
+*     End of DGETRI
+*
+      END
