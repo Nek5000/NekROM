@@ -421,12 +421,37 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-c     subroutine invH_multiply(invh0,s,y,d)
+c     subroutine invH_multiply(invh0,sk,yk,d)
 
 c     include 'MOR'            
 
 c     real invh0(nb,nb)
-c     real s(nb),y(nb),d(nb)
+c     real sk(nb,nb),yk(nb,nb),qnd(nb),qnsol(nb)
+c     real qnrho(nb),qnalpha(nb),qnbeta(nb)
+c     real qnfact(nb)
+c     real work(nb)
+
+c     call copy(qnsol,d,nb)
+c     ! compute right product
+c     do i=nb,1,-1
+c        qnrho(i) = glsc2(yk(1,i),sk(1,i),nb)
+c        qnalpha(i) = glsc2(sk(1,i),qnsol,nb)/qnrho(i)
+c        call cmult(yk(1,i),qnalpha(i),nb)
+c        call sub2(qnsol,yk(1,i),nb)
+c     enddo
+
+c     ! compute center
+c     ONE = 1.
+c     ZERO= 0.
+c     call dgetrs('N',nb,1,invh0,lub,ipiv,qnsol,nb,info)
+
+c     ! compute left product
+c     do i=1,nb
+c        qnbeta(i) = glsc2(yk(1,i),qnsol,nb)/qnrho(i)
+c        qnfact(i) = (qnalpha(nb-i+1)-qnbeta(i))
+c        call cmult(sk(1,i),qnfact(i),nb)
+c        call add2(qnsol,sk(1,i),nb)
+c     enddo
 
 c     return
 c     end
