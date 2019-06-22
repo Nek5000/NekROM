@@ -276,15 +276,6 @@ c-----------------------------------------------------------------------
       call cmult(yy,1.0/ys,nb*nb)
 
       call add4(B(1,1),B(1,1),w3(1,1),yy(1,1),nb*nb)
-!      do ii=1,nb
-!         call cmult(w3(1,ii),-1.0/sBs,nb)
-!         call cmult(yy(1,ii),1.0/ys,nb)
-!      enddo
-!
-!      do ii=1,nb
-!         call add4(B(1,ii),B(1,ii),w3(1,ii)
-!     $            ,yy(1,ii),nb)
-!      enddo
 
       return
       end
