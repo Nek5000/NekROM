@@ -449,7 +449,7 @@ c           call solve(ww,invhelm,1,nb,nb,irv,icv)
 
 c           call exitt0
             if (mod(ad_step,ad_iostep).eq.0) then
-               if (nio.eq.0) write (6,*) 'const_ana'
+               if (nio.eq.0) write (6,*) 'lnconst_ana'
                call cpod_ana(uu,par,j,uHcount,ngf,qndf)
             endif
             ! reset chekbc 
