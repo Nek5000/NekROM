@@ -217,8 +217,12 @@ c     evaluate quasi-newton f
 
       ! 0.5*rhs'*inv(H)*rhs
       call copy(tmp5,rhs,nb)
-      call solve(tmp5,invhelm,1,nb,nb,irv,icv)
+      call dgetrs('N',nb,1,invhelm,lub,ipiv,tmp5,nb,info)
+c     call dgemv('N',nb,nb,ONE,invhelm,nb,rhs,1,ZERO,tmp5,1)
+c     call solve(tmp5,invhelm,1,nb,nb,irv,icv)
       term3 = 0.5 * glsc2(rhs,tmp5,nb)
+
+c     call dgemv('N',nb,nb,ONE,helm,nb,tmp5,1,ZERO,work,1)
 
       if (barr_func .eq. 1) then ! use logarithmetic as barrier function
 
@@ -373,9 +377,6 @@ c-----------------------------------------------------------------------
       integer uHcount
       real bctol
 
-
-c      if (nio.eq.0) write (6,*) 'inside BFGS'
-
       call copy(uu,u(1,1),nb)
 
       bctol = 1e-8
@@ -404,8 +405,10 @@ c        compute quasi-Newton step
 
             call copy(tmp(1,1),B_qn(1,1),nb*nb)
             call lu(tmp,nb,nb,irv,icv)
+c           call dgetrf(nb,nb,tmp,lub,ipiv,info)
             call copy(qns,qngradf,nb)
             call chsign(qns,nb)
+c           call dgetrs('N',nb,1,tmp,lub,ipiv,qns,nb,info)
             call solve(qns,tmp,1,nb,nb,irv,icv)
 
 c            call add2(uu,qns,nb)
@@ -433,17 +436,21 @@ c            call add2(uu,qns,nb)
                call Hessian_update(B_qn,qns,qny,nb)
             endif
 
+            ! compute H^{-1} norm of gradf
             call copy(ww,qngradf,nb)
-            call solve(ww,invhelm,1,nb,nb,irv,icv)
-
+c           call solve(ww,invhelm,1,nb,nb,irv,icv)
+            call dgetrs('N',nb,1,invhelm,lub,ipiv,ww,nb,info)
             ngf = glsc2(ww,qngradf,nb)
             ngf = sqrt(ngf)
+            write(6,*)'ngf',ngf,'qndf',qndf
 
             fo = qnf      ! store old qn-f
             call comp_qnf(uu,rhs,helm,invhelm,qnf,amax,amin,par,bflag) ! update qn-f
             qndf = abs(qnf-fo)/abs(fo) 
-c            write(6,*)'f and old f',j,qnf,fo,qndf,ngf
 
+            write(6,*)'fo',fo,'qnf',qnf
+            write(6,*)'ngf',ngf,'qndf',qndf
+            call exitt0
             if (mod(ad_step,ad_iostep).eq.0) then
                if (nio.eq.0) write (6,*) 'const_ana'
                call cpod_ana(uu,par,j,uHcount,ngf,qndf)
@@ -457,13 +464,11 @@ c            write(6,*)'f and old f',j,qnf,fo,qndf,ngf
                exit
             endif
 
-c     update solution
+      ! update solution
          enddo
          par = par*0.1
       enddo
       call copy(rhs,uu,nb)
-
-c      if (nio.eq.0) write (6,*) 'exitting BFGS'
 
       return
       end
@@ -485,6 +490,7 @@ c-----------------------------------------------------------------------
       integer chekbc, counter
       real sigmab, facb, alphak
       real bctol, bpar
+      integer bflag
 
       alphak = 1.0
       chekbc = 1
