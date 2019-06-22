@@ -71,8 +71,6 @@ c-----------------------------------------------------------------------
       ttime=dnekclock()
       if (isolve.eq.0) then ! standard matrix inversion
          if (.not.iffasth.or.ad_step.le.3) then
-c           call dgetrf(nb,nb,fluv,lub,ipiv,info)
-c           call dgetrs('N',nb,1,fluv,lub,ipiv,rhs(1),nb,info)
             call dgetrs('N',nb,1,fluv,lub,ipiv,rhs(1),nb,info)
          else
             eps=.20
@@ -82,9 +80,8 @@ c           call dgetrs('N',nb,1,fluv,lub,ipiv,rhs(1),nb,info)
             if (rhs(i).lt.umin(i)) rhs(i)=umin(i)+(rhs(i)-umin(i))*damp
             enddo
          endif
-      else if (isolve.eq.1) then ! constrained solve
-         call BFGS_freeze(rhs(1),helmu,invhelmu,umax,umin,udis,1e-3,4) 
-c        call BFGS(rhs(1),helmu,invhelmu,umax,umin,udis,1e-3,4) 
+      else if (isolve.eq.1.OR.isolve.eq.2) then ! constrained solve
+         call BFGS(rhs(1),helmu,invhelmu,umax,umin,udis,1e-3,4) 
       else
          call exitti('incorrect isolve specified...$',isolve)
       endif
@@ -170,6 +167,7 @@ c     Matrices and vectors for advance
 
       common /nekmpi/ nidd,npp,nekcomm,nekgroup,nekreal
 
+
       if (ad_step.eq.1) then
          step_time = 0.
       endif
@@ -199,9 +197,8 @@ c     Matrices and vectors for advance
 
       if (isolve.eq.0) then ! standard matrix inversion
          call dgetrs('N',nb,1,flut,lub,ipiv,rhs(1),nb,info)
-      else if (isolve.eq.1) then ! constrained solve
-         call BFGS_freeze(rhs(1),helmt,invhelmt,tmax,tmin,tdis,1e-3,4) 
-c        call BFGS(rhs(1),helmt,invhelmt,tmax,tmin,tdis,1e-3,4) 
+      else if (isolve.eq.1.OR.isolve.eq.2) then ! constrained solve
+         call BFGS(rhs(1),helmt,invhelmt,tmax,tmin,tdis,1e-3,4) 
       else
          call exitti('incorrect isolve specified...$',isolve)
       endif
