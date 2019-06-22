@@ -404,12 +404,12 @@ c        compute quasi-Newton step
          do j=1,100
 
             call copy(tmp(1,1),B_qn(1,1),nb*nb)
-            call lu(tmp,nb,nb,irv,icv)
-c           call dgetrf(nb,nb,tmp,lub,ipiv,info)
+c           call lu(tmp,nb,nb,irv,icv)
+            call dgetrf(nb,nb,tmp,lub,ipiv,info)
             call copy(qns,qngradf,nb)
             call chsign(qns,nb)
-c           call dgetrs('N',nb,1,tmp,lub,ipiv,qns,nb,info)
-            call solve(qns,tmp,1,nb,nb,irv,icv)
+            call dgetrs('N',nb,1,tmp,lub,ipiv,qns,nb,info)
+c           call solve(qns,tmp,1,nb,nb,irv,icv)
 
 c            call add2(uu,qns,nb)
             call backtrackr(uu,qns,rhs,helm,invhelm,1e-2,0.5,alphak,amax,
@@ -447,9 +447,7 @@ c           call solve(ww,invhelm,1,nb,nb,irv,icv)
             call comp_qnf(uu,rhs,helm,invhelm,qnf,amax,amin,par,bflag) ! update qn-f
             qndf = abs(qnf-fo)/abs(fo) 
 
-            write(6,*)'fo',fo,'qnf',qnf
-            write(6,*)'ngf',ngf,'qndf',qndf
-            call exitt0
+c           call exitt0
             if (mod(ad_step,ad_iostep).eq.0) then
                if (nio.eq.0) write (6,*) 'const_ana'
                call cpod_ana(uu,par,j,uHcount,ngf,qndf)
