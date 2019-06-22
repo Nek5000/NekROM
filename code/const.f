@@ -442,7 +442,6 @@ c           call solve(ww,invhelm,1,nb,nb,irv,icv)
             call dgetrs('N',nb,1,invhelm,lub,ipiv,ww,nb,info)
             ngf = glsc2(ww,qngradf,nb)
             ngf = sqrt(ngf)
-            write(6,*)'ngf',ngf,'qndf',qndf
 
             fo = qnf      ! store old qn-f
             call comp_qnf(uu,rhs,helm,invhelm,qnf,amax,amin,par,bflag) ! update qn-f
