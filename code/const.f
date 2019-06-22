@@ -251,13 +251,11 @@ c-----------------------------------------------------------------------
       subroutine Hessian_update(B,s,y,nb)
 
       real B(nb,nb)
-      real s(nb), y(nb)
+      real s(nb),y(nb)
       real w1(nb,nb),w2(nb,nb),w3(nb,nb)
       real w4(nb),w5(nb),w6(nb,nb),w7(nb,nb)
       real yy(nb,nb),ys,sBs
       
-c      if (nio.eq.0) write(6,*) 'inside Hessian_update'
-
       ! s_k * s_k^T               
       call mxm(s,nb,s,1,w1,nb)
       ! s_k * s_k^T * B_k
@@ -357,7 +355,7 @@ c-----------------------------------------------------------------------
       real Jfks
       real sigmab,facb,alphak
       real bctol,bpar
-      integer chekbc, counter
+      integer chekbc,counter
       integer bflag
 
       alphak = 1.0
@@ -389,7 +387,6 @@ c-----------------------------------------------------------------------
 
          call comp_qnf(uu,rhs,helm,invhelm,fk1,amax,amin,bpar,bflag)
          
-
          if (alphak < 1e-4) then
             if (mod(ad_step,ad_iostep).eq.0) then
                if (nio.eq.0) write(6,*)
