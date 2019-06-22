@@ -111,6 +111,119 @@ c        compute quasi-Newton step
       return
       end
 c-----------------------------------------------------------------------
+      subroutine BFGS_new(rhs,helm,invhelm,amax,amin,adis,bpar,bstep)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      real B_qn(nb,nb),helm(nb,nb),invhelm(nb,nb)
+      real tmp(nb,nb)
+      real qgo(nb),qngradf(nb),ngf
+      real fo,qnf,qndf
+      real ww(nb),pert
+      real uu(nb),rhs(nb)
+      real amax(nb),amin(nb), adis(nb)
+      real bpar,par
+      real alphak
+
+      ! parameter for barrier function
+      integer par_step,jmax,bflag,bstep
+      integer chekbc ! flag for checking boundary
+      integer uHcount
+      real bctol
+
+      call copy(uu,u(1,1),nb)
+
+      bctol = 1e-8
+      jmax = 0
+
+      bflag = 1 
+      par = bpar 
+      par_step = bstep 
+   
+      ! BFGS method with barrier function starts
+      do k=1,par_step
+
+         chekbc = 0
+         uHcount = 0
+
+c        use helm from BDF3/EXT3 as intial approximation
+         call copy(B_qn(1,1),helm(1,1),nb*nb)
+
+         call comp_qnf(uu,rhs,helm,invhelm,qnf,amax,amin,par,bflag)
+         call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par,bflag)
+
+c        compute quasi-Newton step
+         do j=1,nb
+
+            call copy(tmp(1,1),B_qn(1,1),nb*nb)
+            call dgetrf(nb,nb,tmp,lub,ipiv,info)
+            call copy(qns,qngradf,nb)
+            call chsign(qns,nb)
+            call dgetrs('N',nb,1,tmp,lub,ipiv,qns,nb,info)
+
+            if (isolve.eq.1) then
+               call backtrackr(uu,qns,rhs,helm,invhelm,1e-2,0.5,alphak,amax,
+     $                     amin,bctol,bflag,par)
+            elseif (isolve.eq.2) then      
+               call add2(uu,qns,nb)
+            endif
+
+            ! check the boundary 
+            do ii=1,nb
+               if ((uu(ii)-amax(ii)).ge.bctol) then
+                  chekbc = 1
+                  uu(ii) = amax(ii) - 0.1*adis(ii)
+               elseif ((amin(ii)-uu(ii)).ge.bctol) then
+                  chekbc = 1
+                  uu(ii) = amin(ii) + 0.1*adis(ii)
+               endif
+            enddo
+
+            call copy(qgo,qngradf,nb) ! store old qn-gradf
+            call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par,bflag) ! update qn-gradf
+            call sub3(qny,qngradf,qgo,nb) 
+
+            ! update approximate Hessian by two rank-one update if chekbc = 0
+            if (chekbc .ne. 1) then
+               uHcount = uHcount + 1
+               call Hessian_update(B_qn,qns,qny,nb)
+            endif
+
+            ! compute H^{-1} norm of gradf
+            call copy(ww,qngradf,nb)
+            call dgetrs('N',nb,1,invhelm,lub,ipiv,ww,nb,info)
+            ngf = glsc2(ww,qngradf,nb)
+            ngf = sqrt(ngf)
+
+            fo = qnf      ! store old qn-f
+            call comp_qnf(uu,rhs,helm,invhelm,qnf,amax,amin,par,bflag) ! update qn-f
+            qndf = abs(qnf-fo)/abs(fo) 
+
+            if (mod(ad_step,ad_iostep).eq.0) then
+               if (nio.eq.0) write (6,*) 'lnconst_ana'
+               call cpod_ana(uu,par,j,uHcount,ngf,qndf)
+            endif
+
+            ! reset chekbc 
+            chekbc = 0
+            
+            jmax = max(j,jmax)
+
+            if (ngf .lt. 1e-4 .OR. qndf .lt. 1e-6  ) then 
+               exit
+            endif
+
+      ! update solution
+         enddo
+         par = par*0.1
+      enddo
+      call copy(rhs,uu,nb)
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine comp_qngradf(uu,rhs,helm,s,amax,amin,bpar,barr_func)
       
       include 'SIZE'
@@ -430,10 +543,11 @@ c     real sk(nb,nb),yk(nb,nb),qnd(nb),qnsol(nb)
 c     real qnrho(nb),qnalpha(nb),qnbeta(nb)
 c     real qnfact(nb)
 c     real work(nb)
+c     integer qnstep
 
 c     call copy(qnsol,d,nb)
 c     ! compute right product
-c     do i=nb,1,-1
+c     do i=qnstep,1,-1
 c        qnrho(i) = glsc2(yk(1,i),sk(1,i),nb)
 c        qnalpha(i) = glsc2(sk(1,i),qnsol,nb)/qnrho(i)
 c        call cmult(yk(1,i),qnalpha(i),nb)
@@ -446,7 +560,7 @@ c     ZERO= 0.
 c     call dgetrs('N',nb,1,invh0,lub,ipiv,qnsol,nb,info)
 
 c     ! compute left product
-c     do i=1,nb
+c     do i=1,qnstep
 c        qnbeta(i) = glsc2(yk(1,i),qnsol,nb)/qnrho(i)
 c        qnfact(i) = (qnalpha(nb-i+1)-qnbeta(i))
 c        call cmult(sk(1,i),qnfact(i),nb)
