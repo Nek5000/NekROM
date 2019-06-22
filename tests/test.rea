@@ -191,14 +191,14 @@
    0.00000     p187
    0.00000     p188
    0.00000     p189
-   0.00000     p190 MOR: != 0 -> error estimate
+   0.00000     p190
    0.00000     p191 MOR: != 0 -> fast c-evaluation
-   0.00000     p192 MOR: != 0 -> forcing  (set fx,fy,fz with mass)
-   0.00000     p193 MOR: != 0 -> source   (set qq with mass)
-   0.00000     p194 MOR: != 0 -> buoyancy (set gx,gy,gz with mass)
-   0.00000     p195
+   0.00000     p192
+   0.00000     p193 MOR: != 0 -> forcing  (set fx,fy,fz with mass)
+   0.00000     p194 MOR: != 0 -> source   (set qq with mass)
+   0.00000     p195 MOR: != 0 -> buoyancy (set gx,gy,gz with mass)
    0.00000     p196 MOR: != 0 -> artificial viscosity
-   0.00000     p197
+   0.00000     p197 MOR: != 0 -> disable 0th mode subtraction
    0.00000     p198
    0.00000     p199
    0.00000     p200
