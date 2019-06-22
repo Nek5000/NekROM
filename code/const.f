@@ -361,18 +361,18 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
-      real B_qn(nb,nb), helm(nb,nb), invhelm(nb,nb)
+      real B_qn(nb,nb),helm(nb,nb),invhelm(nb,nb)
       real tmp(nb,nb)
-      real qgo(nb), qngradf(nb), ngf
-      real fo, qnf, qndf
-      real ww(nb), pert
-      real uu(nb), rhs(nb)
-      real amax(nb), amin(nb), adis(nb)
-      real bpar, par
+      real qgo(nb),qngradf(nb),ngf
+      real fo,qnf,qndf
+      real ww(nb),pert
+      real uu(nb),rhs(nb)
+      real amax(nb),amin(nb), adis(nb)
+      real bpar,par
       real alphak
 
       ! parameter for barrier function
-      integer par_step, jmax, bflag, bstep
+      integer par_step,jmax,bflag,bstep
       integer chekbc ! flag for checking boundary
       integer uHcount
       real bctol
@@ -386,8 +386,6 @@ c-----------------------------------------------------------------------
       par = bpar 
       par_step = bstep 
    
-      ! invhelm for computing qnf
-
       ! BFGS method with barrier function starts
       do k=1,par_step
 
@@ -404,12 +402,10 @@ c        compute quasi-Newton step
          do j=1,100
 
             call copy(tmp(1,1),B_qn(1,1),nb*nb)
-c           call lu(tmp,nb,nb,irv,icv)
             call dgetrf(nb,nb,tmp,lub,ipiv,info)
             call copy(qns,qngradf,nb)
             call chsign(qns,nb)
             call dgetrs('N',nb,1,tmp,lub,ipiv,qns,nb,info)
-c           call solve(qns,tmp,1,nb,nb,irv,icv)
 
 c            call add2(uu,qns,nb)
             call backtrackr(uu,qns,rhs,helm,invhelm,1e-2,0.5,alphak,amax,
@@ -438,7 +434,6 @@ c            call add2(uu,qns,nb)
 
             ! compute H^{-1} norm of gradf
             call copy(ww,qngradf,nb)
-c           call solve(ww,invhelm,1,nb,nb,irv,icv)
             call dgetrs('N',nb,1,invhelm,lub,ipiv,ww,nb,info)
             ngf = glsc2(ww,qngradf,nb)
             ngf = sqrt(ngf)
@@ -447,11 +442,11 @@ c           call solve(ww,invhelm,1,nb,nb,irv,icv)
             call comp_qnf(uu,rhs,helm,invhelm,qnf,amax,amin,par,bflag) ! update qn-f
             qndf = abs(qnf-fo)/abs(fo) 
 
-c           call exitt0
             if (mod(ad_step,ad_iostep).eq.0) then
                if (nio.eq.0) write (6,*) 'lnconst_ana'
                call cpod_ana(uu,par,j,uHcount,ngf,qndf)
             endif
+
             ! reset chekbc 
             chekbc = 0
             
