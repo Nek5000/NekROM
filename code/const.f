@@ -348,16 +348,16 @@ c-----------------------------------------------------------------------
       include 'MOR'
       include 'TOTAL'
 
-      real rhs(nb), s(nb)
-      real uuo(nb), uu(nb)
-      real helm(nb,nb), invhelm(nb,nb)
+      real rhs(nb),s(nb)
+      real uuo(nb),uu(nb)
+      real helm(nb,nb),invhelm(nb,nb)
       real Jfk(nb)
-      real amax(nb), amin(nb)
-      real fk, fk1
+      real amax(nb),amin(nb)
+      real fk,fk1
       real Jfks
+      real sigmab,facb,alphak
+      real bctol,bpar
       integer chekbc, counter
-      real sigmab, facb, alphak
-      real bctol, bpar
       integer bflag
 
       alphak = 1.0
@@ -389,11 +389,12 @@ c-----------------------------------------------------------------------
 
          call comp_qnf(uu,rhs,helm,invhelm,fk1,amax,amin,bpar,bflag)
          
-         if (mod(ad_step,ad_iostep).eq.0) then
-            if (nio.eq.0) write(6,*)'# lnsrch:',counter
-         endif   
 
          if (alphak < 1e-4) then
+            if (mod(ad_step,ad_iostep).eq.0) then
+               if (nio.eq.0) write(6,*)
+     $         '# lnsrch:',counter,'alpha',alphak
+            endif
             exit
          endif
       enddo
