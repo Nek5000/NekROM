@@ -104,12 +104,12 @@ c     parameters and common blocks for MOR
       common /morlu/ fluv(lub,lub),flut(lub,lub)
       common /morilu/ irv(lub),icv(lub),irt(lub),ict(lub),ipiv(lub)
 
-      real helmu,invhelmu,helmt,invhelmt,qny, qns
-      common /moropt/ opt_rhs(nb), helmu(nb,nb), invhelmu(nb,nb),
-     $               helmt(nb,nb), invhelmt(nb,nb) 
-      common /morhyperpar/ umin(lub), umax(lub), udis(lub),
-     $                     tmin(ltb), tmax(ltb), tdis(ltb)
-      common /morqn/ qns(nb), qny(nb)
+      real helmu,invhelmu,helmt,invhelmt,qny,qns
+      common /moropt/ helmu(nb,nb),invhelmu(nb,nb),
+     $               helmt(nb,nb),invhelmt(nb,nb) 
+      common /morhyperpar/ umin(lub),umax(lub),udis(lub),
+     $                     tmin(ltb),tmax(ltb),tdis(ltb)
+      common /morqn/ qns(nb),qny(nb)
 
       ! Error Indicator
 
