@@ -126,6 +126,7 @@ c-----------------------------------------------------------------------
       real amax(nb),amin(nb), adis(nb)
       real bpar,par
       real alphak
+      real sk(nb,nb),yk(nb,nb)
 
       ! parameter for barrier function
       integer par_step,jmax,bflag,bstep
@@ -157,11 +158,11 @@ c        use helm from BDF3/EXT3 as intial approximation
 c        compute quasi-Newton step
          do j=1,nb
 
-            call copy(tmp(1,1),B_qn(1,1),nb*nb)
-            call dgetrf(nb,nb,tmp,lub,ipiv,info)
-            call copy(qns,qngradf,nb)
+            call invH_multiply(qns,invhelm,sk,yk,qngradf)
             call chsign(qns,nb)
-            call dgetrs('N',nb,1,tmp,lub,ipiv,qns,nb,info)
+
+            ! store qns
+            call copy(sk(1,j),qns,nb)
 
             if (isolve.eq.1) then
                call backtrackr(uu,qns,rhs,helm,invhelm,1e-2,0.5,alphak,amax,
@@ -184,6 +185,9 @@ c        compute quasi-Newton step
             call copy(qgo,qngradf,nb) ! store old qn-gradf
             call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par,bflag) ! update qn-gradf
             call sub3(qny,qngradf,qgo,nb) 
+
+            ! store qny 
+            call copy(yk(1,j),qny,nb)
 
             ! update approximate Hessian by two rank-one update if chekbc = 0
             if (chekbc .ne. 1) then
@@ -534,38 +538,40 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-c     subroutine invH_multiply(invh0,sk,yk,d)
+      subroutine invH_multiply(qnsol,invh0,sk,yk,qnd)
 
-c     include 'MOR'            
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'            
 
-c     real invh0(nb,nb)
-c     real sk(nb,nb),yk(nb,nb),qnd(nb),qnsol(nb)
-c     real qnrho(nb),qnalpha(nb),qnbeta(nb)
-c     real qnfact(nb)
-c     real work(nb)
-c     integer qnstep
+      real invh0(nb,nb)
+      real sk(nb,nb),yk(nb,nb),qnd(nb),qnsol(nb)
+      real qnrho(nb),qnalpha(nb),qnbeta(nb)
+      real qnfact(nb)
+      real work(nb)
+      integer qnstep
 
-c     call copy(qnsol,d,nb)
-c     ! compute right product
-c     do i=qnstep,1,-1
-c        qnrho(i) = glsc2(yk(1,i),sk(1,i),nb)
-c        qnalpha(i) = glsc2(sk(1,i),qnsol,nb)/qnrho(i)
-c        call cmult(yk(1,i),qnalpha(i),nb)
-c        call sub2(qnsol,yk(1,i),nb)
-c     enddo
+      call copy(qnsol,qnd,nb)
+      ! compute right product
+      do i=qnstep,1,-1
+         qnrho(i) = glsc2(yk(1,i),sk(1,i),nb)
+         qnalpha(i) = glsc2(sk(1,i),qnsol,nb)/qnrho(i)
+         call cmult(yk(1,i),qnalpha(i),nb)
+         call sub2(qnsol,yk(1,i),nb)
+      enddo
 
-c     ! compute center
-c     ONE = 1.
-c     ZERO= 0.
-c     call dgetrs('N',nb,1,invh0,lub,ipiv,qnsol,nb,info)
+      ! compute center
+      ONE = 1.
+      ZERO= 0.
+      call dgetrs('N',nb,1,invh0,lub,ipiv,qnsol,nb,info)
 
-c     ! compute left product
-c     do i=1,qnstep
-c        qnbeta(i) = glsc2(yk(1,i),qnsol,nb)/qnrho(i)
-c        qnfact(i) = (qnalpha(nb-i+1)-qnbeta(i))
-c        call cmult(sk(1,i),qnfact(i),nb)
-c        call add2(qnsol,sk(1,i),nb)
-c     enddo
+      ! compute left product
+      do i=1,qnstep
+         qnbeta(i) = glsc2(yk(1,i),qnsol,nb)/qnrho(i)
+         qnfact(i) = (qnalpha(nb-i+1)-qnbeta(i))
+         call cmult(sk(1,i),qnfact(i),nb)
+         call add2(qnsol,sk(1,i),nb)
+      enddo
 
-c     return
-c     end
+      return
+      end
