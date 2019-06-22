@@ -50,9 +50,12 @@ c        compute quasi-Newton step
             call chsign(qns,nb)
             call dgetrs('N',nb,1,tmp,lub,ipiv,qns,nb,info)
 
-c            call add2(uu,qns,nb)
-            call backtrackr(uu,qns,rhs,helm,invhelm,1e-2,0.5,alphak,amax,
+            if (isolve.eq.1) then
+               call backtrackr(uu,qns,rhs,helm,invhelm,1e-2,0.5,alphak,amax,
      $                     amin,bctol,bflag,par)
+            elseif (isolve.eq.2) then      
+               call add2(uu,qns,nb)
+            endif
 
             ! check the boundary 
             do ii=1,nb
@@ -288,8 +291,6 @@ c-----------------------------------------------------------------------
       real w3(nb,nb), w4(nb,nb), w5(nb,nb)
       real ss(nb,nb), ys, sBs
       real sds
-      
-c      if (nio.eq.0) write(6,*) 'inside invHessian_update'
 
       ! y_k * s_k^T
       call mxm(y,nb,s,1,w1,nb)
@@ -362,7 +363,8 @@ c-----------------------------------------------------------------------
       call comp_qnf(uu,rhs,helm,invhelm,fk1,amax,amin,bpar,bflag) ! get new f
       Jfks = vlsc2(Jfk,s,nb)
 
-      do while ((fk1 > fk + sigmab * alphak * Jfks) .OR. (chekbc.eq.1))
+c     do while ((fk1 > fk + sigmab * alphak * Jfks) .OR. (chekbc.eq.1))
+      do while ((chekbc.neq.0) .and. (fk1 .gt. fk + sigmab * alphak * Jfks))
          counter = counter + 1
          alphak = alphak * facb
          call add3s2(uu,uuo,s,1.0,alphak,nb)
@@ -418,3 +420,13 @@ c-----------------------------------------------------------------------
       
       return
       end
+c-----------------------------------------------------------------------
+c     subroutine invH_multiply(invh0,s,y,d)
+
+c     include 'MOR'            
+
+c     real invh0(nb,nb)
+c     real s(nb),y(nb),d(nb)
+
+c     return
+c     end
