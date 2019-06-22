@@ -363,8 +363,8 @@ c-----------------------------------------------------------------------
       call comp_qnf(uu,rhs,helm,invhelm,fk1,amax,amin,bpar,bflag) ! get new f
       Jfks = vlsc2(Jfk,s,nb)
 
-c     do while ((fk1 > fk + sigmab * alphak * Jfks) .OR. (chekbc.eq.1))
-      do while ((chekbc.neq.0) .and. (fk1 .gt. fk + sigmab * alphak * Jfks))
+      do while ((fk1 > fk + sigmab * alphak * Jfks) .OR. (chekbc.eq.1))
+c     do while ((chekbc.neq.0) .and. (fk1 .gt. fk + sigmab * alphak * Jfks))
          counter = counter + 1
          alphak = alphak * facb
          call add3s2(uu,uuo,s,1.0,alphak,nb)
