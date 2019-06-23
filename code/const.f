@@ -51,48 +51,32 @@ c        compute quasi-Newton step
             call dgetrs('N',nb,1,tmp,lub,ipiv,qns,nb,info)
 
             if (isolve.eq.1) then
-               call backtrackr(uu,qns,rhs,helm,invhelm,1e-2,0.5,alphak,
-     $                     amax,amin,bctol,bflag,par,chekbc)
-               ! check the boundary 
-               do ii=1,nb
-                  if ((uu(ii)-amax(ii)).ge.bctol) then
-                     chekbc = 1
-                     uu(ii) = amax(ii) - 0.1*adis(ii)
-                  elseif ((amin(ii)-uu(ii)).ge.bctol) then
-                     chekbc = 1
-                     uu(ii) = amin(ii) + 0.1*adis(ii)
-                  endif
-               enddo
-               call copy(qgo,qngradf,nb) ! store old qn-gradf
-               call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,
-     $                     par,bflag) ! update qn-gradf
-               call sub3(qny,qngradf,qgo,nb) 
-               ! update approximate Hessian by two rank-one update if chekbc = 0
-               if (chekbc .ne. 1) then
-                  uHcount = uHcount + 1
-                  call Hessian_update(B_qn,qns,qny,nb)
-               endif
+               call backtrackr(uu,qns,rhs,helm,invhelm,1e-2,0.5,
+     $                     alphak,amax,amin,bctol,bflag,par,chekbc)
             elseif (isolve.eq.2) then      
                call add2(uu,qns,nb)
-               ! check the boundary 
-               do ii=1,nb
-                  if ((uu(ii)-amax(ii)).ge.bctol) then
-                     chekbc = 1
-                     uu(ii) = amax(ii) - 0.1*adis(ii)
-                  elseif ((amin(ii)-uu(ii)).ge.bctol) then
-                     chekbc = 1
-                     uu(ii) = amin(ii) + 0.1*adis(ii)
-                  endif
-               enddo
-               call copy(qgo,qngradf,nb) ! store old qn-gradf
-               call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,
-     $                     par,bflag) ! update qn-gradf
-               call sub3(qny,qngradf,qgo,nb) 
-               ! update approximate Hessian by two rank-one update if chekbc = 0
-               if (chekbc .ne. 1) then
-                  uHcount = uHcount + 1
-                  call Hessian_update(B_qn,qns,qny,nb)
+            endif
+
+            ! check the boundary 
+            do ii=1,nb
+               if ((uu(ii)-amax(ii)).ge.bctol) then
+                  chekbc = 1
+                  uu(ii) = amax(ii) - 0.1*adis(ii)
+               elseif ((amin(ii)-uu(ii)).ge.bctol) then
+                  chekbc = 1
+                  uu(ii) = amin(ii) + 0.1*adis(ii)
                endif
+            enddo
+
+            call copy(qgo,qngradf,nb) ! store old qn-gradf
+            call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,
+     $                  par,bflag) ! update qn-gradf
+            call sub3(qny,qngradf,qgo,nb) 
+
+            ! update approximate Hessian by two rank-one update if chekbc = 0
+            if (chekbc .ne. 1) then
+               uHcount = uHcount + 1
+               call Hessian_update(B_qn,qns,qny,nb)
             endif
 
             ! compute H^{-1} norm of gradf
@@ -271,9 +255,6 @@ c-----------------------------------------------------------------------
       real bpar
       integer barr_func
 
-
-!      if (nio.eq.0) write (6,*) 'inside com_qngradf'
-
       if (barr_func .eq. 1) then ! use logarithmic as barrier function
 
          call sub3(tmp1,uu,amax,nb)  
@@ -295,7 +276,6 @@ c-----------------------------------------------------------------------
          call dgemv('N',nb,nb,ONE,helm,nb,uu,1,ZERO,tmp4,1)
          call add2(s,tmp4,nb)
 
-
       else ! use inverse function as barrier function
 
          call sub3(tmp1,uu,amax,nb)  
@@ -315,8 +295,6 @@ c-----------------------------------------------------------------------
          call add2(s,tmp4,nb)
 
       endif
-
-!      if (nio.eq.0) write (6,*) 'exiting com_qngradf'
 
       return 
       end
@@ -340,9 +318,8 @@ c-----------------------------------------------------------------------
 
       barr_func = 1
 
-!      if (nio.eq.0) write (6,*) 'inside com_qnf'
+      ! evaluate quasi-newton f
 
-c     evaluate quasi-newton f
       ONE = 1.
       ZERO= 0.
 
@@ -354,11 +331,7 @@ c     evaluate quasi-newton f
       ! 0.5*rhs'*inv(H)*rhs
       call copy(tmp5,rhs,nb)
       call dgetrs('N',nb,1,invhelm,lub,ipiv,tmp5,nb,info)
-c     call dgemv('N',nb,nb,ONE,invhelm,nb,rhs,1,ZERO,tmp5,1)
-c     call solve(tmp5,invhelm,1,nb,nb,irv,icv)
       term3 = 0.5 * glsc2(rhs,tmp5,nb)
-
-c     call dgemv('N',nb,nb,ONE,helm,nb,tmp5,1,ZERO,work,1)
 
       if (barr_func .eq. 1) then ! use logarithmetic as barrier function
 
