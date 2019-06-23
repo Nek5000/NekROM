@@ -28,6 +28,9 @@
       bflag = 1 
       par = bpar 
       par_step = bstep 
+
+      ! use helm from BDF3/EXT3 as intial approximation
+      call copy(B_qn(1,1),helm(1,1),nb*nb)
    
       ! BFGS method with barrier function starts
       do k=1,par_step
@@ -35,8 +38,6 @@
          chekbc = 0
          uHcount = 0
 
-c        use helm from BDF3/EXT3 as intial approximation
-         call copy(B_qn(1,1),helm(1,1),nb*nb)
 
          call comp_qnf(uu,rhs,helm,invhelm,qnf,amax,amin,par,bflag)
          call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par,bflag)
