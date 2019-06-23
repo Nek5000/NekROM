@@ -29,16 +29,15 @@
       par = bpar 
       par_step = bstep 
 
-      ! use helm from BDF3/EXT3 as intial approximation
-      call copy(B_qn(1,1),helm(1,1),nb*nb)
-   
+
       ! BFGS method with barrier function starts
       do k=1,par_step
 
          chekbc = 0
          uHcount = 0
 
-
+         ! use helm from BDF3/EXT3 as intial approximation
+         call copy(B_qn(1,1),helm(1,1),nb*nb)
          call comp_qnf(uu,rhs,helm,invhelm,qnf,amax,amin,par,bflag)
          call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par,bflag)
 
@@ -53,12 +52,26 @@ c        compute quasi-Newton step
 
             if (isolve.eq.1) then
                call backtrackr(uu,qns,rhs,helm,invhelm,1e-2,0.5,alphak,
-     $                     amax,amin,bctol,bflag,par)
+     $                     amax,amin,bctol,bflag,par,chekbc)
+               ! check the boundary 
+               do ii=1,nb
+                  if ((uu(ii)-amax(ii)).ge.bctol) then
+                     chekbc = 1
+                     uu(ii) = amax(ii) - 0.1*adis(ii)
+                  elseif ((amin(ii)-uu(ii)).ge.bctol) then
+                     chekbc = 1
+                     uu(ii) = amin(ii) + 0.1*adis(ii)
+                  endif
+               enddo
                call copy(qgo,qngradf,nb) ! store old qn-gradf
                call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,
      $                     par,bflag) ! update qn-gradf
                call sub3(qny,qngradf,qgo,nb) 
-               call Hessian_update(B_qn,qns,qny,nb)
+               ! update approximate Hessian by two rank-one update if chekbc = 0
+               if (chekbc .ne. 1) then
+                  uHcount = uHcount + 1
+                  call Hessian_update(B_qn,qns,qny,nb)
+               endif
             elseif (isolve.eq.2) then      
                call add2(uu,qns,nb)
                ! check the boundary 
@@ -145,6 +158,9 @@ c-----------------------------------------------------------------------
       bflag = 1 
       par = bpar 
       par_step = bstep 
+
+      ! use helm from BDF3/EXT3 as intial approximation
+      call copy(B_qn(1,1),helm(1,1),nb*nb)
    
       ! BFGS method with barrier function starts
       do k=1,par_step
@@ -152,8 +168,6 @@ c-----------------------------------------------------------------------
          chekbc = 0
          uHcount = 0
 
-c        use helm from BDF3/EXT3 as intial approximation
-         call copy(B_qn(1,1),helm(1,1),nb*nb)
 
          call comp_qnf(uu,rhs,helm,invhelm,qnf,amax,amin,par,bflag)
          call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par,bflag)
@@ -161,41 +175,55 @@ c        use helm from BDF3/EXT3 as intial approximation
 c        compute quasi-Newton step
          do j=1,nb
 
-            call invH_multiply(qns,invhelm,sk,yk,qngradf)
-            call chsign(qns,nb)
-
-            ! store qns
-            call copy(sk(1,j),qns,nb)
 
             if (isolve.eq.1) then
-               call backtrackr(uu,qns,rhs,helm,invhelm,1e-2,0.5,alphak,
-     $                     amax,amin,bctol,bflag,par)
-            elseif (isolve.eq.2) then      
-               call add2(uu,qns,nb)
-            endif
-
-            ! check the boundary 
-            do ii=1,nb
-               if ((uu(ii)-amax(ii)).ge.bctol) then
-                  chekbc = 1
-                  uu(ii) = amax(ii) - 0.1*adis(ii)
-               elseif ((amin(ii)-uu(ii)).ge.bctol) then
-                  chekbc = 1
-                  uu(ii) = amin(ii) + 0.1*adis(ii)
+               if (j.eq.1) then
+                  call copy(qns,qngradf,nb)
+                  call chsign(qns,nb)
+                  call dgetrs('N',nb,1,invhelm,lub,ipiv,qns,nb,info)
                endif
-            enddo
 
-            call copy(qgo,qngradf,nb) ! store old qn-gradf
-            call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par,bflag) ! update qn-gradf
-            call sub3(qny,qngradf,qgo,nb) 
+               ! store qns
+               call copy(sk(1,j),qns,nb)
 
-            ! store qny 
-            call copy(yk(1,j),qny,nb)
+               call backtrackr(uu,qns,rhs,helm,invhelm,1e-2,0.5,alphak,
+     $                     amax,amin,bctol,bflag,par,chekbc)
+               call copy(qgo,qngradf,nb) ! store old qn-gradf
+               call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,
+     $                     par,bflag) ! update qn-gradf
+               call sub3(qny,qngradf,qgo,nb) 
+               ! store qny 
+               call copy(yk(1,j),qny,nb)
+               call invH_multiply(qns,invhelm,sk,yk,qngradf,j)
+               call chsign(qns,nb)
+            elseif (isolve.eq.2) then      
+               call invH_multiply(qns,invhelm,sk,yk,qngradf,j)
+               call chsign(qns,nb)
 
-            ! update approximate Hessian by two rank-one update if chekbc = 0
-            if (chekbc .ne. 1) then
-               uHcount = uHcount + 1
-               call Hessian_update(B_qn,qns,qny,nb)
+               ! store qns
+               call copy(sk(1,j),qns,nb)
+               call add2(uu,qns,nb)
+               ! check the boundary 
+               do ii=1,nb
+                  if ((uu(ii)-amax(ii)).ge.bctol) then
+                     chekbc = 1
+                     uu(ii) = amax(ii) - 0.1*adis(ii)
+                  elseif ((amin(ii)-uu(ii)).ge.bctol) then
+                     chekbc = 1
+                     uu(ii) = amin(ii) + 0.1*adis(ii)
+                  endif
+               enddo
+               call copy(qgo,qngradf,nb) ! store old qn-gradf
+               call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,
+     $                     par,bflag) ! update qn-gradf
+               call sub3(qny,qngradf,qgo,nb) 
+               ! update approximate Hessian by two rank-one update if chekbc = 0
+               if (chekbc .ne. 1) then
+                  uHcount = uHcount + 1
+                  call Hessian_update(B_qn,qns,qny,nb)
+               endif
+               ! store qny 
+               call copy(yk(1,j),qny,nb)
             endif
 
             ! compute H^{-1} norm of gradf
@@ -208,11 +236,6 @@ c        compute quasi-Newton step
             call comp_qnf(uu,rhs,helm,invhelm,qnf,amax,amin,par,bflag) ! update qn-f
             qndf = abs(qnf-fo)/abs(fo) 
 
-            if (mod(ad_step,ad_iostep).eq.0) then
-               if (nio.eq.0) write (6,*) 'lnconst_ana'
-               call cpod_ana(uu,par,j,uHcount,ngf,qndf)
-            endif
-
             ! reset chekbc 
             chekbc = 0
             
@@ -224,6 +247,10 @@ c        compute quasi-Newton step
 
       ! update solution
          enddo
+         if (mod(ad_step,ad_iostep).eq.0) then
+            if (nio.eq.0) write (6,*) 'lnconst_ana'
+            call cpod_ana(uu,par,j,uHcount,ngf,qndf)
+         endif
          par = par*0.1
       enddo
       call copy(rhs,uu,nb)
@@ -450,7 +477,7 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine backtrackr(uu,s,rhs,helm,invhelm,sigmab,facb,alphak,
-     $            amax,amin,bctol,bflag,bpar)
+     $            amax,amin,bctol,bflag,bpar,chekbc)
 
       include 'SIZE'
       include 'MOR'
@@ -500,7 +527,7 @@ c     do while ((chekbc.ne.0).and.(fk1.gt.fk + sigmab * alphak * Jfks))
          
          if (mod(ad_step,ad_iostep).eq.0) then
             if (nio.eq.0) write(6,*)
-     $         '# lnsrch:',counter,'alpha',alphak
+     $         '# lnsrch:',counter,'alpha',alphak,chekbc
          endif
          if (alphak < 1e-4) then
             exit
@@ -539,7 +566,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine invH_multiply(qnsol,invh0,sk,yk,qnd)
+      subroutine invH_multiply(qnsol,invh0,sk,yk,qnd,qnstep)
 
       include 'SIZE'
       include 'TOTAL'
@@ -552,13 +579,20 @@ c-----------------------------------------------------------------------
       real work(nb)
       integer qnstep
 
+      write(6,*)'qnstep',qnstep
       call copy(qnsol,qnd,nb)
       ! compute right product
       do i=qnstep,1,-1
          qnrho(i) = glsc2(yk(1,i),sk(1,i),nb)
+         write(6,*)'qnrho',qnrho(i)
          qnalpha(i) = glsc2(sk(1,i),qnsol,nb)/qnrho(i)
+         write(6,*)'qnalpha',qnalpha(i)
          call cmult(yk(1,i),qnalpha(i),nb)
          call sub2(qnsol,yk(1,i),nb)
+         write(6,*)'qnsol'
+         do ii=1,nb
+         write(6,*)ii,qnsol(ii)
+         enddo
       enddo
 
       ! compute center
@@ -569,7 +603,9 @@ c-----------------------------------------------------------------------
       ! compute left product
       do i=1,qnstep
          qnbeta(i) = glsc2(yk(1,i),qnsol,nb)/qnrho(i)
+         write(6,*)'qnbeta',qnbeta(i)
          qnfact(i) = (qnalpha(nb-i+1)-qnbeta(i))
+         write(6,*)'qnfact',qnfact(i)
          call cmult(sk(1,i),qnfact(i),nb)
          call add2(qnsol,sk(1,i),nb)
       enddo
