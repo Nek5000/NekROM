@@ -51,8 +51,8 @@ c        compute quasi-Newton step
             call dgetrs('N',nb,1,tmp,lub,ipiv,qns,nb,info)
 
             if (isolve.eq.1) then
-               call backtrackr(uu,qns,rhs,helm,invhelm,1e-2,0.5,alphak,amax,
-     $                     amin,bctol,bflag,par)
+               call backtrackr(uu,qns,rhs,helm,invhelm,1e-1,0.5,alphak,
+     $                     amax,amin,bctol,bflag,par)
             elseif (isolve.eq.2) then      
                call add2(uu,qns,nb)
             endif
@@ -88,11 +88,6 @@ c        compute quasi-Newton step
             call comp_qnf(uu,rhs,helm,invhelm,qnf,amax,amin,par,bflag) ! update qn-f
             qndf = abs(qnf-fo)/abs(fo) 
 
-            if (mod(ad_step,ad_iostep).eq.0) then
-               if (nio.eq.0) write (6,*) 'lnconst_ana'
-               call cpod_ana(uu,par,j,uHcount,ngf,qndf)
-            endif
-
             ! reset chekbc 
             chekbc = 0
             
@@ -104,6 +99,10 @@ c        compute quasi-Newton step
 
       ! update solution
          enddo
+         if (mod(ad_step,ad_iostep).eq.0) then
+            if (nio.eq.0) write (6,*) 'lnconst_ana'
+            call cpod_ana(uu,par,j,uHcount,ngf,qndf)
+         endif
          par = par*0.1
       enddo
       call copy(rhs,uu,nb)
@@ -165,8 +164,8 @@ c        compute quasi-Newton step
             call copy(sk(1,j),qns,nb)
 
             if (isolve.eq.1) then
-               call backtrackr(uu,qns,rhs,helm,invhelm,1e-2,0.5,alphak,amax,
-     $                     amin,bctol,bflag,par)
+               call backtrackr(uu,qns,rhs,helm,invhelm,1e-2,0.5,alphak,
+     $                     amax,amin,bctol,bflag,par)
             elseif (isolve.eq.2) then      
                call add2(uu,qns,nb)
             endif
@@ -363,8 +362,6 @@ c     call dgemv('N',nb,nb,ONE,helm,nb,tmp5,1,ZERO,work,1)
 
       qnf = term1 - term2 + term3 - term4
 
-!      if (nio.eq.0) write (,*) 'exitting com_qnf'
-
       return
       end
 c-----------------------------------------------------------------------
@@ -448,8 +445,8 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine backtrackr(uu,s,rhs,helm,invhelm,sigmab,facb,alphak,amax,
-     $            amin,bctol,bflag,bpar)
+      subroutine backtrackr(uu,s,rhs,helm,invhelm,sigmab,facb,alphak,
+     $            amax,amin,bctol,bflag,bpar)
 
       include 'SIZE'
       include 'MOR'
@@ -478,10 +475,10 @@ c-----------------------------------------------------------------------
       call add2s1(uu,s,alphak,nb)
 
       call comp_qnf(uu,rhs,helm,invhelm,fk1,amax,amin,bpar,bflag) ! get new f
-      Jfks = vlsc2(Jfk,s,nb)
+      Jfks = vlsc2(Jfk,s,nb)   
 
-c     do while ((fk1 > fk + sigmab * alphak * Jfks) .OR. (chekbc.eq.1))
-      do while ((chekbc.ne.0).and.(fk1.gt.fk + sigmab * alphak * Jfks))
+      do while ((fk1.gt.(fk+sigmab*alphak*Jfks)).OR.(chekbc.eq.1))
+c     do while ((chekbc.ne.0).and.(fk1.gt.fk + sigmab * alphak * Jfks))
          counter = counter + 1
          alphak = alphak * facb
          call add3s2(uu,uuo,s,1.0,alphak,nb)
