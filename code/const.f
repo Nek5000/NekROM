@@ -480,8 +480,8 @@ c-----------------------------------------------------------------------
       call comp_qnf(uu,rhs,helm,invhelm,fk1,amax,amin,bpar,bflag) ! get new f
       Jfks = vlsc2(Jfk,s,nb)
 
-      do while ((fk1 > fk + sigmab * alphak * Jfks) .OR. (chekbc.eq.1))
-c     do while ((chekbc.neq.0) .and. (fk1 .gt. fk + sigmab * alphak * Jfks))
+c     do while ((fk1 > fk + sigmab * alphak * Jfks) .OR. (chekbc.eq.1))
+      do while ((chekbc.ne.0).and.(fk1.gt.fk + sigmab * alphak * Jfks))
          counter = counter + 1
          alphak = alphak * facb
          call add3s2(uu,uuo,s,1.0,alphak,nb)
@@ -497,11 +497,11 @@ c     do while ((chekbc.neq.0) .and. (fk1 .gt. fk + sigmab * alphak * Jfks))
 
          call comp_qnf(uu,rhs,helm,invhelm,fk1,amax,amin,bpar,bflag)
          
-         if (alphak < 1e-4) then
-            if (mod(ad_step,ad_iostep).eq.0) then
-               if (nio.eq.0) write(6,*)
+         if (mod(ad_step,ad_iostep).eq.0) then
+            if (nio.eq.0) write(6,*)
      $         '# lnsrch:',counter,'alpha',alphak
-            endif
+         endif
+         if (alphak < 1e-4) then
             exit
          endif
       enddo
