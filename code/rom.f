@@ -723,6 +723,8 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
 
+      common /romup/ rom_time
+
       real t1(0:nb),t2(0:nb)
 
       if (nid.eq.0) then
