@@ -51,31 +51,34 @@ c        compute quasi-Newton step
             call dgetrs('N',nb,1,tmp,lub,ipiv,qns,nb,info)
 
             if (isolve.eq.1) then
-               call backtrackr(uu,qns,rhs,helm,invhelm,1e-1,0.5,alphak,
+               call backtrackr(uu,qns,rhs,helm,invhelm,1e-2,0.5,alphak,
      $                     amax,amin,bctol,bflag,par)
+               call copy(qgo,qngradf,nb) ! store old qn-gradf
+               call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,
+     $                     par,bflag) ! update qn-gradf
+               call sub3(qny,qngradf,qgo,nb) 
+               call Hessian_update(B_qn,qns,qny,nb)
             elseif (isolve.eq.2) then      
                call add2(uu,qns,nb)
-            endif
-
-            ! check the boundary 
-            do ii=1,nb
-               if ((uu(ii)-amax(ii)).ge.bctol) then
-                  chekbc = 1
-                  uu(ii) = amax(ii) - 0.1*adis(ii)
-               elseif ((amin(ii)-uu(ii)).ge.bctol) then
-                  chekbc = 1
-                  uu(ii) = amin(ii) + 0.1*adis(ii)
+               ! check the boundary 
+               do ii=1,nb
+                  if ((uu(ii)-amax(ii)).ge.bctol) then
+                     chekbc = 1
+                     uu(ii) = amax(ii) - 0.1*adis(ii)
+                  elseif ((amin(ii)-uu(ii)).ge.bctol) then
+                     chekbc = 1
+                     uu(ii) = amin(ii) + 0.1*adis(ii)
+                  endif
+               enddo
+               call copy(qgo,qngradf,nb) ! store old qn-gradf
+               call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,
+     $                     par,bflag) ! update qn-gradf
+               call sub3(qny,qngradf,qgo,nb) 
+               ! update approximate Hessian by two rank-one update if chekbc = 0
+               if (chekbc .ne. 1) then
+                  uHcount = uHcount + 1
+                  call Hessian_update(B_qn,qns,qny,nb)
                endif
-            enddo
-
-            call copy(qgo,qngradf,nb) ! store old qn-gradf
-            call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par,bflag) ! update qn-gradf
-            call sub3(qny,qngradf,qgo,nb) 
-
-            ! update approximate Hessian by two rank-one update if chekbc = 0
-            if (chekbc .ne. 1) then
-               uHcount = uHcount + 1
-               call Hessian_update(B_qn,qns,qny,nb)
             endif
 
             ! compute H^{-1} norm of gradf
