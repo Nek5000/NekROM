@@ -10,9 +10,9 @@
       real fo,qnf,qndf
       real ww(nb),pert
       real uu(nb),rhs(nb)
-      real amax(nb),amin(nb), adis(nb)
+      real amax(nb),amin(nb),adis(nb)
       real bpar,par
-      real norm_s
+      real norm_s,norm_step
       real norm_uo
 
       ! parameter for barrier function
@@ -60,6 +60,9 @@ c        compute quasi-Newton step
                call add2(uu,qns,nb)
             endif
 
+            norm_s = glamax(s,nb)
+            norm_step = norm_s/norm_uo
+
             ! check the boundary 
             do ii=1,nb
                if ((uu(ii)-amax(ii)).ge.bctol) then
@@ -95,7 +98,7 @@ c        compute quasi-Newton step
             
             jmax = max(j,jmax)
 
-            if (ngf .lt. 1e-8 .OR. qndf .lt. 1e-8) then 
+            if (ngf .lt. 1e-6 .OR. norm_step .lt. 1e-6) then 
                exit
             endif
 
@@ -113,7 +116,8 @@ c           endif
          enddo
          if (mod(ad_step,ad_iostep).eq.0) then
             if (nio.eq.0) write (6,*) 'lnconst_ana'
-            call cpod_ana(uu,par,j,uHcount,lncount,ngf,qndf)
+            call cpod_ana(uu,par,j,uHcount,lncount,ngf,norm_step
+     $      ,norm_s)
          endif
          par = par*0.1
       enddo
@@ -243,7 +247,8 @@ c        compute quasi-Newton step
          enddo
          if (mod(ad_step,ad_iostep).eq.0) then
             if (nio.eq.0) write (6,*) 'lnconst_ana'
-            call cpod_ana(uu,par,j,uHcount,lncount,ngf,qndf)
+            call cpod_ana(uu,par,j,uHcount,lncount,ngf,qndf
+     $      ,norm_s)
          endif
          par = par*0.1
       enddo
@@ -513,14 +518,16 @@ c     do while ((chekbc.ne.0).and.(fk1.gt.fk + sigmab * alphak * Jfks))
      $         '# lnsrch:',counter,'alpha',alphak,chekbc
          endif
          if (alphak < 1e-4) then
+            call cmult(s,alphak,nb)
             exit
          endif
       enddo
+      call cmult(s,alphak,nb)
 
       return
       end
 c-----------------------------------------------------------------------
-      subroutine cpod_ana(uu,par,qstep,uhcount,lncount,ngf,qndf)
+      subroutine cpod_ana(uu,par,qstep,uhcount,lncount,ngf,qndf,norm_s)
 
       include 'SIZE'
       include 'TOTAL'
@@ -528,13 +535,13 @@ c-----------------------------------------------------------------------
 
       real uu(nb)
       real par
-      real ngf, qndf
+      real ngf,qndf,norm_s
       integer qstep 
       integer uhcount,lncount
 
       if (nio.eq.0) then
          write (6,*)'ad_step:',ad_step,ad_iostep,par,qstep,uhcount,
-     $            lncount,ngf,qndf
+     $            lncount,ngf,qndf,norm_s
          if (ad_step.eq.ad_nsteps) then
             do j=1,nb
                write(6,*) j,uu(j),'final'
