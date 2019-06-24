@@ -16,20 +16,23 @@
       real norm_uo
 
       ! parameter for barrier function
-      integer par_step,jmax,bflag,bstep
-      integer chekbc ! flag for checking boundary
-      integer uHcount,lncount
       real bctol
+      integer par_step,bflag,bstep
+
+      ! parameter for quasi-newton
+      integer uHcount,jamx,chekbc
+
+      ! parameter for lnsrch
+      integer lncount
 
       call copy(uu,u(1,1),nb)
 
-      bctol = 1e-8
       jmax = 0
 
       bflag = 1 
       par = bpar 
       par_step = bstep 
-
+      bctol = 1e-8
 
       ! BFGS method with barrier function starts
       do k=1,par_step
@@ -60,7 +63,7 @@ c        compute quasi-Newton step
                call add2(uu,qns,nb)
             endif
 
-            norm_s = glamax(s,nb)
+            norm_s = glamax(qns,nb)
             norm_step = norm_s/norm_uo
 
             ! check the boundary 
@@ -102,18 +105,8 @@ c        compute quasi-Newton step
                exit
             endif
 
-c           if (par .ge. 1e-4) then
-c              if (ngf .lt. 1e-4 .OR. qndf .lt. 1e-6  ) then 
-c                 exit
-c              endif
-c           elseif (par .le. 1e-5) then
-c              if (ngf .lt. 1e-2 .OR. qndf .lt. 1e-4  ) then 
-c                 exit
-c              endif
-c           endif
-
-      ! update solution
          enddo
+
          if (mod(ad_step,ad_iostep).eq.0) then
             if (nio.eq.0) write (6,*) 'lnconst_ana'
             call cpod_ana(uu,par,j,uHcount,lncount,ngf,norm_step
@@ -147,6 +140,7 @@ c-----------------------------------------------------------------------
       integer chekbc ! flag for checking boundary
       integer uHcount,lncount
       real bctol
+      real norm_s
 
       call copy(uu,u(1,1),nb)
 
@@ -484,7 +478,7 @@ c-----------------------------------------------------------------------
       integer bflag
 
       alphak = 1.0
-      chekbc = 1
+      chekbc = 0
       counter = 0
 
       call comp_qnf(uu,rhs,helm,invhelm,fk,amax,amin,bpar,bflag) ! get old f
@@ -492,6 +486,14 @@ c-----------------------------------------------------------------------
 
       call copy(uuo,uu,nb)
       call add2s1(uu,s,alphak,nb)
+
+      do ii=1,nb
+         if ((uu(ii)-amax(ii)).ge.bctol) then
+            chekbc = 1
+         elseif ((amin(ii)-uu(ii)).ge.bctol) then
+            chekbc = 1
+         endif
+      enddo
 
       call comp_qnf(uu,rhs,helm,invhelm,fk1,amax,amin,bpar,bflag) ! get new f
       Jfks = vlsc2(Jfk,s,nb)   
