@@ -12,12 +12,11 @@
       real uu(nb),rhs(nb)
       real amax(nb),amin(nb), adis(nb)
       real bpar,par
-      real alphak
 
       ! parameter for barrier function
       integer par_step,jmax,bflag,bstep
       integer chekbc ! flag for checking boundary
-      integer uHcount
+      integer uHcount,lncount
       real bctol
 
       call copy(uu,u(1,1),nb)
@@ -52,7 +51,7 @@ c        compute quasi-Newton step
 
             if (isolve.eq.1) then
                call backtrackr(uu,qns,rhs,helm,invhelm,1e-2,0.5,
-     $                     alphak,amax,amin,bctol,bflag,par,chekbc)
+     $                     amax,amin,bctol,bflag,par,chekbc,lncount)
             elseif (isolve.eq.2) then      
                call add2(uu,qns,nb)
             endif
@@ -94,15 +93,25 @@ c        compute quasi-Newton step
             
             jmax = max(j,jmax)
 
-            if (ngf .lt. 1e-4 .OR. qndf .lt. 1e-6  ) then 
+            if (ngf .lt. 1e-8 .OR. qndf .lt. 1e-8) then 
                exit
             endif
+
+c           if (par .ge. 1e-4) then
+c              if (ngf .lt. 1e-4 .OR. qndf .lt. 1e-6  ) then 
+c                 exit
+c              endif
+c           elseif (par .le. 1e-5) then
+c              if (ngf .lt. 1e-2 .OR. qndf .lt. 1e-4  ) then 
+c                 exit
+c              endif
+c           endif
 
       ! update solution
          enddo
          if (mod(ad_step,ad_iostep).eq.0) then
             if (nio.eq.0) write (6,*) 'lnconst_ana'
-            call cpod_ana(uu,par,j,uHcount,ngf,qndf)
+            call cpod_ana(uu,par,j,uHcount,lncount,ngf,qndf)
          endif
          par = par*0.1
       enddo
@@ -125,13 +134,12 @@ c-----------------------------------------------------------------------
       real uu(nb),rhs(nb)
       real amax(nb),amin(nb), adis(nb)
       real bpar,par
-      real alphak
       real sk(nb,nb),yk(nb,nb)
 
       ! parameter for barrier function
       integer par_step,jmax,bflag,bstep
       integer chekbc ! flag for checking boundary
-      integer uHcount
+      integer uHcount,lncount
       real bctol
 
       call copy(uu,u(1,1),nb)
@@ -170,8 +178,8 @@ c        compute quasi-Newton step
                ! store qns
                call copy(sk(1,j),qns,nb)
 
-               call backtrackr(uu,qns,rhs,helm,invhelm,1e-2,0.5,alphak,
-     $                     amax,amin,bctol,bflag,par,chekbc)
+               call backtrackr(uu,qns,rhs,helm,invhelm,1e-2,0.5,
+     $                     amax,amin,bctol,bflag,par,chekbc,lncount)
                call copy(qgo,qngradf,nb) ! store old qn-gradf
                call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,
      $                     par,bflag) ! update qn-gradf
@@ -233,7 +241,7 @@ c        compute quasi-Newton step
          enddo
          if (mod(ad_step,ad_iostep).eq.0) then
             if (nio.eq.0) write (6,*) 'lnconst_ana'
-            call cpod_ana(uu,par,j,uHcount,ngf,qndf)
+            call cpod_ana(uu,par,j,uHcount,lncount,ngf,qndf)
          endif
          par = par*0.1
       enddo
@@ -449,8 +457,8 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine backtrackr(uu,s,rhs,helm,invhelm,sigmab,facb,alphak,
-     $            amax,amin,bctol,bflag,bpar,chekbc)
+      subroutine backtrackr(uu,s,rhs,helm,invhelm,sigmab,facb,
+     $            amax,amin,bctol,bflag,bpar,chekbc,counter)
 
       include 'SIZE'
       include 'MOR'
@@ -510,7 +518,7 @@ c     do while ((chekbc.ne.0).and.(fk1.gt.fk + sigmab * alphak * Jfks))
       return
       end
 c-----------------------------------------------------------------------
-      subroutine cpod_ana(uu,par,qstep,uhcount,ngf,qndf)
+      subroutine cpod_ana(uu,par,qstep,uhcount,lncount,ngf,qndf)
 
       include 'SIZE'
       include 'TOTAL'
@@ -520,11 +528,11 @@ c-----------------------------------------------------------------------
       real par
       real ngf, qndf
       integer qstep 
-      integer uhcount
+      integer uhcount,lncount
 
       if (nio.eq.0) then
          write (6,*)'ad_step:',ad_step,ad_iostep,par,qstep,uhcount,
-     $            ngf,qndf
+     $            lncount,ngf,qndf
          if (ad_step.eq.ad_nsteps) then
             do j=1,nb
                write(6,*) j,uu(j),'final'
