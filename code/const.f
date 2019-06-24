@@ -12,6 +12,8 @@
       real uu(nb),rhs(nb)
       real amax(nb),amin(nb), adis(nb)
       real bpar,par
+      real norm_s
+      real norm_uo
 
       ! parameter for barrier function
       integer par_step,jmax,bflag,bstep
@@ -39,6 +41,8 @@
          call copy(B_qn(1,1),helm(1,1),nb*nb)
          call comp_qnf(uu,rhs,helm,invhelm,qnf,amax,amin,par,bflag)
          call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par,bflag)
+
+         norm_uo = glamax(uu,nb)
 
 c        compute quasi-Newton step
          do j=1,100
@@ -80,9 +84,7 @@ c        compute quasi-Newton step
 
             ! compute H^{-1} norm of gradf
             call copy(ww,qngradf,nb)
-            call dgetrs('N',nb,1,invhelm,lub,ipiv,ww,nb,info)
-            ngf = glsc2(ww,qngradf,nb)
-            ngf = sqrt(ngf)
+            ngf = glamax(qngradf,nb)
 
             fo = qnf      ! store old qn-f
             call comp_qnf(uu,rhs,helm,invhelm,qnf,amax,amin,par,bflag) ! update qn-f
