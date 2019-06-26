@@ -166,7 +166,7 @@ c-----------------------------------------------------------------------
 c        compute quasi-Newton step
          do j=1,nb
 
-            if (isolve.eq.1) then
+            if (isolve.eq.1.OR.isolve.eq.2) then
                if (j.eq.1) then
                   call copy(qns,qngradf,nb)
                   call chsign(qns,nb)
@@ -202,37 +202,7 @@ c        compute quasi-Newton step
                ! store qny 
                call copy(yk(1,j),qny,nb)
                call invH_multiply(qns,invhelm,sk,yk,qngradf,j)
-
-            elseif (isolve.eq.2) then      
-               call invH_multiply(qns,invhelm,sk,yk,qngradf,j)
-               call chsign(qns,nb)
-
-               ! store qns
-               call copy(sk(1,j),qns,nb)
-               call add2(uu,qns,nb)
-               ! check the boundary 
-               do ii=1,nb
-                  if ((uu(ii)-amax(ii)).ge.bctol) then
-                     chekbc = 1
-                     uu(ii) = amax(ii) - 0.1*adis(ii)
-                  elseif ((amin(ii)-uu(ii)).ge.bctol) then
-                     chekbc = 1
-                     uu(ii) = amin(ii) + 0.1*adis(ii)
-                  endif
-               enddo
-               call copy(qgo,qngradf,nb) ! store old qn-gradf
-               call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,
-     $                     par,bflag) ! update qn-gradf
-               call sub3(qny,qngradf,qgo,nb) 
-               ! update approximate Hessian by two rank-one update if chekbc = 0
-               if (chekbc .ne. 1) then
-                  uHcount = uHcount + 1
-                  call Hessian_update(B_qn,qns,qny,nb)
-               endif
-               ! store qny 
-               call copy(yk(1,j),qny,nb)
             endif
-
 
             if (ngf .lt. 1e-6 .OR. norm_step .lt. 1e-6  ) then 
                exit
