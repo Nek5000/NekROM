@@ -61,21 +61,20 @@ c        compute quasi-Newton step
      $                     amax,amin,bctol,bflag,par,chekbc,lncount)
             elseif (isolve.eq.2) then      
                call add2(uu,qns,nb)
+               ! check the boundary 
+               do ii=1,nb
+                  if ((uu(ii)-amax(ii)).ge.bctol) then
+                     chekbc = 1
+                     uu(ii) = amax(ii) - 0.1*adis(ii)
+                  elseif ((amin(ii)-uu(ii)).ge.bctol) then
+                     chekbc = 1
+                     uu(ii) = amin(ii) + 0.1*adis(ii)
+                  endif
+               enddo
             endif
 
             norm_s = glamax(qns,nb)
             norm_step = norm_s/norm_uo
-
-            ! check the boundary 
-            do ii=1,nb
-               if ((uu(ii)-amax(ii)).ge.bctol) then
-                  chekbc = 1
-                  uu(ii) = amax(ii) - 0.1*adis(ii)
-               elseif ((amin(ii)-uu(ii)).ge.bctol) then
-                  chekbc = 1
-                  uu(ii) = amin(ii) + 0.1*adis(ii)
-               endif
-            enddo
 
             call copy(qgo,qngradf,nb) ! store old qn-gradf
             call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,
@@ -83,10 +82,10 @@ c        compute quasi-Newton step
             call sub3(qny,qngradf,qgo,nb) 
 
             ! update approximate Hessian by two rank-one update if chekbc = 0
-            if (chekbc .ne. 1) then
-               uHcount = uHcount + 1
-               call Hessian_update(B_qn,qns,qny,nb)
-            endif
+c           if (chekbc .ne. 1) then
+            uHcount = uHcount + 1
+            call Hessian_update(B_qn,qns,qny,nb)
+c           endif
 
             ! compute H^{-1} norm of gradf
             call copy(ww,qngradf,nb)
@@ -139,7 +138,7 @@ c-----------------------------------------------------------------------
       integer chekbc ! flag for checking boundary
       integer uHcount,lncount
       real bctol
-      real norm_s
+      real norm_s,norm_step,norm_uo
 
       call copy(uu,u(1,1),nb)
 
@@ -150,8 +149,6 @@ c-----------------------------------------------------------------------
       par = bpar 
       par_step = bstep 
 
-      ! use helm from BDF3/EXT3 as intial approximation
-      call copy(B_qn(1,1),helm(1,1),nb*nb)
    
       ! BFGS method with barrier function starts
       do k=1,par_step
@@ -159,13 +156,15 @@ c-----------------------------------------------------------------------
          chekbc = 0
          uHcount = 0
 
-
+         ! use helm from BDF3/EXT3 as intial approximation
+         call copy(B_qn(1,1),helm(1,1),nb*nb)
          call comp_qnf(uu,rhs,helm,invhelm,qnf,amax,amin,par,bflag)
          call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par,bflag)
 
+         norm_uo = glamax(uu,nb)
+
 c        compute quasi-Newton step
          do j=1,nb
-
 
             if (isolve.eq.1) then
                if (j.eq.1) then
@@ -174,19 +173,36 @@ c        compute quasi-Newton step
                   call dgetrs('N',nb,1,invhelm,lub,ipiv,qns,nb,info)
                endif
 
+               call backtrackr(uu,qns,rhs,helm,invhelm,1e-2,0.5,
+     $                     amax,amin,bctol,bflag,par,chekbc,lncount)
                ! store qns
                call copy(sk(1,j),qns,nb)
 
-               call backtrackr(uu,qns,rhs,helm,invhelm,1e-2,0.5,
-     $                     amax,amin,bctol,bflag,par,chekbc,lncount)
                call copy(qgo,qngradf,nb) ! store old qn-gradf
                call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,
      $                     par,bflag) ! update qn-gradf
                call sub3(qny,qngradf,qgo,nb) 
+
+               norm_s = glamax(qns,nb)
+               norm_step = norm_s/norm_uo
+
+               ! compute H^{-1} norm of gradf
+               call copy(ww,qngradf,nb)
+               ngf = glamax(qngradf,nb)
+
+               fo = qnf      ! store old qn-f
+               call comp_qnf(uu,rhs,helm,invhelm,qnf,amax,amin,
+     $               par,bflag) ! update qn-f
+
+               ! reset chekbc 
+               chekbc = 0
+               
+               jmax = max(j,jmax)
+
                ! store qny 
                call copy(yk(1,j),qny,nb)
                call invH_multiply(qns,invhelm,sk,yk,qngradf,j)
-               call chsign(qns,nb)
+
             elseif (isolve.eq.2) then      
                call invH_multiply(qns,invhelm,sk,yk,qngradf,j)
                call chsign(qns,nb)
@@ -217,21 +233,8 @@ c        compute quasi-Newton step
                call copy(yk(1,j),qny,nb)
             endif
 
-            ! compute H^{-1} norm of gradf
-            call copy(ww,qngradf,nb)
-            call dgetrs('N',nb,1,invhelm,lub,ipiv,ww,nb,info)
-            ngf = glsc2(ww,qngradf,nb)
-            ngf = sqrt(ngf)
 
-            fo = qnf      ! store old qn-f
-            call comp_qnf(uu,rhs,helm,invhelm,qnf,amax,amin,par,bflag) ! update qn-f
-
-            ! reset chekbc 
-            chekbc = 0
-            
-            jmax = max(j,jmax)
-
-            if (ngf .lt. 1e-4 .OR. qndf .lt. 1e-6  ) then 
+            if (ngf .lt. 1e-6 .OR. norm_step .lt. 1e-6  ) then 
                exit
             endif
 
@@ -239,7 +242,7 @@ c        compute quasi-Newton step
          enddo
          if (mod(ad_step,ad_iostep).eq.0) then
             if (nio.eq.0) write (6,*) 'lnconst_ana'
-            call cpod_ana(uu,par,j,uHcount,lncount,ngf,qndf
+            call cpod_ana(uu,par,j,uHcount,lncount,ngf,norm_step
      $      ,norm_s)
          endif
          par = par*0.1
@@ -569,20 +572,13 @@ c-----------------------------------------------------------------------
       real work(nb)
       integer qnstep
 
-      write(6,*)'qnstep',qnstep
       call copy(qnsol,qnd,nb)
+      call chsign(qnsol,nb)
       ! compute right product
       do i=qnstep,1,-1
          qnrho(i) = glsc2(yk(1,i),sk(1,i),nb)
-         write(6,*)'qnrho',qnrho(i)
          qnalpha(i) = glsc2(sk(1,i),qnsol,nb)/qnrho(i)
-         write(6,*)'qnalpha',qnalpha(i)
-         call cmult(yk(1,i),qnalpha(i),nb)
-         call sub2(qnsol,yk(1,i),nb)
-         write(6,*)'qnsol'
-         do ii=1,nb
-         write(6,*)ii,qnsol(ii)
-         enddo
+         call add2s2(qnsol,yk(1,i),-qnalpha(i),nb)
       enddo
 
       ! compute center
@@ -593,11 +589,8 @@ c-----------------------------------------------------------------------
       ! compute left product
       do i=1,qnstep
          qnbeta(i) = glsc2(yk(1,i),qnsol,nb)/qnrho(i)
-         write(6,*)'qnbeta',qnbeta(i)
-         qnfact(i) = (qnalpha(nb-i+1)-qnbeta(i))
-         write(6,*)'qnfact',qnfact(i)
-         call cmult(sk(1,i),qnfact(i),nb)
-         call add2(qnsol,sk(1,i),nb)
+         qnfact(i) = (qnalpha(i)-qnbeta(i))
+         call add2s2(qnsol,sk(1,i),qnfact(i),nb)
       enddo
 
       return
