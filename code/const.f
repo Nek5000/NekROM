@@ -82,10 +82,10 @@ c        compute quasi-Newton step
             call sub3(qny,qngradf,qgo,nb) 
 
             ! update approximate Hessian by two rank-one update if chekbc = 0
-c           if (chekbc .ne. 1) then
-            uHcount = uHcount + 1
-            call Hessian_update(B_qn,qns,qny,nb)
-c           endif
+            if (chekbc .ne. 1) then
+               uHcount = uHcount + 1
+               call Hessian_update(B_qn,qns,qny,nb)
+            endif
 
             ! compute H^{-1} norm of gradf
             call copy(ww,qngradf,nb)
@@ -157,7 +157,6 @@ c-----------------------------------------------------------------------
          uHcount = 0
 
          ! use helm from BDF3/EXT3 as intial approximation
-         call copy(B_qn(1,1),helm(1,1),nb*nb)
          call comp_qnf(uu,rhs,helm,invhelm,qnf,amax,amin,par,bflag)
          call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par,bflag)
 
