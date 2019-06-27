@@ -7,7 +7,7 @@
       real B_qn(nb,nb),helm(nb,nb),invhelm(nb,nb)
       real tmp(nb,nb)
       real qgo(nb),qngradf(nb),ngf
-      real fo,qnf
+      real qnf
       real ww(nb),pert
       real uu(nb),rhs(nb)
       real amax(nb),amin(nb),adis(nb)
@@ -91,7 +91,6 @@ c        compute quasi-Newton step
             call copy(ww,qngradf,nb)
             ngf = glamax(qngradf,nb)
 
-            fo = qnf      ! store old qn-f
             call comp_qnf(uu,rhs,helm,invhelm,qnf,amax,amin,par,bflag) ! update qn-f
 
             ! reset chekbc 
@@ -126,7 +125,7 @@ c-----------------------------------------------------------------------
       real B_qn(nb,nb),helm(nb,nb),invhelm(nb,nb)
       real tmp(nb,nb)
       real qgo(nb),qngradf(nb),ngf
-      real fo,qnf
+      real qnf
       real ww(nb),pert
       real uu(nb),rhs(nb)
       real amax(nb),amin(nb), adis(nb)
@@ -189,7 +188,6 @@ c        compute quasi-Newton step
                call copy(ww,qngradf,nb)
                ngf = glamax(qngradf,nb)
 
-               fo = qnf      ! store old qn-f
                call comp_qnf(uu,rhs,helm,invhelm,qnf,amax,amin,
      $               par,bflag) ! update qn-f
 
