@@ -82,10 +82,10 @@ c        compute quasi-Newton step
             call sub3(qny,qngradf,qgo,nb) 
 
             ! update approximate Hessian by two rank-one update if chekbc = 0
-            if (chekbc .ne. 1) then
+c           if (chekbc .ne. 1) then
                uHcount = uHcount + 1
                call Hessian_update(B_qn,qns,qny,nb)
-            endif
+c           endif
 
             ! compute H^{-1} norm of gradf
             call copy(ww,qngradf,nb)
@@ -122,7 +122,7 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
-      real B_qn(nb,nb),helm(nb,nb),invhelm(nb,nb)
+      real helm(nb,nb),invhelm(nb,nb)
       real tmp(nb,nb)
       real qgo(nb),qngradf(nb),ngf
       real qnf
@@ -130,7 +130,7 @@ c-----------------------------------------------------------------------
       real uu(nb),rhs(nb)
       real amax(nb),amin(nb), adis(nb)
       real bpar,par
-      real sk(nb,nb),yk(nb,nb)
+      real sk(nb,50),yk(nb,50)
 
       ! parameter for barrier function
       integer par_step,jmax,bflag,bstep
@@ -138,13 +138,14 @@ c-----------------------------------------------------------------------
       integer uHcount,lncount
       real bctol
       real norm_s,norm_step,norm_uo
+      real ysk
 
       call copy(uu,u(1,1),nb)
 
       bctol = 1e-8
       jmax = 0
 
-      bflag = 1 
+      bflag = 1
       par = bpar 
       par_step = bstep 
 
@@ -162,7 +163,7 @@ c-----------------------------------------------------------------------
          norm_uo = glamax(uu,nb)
 
 c        compute quasi-Newton step
-         do j=1,nb
+         do j=1,50
 
             if (isolve.eq.1.OR.isolve.eq.2) then
                if (j.eq.1) then
@@ -180,6 +181,8 @@ c        compute quasi-Newton step
                call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,
      $                     par,bflag) ! update qn-gradf
                call sub3(qny,qngradf,qgo,nb) 
+
+               ysk = glsc2(qny,qns,nb)
 
                norm_s = glamax(qns,nb)
                norm_step = norm_s/norm_uo
@@ -201,7 +204,7 @@ c        compute quasi-Newton step
                call invH_multiply(qns,invhelm,sk,yk,qngradf,j)
             endif
 
-            if (ngf .lt. 1e-6 .OR. norm_step .lt. 1e-6  ) then 
+            if (ngf .lt. 1e-6 .OR. norm_step .lt. 1e-10  ) then 
                exit
             endif
 
@@ -210,7 +213,7 @@ c        compute quasi-Newton step
          if (mod(ad_step,ad_iostep).eq.0) then
             if (nio.eq.0) write (6,*) 'lnconst_ana'
             call cpod_ana(uu,par,j,uHcount,lncount,ngf,norm_step
-     $      ,norm_s)
+     $      ,norm_s,ysk)
          endif
          par = par*0.1
       enddo
@@ -497,7 +500,8 @@ c     do while ((chekbc.ne.0).and.(fk1.gt.fk + sigmab * alphak * Jfks))
       return
       end
 c-----------------------------------------------------------------------
-      subroutine cpod_ana(uu,par,qstep,uhcount,lncount,ngf,qndf,norm_s)
+      subroutine cpod_ana(uu,par,qstep,uhcount,lncount,ngf,qndf,norm_s,
+     $   ysk)
 
       include 'SIZE'
       include 'TOTAL'
@@ -505,13 +509,13 @@ c-----------------------------------------------------------------------
 
       real uu(nb)
       real par
-      real ngf,qndf,norm_s
+      real ngf,qndf,norm_s,yks
       integer qstep 
       integer uhcount,lncount
 
       if (nio.eq.0) then
          write (6,*)'ad_step:',ad_step,ad_iostep,par,qstep,uhcount,
-     $            lncount,ngf,qndf,norm_s
+     $            lncount,ngf,qndf,norm_s,ysk
          if (ad_step.eq.ad_nsteps) then
             do j=1,nb
                write(6,*) j,uu(j),'final'
@@ -533,9 +537,9 @@ c-----------------------------------------------------------------------
       include 'MOR'            
 
       real invh0(nb,nb)
-      real sk(nb,nb),yk(nb,nb),qnd(nb),qnsol(nb)
-      real qnrho(nb),qnalpha(nb),qnbeta(nb)
-      real qnfact(nb)
+      real sk(nb,50),yk(nb,50),qnd(nb),qnsol(nb)
+      real qnrho(50),qnalpha(50),qnbeta(50)
+      real qnfact(50)
       real work(nb)
       integer qnstep
 
