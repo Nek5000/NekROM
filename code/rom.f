@@ -603,11 +603,14 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'SOLN'
       include 'TSTEP'
+      include 'INPUT'
       include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
       common /scrsetu/ uu(lt),vv(lt),ww(lt),tt(lt)
+
+      logical iftmp
 
       if (nio.eq.0) write (6,*) 'inside setu'
 
@@ -644,6 +647,9 @@ c-----------------------------------------------------------------------
 
       call reconv(uu,vv,ww,u)
       call recont(tt,ut)
+
+      iftmp=ifxyo
+      ifxyo=.true.
       call outpost(uu,vv,ww,pr,tt,'rom')
 
       ttime=time
@@ -662,6 +668,8 @@ c-----------------------------------------------------------------------
       time=ttime
       istep=jstep
       ifield=jfield
+
+      ifxyo=iftmp
 
       if (nio.eq.0) write (6,*) 'exiting setu'
 
