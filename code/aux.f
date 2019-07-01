@@ -540,8 +540,8 @@ c-----------------------------------------------------------------------
             call cfill(tmax,-1.e9,nb)
             do j=1,ns
             do i=1,nb
-               if (uk(i,j).lt.tmin(i)) tmin(i)=tk(i,j)
-               if (uk(i,j).gt.tmax(i)) tmax(i)=tk(i,j)
+               if (tk(i,j).lt.tmin(i)) tmin(i)=tk(i,j)
+               if (tk(i,j).gt.tmax(i)) tmax(i)=tk(i,j)
             enddo
             enddo
             do j=1,nb                    ! compute hyper-parameter
