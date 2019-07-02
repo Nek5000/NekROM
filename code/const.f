@@ -14,6 +14,7 @@
       real bpar,par
       real norm_s,norm_step
       real norm_uo
+      real ysk
 
       ! parameter for barrier function
       real bctol
@@ -24,6 +25,7 @@
 
       ! parameter for lnsrch
       integer lncount
+      lncount = 0
 
       call copy(uu,u(1,1),nb)
 
@@ -57,7 +59,7 @@ c        compute quasi-Newton step
             call dgetrs('N',nb,1,tmp,lub,ipiv,qns,nb,info)
 
             if (isolve.eq.1) then
-               call backtrackr(uu,qns,rhs,helm,invhelm,1e-2,0.5,
+               call backtrackr(uu,qns,rhs,helm,invhelm,1e-4,0.5,
      $                     amax,amin,bctol,bflag,par,chekbc,lncount)
             elseif (isolve.eq.2) then      
                call add2(uu,qns,nb)
@@ -81,11 +83,13 @@ c        compute quasi-Newton step
      $                  par,bflag) ! update qn-gradf
             call sub3(qny,qngradf,qgo,nb) 
 
+            ysk = glsc2(qny,qns,nb)
+
             ! update approximate Hessian by two rank-one update if chekbc = 0
-c           if (chekbc .ne. 1) then
+            if (chekbc .ne. 1) then
                uHcount = uHcount + 1
                call Hessian_update(B_qn,qns,qny,nb)
-c           endif
+            endif
 
             ! compute H^{-1} norm of gradf
             call copy(ww,qngradf,nb)
@@ -98,7 +102,7 @@ c           endif
             
             jmax = max(j,jmax)
 
-            if (ngf .lt. 1e-6 .OR. norm_step .lt. 1e-6) then 
+            if (ngf .lt. 1e-6 .OR. norm_step .lt. 1e-10) then 
                exit
             endif
 
@@ -107,7 +111,7 @@ c           endif
          if (mod(ad_step,ad_iostep).eq.0) then
             if (nio.eq.0) write (6,*) 'lnconst_ana'
             call cpod_ana(uu,par,j,uHcount,lncount,ngf,norm_step
-     $      ,norm_s)
+     $      ,norm_s,ysk)
          endif
          par = par*0.1
       enddo
@@ -172,7 +176,7 @@ c        compute quasi-Newton step
                   call dgetrs('N',nb,1,invhelm,lub,ipiv,qns,nb,info)
                endif
 
-               call backtrackr(uu,qns,rhs,helm,invhelm,1e-2,0.5,
+               call backtrackr(uu,qns,rhs,helm,invhelm,1e-4,0.5,
      $                     amax,amin,bctol,bflag,par,chekbc,lncount)
                ! store qns
                call copy(sk(1,j),qns,nb)
@@ -194,9 +198,6 @@ c        compute quasi-Newton step
                call comp_qnf(uu,rhs,helm,invhelm,qnf,amax,amin,
      $               par,bflag) ! update qn-f
 
-               ! reset chekbc 
-               chekbc = 0
-               
                jmax = max(j,jmax)
 
                ! store qny 
@@ -204,7 +205,8 @@ c        compute quasi-Newton step
                call invH_multiply(qns,invhelm,sk,yk,qngradf,j)
             endif
 
-            if (ngf .lt. 1e-6 .OR. norm_step .lt. 1e-10  ) then 
+            if (ngf .lt. 1e-6 .OR. ysk .lt. 1e-10 .OR. norm_step .lt.
+     $      1e-10  ) then 
                exit
             endif
 
@@ -447,10 +449,12 @@ c-----------------------------------------------------------------------
       real bctol,bpar
       integer chekbc,counter
       integer bflag
+      integer countbc
 
       alphak = 1.0
       chekbc = 0
       counter = 0
+      countbc = 0
 
       call comp_qnf(uu,rhs,helm,invhelm,fk,amax,amin,bpar,bflag) ! get old f
       call comp_qngradf(uu,rhs,helm,Jfk,amax,amin,bpar,bflag)
@@ -461,8 +465,10 @@ c-----------------------------------------------------------------------
       do ii=1,nb
          if ((uu(ii)-amax(ii)).ge.bctol) then
             chekbc = 1
+            countbc = countbc + 1
          elseif ((amin(ii)-uu(ii)).ge.bctol) then
             chekbc = 1
+            countbc = countbc + 1
          endif
       enddo
 
@@ -470,17 +476,19 @@ c-----------------------------------------------------------------------
       Jfks = vlsc2(Jfk,s,nb)   
 
       do while ((fk1.gt.(fk+sigmab*alphak*Jfks)).OR.(chekbc.eq.1))
-c     do while ((chekbc.ne.0).and.(fk1.gt.fk + sigmab * alphak * Jfks))
          counter = counter + 1
          alphak = alphak * facb
          call add3s2(uu,uuo,s,1.0,alphak,nb)
 
          chekbc = 0
+         countbc = 0
          do ii=1,nb
             if ((uu(ii)-amax(ii)).ge.bctol) then
                chekbc = 1
+               countbc = countbc + 1
             elseif ((amin(ii)-uu(ii)).ge.bctol) then
                chekbc = 1
+               countbc = countbc + 1
             endif
          enddo
 
@@ -488,7 +496,7 @@ c     do while ((chekbc.ne.0).and.(fk1.gt.fk + sigmab * alphak * Jfks))
          
          if (mod(ad_step,ad_iostep).eq.0) then
             if (nio.eq.0) write(6,*)
-     $         '# lnsrch:',counter,'alpha',alphak,chekbc
+     $         '# lnsrch:',counter,'alpha',alphak,chekbc,countbc
          endif
          if (alphak < 1e-4) then
             call cmult(s,alphak,nb)
