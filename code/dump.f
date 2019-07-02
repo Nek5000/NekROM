@@ -103,6 +103,8 @@ c-----------------------------------------------------------------------
 
       common /dumpglobal/ wk1(lcloc),wk2(lcloc)
 
+      logical iftmp
+
       if (ifpod(1)) then
          call dump_serial(ug(1,1,1),ls*ls,'ops/gu ',nid)
          call dump_serial(au0,(nb+1)**2,'ops/au ',nid)
@@ -155,13 +157,18 @@ c-----------------------------------------------------------------------
 
       ttmp=time
       itmp=istep
+
+      iftmp=ifxyo
+
       do i=0,nb
          time=i
          itmp=i
+         ifxyo=(i.eq.0)
          call outpost(ub(1,i),vb(1,i),wb(1,i),pb(1,i),tb(1,i),'bas')
       enddo
       istep=itmp
       time=ttmp
+      ifxyo=iftmp
 
       return
       end
