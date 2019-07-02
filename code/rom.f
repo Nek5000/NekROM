@@ -428,7 +428,7 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelv
 
-      write (6,*) 'file=',fnlint
+      if (nio.eq.0) write (6,*) 'file=',fnlint
       if (ifread.and.ifcdrag)
      $   call read_serial(fd2,(nb+1)**2,'qoi/fd2 ',wk2,nid)
       if (ifread.and.nid.eq.0) open (unit=12,file=fnlint)
