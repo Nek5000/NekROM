@@ -50,7 +50,7 @@ c     parameters and common blocks for MOR
 
       common /moruavg/ ua(0:lub),u2a(0:lub,0:lub),uas(0:lub),uvs(0:lub)
       common /mortavg/ uta(0:ltb),uuta(0:lub,0:ltb),utua(0:ltb,0:lub),
-     $                 tas(0:ltb),tvs(0:ltb)
+     $                 ut2a(0:ltb,0:ltb),tas(0:ltb),tvs(0:ltb)
 
       common /mormsk/ dmask(lx1,ly1,lz1,lelt,lmsk+1)
 

@@ -34,27 +34,55 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine reconu_rms(ux,uy,uz,coef)
+      subroutine recont_rms(tt)
 
       include 'SIZE'
       include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real ux(lt),uy(lt),uz(lt),coef(0:nb,0:nb)
+      real tt(lt)
+
+      n=lx1*ly1*lz1*nelt
+
+      call rzero(tt,n)
+
+      do j=0,nb
+      do i=0,nb
+         call col3(tbt,tb(1,i),tb(1,j),n)
+         call add2s2(tt,tbt,ut2a(i,j),n)
+      enddo
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine reconu_rms(ux,uy,uz)
+
+      include 'SIZE'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real v1(lt),v2(lt),v3(lt)
+      real ux(lt),uy(lt),uz(lt)
 
       n=lx1*ly1*lz1*nelv
 
-      call opzero(ux,uy,uz)
+      call opzero(v1,v2,v3)
+
+      call outpost(v1,v2,v3,v3,v3,'ttt')
 
       do j=0,nb
       do i=0,nb
          call col3(ubt,ub(1,i),ub(1,j),n)
          call col3(vbt,vb(1,i),vb(1,j),n)
          if (ldim.eq.3) call col3(wbt,wb(1,i),wb(1,j),n)
-         call opadds(ux,uy,uz,ubt,vbt,wbt,u2a(i,j),n,2)
+         call opadds(v1,v2,v3,ubt,vbt,wbt,u2a(i,j),n,2)
       enddo
       enddo
+
+      call opcopy(ux,uy,uz,v1,v2,v3)
 
       return
       end
@@ -73,7 +101,10 @@ c-----------------------------------------------------------------------
       call opzero(ux,uy,uz)
 
       do i=0,nb
-         call opadds(ux,uy,uz,ub(1,i),vb(1,i),wb(1,i),coef(i),n,2)
+         call add2s2(ux,ub(1,i),coef(i),n)
+         call add2s2(uy,vb(1,i),coef(i),n)
+         call add2s2(uz,wb(1,i),coef(i),n)
+c        call opadds(ux,uy,uz,ub(1,i),vb(1,i),wb(1,i),coef(i),n,2)
       enddo
 
       return
@@ -852,6 +883,45 @@ c-----------------------------------------------------------------------
          endif
       enddo
       enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine dump_sfld
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real ux(lt),uy(lt),uz(lt)
+
+      common /scrdump2/ ux1(lt),uy1(lt),uz1(lt),tt(lt),wk(lt)
+      common /testb/ ux2(lt),uy2(lt),uz2(lt)
+
+      if (ifrom(1)) then
+         call reconv(ux2,uy2,uz2,ua)
+         if (ifrom(2)) call recont(tt,uta)
+         call outpost(ux2,uy2,uz2,pr,tt,'avg')
+
+         call reconu_rms(ux2,uy2,uz2,u2a)
+         if (ifrom(2)) call recont_rms(tt)
+         call outpost(ux2,uy2,uz2,pr,tt,'rms')
+      endif
+
+      if (ifrom(1).and.ifrom(2)) then
+         n=lx1*ly1*lz1*nelt
+         call opzero(ux1,uy1,uz1)
+         do j=0,nb
+         do i=0,nb
+            call admcol3(ux1,ub(1,i),tb(1,j),uuta(i,j),n)
+            call admcol3(uy1,vb(1,i),tb(1,j),uuta(i,j),n)
+            if (ldim.eq.3) call admcol3(uz1,wb(1,i),tb(1,j),uuta(i,j),n)
+         enddo
+         enddo
+         call outpost(ux1,uy1,uz1,pr,tt,'tmn')
+      endif
 
       return
       end

@@ -472,14 +472,7 @@ c-----------------------------------------------------------------------
          s=1./real(ad_nsteps)
          call cmult(ua,s,nb+1)
          call cmult(u2a,s,(nb+1)**2)
-
-         call reconv(ux,uy,uz,ua)
-         call outpost(ux,uy,uz,pavg,tavg,'avg')
-
-         call reconu_rms(ux,uy,uz,u2a)
-         call outpost(ux,uy,uz,pavg,tavg,'rms')
       endif
-
 
       return
       end
@@ -494,6 +487,7 @@ c-----------------------------------------------------------------------
          call rzero(uta,nb+1)
          call rzero(uuta,(nb+1)**2)
          call rzero(utua,(nb+1)**2)
+         call rzero(ut2a,(nb+1)**2)
       endif
 
       call add2(uta,ut,nb+1)
@@ -502,6 +496,7 @@ c-----------------------------------------------------------------------
       do i=0,nb
          uuta(i,j)=uuta(i,j)+u(i,1)*ut(j,1)
          utua(i,j)=utua(i,j)+u(j,1)*ut(i,1)
+         ut2a(i,j)=ut2a(i,j)+ut(j,1)*ut(i,1)
       enddo
       enddo
 
@@ -510,6 +505,7 @@ c-----------------------------------------------------------------------
          call cmult(uta,s,nb+1)
          call cmult(uuta,s,(nb+1)**2)
          call cmult(utua,s,(nb+1)**2)
+         call cmult(ut2a,s,(nb+1)**2)
       endif
 
       return

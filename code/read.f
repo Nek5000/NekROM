@@ -181,6 +181,8 @@ c     This routine reads files specificed in fname
 
       call push_sol(vx,vy,vz,pr,t)
       call zero_sol(uavg,vavg,wavg,pavg,tavg)
+      call zero_sol(urms,vrms,wrms,prms,trms)
+      call opzero(vwms,wums,uvms)
       call opcopy(t4,t5,t6,xm1,ym1,zm1)
 
       icount = 0
@@ -202,6 +204,13 @@ c     This routine reads files specificed in fname
 
             ip=ipass
             call add_sol(uavg,vavg,wavg,pavg,tavg,vx,vy,vz,pr,t)
+            call add2col2(urms,vx,vx,n)
+            call add2col2(vrms,vy,vy,n)
+            if (ldim.eq.3) call add2col2(wrms,vz,vz,n)
+            call add2col2(trms,t,t,n)
+            call add2col2(vwms,vx,t,n)
+            call add2col2(wums,vy,t,n)
+            if (ldim.eq.3) call add2col2(uvms,vz,t,n)
             call copy_sol(usave(1,1,ip),usave(1,2,ip),usave(1,ldim,ip),
      $                    psave(1,ip),tsave(1,1,ip),vx,vy,vz,pr,t)
          else
@@ -218,6 +227,8 @@ c     This routine reads files specificed in fname
 
       s=1./real(nsave)
       call scale_sol(uavg,vavg,wavg,pavg,tavg,s)
+      call scale_sol(urms,vrms,wrms,prms,trms,s)
+      call opcmult(vwms,wums,uvms,s,n)
       call opcopy(xm1,ym1,zm1,t4,t5,t6)
 
       return

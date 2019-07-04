@@ -333,7 +333,7 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      logical alist
+      logical alist,iftmp
 
       character*128 fname1
 
@@ -368,7 +368,12 @@ c-----------------------------------------------------------------------
             call copy_sol(ub,vb,wb,pb,tb,uavg,vavg,wavg,pavg,tavg)
          endif
 
+         iftmp=ifxyo
+         ifxyo=.true.
          call outpost(uavg,vavg,wavg,pavg,tavg,'avg')
+         call outpost(urms,vrms,wrms,prms,trms,'rms')
+         call outpost(vwms,wums,uvms,prms,trms,'tmn')
+         ifxyo=iftmp
       endif
 
       if (ifsub0) then
@@ -766,6 +771,8 @@ c-----------------------------------------------------------------------
          call dump_serial(uas,nb+1,'ops/uas ',nid)
          call dump_serial(uvs,nb+1,'ops/uvs ',nid)
       endif
+
+      call dump_sfld
 
       return
       end
