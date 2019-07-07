@@ -808,10 +808,11 @@ c-----------------------------------------------------------------------
 
       parameter (lint=128)
 
-
       n=lx1*ly1*lz1*nelv
 
-      call blank(fname)
+      if (nio.eq.0) write (6,*) 'tj_analysis3 starting'
+
+      call blank(fname,127)
       fname='a.list'
       call real_averager(fname)
       call opcopy(uavg,vavg,wavg,vx,vy,vz)
