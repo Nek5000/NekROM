@@ -57,6 +57,8 @@ c-----------------------------------------------------------------------
 
       inquire (file='bas.list',exist=ifexist)
 
+      return
+
       if (ifexist) then
          nn=nb+1
          call get_saved_fields(us0,ps,ts0,nn,timek,'bas.list ')
