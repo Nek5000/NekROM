@@ -723,3 +723,26 @@ c-----------------------------------------------------------------------
 
       return
       end
+c-----------------------------------------------------------------------
+      subroutine tj_analysis
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lint=128)
+
+      common /my_intp/ uint(lint),vint(lint),wint(lint),tint(lint)
+
+      n=lx1*ly1*lz1*nelv
+
+      npts=128
+
+      do i=0,nb
+         call sol_intp_xline_qoi(ub(1,i),vb(1,i),wb(1,i),tb(1,i),
+     $                           2.5,0.,128,i)
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------

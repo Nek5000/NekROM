@@ -6,6 +6,7 @@ c-----------------------------------------------------------------------
 
       param(173)=1.
       call rom_setup
+      call tj_analysis
 
       ! todo add timing
 

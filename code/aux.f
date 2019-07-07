@@ -935,6 +935,7 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       character*3 pfx
+      character*127 fname
 
       real ux(lt),uy(lt),uz(lt),ut(lt)
 
@@ -957,18 +958,72 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'wp1'
 
-      call interp_vec_prop(uxi,uyi,uzi,ux,uy,uz,xi,yi,zi,nn)
+      call interp_vec_prop2(uxi,uyi,uzi,ux,uy,uz,xi,yi,zi,nn)
 
       if (nio.eq.0) write (6,*) 'wp2'
 
-      call interp_sca_prop(uti,ut,xi,yi,zi,nn)
+      call interp_sca_prop2(uti,ut,xi,yi,zi,nn)
 
       if (nio.eq.0) write (6,*) 'wp3'
 
       if (nid.eq.0) then
+c        blank(fname,127)
+c        write (fname,'(A3)') i
+c        open (unit=10,file='')
          do i=1,nx
             write (6,1) i,xi(i),uxi(i),uyi(i),uzi(i),uti(i),pfx
+            write (10,1) i,xi(i),uxi(i),uyi(i),uzi(i),uti(i),pfx
          enddo
+      endif
+
+    1 format (i5,1p5e16.8,1x,'intp_result',a3)
+
+      call nekgsync
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine sol_intp_xline_qoi(ux,uy,uz,ut,ytgt,ztgt,nx,j)
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      parameter (lmax=1024)
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      character*3 pfx
+      character*127 fname
+
+      real ux(lt),uy(lt),uz(lt),ut(lt)
+
+      real xi(lmax),yi(lmax),zi(lmax)
+      real uxi(lmax),uyi(lmax),uzi(lmax),uti(lmax)
+
+      n=lx1*ly1*lz1*nelv
+
+      if (nio.eq.0) write (6,*) 'inside sol_intp_xline',j
+
+      nn=0
+      if (nid.eq.0) nn=nx
+
+      s=pi/(2.*nx)
+      do i=1,nn
+         xi(i)=cos((2*i-1.)*s)*.5
+         yi(i)=ytgt
+         zi(i)=ztgt
+      enddo
+
+      call interp_vec_prop2(uxi,uyi,uzi,ux,uy,uz,xi,yi,zi,nn)
+      call interp_sca_prop2(uti,ut,xi,yi,zi,nn)
+
+      if (nid.eq.0) then
+         call blank(fname,127)
+         write (fname,'(A1,I0,A4)') 'q',j,'.dat'
+         open (unit=10,file=fname)
+         do i=1,nx
+            write (10,1) i,xi(i),uxi(i),uyi(i),uzi(i),uti(i),pfx
+         enddo
+         close (unit=10)
       endif
 
     1 format (i5,1p5e16.8,1x,'intp_result',a3)
@@ -995,7 +1050,7 @@ c
          if (ldim.eq.3) xyz(3,i)=zz(i)
       enddo
 
-      call interp_vec(uvw,ux,uy,uz,xyz,n)
+      call interp_vec2(uvw,ux,uy,uz,xyz,n)
 
       do i=1,n
          uu(i)=uvw(1,i)
@@ -1045,8 +1100,8 @@ c
 
       if (icalld.eq.0) then
         icalld = 1
-c       call interp_setup(intp_h,0,0,nelt) ! prod
-        call interp_setup(0,0,intp_h)      ! v17
+        call interp_setup(intp_h,0,0,nelt) ! prod
+c       call interp_setup(0,0,intp_h)      ! v17
         if (nio.eq.0) write (6,*) 'finished interp_setup'
       endif
 
@@ -1085,7 +1140,7 @@ c
          if (ldim.eq.3) xyz(3,i)=zz(i)
       enddo
 
-      call interp_sca(u,xyz,s,n)
+      call interp_sca2(u,xyz,s,n)
 
       return
       end
@@ -1129,8 +1184,8 @@ c
 
       if (icalld.eq.0) then
         icalld = 1
-        call interp_setup(0,0,intp_h)      ! v17
-c       call interp_setup(intp_h,0,0,nelt) ! prod
+c       call interp_setup(0,0,intp_h)      ! v17
+        call interp_setup(intp_h,0,0,nelt) ! prod
         if (nio.eq.0) write (6,*) 'done with setup'
       endif
 
