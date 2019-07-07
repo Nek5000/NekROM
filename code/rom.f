@@ -613,7 +613,7 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /scrsetu/ uu(lt),vv(lt),ww(lt),tt(lt)
+      common /scrsetu/ uu(lt),vv(lt),ww(lt),tt(lt),wk(nb+1)
 
       logical iftmp
 
@@ -649,6 +649,9 @@ c-----------------------------------------------------------------------
          enddo
       endif
       call add2(tic,tb,n)
+
+      call read_serial(u,nb+1,'ops/u ',wk,nid)
+      call read_serial(ut,nb+1,'ops/t ',wk,nid)
 
       call reconv(uu,vv,ww,u)
       call recont(tt,ut)
