@@ -1006,6 +1006,8 @@ c-----------------------------------------------------------------------
       nn=0
       if (nid.eq.0) nn=nx
 
+      pfx='ttt'
+
       s=pi/(2.*nx)
       do i=1,nn
          xi(i)=cos((2*i-1.)*s)*.5
@@ -1019,6 +1021,58 @@ c-----------------------------------------------------------------------
       if (nid.eq.0) then
          call blank(fname,127)
          write (fname,'(A1,I0,A4)') 'q',j,'.dat'
+         open (unit=10,file=fname)
+         do i=1,nx
+            write (10,1) i,xi(i),uxi(i),uyi(i),uzi(i),uti(i),pfx
+         enddo
+         close (unit=10)
+      endif
+
+    1 format (i5,1p5e16.8,1x,'intp_result',a3)
+
+      call nekgsync
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine sol_intp_xline_fqoi(ux,uy,uz,ut,ytgt,ztgt,nx)
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      parameter (lmax=1024)
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      character*3 pfx
+      character*127 fname
+
+      real ux(lt),uy(lt),uz(lt),ut(lt)
+
+      real xi(lmax),yi(lmax),zi(lmax)
+      real uxi(lmax),uyi(lmax),uzi(lmax),uti(lmax)
+
+      n=lx1*ly1*lz1*nelv
+
+      if (nio.eq.0) write (6,*) 'inside sol_intp_xline'
+
+      nn=0
+      if (nid.eq.0) nn=nx
+
+      pfx='fom'
+
+      s=pi/(2.*nx)
+      do i=1,nn
+         xi(i)=cos((2*i-1.)*s)*.5
+         yi(i)=ytgt
+         zi(i)=ztgt
+      enddo
+
+      call interp_vec_prop2(uxi,uyi,uzi,ux,uy,uz,xi,yi,zi,nn)
+      call interp_sca_prop2(uti,ut,xi,yi,zi,nn)
+
+      if (nid.eq.0) then
+         call blank(fname,127)
+         write (fname,'(A1,I0,A4)') 'fq','.dat'
          open (unit=10,file=fname)
          do i=1,nx
             write (10,1) i,xi(i),uxi(i),uyi(i),uzi(i),uti(i),pfx

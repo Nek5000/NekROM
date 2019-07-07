@@ -797,3 +797,29 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine tj_analysis3
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'AVG'
+      include 'MOR'
+
+      character*127 fname
+
+      parameter (lint=128)
+
+
+      n=lx1*ly1*lz1*nelv
+
+      call blank(fname)
+      fname='a.list'
+      call real_averager(fname)
+      call opcopy(uavg,vavg,wavg,vx,vy,vz)
+      call copy(tavg,t,n)
+
+      call sol_intp_xline_fqoi(uavg,vavg,wavg,tavg,
+     $                           2.5,0.,128)
+
+      return
+      end
+c-----------------------------------------------------------------------
