@@ -766,6 +766,7 @@ c-----------------------------------------------------------------------
          call dump_serial(ua,nb+1,'ops/ua ',nid)
          if (ifrom(2)) then 
             call dump_serial(ut,nb+1,'ops/tf ',nid)
+            call dump_serial(uta,nb+1,'ops/uta ',nid)
          endif
          do i=0,nb
             t1(i)=u2a(i,i)-ua(i)*ua(i)
