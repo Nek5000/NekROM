@@ -37,7 +37,7 @@ c-----------------------------------------------------------------------
          param(173)=2.
          icalld=1
          call rom_setup
-         ifei=.true.
+         ifei=.false.
          time=ttime
       endif
 

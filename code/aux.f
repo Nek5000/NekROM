@@ -1100,8 +1100,8 @@ c
 
       if (icalld.eq.0) then
         icalld = 1
-c       call interp_setup(intp_h,0,0,nelt) ! prod
-        call interp_setup(0,0,intp_h)      ! v17
+        call interp_setup(intp_h,0,0,nelt) ! prod
+c       call interp_setup(0,0,intp_h)      ! v17
         if (nio.eq.0) write (6,*) 'finished interp_setup'
       endif
 
@@ -1184,8 +1184,8 @@ c
 
       if (icalld.eq.0) then
         icalld = 1
-        call interp_setup(0,0,intp_h)      ! v17
-c       call interp_setup(intp_h,0,0,nelt) ! prod
+c       call interp_setup(0,0,intp_h)      ! v17
+        call interp_setup(intp_h,0,0,nelt) ! prod
         if (nio.eq.0) write (6,*) 'done with setup'
       endif
 

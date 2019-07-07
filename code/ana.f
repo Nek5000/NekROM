@@ -746,3 +746,54 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine tj_analysis2
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lint=128)
+      parameter (lmax=128)
+
+      common /my_intp/ uint(lint),vint(lint),wint(lint),tint(lint)
+
+      character *127 fname
+      character *3 pfx
+
+      real xxi(lmax)
+      real uxi(lmax),uyi(lmax),uzi(lmax),uti(lmax)
+
+      n=lx1*ly1*lz1*nelv
+
+      npts=128
+      nx=128
+
+      if (nid.eq.0) then
+         do j=0,nb
+            uxi(i)=0.
+            uyi(i)=0.
+            uzi(i)=0.
+            uti(i)=0.
+            call blank(fname,127)
+            write (fname,'(A1,I0,A4)') 'q',j,'.dat'
+            open (unit=10,file=fname)
+            do i=1,nx
+               read (10,*) k,xxi(i),t1,t2,t3,t4
+               uxi(i)=uxi(i)+t1
+               uyi(i)=uyi(i)+t2
+               uzi(i)=uzi(i)+t3
+               uti(i)=uti(i)+t4
+            enddo
+            close (unit=10)
+         enddo
+
+         do i=1,nx
+            write (6,*) i,xxi(i),uxi(i),uyi(i),uti(i)
+         enddo
+      endif
+
+    1 format (i5,1p5e16.8,1x,'intp_result',a3)
+
+      return
+      end
+c-----------------------------------------------------------------------
