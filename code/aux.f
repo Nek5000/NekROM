@@ -926,3 +926,224 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine sol_intp_xline(ux,uy,uz,ut,ytgt,ztgt,nx,pfx)
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      parameter (lmax=1024)
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      character*3 pfx
+
+      real ux(lt),uy(lt),uz(lt),ut(lt)
+
+      real xi(lmax),yi(lmax),zi(lmax)
+      real uxi(lmax),uyi(lmax),uzi(lmax),uti(lmax)
+
+      n=lx1*ly1*lz1*nelv
+
+      if (nio.eq.0) write (6,*) 'inside sol_intp_xline'
+
+      nn=0
+      if (nid.eq.0) nn=nx
+
+      s=pi/(2.*nx)
+      do i=1,nn
+         xi(i)=cos((2*i-1.)*s)*.5
+         yi(i)=ytgt
+         zi(i)=ztgt
+      enddo
+
+      if (nio.eq.0) write (6,*) 'wp1'
+
+      call interp_vec_prop(uxi,uyi,uzi,ux,uy,uz,xi,yi,zi,nn)
+
+      if (nio.eq.0) write (6,*) 'wp2'
+
+      call interp_sca_prop(uti,ut,xi,yi,zi,nn)
+
+      if (nio.eq.0) write (6,*) 'wp3'
+
+      if (nid.eq.0) then
+         do i=1,nx
+            write (6,1) i,xi(i),uxi(i),uyi(i),uzi(i),uti(i),pfx
+         enddo
+      endif
+
+    1 format (i5,1p5e16.8,1x,'intp_result',a3)
+
+      call nekgsync
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine interp_vec_prop2(uu,vv,ww,ux,uy,uz,xx,yy,zz,n)
+c
+c     evaluate velocity for list of points xyz using separate field arrays
+c
+      include 'SIZE'
+      include 'TOTAL'
+
+      real uvw(ldim,n),xyz(ldim,n)
+      real uu(n),vv(n),ww(n),xx(n),yy(n),zz(n)
+      real ux(n),uy(n),uz(n)
+
+      do i=1,n
+         xyz(1,i)=xx(i)
+         xyz(2,i)=yy(i)
+         if (ldim.eq.3) xyz(3,i)=zz(i)
+      enddo
+
+      call interp_vec(uvw,ux,uy,uz,xyz,n)
+
+      do i=1,n
+         uu(i)=uvw(1,i)
+         vv(i)=uvw(2,i)
+         if (ldim.eq.3) ww(i)=uvw(3,i)
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine interp_vec2(uvw,ux,uy,uz,xyz,n)
+c
+c     evaluate velocity for list of points xyz
+c
+      include 'SIZE'
+      include 'TOTAL'
+
+      parameter (intp_nmax=1024)
+      real uvw(ldim,n),ux(n),uy(n),uz(n),xyz(ldim,n)
+
+      real    rwk(INTP_NMAX,ldim+1) ! r, s, t, dist2
+      integer iwk(INTP_NMAX,3)      ! code, proc, el
+      save    rwk, iwk
+
+      integer intp_h
+      save    intp_h
+
+      common /rwk_intp/
+     $       fwrk(lx1*ly1*lz1*lelt,ldim),
+     $       fpts(ldim*INTP_NMAX),
+     $       pts(ldim*INTP_NMAX)
+
+      integer icalld,e
+      save    icalld
+      data    icalld /0/
+
+      nxyz  = nx1*ny1*nz1
+      ntot  = nxyz*nelv
+
+      if (n.gt.INTP_NMAX) call exitti ('n > INTP_NMAX in interp_v!$',n)
+
+      do i=1,n ! ? not moving -> save?
+         pts(i)     = xyz(1,i)
+         pts(i + n) = xyz(2,i)
+         if (ldim.eq.3) pts(i + n*2) = xyz(3,i)
+      enddo
+
+      if (icalld.eq.0) then
+        icalld = 1
+c       call interp_setup(intp_h,0,0,nelt) ! prod
+        call interp_setup(0,0,intp_h)      ! v17
+        if (nio.eq.0) write (6,*) 'finished interp_setup'
+      endif
+
+      ! pack working array
+      call opcopy(fwrk(1,1),fwrk(1,2),fwrk(1,3),ux,uy,uz)
+
+      ndim=ldim
+
+      ! interpolate
+      call interp_nfld(fpts,fwrk,ndim,pts(1),pts(1+n),pts(2*n+1),
+     $                 n,iwk,rwk,INTP_NMAX,.true.,intp_h)
+
+      do i=1,n
+         uvw(1,i) = fpts(i)
+         uvw(2,i) = fpts(i + n)
+         if (ldim.eq.3) uvw(3,i) = fpts(i + n*2)
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine interp_sca_prop2(u,s,xx,yy,zz,n)
+c
+c     evaluate velocity for list of points xyz using separate field arrays
+c
+      include 'SIZE'
+      include 'TOTAL'
+
+      real xyz(ldim,n)
+      real u(n),xx(n),yy(n),zz(n)
+      real s(1)
+
+      do i=1,n
+         xyz(1,i)=xx(i)
+         xyz(2,i)=yy(i)
+         if (ldim.eq.3) xyz(3,i)=zz(i)
+      enddo
+
+      call interp_sca(u,xyz,s,n)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine interp_sca2(u,xyz,s,n)
+c
+c     evaluate scalar field, s, for list of points xyz
+c
+      include 'SIZE'
+      include 'TOTAL'
+
+      parameter (intp_nmax=1024)
+      real u(n),s(n),xyz(ldim,n)
+
+      real    rwk(INTP_NMAX,ldim+1) ! r, s, t, dist2
+      integer iwk(INTP_NMAX,3)      ! code, proc, el
+      save    rwk, iwk
+
+      integer intp_h
+      save    intp_h
+
+      common /rwk_intp/
+     $       fwrk(lx1*ly1*lz1*lelt),
+     $       fpts(INTP_NMAX),
+     $       pts(INTP_NMAX)
+
+      integer icalld,e
+      save    icalld
+      data    icalld /0/
+
+      nxyz  = nx1*ny1*nz1
+      ntot  = nxyz*nelv
+
+      if (n.gt.INTP_NMAX) call exitti ('n > INTP_NMAX in interp_s!$',n)
+
+      do i=1,n ! ? not moving -> save?
+         pts(i)   = xyz(1,i)
+         pts(i+n) = xyz(2,i)
+         if (ldim.eq.3) pts(i+2*n) = xyz(3,i)
+      enddo
+
+      if (icalld.eq.0) then
+        icalld = 1
+        call interp_setup(0,0,intp_h)      ! v17
+c       call interp_setup(intp_h,0,0,nelt) ! prod
+        if (nio.eq.0) write (6,*) 'done with setup'
+      endif
+
+      ! pack working array
+      call copy(fwrk,s,lx1*ly1*lz1*nelv)
+
+      ! interpolate
+      mdim=1
+      call interp_nfld(fpts,fwrk,mdim,pts(1),pts(1+n),pts(2*n+1),
+     $                 n,iwk,rwk,INTP_NMAX,.true.,intp_h)
+
+      call copy(u,fpts,n)
+
+      return
+      end
+c-----------------------------------------------------------------------
