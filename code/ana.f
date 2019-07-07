@@ -778,11 +778,11 @@ c-----------------------------------------------------------------------
             write (fname,'(A1,I0,A4)') 'q',j,'.dat'
             open (unit=10,file=fname)
             do i=1,nx
-               read (10,*) k,xxi(i),t1,t2,t3,t4
-               uxi(i)=uxi(i)+t1
-               uyi(i)=uyi(i)+t2
-               uzi(i)=uzi(i)+t3
-               uti(i)=uti(i)+t4
+               read (10,1) k,xxi(i),t1,t2,t3,t4
+               uxi(i)=uxi(i)+t1*ua(j)
+               uyi(i)=uyi(i)+t2*ua(j)
+               uzi(i)=uzi(i)+t3*ua(j)
+               uti(i)=uti(i)+t4*uta(j)
             enddo
             close (unit=10)
          enddo
@@ -792,7 +792,7 @@ c-----------------------------------------------------------------------
          enddo
       endif
 
-    1 format (i5,1p5e16.8,1x,'intp_result',a3)
+    1 format (i5,1p5e16.8,1x,'intp_resultttt')
 
       return
       end
