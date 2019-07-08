@@ -1072,7 +1072,7 @@ c-----------------------------------------------------------------------
 
       if (nid.eq.0) then
          call blank(fname,127)
-         write (fname,'(A1,I0,A4)') 'fq','.dat'
+         fname='fq.dat'
          open (unit=10,file=fname)
          do i=1,nx
             write (10,1) i,xi(i),uxi(i),uyi(i),uzi(i),uti(i),pfx
