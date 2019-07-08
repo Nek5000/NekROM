@@ -82,9 +82,7 @@ c-----------------------------------------------------------------------
          if (nio.eq.0) write (6,*) 'romd_time: ',dtime
       endif
 
-      if (.not.ifmult.or.nsteps.eq.istep) then
-         call final
-      endif
+      call final
 
       return
       end
