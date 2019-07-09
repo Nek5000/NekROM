@@ -120,7 +120,7 @@ c        compute quasi-Newton step
       return
       end
 c-----------------------------------------------------------------------
-      subroutine BFGS_new(rhs,helm,invhelm,amax,amin,adis,bpar,bstep)
+      subroutine BFGS_new(rhs,uu,helm,invhelm,amax,amin,adis,bpar,bstep)
 
       include 'SIZE'
       include 'TOTAL'
@@ -144,7 +144,6 @@ c-----------------------------------------------------------------------
       real norm_s,norm_step,norm_uo
       real ysk
 
-      call copy(uu,u(1,1),nb)
 
       bctol = 1e-8
       jmax = 0
