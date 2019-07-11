@@ -814,7 +814,7 @@ c-----------------------------------------------------------------------
 
       call blank(fname,127)
       fname='a.list'
-      call real_averager(fname)
+c     call real_averager(fname)
       call opcopy(uavg,vavg,wavg,vx,vy,vz)
       call copy(tavg,t,n)
 
