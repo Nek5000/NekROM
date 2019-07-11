@@ -650,8 +650,9 @@ c-----------------------------------------------------------------------
       endif
       call add2(tic,tb,n)
 
-      call read_serial(u,nb+1,'ops/u ',wk,nid)
-      call read_serial(ut,nb+1,'ops/t ',wk,nid)
+      ! TODO: add ops/u and ops/t to tar file
+c     call read_serial(u,nb+1,'ops/u ',wk,nid)
+c     call read_serial(ut,nb+1,'ops/t ',wk,nid)
 
       call reconv(uu,vv,ww,u)
       call recont(tt,ut)
