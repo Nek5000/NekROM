@@ -754,6 +754,7 @@ c-----------------------------------------------------------------------
 
       real t1(0:nb),t2(0:nb)
 
+      if (nio.eq.0) write (6,*) 'final...'
       if (nid.eq.0) then
          write (6,*) 'evalc_time: ',evalc_time
          write (6,*) 'lu_time:    ',lu_time
