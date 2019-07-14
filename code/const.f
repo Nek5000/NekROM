@@ -120,7 +120,7 @@ c        compute quasi-Newton step
       return
       end
 c-----------------------------------------------------------------------
-      subroutine BFGS_new(rhs,uu,helm,invhelm,amax,amin,adis,bpar,bstep)
+      subroutine BFGS_new(rhs,vv,helm,invhelm,amax,amin,adis,bpar,bstep)
 
       include 'SIZE'
       include 'TOTAL'
@@ -131,7 +131,7 @@ c-----------------------------------------------------------------------
       real qgo(nb),qngradf(nb),ngf
       real qnf
       real ww(nb),pert
-      real uu(nb),rhs(nb)
+      real uu(nb),vv(nb),rhs(nb)
       real amax(nb),amin(nb), adis(nb)
       real bpar,par
       real sk(nb,50),yk(nb,50)
@@ -144,6 +144,7 @@ c-----------------------------------------------------------------------
       real norm_s,norm_step,norm_uo
       real ysk
 
+      call copy(uu,vv,nb)
 
       bctol = 1e-8
       jmax = 0
@@ -493,16 +494,17 @@ c-----------------------------------------------------------------------
 
          call comp_qnf(uu,rhs,helm,invhelm,fk1,amax,amin,bpar,bflag)
          
-         if (mod(ad_step,ad_iostep).eq.0) then
-            if (nio.eq.0) write(6,*)
-     $         '# lnsrch:',counter,'alpha',alphak,chekbc,countbc
-         endif
          if (alphak < 1e-4) then
-            call cmult(s,alphak,nb)
             exit
          endif
       enddo
+
       call cmult(s,alphak,nb)
+      if (mod(ad_step,ad_iostep).eq.0) then
+         if (nio.eq.0) write(6,*)
+     $         ad_step,'# lnsrch:',counter,'alpha',alphak,
+     $         chekbc,countbc
+      endif
 
       return
       end
