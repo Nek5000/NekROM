@@ -169,7 +169,7 @@ c-----------------------------------------------------------------------
 c        compute quasi-Newton step
          do j=1,50
 
-            if (isolve.eq.1.OR.isolve.eq.2) then
+            if (isolve.eq.1.OR.isolve.eq.2.OR.isolve.eq.3) then
                if (j.eq.1) then
                   call copy(qns,qngradf,nb)
                   call chsign(qns,nb)
