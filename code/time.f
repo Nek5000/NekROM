@@ -5,8 +5,12 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
-      real rhs(0:nb)
+      real rhs(0:nb),rhstmp(0:nb)
       logical ifdebug
+      real bctol
+      integer chekbc
+
+      chekbc=0
 
       ifdebug=.true.
       ifdebug=.false.
@@ -83,8 +87,25 @@ c-----------------------------------------------------------------------
       else if (isolve.eq.1.OR.isolve.eq.2) then ! constrained solve
 c        call BFGS(rhs(1),helmu,invhelmu,umax,umin,udis,1e-3,4) 
          call BFGS_new(rhs(1),u(1,1),helmu,invhelmu,umax,umin,udis,
-     $   1e-4,4)
-      else
+     $   1e-1,4)
+      else if (isolve.eq.3) then
+         call copy(rhstmp,rhs,nb+1)
+         call dgetrs('N',nb,1,fluv,lub,ipiv,rhstmp(1),nb,info)
+         bctol = 1e-8
+         do ii=1,nb
+            if ((rhstmp(ii)-umax(ii)).ge.bctol) then
+               chekbc = 1
+            elseif ((umin(ii)-rhstmp(ii)).ge.bctol) then
+               chekbc = 1
+            endif
+         enddo
+         if (chekbc.eq.1) then
+            call BFGS_new(rhs(1),u(1,1),helmu,invhelmu,umax,umin,udis,
+     $      1e2,6)
+         else
+            call copy(rhs,rhstmp,nb+1)
+         endif
+      else   
          call exitti('incorrect isolve specified...$',isolve)
       endif
       solve_time=solve_time+dnekclock()-ttime
@@ -163,12 +184,15 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
 c     Matrices and vectors for advance
-      real tmp(0:nb),rhs(0:nb)
+      real tmp(0:nb),rhs(0:nb),rhstmp(0:nb)
+      real bctol
+      integer chekbc
 
       common /scrrstep/ t1(lt),t2(lt),t3(lt),work(lt)
 
       common /nekmpi/ nidd,npp,nekcomm,nekgroup,nekreal
 
+      chekbc = 0
 
       if (ad_step.eq.1) then
          step_time = 0.
@@ -202,7 +226,24 @@ c     Matrices and vectors for advance
       else if (isolve.eq.1.OR.isolve.eq.2) then ! constrained solve
 c        call BFGS(rhs(1),helmt,invhelmt,tmax,tmin,tdis,1e-3,4) 
          call BFGS_new(rhs(1),ut(1,1),helmt,invhelmt,tmax,tmin,tdis,
-     $   1e-4,4) 
+     $   1e-1,4) 
+      else if (isolve.eq.3) then
+         call copy(rhstmp,rhs,nb+1)
+         call dgetrs('N',nb,1,flut,lub,ipiv,rhstmp(1),nb,info)
+         bctol = 1e-8
+         do ii=1,nb
+            if ((rhstmp(ii)-tmax(ii)).ge.bctol) then
+               chekbc = 1
+            elseif ((tmin(ii)-rhstmp(ii)).ge.bctol) then
+               chekbc = 1
+            endif
+         enddo
+         if (chekbc.eq.1) then
+            call BFGS_new(rhs(1),ut(1,1),helmt,invhelmt,tmax,tmin,tdis,
+     $      1e2,6) 
+         else
+            call copy(rhs,rhstmp,nb+1)
+         endif
       else
          call exitti('incorrect isolve specified...$',isolve)
       endif
