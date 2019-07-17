@@ -730,7 +730,7 @@ c           err(i)=op_glsc2_wt(t1,t2,t3,t1,t2,t3,bm1)
                   ss=ss+bm1(ii,1,1,1)*(t1(ii)*t1(ii)+t2(ii)*t2(ii))
                enddo
             endif
-            err(i)=ss
+            err(i)=sqrt(ss)
 
             s=-ut(i,1)
             ss = 0
@@ -739,7 +739,7 @@ c           err(i)=op_glsc2_wt(t1,t2,t3,t1,t2,t3,bm1)
                do ii=1,n
                   ss=ss+bm1(ii,1,1,1)*(t4(ii)*t4(ii))
                enddo
-               err_t(i)=ss
+               err_t(i)=sqrt(ss)
 c              err_t(i)=op_glsc2_wt(t4,zeros,zeros,t4,zeros,zeros,bm1)
             endif
 
