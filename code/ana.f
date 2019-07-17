@@ -669,7 +669,7 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /scrana/ t1(lt),t2(lt),t3(lt)
+      common /scrana/ t1(lt),t2(lt),t3(lt),t4(lt)
       common /ctrack/ cmax(0:nb), cmin(0:nb)
 
       integer icalld
@@ -680,15 +680,28 @@ c-----------------------------------------------------------------------
       character (len=72) fmt2
       character*8 fname
 
-      real err(0:nb)
+      real err(0:nb),err_t(0:nb)
 
       call rom_setup
 
       do j=1,ns
          istep=j
          nio = -1
+         n=lx1*ly1*lz1*nelv
+
          call pv2b(u,us0(1,1,j),us0(1,2,j),us0(1,ldim,j)
      $                    ,ub,vb,wb)
+
+         call add2(us0(1,1,j),ub,n)
+         call add2(us0(1,2,j),vb,n)
+         if (ldim.eq.3) call add2(us0(1,ldim,j),wb,n)
+
+
+         if (ifpod(2)) then
+            call ps2b(ut,ts0(1,j),tb) 
+            call add2(ts0(1,j),tb,n)
+         endif
+
          nio = nid
 
          write (fmt1,'("(i7,", i0, "(1pe15.7),1x,a4)")') nb+2
@@ -697,27 +710,56 @@ c-----------------------------------------------------------------------
          call opcopy(t1,t2,t3,us0(1,1,j),us0(1,2,j),us0(1,ldim,j))
          energy=op_glsc2_wt(t1,t2,t3,t1,t2,t3,bm1)
 
-         n=lx1*ly1*lz1*nelv
+         if (ifpod(2)) call copy(t4,ts0(1,j),n)
 
          ttmp = time
          itmp = istep
          do i=0,nb
+
             s=-u(i,1)
             call opadds(t1,t2,t3,ub(1,i),vb(1,i),wb(1,i),s,n,2)
-            err(i)=op_glsc2_wt(t1,t2,t3,t1,t2,t3,bm1)
+            ss = 0
+c           err(i)=op_glsc2_wt(t1,t2,t3,t1,t2,t3,bm1)
+            if (ldim.eq.3) then
+               do ii=1,n
+                  ss=ss+bm1(ii,1,1,1)*(t1(ii)*t1(ii)+t2(ii)*t2(ii)
+     $            +t3(ii)*t3(ii))
+               enddo
+            else
+               do ii=1,n
+                  ss=ss+bm1(ii,1,1,1)*(t1(ii)*t1(ii)+t2(ii)*t2(ii))
+               enddo
+            endif
+            err(i)=ss
+
+            s=-ut(i,1)
+            ss = 0
+            if (ifpod(2)) then
+               call add2s2(t4,tb(1,i),s,n)
+               do ii=1,n
+                  ss=ss+bm1(ii,1,1,1)*(t4(ii)*t4(ii))
+               enddo
+               err_t(i)=ss
+c              err_t(i)=op_glsc2_wt(t4,zeros,zeros,t4,zeros,zeros,bm1)
+            endif
+
             istep = i
             time = err(i)
-            call outpost(t1,t2,t3,pr,t,'err')
-            if (ii == 1) then
-               call outpost(t1,t2,t3,pr,t,'err')
+
+            if (j == 1) then
+               call outpost(t1,t2,t3,pr,t4,'err')
             endif
+
          enddo
          time = ttmp
          istep = itmp
 
          if (nio.eq.0) then
             write (6,fmt1) istep,time,(u(i,1),i=0,nb),'coef'
-            write (6,fmt2) istep,time,energy,(err(i),i=0,nb),'eerr'
+            write (6,fmt2) istep,time,energy,(err(i),i=0,nb),'erru'
+            write (6,fmt1) istep,time,(ut(i,1),i=0,nb),'coef'
+            write (6,fmt2) istep,time,energy,(err_t(i),i=0,nb),
+     $      'errt'
          endif
       enddo
 
