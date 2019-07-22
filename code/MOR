@@ -135,10 +135,10 @@ c     parameters and common blocks for MOR
      $                  ifbuoy,ifrom,ifcintp,iffastc,ifcnuss,ifctke,
      $                  iffasth,ifavisc,ifsource,ifei,ifsub0
 
-      real last_time,misc_time,lu_time
+      real last_time,misc_time,lu_time,copt_time,quasi_time,lnsrch_time
       common /mortime/ step_time,last_time,misc_time,evalc_time,
-     $                 solve_time,lu_time
-
+     $                 solve_time,lu_time,copt_time,quasi_time,
+     $                 lnsrch_time
       real mtke
       common /morstat/ mtke
 
