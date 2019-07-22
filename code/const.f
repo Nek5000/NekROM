@@ -390,54 +390,6 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine invHessian_update(B,s,y,nb)
-
-      real B(nb,nb)
-      real s(nb), y(nb)
-      real w1(nb,nb), w2(nb,nb)
-      real w3(nb,nb), w4(nb,nb), w5(nb,nb)
-      real ss(nb,nb), ys, sBs
-      real sds
-
-      ! y_k * s_k^T
-      call mxm(y,nb,s,1,w1,nb)
-      ! s_k * y_k^T
-      call mxm(s,nb,y,1,w2,nb)
-      ! y_k^T * s_k
-      ys = glsc2(y,s,nb)
-
-      call mxm(B,nb,w1,nb,w3,nb)
-      call cmult(w3,-1.0/ys,nb*nb)
-      do j=1,nb
-      do i=1,nb
-      write(6,*)i,j,w3(i,j)
-      enddo
-      enddo
-
-      call mxm(w2,nb,B,nb,w4,nb)
-      call cmult(w4,-1.0/ys,nb*nb)
-
-      call mxm(w4,nb,w1,nb,w5,nb)
-      call cmult(w5,1.0/(ys**2),nb*nb)
-
-      ! second rank-one update
-      ! s_k * s_k^T               
-      call mxm(s,nb,s,1,ss,nb)
-      ! s_k^T * s_k               
-      sds = glsc2(s,s,nb)
-      call cmult(ss,1.0/sds,nb*nb)
-
-      do ii=1,nb
-         call add4(B(1,ii),w3(1,ii),w4(1,ii)
-     $            ,w5(1,ii),nb)
-      enddo
-
-      call add2(B(1,1),ss(1,1),nb*nb)
-      call exitt0
-
-      return
-      end
-c-----------------------------------------------------------------------
       subroutine backtrackr(uu,s,rhs,helm,invhelm,sigmab,facb,
      $            amax,amin,bctol,bflag,bpar,chekbc,counter)
 
