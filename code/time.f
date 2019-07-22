@@ -19,6 +19,9 @@ c-----------------------------------------------------------------------
          step_time = 0.
          solve_time=0.
          lu_time=0.
+         copt_time=0.
+         quasi_time=0.
+         lnsrch_time=0.
       endif
 
       last_time = dnekclock()
@@ -87,11 +90,13 @@ c-----------------------------------------------------------------------
       else if (isolve.eq.1.OR.isolve.eq.2) then ! constrained solve
 c        call BFGS(rhs(1),helmu,invhelmu,umax,umin,udis,1e-3,4) 
          call BFGS_new(rhs(1),u(1,1),helmu,invhelmu,umax,umin,udis,
-     $   1e-1,4)
+     $   1e-3,8)
       else if (isolve.eq.3) then
+
          call copy(rhstmp,rhs,nb+1)
          call dgetrs('N',nb,1,fluv,lub,ipiv,rhstmp(1),nb,info)
-         bctol = 1e-8
+
+         bctol = 1e-12
          do ii=1,nb
             if ((rhstmp(ii)-umax(ii)).ge.bctol) then
                chekbc = 1
@@ -101,10 +106,11 @@ c        call BFGS(rhs(1),helmu,invhelmu,umax,umin,udis,1e-3,4)
          enddo
          if (chekbc.eq.1) then
             call BFGS_new(rhs(1),u(1,1),helmu,invhelmu,umax,umin,udis,
-     $      1e2,6)
+     $      1e-1,8)
          else
             call copy(rhs,rhstmp,nb+1)
          endif
+
       else   
          call exitti('incorrect isolve specified...$',isolve)
       endif
@@ -226,11 +232,13 @@ c     Matrices and vectors for advance
       else if (isolve.eq.1.OR.isolve.eq.2) then ! constrained solve
 c        call BFGS(rhs(1),helmt,invhelmt,tmax,tmin,tdis,1e-3,4) 
          call BFGS_new(rhs(1),ut(1,1),helmt,invhelmt,tmax,tmin,tdis,
-     $   1e-1,4) 
+     $   1e-3,8) 
       else if (isolve.eq.3) then
+
          call copy(rhstmp,rhs,nb+1)
          call dgetrs('N',nb,1,flut,lub,ipiv,rhstmp(1),nb,info)
-         bctol = 1e-8
+
+         bctol = 1e-12
          do ii=1,nb
             if ((rhstmp(ii)-tmax(ii)).ge.bctol) then
                chekbc = 1
@@ -240,10 +248,11 @@ c        call BFGS(rhs(1),helmt,invhelmt,tmax,tmin,tdis,1e-3,4)
          enddo
          if (chekbc.eq.1) then
             call BFGS_new(rhs(1),ut(1,1),helmt,invhelmt,tmax,tmin,tdis,
-     $      1e2,6) 
+     $      1e-1,8) 
          else
             call copy(rhs,rhstmp,nb+1)
          endif
+
       else
          call exitti('incorrect isolve specified...$',isolve)
       endif
