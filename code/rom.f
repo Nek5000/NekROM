@@ -760,6 +760,9 @@ c-----------------------------------------------------------------------
          write (6,*) 'solve_time: ',solve_time
          write (6,*) 'step_time:  ',step_time
          write (6,*) 'rom_time:   ',rom_time
+         write (6,*) 'copt_time:  ',copt_time
+         write (6,*) 'quasi_time: ',quasi_time
+         write (6,*) 'lnsrch_time:',lnsrch_time
       endif
 
       if (ifdumpops) then
