@@ -368,12 +368,16 @@ c-----------------------------------------------------------------------
       
       ! s_k * s_k^T               
       call mxm(s,nb,s,1,w1,nb)
+
       ! s_k * s_k^T * B_k
       call mxm(w1,nb,B,nb,w2,nb)
+
       ! B_k * s_k * s_k^T * B_k 
       call mxm(B,nb,w2,nb,w3,nb)
+
       ! s_k^T * B_k * s_k 
       call mxm(B,nb,s,nb,w4,1)
+
       sBs = glsc2(s,w4,nb)
 
       ! second rank-one update
@@ -420,7 +424,6 @@ c-----------------------------------------------------------------------
       call comp_qngradf(uu,rhs,helm,Jfk,amax,amin,bpar,bflag)
 
       call findminalpha(minalpha,s,uu,amax,amin)
-c     minalpha = 1e-4
 
       call copy(uuo,uu,nb)
       call add2s1(uu,s,alphak,nb)
@@ -468,6 +471,7 @@ c    $   then
       enddo
 
       call cmult(s,alphak,nb)
+
       if (mod(ad_step,ad_iostep).eq.0) then
          if (nio.eq.0) write(6,*)
      $         ad_step,'# lnsrch:',counter,'alpha',alphak,
@@ -522,6 +526,7 @@ c-----------------------------------------------------------------------
 
       call copy(qnsol,qnd,nb)
       call chsign(qnsol,nb)
+
       ! compute right product
       do i=qnstep,1,-1
          qnrho(i) = glsc2(yk(1,i),sk(1,i),nb)
