@@ -410,6 +410,7 @@ c-----------------------------------------------------------------------
       real Jfks
       real sigmab,facb,alphak
       real bctol,bpar,minalpha
+
       integer chekbc,counter
       integer bflag
       integer countbc
@@ -461,11 +462,12 @@ c-----------------------------------------------------------------------
          enddo
 
          call comp_qnf(uu,rhs,helm,invhelm,fk1,amax,amin,bpar,bflag)
+
          cond1 = fk1 .gt. (fk+sigmab*alphak*Jfks)
          
 c        if (alphak < minalpha .AND. (fk1.gt.(fk+sigmab*alphak*Jfks))) 
 c    $   then
-         if ((alphak < minalpha .AND. cond1).OR. alphak < 1e-8) then
+         if ((alphak < minalpha.AND..not.cond1).OR.alphak < 1e-8) then
             exit
          endif
       enddo
