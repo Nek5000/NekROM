@@ -105,6 +105,9 @@ c-----------------------------------------------------------------------
 
       logical iftmp
 
+      call nekgsync
+      dump_time=dnekclock()
+
       if (ifpod(1)) then
          call dump_serial(ug(1,1,1),ls*ls,'ops/gu ',nid)
          call dump_serial(au0,(nb+1)**2,'ops/au ',nid)
@@ -160,6 +163,8 @@ c-----------------------------------------------------------------------
 
       iftmp=ifxyo
 
+      call nekgsync
+      dbas_time=dnekclock()
       do i=0,nb
          time=i
          itmp=i
@@ -169,6 +174,11 @@ c-----------------------------------------------------------------------
       istep=itmp
       time=ttmp
       ifxyo=iftmp
+
+      call nekgsync
+      done_time=dnekclock()
+      if (nio.eq.0) write (6,*) 'dbas_time:',done_time-dbas_time
+      if (nio.eq.0) write (6,*) 'dump_time:',done_time-dump_time
 
       return
       end

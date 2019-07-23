@@ -522,6 +522,9 @@ c-----------------------------------------------------------------------
       real ep
       real wk(nb)
 
+      call nekgsync
+      hpar_time=dnekclock()
+
       ! eps is the free parameter
       ! 1e-2 is used in the paper
       ep = 1.e-2
@@ -596,6 +599,9 @@ c-----------------------------------------------------------------------
             call dump_serial(tmax,nb,'ops/tmax ',nid)
          endif
       endif   
+
+      call nekgsync
+      if (nio.eq.0) write (6,*) 'hpar_time',dnekclock()-hpar_time
 
       return
       end
