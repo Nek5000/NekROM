@@ -5,19 +5,29 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
-      real rhs(0:nb)
+      real rhs(0:nb),rhstmp(0:nb)
       logical ifdebug
+      real bctol
+      integer chekbc
+
+      chekbc=0
 
       ifdebug=.true.
       ifdebug=.false.
 
       if (ad_step.eq.1) then
-         step_time = 0.
+         ustep_time = 0.
          solve_time=0.
          lu_time=0.
+         ucopt_count=0
+         if (.not.ifrom(2)) then
+            copt_time=0.
+            quasi_time=0.
+            lnsrch_time=0.
+         endif
       endif
 
-      last_time = dnekclock()
+      ulast_time = dnekclock()
 
       n=lx1*ly1*lz1*nelt
 
@@ -80,11 +90,32 @@ c-----------------------------------------------------------------------
             if (rhs(i).lt.umin(i)) rhs(i)=umin(i)+(rhs(i)-umin(i))*damp
             enddo
          endif
-      else if (isolve.eq.1.OR.isolve.eq.2) then ! constrained solve
-c        call BFGS(rhs(1),helmu,invhelmu,umax,umin,udis,1e-3,4) 
+      else if (isolve.eq.1) then ! constrained solve
          call BFGS_new(rhs(1),u(1,1),helmu,invhelmu,umax,umin,udis,
-     $   1e-4,4)
-      else
+     $   1e-1,8)
+      else if (isolve.eq.2) then
+
+         call copy(rhstmp,rhs,nb+1)
+         call dgetrs('N',nb,1,fluv,lub,ipiv,rhstmp(1),nb,info)
+
+         bctol = 1e-12
+         do ii=1,nb
+            if ((rhstmp(ii)-umax(ii)).ge.bctol) then
+               chekbc = 1
+            elseif ((umin(ii)-rhstmp(ii)).ge.bctol) then
+               chekbc = 1
+            endif
+         enddo
+
+         if (chekbc.eq.1) then
+            ucopt_count = ucopt_count + 1
+            call BFGS_new(rhs(1),u(1,1),helmu,invhelmu,umax,umin,udis,
+     $      1e-1,8)
+         else
+            call copy(rhs,rhstmp,nb+1)
+         endif
+
+      else   
          call exitti('incorrect isolve specified...$',isolve)
       endif
       solve_time=solve_time+dnekclock()-ttime
@@ -97,7 +128,7 @@ c     if (ifdebug) call exitt0
 
       call shift3(u,rhs,nb+1)
 
-      step_time=step_time+dnekclock()-last_time
+      ustep_time=ustep_time+dnekclock()-ulast_time
 
       return
       end
@@ -162,16 +193,22 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-c     Matrices and vectors for advance
-      real tmp(0:nb),rhs(0:nb)
+      real rhs(0:nb),rhstmp(0:nb)
+      real bctol
+      integer chekbc
 
       common /scrrstep/ t1(lt),t2(lt),t3(lt),work(lt)
 
       common /nekmpi/ nidd,npp,nekcomm,nekgroup,nekreal
 
+      chekbc = 0
 
       if (ad_step.eq.1) then
-         step_time = 0.
+         tstep_time = 0.
+         copt_time=0.
+         quasi_time=0.
+         lnsrch_time=0.
+         tcopt_count = 0
       endif
 
       if (nb.eq.0) then
@@ -180,7 +217,7 @@ c     Matrices and vectors for advance
          return
       endif
 
-      last_time = dnekclock()
+      tlast_time = dnekclock()
 
       n=lx1*ly1*lz1*nelt
 
@@ -197,19 +234,42 @@ c     Matrices and vectors for advance
          call copy(invhelmt,flut,nb*nb)
       endif
 
+      ttime=dnekclock()
       if (isolve.eq.0) then ! standard matrix inversion
          call dgetrs('N',nb,1,flut,lub,ipiv,rhs(1),nb,info)
-      else if (isolve.eq.1.OR.isolve.eq.2) then ! constrained solve
-c        call BFGS(rhs(1),helmt,invhelmt,tmax,tmin,tdis,1e-3,4) 
+      else if (isolve.eq.1) then ! constrained solve
          call BFGS_new(rhs(1),ut(1,1),helmt,invhelmt,tmax,tmin,tdis,
-     $   1e-4,4) 
+     $   1e-1,8) 
+      else if (isolve.eq.2) then
+
+         call copy(rhstmp,rhs,nb+1)
+         call dgetrs('N',nb,1,flut,lub,ipiv,rhstmp(1),nb,info)
+
+         bctol = 1e-12
+         do ii=1,nb
+            if ((rhstmp(ii)-tmax(ii)).ge.bctol) then
+               chekbc = 1
+            elseif ((tmin(ii)-rhstmp(ii)).ge.bctol) then
+               chekbc = 1
+            endif
+         enddo
+
+         if (chekbc.eq.1) then
+            tcopt_count = tcopt_count + 1
+            call BFGS_new(rhs(1),ut(1,1),helmt,invhelmt,tmax,tmin,tdis,
+     $      1e-1,8) 
+         else
+            call copy(rhs,rhstmp,nb+1)
+         endif
+
       else
          call exitti('incorrect isolve specified...$',isolve)
       endif
+      tsolve_time=tsolve_time+dnekclock()-ttime
 
       call shift3(ut,rhs,nb+1)
 
-      step_time=step_time+dnekclock()-last_time
+      tstep_time=tstep_time+dnekclock()-tlast_time
 
       return
       end

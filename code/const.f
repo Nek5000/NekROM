@@ -120,7 +120,7 @@ c        compute quasi-Newton step
       return
       end
 c-----------------------------------------------------------------------
-      subroutine BFGS_new(rhs,uu,helm,invhelm,amax,amin,adis,bpar,bstep)
+      subroutine BFGS_new(rhs,vv,helm,invhelm,amax,amin,adis,bpar,bstep)
 
       include 'SIZE'
       include 'TOTAL'
@@ -131,8 +131,8 @@ c-----------------------------------------------------------------------
       real qgo(nb),qngradf(nb),ngf
       real qnf
       real ww(nb),pert
-      real uu(nb),rhs(nb)
-      real amax(nb),amin(nb), adis(nb)
+      real uu(nb),vv(nb),rhs(nb)
+      real amax(nb),amin(nb),adis(nb)
       real bpar,par
       real sk(nb,50),yk(nb,50)
 
@@ -144,8 +144,9 @@ c-----------------------------------------------------------------------
       real norm_s,norm_step,norm_uo
       real ysk
 
+      call copy(uu,vv,nb)
 
-      bctol = 1e-8
+      bctol = 1e-12
       jmax = 0
 
       bflag = 1
@@ -153,6 +154,7 @@ c-----------------------------------------------------------------------
       par_step = bstep 
 
    
+      tcopt_time=dnekclock()
       ! BFGS method with barrier function starts
       do k=1,par_step
 
@@ -165,18 +167,21 @@ c-----------------------------------------------------------------------
 
          norm_uo = glamax(uu,nb)
 
+         tquasi_time=dnekclock()
 c        compute quasi-Newton step
          do j=1,50
 
-            if (isolve.eq.1.OR.isolve.eq.2) then
+            if (isolve.eq.1.OR.isolve.eq.2.OR.isolve.eq.3) then
                if (j.eq.1) then
                   call copy(qns,qngradf,nb)
                   call chsign(qns,nb)
                   call dgetrs('N',nb,1,invhelm,lub,ipiv,qns,nb,info)
                endif
 
+               tlnsrch_time=dnekclock()
                call backtrackr(uu,qns,rhs,helm,invhelm,1e-4,0.5,
      $                     amax,amin,bctol,bflag,par,chekbc,lncount)
+               lnsrch_time=lnsrch_time+dnekclock()-tlnsrch_time
                ! store qns
                call copy(sk(1,j),qns,nb)
 
@@ -211,13 +216,20 @@ c        compute quasi-Newton step
 
       ! update solution
          enddo
+
+         quasi_time=quasi_time+dnekclock()-tquasi_time
+
          if (mod(ad_step,ad_iostep).eq.0) then
             if (nio.eq.0) write (6,*) 'lnconst_ana'
             call cpod_ana(uu,par,j,uHcount,lncount,ngf,norm_step
      $      ,norm_s,ysk)
          endif
          par = par*0.1
+
       enddo
+
+      copt_time=copt_time+dnekclock()-tcopt_time
+
       call copy(rhs,uu,nb)
 
       return
@@ -228,12 +240,11 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
 
-      real tmp1(nb),tmp2(nb),tmp3(nb),tmp4(nb)
       real helm(nb,nb)
-      real mpar
-      real uu(nb), rhs(nb), s(nb)
-      real amax(nb), amin(nb) 
-      real bpar
+      real uu(nb),rhs(nb),s(nb)
+      real amax(nb),amin(nb) 
+      real tmp1(nb),tmp2(nb),tmp3(nb),tmp4(nb)
+      real bpar,mpar,pert
       integer barr_func
 
       if (barr_func .eq. 1) then ! use logarithmic as barrier function
@@ -256,6 +267,7 @@ c-----------------------------------------------------------------------
          ZERO= 0.
          call dgemv('N',nb,nb,ONE,helm,nb,uu,1,ZERO,tmp4,1)
          call add2(s,tmp4,nb)
+c        call sub2(tmp4,s,nb)
 
       else ! use inverse function as barrier function
 
@@ -315,7 +327,6 @@ c-----------------------------------------------------------------------
       term3 = 0.5 * glsc2(rhs,tmp5,nb)
 
       if (barr_func .eq. 1) then ! use logarithmetic as barrier function
-
          ! barrier term
          call sub3(tmp1,amax,uu,nb)  
          call sub3(tmp2,uu,amin,nb)  
@@ -328,9 +339,7 @@ c-----------------------------------------------------------------------
             tmp3(i) = log(tmp1(i))
             tmp4(i) = log(tmp2(i))
          enddo
-
       else 
-
          call sub3(tmp1,uu,amax,nb)  
          call sub3(tmp2,amin,uu,nb)  
    
@@ -338,7 +347,6 @@ c-----------------------------------------------------------------------
             tmp3(i) = 1./tmp1(i)
             tmp4(i) = 1./tmp2(i)
          enddo
-
       endif
 
       bar1 = vlsum(tmp3,nb)
@@ -360,12 +368,16 @@ c-----------------------------------------------------------------------
       
       ! s_k * s_k^T               
       call mxm(s,nb,s,1,w1,nb)
+
       ! s_k * s_k^T * B_k
       call mxm(w1,nb,B,nb,w2,nb)
+
       ! B_k * s_k * s_k^T * B_k 
       call mxm(B,nb,w2,nb,w3,nb)
+
       ! s_k^T * B_k * s_k 
       call mxm(B,nb,s,nb,w4,1)
+
       sBs = glsc2(s,w4,nb)
 
       ! second rank-one update
@@ -378,54 +390,6 @@ c-----------------------------------------------------------------------
       call cmult(yy,1.0/ys,nb*nb)
 
       call add4(B(1,1),B(1,1),w3(1,1),yy(1,1),nb*nb)
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine invHessian_update(B,s,y,nb)
-
-      real B(nb,nb)
-      real s(nb), y(nb)
-      real w1(nb,nb), w2(nb,nb)
-      real w3(nb,nb), w4(nb,nb), w5(nb,nb)
-      real ss(nb,nb), ys, sBs
-      real sds
-
-      ! y_k * s_k^T
-      call mxm(y,nb,s,1,w1,nb)
-      ! s_k * y_k^T
-      call mxm(s,nb,y,1,w2,nb)
-      ! y_k^T * s_k
-      ys = glsc2(y,s,nb)
-
-      call mxm(B,nb,w1,nb,w3,nb)
-      call cmult(w3,-1.0/ys,nb*nb)
-      do j=1,nb
-      do i=1,nb
-      write(6,*)i,j,w3(i,j)
-      enddo
-      enddo
-
-      call mxm(w2,nb,B,nb,w4,nb)
-      call cmult(w4,-1.0/ys,nb*nb)
-
-      call mxm(w4,nb,w1,nb,w5,nb)
-      call cmult(w5,1.0/(ys**2),nb*nb)
-
-      ! second rank-one update
-      ! s_k * s_k^T               
-      call mxm(s,nb,s,1,ss,nb)
-      ! s_k^T * s_k               
-      sds = glsc2(s,s,nb)
-      call cmult(ss,1.0/sds,nb*nb)
-
-      do ii=1,nb
-         call add4(B(1,ii),w3(1,ii),w4(1,ii)
-     $            ,w5(1,ii),nb)
-      enddo
-
-      call add2(B(1,1),ss(1,1),nb*nb)
-      call exitt0
 
       return
       end
@@ -445,10 +409,11 @@ c-----------------------------------------------------------------------
       real fk,fk1
       real Jfks
       real sigmab,facb,alphak
-      real bctol,bpar
+      real bctol,bpar,minalpha
       integer chekbc,counter
       integer bflag
       integer countbc
+      logical cond1
 
       alphak = 1.0
       chekbc = 0
@@ -457,6 +422,8 @@ c-----------------------------------------------------------------------
 
       call comp_qnf(uu,rhs,helm,invhelm,fk,amax,amin,bpar,bflag) ! get old f
       call comp_qngradf(uu,rhs,helm,Jfk,amax,amin,bpar,bflag)
+
+      call findminalpha(minalpha,s,uu,amax,amin)
 
       call copy(uuo,uu,nb)
       call add2s1(uu,s,alphak,nb)
@@ -474,7 +441,9 @@ c-----------------------------------------------------------------------
       call comp_qnf(uu,rhs,helm,invhelm,fk1,amax,amin,bpar,bflag) ! get new f
       Jfks = vlsc2(Jfk,s,nb)   
 
-      do while ((fk1.gt.(fk+sigmab*alphak*Jfks)).OR.(chekbc.eq.1))
+      cond1 = fk1 .gt. (fk+sigmab*alphak*Jfks)
+
+      do while (cond1.OR.(chekbc.eq.1))
          counter = counter + 1
          alphak = alphak * facb
          call add3s2(uu,uuo,s,1.0,alphak,nb)
@@ -492,17 +461,22 @@ c-----------------------------------------------------------------------
          enddo
 
          call comp_qnf(uu,rhs,helm,invhelm,fk1,amax,amin,bpar,bflag)
+         cond1 = fk1 .gt. (fk+sigmab*alphak*Jfks)
          
-         if (mod(ad_step,ad_iostep).eq.0) then
-            if (nio.eq.0) write(6,*)
-     $         '# lnsrch:',counter,'alpha',alphak,chekbc,countbc
-         endif
-         if (alphak < 1e-4) then
-            call cmult(s,alphak,nb)
+c        if (alphak < minalpha .AND. (fk1.gt.(fk+sigmab*alphak*Jfks))) 
+c    $   then
+         if ((alphak < minalpha .AND. cond1).OR. alphak < 1e-8) then
             exit
          endif
       enddo
+
       call cmult(s,alphak,nb)
+
+      if (mod(ad_step,ad_iostep).eq.0) then
+         if (nio.eq.0) write(6,*)
+     $         ad_step,'# lnsrch:',counter,'alpha',alphak,
+     $         minalpha,chekbc,cond1
+      endif
 
       return
       end
@@ -552,6 +526,7 @@ c-----------------------------------------------------------------------
 
       call copy(qnsol,qnd,nb)
       call chsign(qnsol,nb)
+
       ! compute right product
       do i=qnstep,1,-1
          qnrho(i) = glsc2(yk(1,i),sk(1,i),nb)
@@ -571,5 +546,27 @@ c-----------------------------------------------------------------------
          call add2s2(qnsol,sk(1,i),qnfact(i),nb)
       enddo
 
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine findminalpha(minalpha,s,uu,amax,amin)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      real minalpha
+      real s(nb),uu(nb),amax(nb),amin(nb)
+      real alphai(nb)
+
+      do ii=1,nb
+         if (s(ii).le.0) then
+            alphai(ii) = abs((uu(ii)-amin(ii))/s(ii))
+         else
+            alphai(ii) = ((amax(ii)-uu(ii))/s(ii))
+         endif
+      enddo
+
+      minalpha = vlmin(alphai,nb)
       return
       end

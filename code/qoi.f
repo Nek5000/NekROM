@@ -303,6 +303,10 @@ c-----------------------------------------------------------------------
                      ta=ta+facint_v(tx,area,ifc,ie)
                      a=a+facint_v(ones,area,ifc,ie)
                   endif
+                  if (.not.ifaxis.and.xa.gt.(1.-eps)) then
+                     ta=ta+facint_v(tx,area,ifc,ie)
+                     a=a+facint_v(ones,area,ifc,ie)
+                  endif
                   if (ldim.eq.3.and.za.lt.eps) then
                      ta=ta-facint_v(tz,area,ifc,ie)
                      a=a+facint_v(ones,area,ifc,ie)

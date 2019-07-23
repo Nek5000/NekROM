@@ -20,6 +20,8 @@ c-----------------------------------------------------------------------
       if (icalld.eq.0) then
          ttime=time
          rom_time=0.
+         postu_time=0.
+         postt_time=0.
          icalld=1
          call rom_setup
          time=ttime
@@ -48,8 +50,12 @@ c-----------------------------------------------------------------------
             time=time+dt
             if (ifrom(2)) call rom_step_t
             if (ifrom(1)) call rom_step
+            tttime=dnekclock()
             call postu
+            postu_time=postu_time+dnekclock()-tttime
+            tttime=dnekclock()
             call postt
+            postt_time=postt_time+dnekclock()-tttime
             ad_step=ad_step+1
          enddo
          icalld=0
@@ -756,11 +762,24 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'final...'
       if (nid.eq.0) then
-         write (6,*) 'evalc_time: ',evalc_time
-         write (6,*) 'lu_time:    ',lu_time
-         write (6,*) 'solve_time: ',solve_time
-         write (6,*) 'step_time:  ',step_time
-         write (6,*) 'rom_time:   ',rom_time
+         write (6,*) 'evalc_time:  ',evalc_time
+         write (6,*) 'lu_time:     ',lu_time
+         write (6,*) 'solve_time:  ',solve_time
+         write (6,*) 'ustep_time:  ',ustep_time
+         write (6,*) 'copt_time:   ',copt_time
+         write (6,*) 'quasi_time:  ',quasi_time
+         write (6,*) 'lnsrch_time: ',lnsrch_time
+         write (6,*) 'ucopt_active:',ucopt_count,
+     $         '/',ad_step-1
+         if (ifrom(2)) then
+            write (6,*) 'tsolve_time: ',tsolve_time
+            write (6,*) 'tstep_time:  ',tstep_time
+            write (6,*) 'tcopt_active:',tcopt_count,
+     $         '/',ad_step-1
+         endif
+         write (6,*) 'rom_time:    ',rom_time
+         write (6,*) 'postu_time:  ',postu_time
+         write (6,*) 'postt_time:  ',postt_time
       endif
 
       if (ifdumpops) then
