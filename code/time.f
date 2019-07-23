@@ -19,9 +19,10 @@ c-----------------------------------------------------------------------
          step_time = 0.
          solve_time=0.
          lu_time=0.
-         copt_time=0.
-         quasi_time=0.
-         lnsrch_time=0.
+         ucopt_time=0.
+         uquasi_time=0.
+         ulnsrch_time=0.
+         ucopt_count=0
       endif
 
       last_time = dnekclock()
@@ -104,7 +105,9 @@ c        call BFGS(rhs(1),helmu,invhelmu,umax,umin,udis,1e-3,4)
                chekbc = 1
             endif
          enddo
+
          if (chekbc.eq.1) then
+            ucopt_count = ucopt_count + 1
             call BFGS_new(rhs(1),u(1,1),helmu,invhelmu,umax,umin,udis,
      $      1e-1,8)
          else
@@ -202,6 +205,10 @@ c     Matrices and vectors for advance
 
       if (ad_step.eq.1) then
          step_time = 0.
+         tcopt_time=0.
+         tquasi_time=0.
+         tlnsrch_time=0.
+         tcopt_count = 0
       endif
 
       if (nb.eq.0) then
@@ -246,7 +253,9 @@ c        call BFGS(rhs(1),helmt,invhelmt,tmax,tmin,tdis,1e-3,4)
                chekbc = 1
             endif
          enddo
+
          if (chekbc.eq.1) then
+            tcopt_count = tcopt_count + 1
             call BFGS_new(rhs(1),ut(1,1),helmt,invhelmt,tmax,tmin,tdis,
      $      1e-1,8) 
          else
