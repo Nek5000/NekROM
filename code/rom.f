@@ -758,17 +758,17 @@ c-----------------------------------------------------------------------
          write (6,*) 'evalc_time:  ',evalc_time
          write (6,*) 'lu_time:     ',lu_time
          write (6,*) 'solve_time:  ',solve_time
-         write (6,*) 'step_time:   ',step_time
+         write (6,*) 'ustep_time:  ',ustep_time
          write (6,*) 'rom_time:    ',rom_time
-         write (6,*) 'ucopt_time:  ',ucopt_time
-         write (6,*) 'uquasi_time: ',uquasi_time
-         write (6,*) 'ulnsrch_time:',ulnsrch_time
-         write (6,*) 'ucopt_count: ',ucopt_count
+         write (6,*) 'copt_time:   ',copt_time
+         write (6,*) 'quasi_time:  ',quasi_time
+         write (6,*) 'lnsrch_time: ',lnsrch_time
+         write (6,*) 'ucopt_active:',ucopt_count,
+     $         '/',ad_step-1
          if (ifrom(2)) then
-            write (6,*) 'tcopt_time:   ',tcopt_time
-            write (6,*) 'tquasi_time:  ',tquasi_time
-            write (6,*) 'tlnsrch_time: ',tlnsrch_time
-            write (6,*) 'tcopt_count:  ',tcopt_count
+            write (6,*) 'tstep_time:  ',tstep_time
+            write (6,*) 'tcopt_active:',tcopt_count,
+     $         '/',ad_step-1
          endif
       endif
 
