@@ -356,6 +356,8 @@ c-----------------------------------------------------------------------
       include 'MOR'
       include 'SOLN'
 
+      sg_start=dnekclock()
+
       if (.not.ifread) then
          jfield=ifield
          ifield=1
@@ -364,6 +366,10 @@ c-----------------------------------------------------------------------
          if (ifpod(2)) call gengram(ug(1,1,2),ts0,ns,1)
          ifield=jfield
       endif
+
+      call nekgsync
+
+      if (nio.eq.0) write (6,*) 'setgram_time',dnekclock()-sg_start
 
       return
       end
