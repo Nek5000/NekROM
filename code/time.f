@@ -91,7 +91,6 @@ c-----------------------------------------------------------------------
             enddo
          endif
       else if (isolve.eq.1) then ! constrained solve
-c        call BFGS(rhs(1),helmu,invhelmu,umax,umin,udis,1e-3,4) 
          call BFGS_new(rhs(1),u(1,1),helmu,invhelmu,umax,umin,udis,
      $   1e-1,8)
       else if (isolve.eq.2) then
@@ -239,7 +238,6 @@ c-----------------------------------------------------------------------
       if (isolve.eq.0) then ! standard matrix inversion
          call dgetrs('N',nb,1,flut,lub,ipiv,rhs(1),nb,info)
       else if (isolve.eq.1) then ! constrained solve
-c        call BFGS(rhs(1),helmt,invhelmt,tmax,tmin,tdis,1e-3,4) 
          call BFGS_new(rhs(1),ut(1,1),helmt,invhelmt,tmax,tmin,tdis,
      $   1e-1,8) 
       else if (isolve.eq.2) then
