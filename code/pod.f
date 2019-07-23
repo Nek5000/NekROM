@@ -369,7 +369,7 @@ c-----------------------------------------------------------------------
 
       call nekgsync
 
-      if (nio.eq.0) write (6,*) 'setgram_time',dnekclock()-sg_start
+      if (nio.eq.0) write (6,*) 'gram_time:',dnekclock()-sg_start
 
       return
       end

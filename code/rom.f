@@ -359,7 +359,10 @@ c-----------------------------------------------------------------------
 
       if (.not.ifread) then
          fname1='file.list '
+         gsf_time=dnekclock()
          call get_saved_fields(us0,ps,ts0,ns,timek,fname1)
+         call nekgsync
+         if (nio.eq.0) write (6,*) 'gsf_time:',dnekclock()-gsf_time
 
          fname1='avg.list'
          inquire (file=fname1,exist=alist)
