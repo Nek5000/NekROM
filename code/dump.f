@@ -103,7 +103,10 @@ c-----------------------------------------------------------------------
 
       common /dumpglobal/ wk1(lcloc),wk2(lcloc)
 
-      logical iftmp
+      logical iftmp1,iftmp2,iftmp3
+
+      call nekgsync
+      dump_time=dnekclock()
 
       if (ifpod(1)) then
          call dump_serial(ug(1,1,1),ls*ls,'ops/gu ',nid)
@@ -158,7 +161,15 @@ c-----------------------------------------------------------------------
       ttmp=time
       itmp=istep
 
-      iftmp=ifxyo
+      iftmp1=ifxyo
+      iftmp2=ifpo
+      iftmp3=ifto
+
+      call nekgsync
+      dbas_time=dnekclock()
+
+      ifpo=.false.
+      ifto=ifrom(2)
 
       do i=0,nb
          time=i
@@ -166,9 +177,18 @@ c-----------------------------------------------------------------------
          ifxyo=(i.eq.0)
          call outpost(ub(1,i),vb(1,i),wb(1,i),pb(1,i),tb(1,i),'bas')
       enddo
+
       istep=itmp
       time=ttmp
-      ifxyo=iftmp
+
+      ifxyo=iftmp1
+      ifpo=iftmp2
+      ifto=iftmp3
+
+      call nekgsync
+      done_time=dnekclock()
+      if (nio.eq.0) write (6,*) 'dbas_time:',done_time-dbas_time
+      if (nio.eq.0) write (6,*) 'dump_time:',done_time-dump_time
 
       return
       end

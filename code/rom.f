@@ -90,6 +90,7 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'inside rom_setup'
 
+      call nekgsync
       setup_start=dnekclock()
 
       n=lx1*ly1*lz1*nelt
@@ -117,9 +118,15 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'begin range setup'
 
+      call nekgsync
+      proj_time=dnekclock()
+
       ! TODO bug: in baffle case L2 results NaN
       if (ifpod(1)) call pv2k(uk,us0,ub,vb,wb)
       if (ifpod(2)) call ps2k(tk,ts0,tb)
+
+      call nekgsync
+      if (nio.eq.0) write (6,*) 'proj_time:',dnekclock()-proj_time
 
       call asnap
 
@@ -131,6 +138,7 @@ c-----------------------------------------------------------------------
 
       if (ifdumpops) call dump_all
 
+      call nekgsync
       setup_end=dnekclock()
 
       if (nio.eq.0) write (6,*) 'exiting rom_setup'
@@ -146,6 +154,9 @@ c-----------------------------------------------------------------------
       include 'AVG'
 
       common /scrasnap/ t1(0:nb)
+
+      call nekgsync
+      asnap_time=dnekclock()
 
       call pv2b(uas,uavg,vavg,wavg,ub,vb,wb)
       call rzero(uvs,nb+1)
@@ -170,6 +181,9 @@ c-----------------------------------------------------------------------
          call dump_serial(tvs,nb+1,'ops/tvs ',nid)
       endif
 
+      call nekgsync
+      if (nio.eq.0) write (6,*) 'asnap_time:',dnekclock()-asnap_time
+
       return
       end
 c-----------------------------------------------------------------------
@@ -182,6 +196,9 @@ c-----------------------------------------------------------------------
       logical iftmp
 
       if (nio.eq.0) write (6,*) 'inside setops'
+
+      call nekgsync
+      ops_time=dnekclock()
 
       jfield=ifield
       ifield=1
@@ -197,6 +214,9 @@ c-----------------------------------------------------------------------
       endif
       call setf
       ifield=jfield
+
+      call nekgsync
+      if (nio.eq.0) write (6,*) 'ops_time:',dnekclock()-ops_time
 
       if (nio.eq.0) write (6,*) 'exiting setops'
 
@@ -359,7 +379,11 @@ c-----------------------------------------------------------------------
 
       if (.not.ifread) then
          fname1='file.list '
+         call nekgsync
+         gsf_time=dnekclock()
          call get_saved_fields(us0,ps,ts0,ns,timek,fname1)
+         call nekgsync
+         if (nio.eq.0) write (6,*) 'gsf_time:',dnekclock()-gsf_time
 
          fname1='avg.list'
          inquire (file=fname1,exist=alist)
@@ -419,6 +443,7 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'inside setc'
 
+      call nekgsync
       conv_time=dnekclock()
 
       call lints(fnlint,fname,128)
@@ -510,6 +535,7 @@ c              if (nio.eq.0) write (6,*) l,mcloc,'mcloc'
 
       if (ifread.and.nid.eq.0) close (unit=12)
 
+      call nekgsync
       if (nio.eq.0) write (6,*) 'conv_time: ',dnekclock()-conv_time
       if (nio.eq.0) write (6,*) 'ncloc=',ncloc
 
@@ -760,6 +786,7 @@ c-----------------------------------------------------------------------
 
       real t1(0:nb),t2(0:nb)
 
+      if (nio.eq.0) write (6,*) 'final...'
       if (nid.eq.0) then
          write (6,*) 'evalc_time:  ',evalc_time
          write (6,*) 'lu_time:     ',lu_time

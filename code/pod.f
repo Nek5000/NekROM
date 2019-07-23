@@ -12,6 +12,9 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'inside setbases'
 
+      call nekgsync
+      bas_time=dnekclock()
+
       n=lx1*ly1*lz1*nelt
 
       if (ifread) then
@@ -65,6 +68,9 @@ c-----------------------------------------------------------------------
             enddo
          endif
       endif
+
+      call nekgsync
+      if (nio.eq.0) write (6,*) 'bas_time:',dnekclock()-bas_time
 
       if (nio.eq.0) write (6,*) 'exiting setbases'
 
@@ -356,6 +362,9 @@ c-----------------------------------------------------------------------
       include 'MOR'
       include 'SOLN'
 
+      call nekgsync
+      sg_start=dnekclock()
+
       if (.not.ifread) then
          jfield=ifield
          ifield=1
@@ -365,6 +374,10 @@ c-----------------------------------------------------------------------
          ifield=jfield
       endif
 
+      call nekgsync
+
+      if (nio.eq.0) write (6,*) 'gram_time:',dnekclock()-sg_start
+
       return
       end
 c-----------------------------------------------------------------------
@@ -373,12 +386,18 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
 
+      call nekgsync
+      eig_time=dnekclock()
+
       if (.not.ifread) then
          do i=0,ldimt1
             if (ifpod(i)) call
      $         genevec(evec(1,1,i),eval(1,i),ug(1,1,i),i)
          enddo
       endif
+
+      call nekgsync
+      if (nio.eq.0) write (6,*) 'eig_time:',dnekclock()-eig_time
 
       return
       end
