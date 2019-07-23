@@ -766,6 +766,7 @@ c-----------------------------------------------------------------------
          write (6,*) 'ucopt_active:',ucopt_count,
      $         '/',ad_step-1
          if (ifrom(2)) then
+            write (6,*) 'tsolve_time: ',tsolve_time
             write (6,*) 'tstep_time:  ',tstep_time
             write (6,*) 'tcopt_active:',tcopt_count,
      $         '/',ad_step-1

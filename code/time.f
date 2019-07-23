@@ -235,6 +235,7 @@ c-----------------------------------------------------------------------
          call copy(invhelmt,flut,nb*nb)
       endif
 
+      ttime=dnekclock()
       if (isolve.eq.0) then ! standard matrix inversion
          call dgetrs('N',nb,1,flut,lub,ipiv,rhs(1),nb,info)
       else if (isolve.eq.1) then ! constrained solve
@@ -266,6 +267,7 @@ c        call BFGS(rhs(1),helmt,invhelmt,tmax,tmin,tdis,1e-3,4)
       else
          call exitti('incorrect isolve specified...$',isolve)
       endif
+      tsolve_time=tsolve_time+dnekclock()-ttime
 
       call shift3(ut,rhs,nb+1)
 
