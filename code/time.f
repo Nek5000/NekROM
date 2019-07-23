@@ -16,16 +16,18 @@ c-----------------------------------------------------------------------
       ifdebug=.false.
 
       if (ad_step.eq.1) then
-         step_time = 0.
+         ustep_time = 0.
          solve_time=0.
          lu_time=0.
-         ucopt_time=0.
-         uquasi_time=0.
-         ulnsrch_time=0.
          ucopt_count=0
+         if (.not.ifrom(2)) then
+            copt_time=0.
+            quasi_time=0.
+            lnsrch_time=0.
+         endif
       endif
 
-      last_time = dnekclock()
+      ulast_time = dnekclock()
 
       n=lx1*ly1*lz1*nelt
 
@@ -127,7 +129,7 @@ c     if (ifdebug) call exitt0
 
       call shift3(u,rhs,nb+1)
 
-      step_time=step_time+dnekclock()-last_time
+      ustep_time=ustep_time+dnekclock()-ulast_time
 
       return
       end
@@ -192,8 +194,7 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-c     Matrices and vectors for advance
-      real tmp(0:nb),rhs(0:nb),rhstmp(0:nb)
+      real rhs(0:nb),rhstmp(0:nb)
       real bctol
       integer chekbc
 
@@ -204,10 +205,10 @@ c     Matrices and vectors for advance
       chekbc = 0
 
       if (ad_step.eq.1) then
-         step_time = 0.
-         tcopt_time=0.
-         tquasi_time=0.
-         tlnsrch_time=0.
+         tstep_time = 0.
+         copt_time=0.
+         quasi_time=0.
+         lnsrch_time=0.
          tcopt_count = 0
       endif
 
@@ -217,7 +218,7 @@ c     Matrices and vectors for advance
          return
       endif
 
-      last_time = dnekclock()
+      tlast_time = dnekclock()
 
       n=lx1*ly1*lz1*nelt
 
@@ -268,7 +269,7 @@ c        call BFGS(rhs(1),helmt,invhelmt,tmax,tmin,tdis,1e-3,4)
 
       call shift3(ut,rhs,nb+1)
 
-      step_time=step_time+dnekclock()-last_time
+      tstep_time=tstep_time+dnekclock()-tlast_time
 
       return
       end
