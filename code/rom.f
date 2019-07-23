@@ -48,8 +48,12 @@ c-----------------------------------------------------------------------
             time=time+dt
             if (ifrom(2)) call rom_step_t
             if (ifrom(1)) call rom_step
+            tttime=dnekclock()
             call postu
+            postu_time=postu_time+dnekclock()-tttime
+            tttime=dnekclock()
             call postt
+            postt_time=postt_time+dnekclock()-tttime
             ad_step=ad_step+1
          enddo
          icalld=0
@@ -759,7 +763,6 @@ c-----------------------------------------------------------------------
          write (6,*) 'lu_time:     ',lu_time
          write (6,*) 'solve_time:  ',solve_time
          write (6,*) 'ustep_time:  ',ustep_time
-         write (6,*) 'rom_time:    ',rom_time
          write (6,*) 'copt_time:   ',copt_time
          write (6,*) 'quasi_time:  ',quasi_time
          write (6,*) 'lnsrch_time: ',lnsrch_time
@@ -771,6 +774,9 @@ c-----------------------------------------------------------------------
             write (6,*) 'tcopt_active:',tcopt_count,
      $         '/',ad_step-1
          endif
+         write (6,*) 'rom_time:    ',rom_time
+         write (6,*) 'postu_time:  ',postu_time
+         write (6,*) 'postt_time:  ',postt_time
       endif
 
       if (ifdumpops) then

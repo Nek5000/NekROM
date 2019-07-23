@@ -137,12 +137,13 @@ c     parameters and common blocks for MOR
 
       real last_time,misc_time,lu_time,
      $     copt_time,quasi_time,lnsrch_time,
-     $     ulast_time,tlast_time
+     $     ulast_time,tlast_time,postu_time,postt_time
       common /mortime/ step_time,last_time,misc_time,evalc_time,
      $                 solve_time,lu_time,
      $                 copt_time,quasi_time,lnsrch_time,
      $                 tstep_time,tlast_time,tsolve_time,
-     $                 ustep_time,ulast_time
+     $                 ustep_time,ulast_time,
+     $                 postu_time,postt_time
 
       integer ucopt_count,tcopt_count
       common /morcount/ ucopt_count,tcopt_count
