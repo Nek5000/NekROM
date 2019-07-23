@@ -20,6 +20,8 @@ c-----------------------------------------------------------------------
       if (icalld.eq.0) then
          ttime=time
          rom_time=0.
+         postu_time=0.
+         postt_time=0.
          icalld=1
          call rom_setup
          time=ttime
