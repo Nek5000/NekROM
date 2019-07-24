@@ -1,41 +1,32 @@
-      subroutine BFGS(rhs,helm,invhelm,amax,amin,adis,bpar,bstep)
+      subroutine BFGS(rhs,vv,helm,invhelm,amax,amin,adis,bpar,bstep)
 
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
 
-      real B_qn(nb,nb),helm(nb,nb),invhelm(nb,nb)
-      real tmp(nb,nb)
-      real qgo(nb),qngradf(nb),ngf
-      real qnf
-      real ww(nb),pert
-      real uu(nb),rhs(nb)
+      real helm(nb,nb),invhelm(nb,nb),B_qn(nb,nb)
+      real qgo(nb),qngradf(nb)
+      real uu(nb),vv(nb),rhs(nb)
       real amax(nb),amin(nb),adis(nb)
-      real bpar,par
-      real norm_s,norm_step
-      real norm_uo
-      real ysk
+      real tmp(nb,nb)
+      real ngf,ysk
+      real bpar,par,bctol
+      real norm_s,norm_step,norm_uo
 
       ! parameter for barrier function
-      real bctol
-      integer par_step,bflag,bstep
+      integer par_step,jmax,bflag,bstep,chekbc
+      integer uHcount,lncount
 
-      ! parameter for quasi-newton
-      integer uHcount,jamx,chekbc
+      call copy(uu,vv,nb)
 
-      ! parameter for lnsrch
-      integer lncount
-      lncount = 0
-
-      call copy(uu,u(1,1),nb)
-
+      bctol = 1e-12
       jmax = 0
 
       bflag = 1 
       par = bpar 
       par_step = bstep 
-      bctol = 1e-8
 
+      tcopt_time=dnekclock()
       ! BFGS method with barrier function starts
       do k=1,par_step
 
@@ -44,11 +35,11 @@
 
          ! use helm from BDF3/EXT3 as intial approximation
          call copy(B_qn(1,1),helm(1,1),nb*nb)
-         call comp_qnf(uu,rhs,helm,invhelm,qnf,amax,amin,par,bflag)
          call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par,bflag)
 
          norm_uo = glamax(uu,nb)
 
+         tquasi_time=dnekclock()
 c        compute quasi-Newton step
          do j=1,100
 
@@ -58,10 +49,12 @@ c        compute quasi-Newton step
             call chsign(qns,nb)
             call dgetrs('N',nb,1,tmp,lub,ipiv,qns,nb,info)
 
-            if (isolve.eq.1) then
+            if (isolve.eq.3) then
+               tlnsrch_time=dnekclock()
                call backtrackr(uu,qns,rhs,helm,invhelm,1e-4,0.5,
      $                     amax,amin,bctol,bflag,par,chekbc,lncount)
-            elseif (isolve.eq.2) then      
+               lnsrch_time=lnsrch_time+dnekclock()-tlnsrch_time
+            elseif (isolve.eq.4) then      
                call add2(uu,qns,nb)
                ! check the boundary 
                do ii=1,nb
@@ -78,11 +71,14 @@ c        compute quasi-Newton step
             norm_s = glamax(qns,nb)
             norm_step = norm_s/norm_uo
 
-            call copy(qgo,qngradf,nb) ! store old qn-gradf
+            ! store old qn-gradf
+            call copy(qgo,qngradf,nb) 
+            ! update qn-gradf
             call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,
-     $                  par,bflag) ! update qn-gradf
+     $                  par,bflag) 
             call sub3(qny,qngradf,qgo,nb) 
 
+            ! compute curvature condition
             ysk = glsc2(qny,qns,nb)
 
             ! update approximate Hessian by two rank-one update if chekbc = 0
@@ -92,21 +88,21 @@ c        compute quasi-Newton step
             endif
 
             ! compute H^{-1} norm of gradf
-            call copy(ww,qngradf,nb)
             ngf = glamax(qngradf,nb)
-
-            call comp_qnf(uu,rhs,helm,invhelm,qnf,amax,amin,par,bflag) ! update qn-f
 
             ! reset chekbc 
             chekbc = 0
             
             jmax = max(j,jmax)
 
-            if (ngf .lt. 1e-6 .OR. norm_step .lt. 1e-10) then 
+c           if (ngf .lt. 1e-6 .OR. norm_step .lt. 1e-10) then 
+            if (ngf .lt. 1e-6 .OR. ysk .lt. 1e-6 .OR. norm_step .lt.
+     $      1e-8  ) then 
                exit
             endif
 
          enddo
+         quasi_time=quasi_time+dnekclock()-tquasi_time
 
          if (mod(ad_step,ad_iostep).eq.0) then
             if (nio.eq.0) write (6,*) 'lnconst_ana'
@@ -114,7 +110,10 @@ c        compute quasi-Newton step
      $      ,norm_s,ysk)
          endif
          par = par*0.1
+
       enddo
+      copt_time=copt_time+dnekclock()-tcopt_time
+
       call copy(rhs,uu,nb)
 
       return
@@ -136,8 +135,7 @@ c-----------------------------------------------------------------------
       real norm_s,norm_step,norm_uo
 
       ! parameter for barrier function
-      integer par_step,jmax,bflag,bstep
-      integer chekbc ! flag for checking boundary
+      integer par_step,jmax,bflag,bstep,chekbc
       integer uHcount,lncount
 
       call copy(uu,vv,nb)
@@ -149,7 +147,6 @@ c-----------------------------------------------------------------------
       par = bpar 
       par_step = bstep 
 
-   
       tcopt_time=dnekclock()
       ! BFGS method with barrier function starts
       do k=1,par_step
@@ -212,7 +209,6 @@ c    $               par,bflag) ! update qn-f
 
       ! update solution
          enddo
-
          quasi_time=quasi_time+dnekclock()-tquasi_time
 
          if (mod(ad_step,ad_iostep).eq.0) then
@@ -223,7 +219,6 @@ c    $               par,bflag) ! update qn-f
          par = par*0.1
 
       enddo
-
       copt_time=copt_time+dnekclock()-tcopt_time
 
       call copy(rhs,uu,nb)
