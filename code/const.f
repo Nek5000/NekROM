@@ -155,7 +155,6 @@ c-----------------------------------------------------------------------
          uHcount = 0
 
          ! use helm from BDF3/EXT3 as intial approximation
-c        call comp_qnf(uu,rhs,helm,invhelm,qnf,amax,amin,par,bflag)
          call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par,bflag)
 
          norm_uo = glamax(uu,nb)
@@ -191,9 +190,6 @@ c        compute quasi-Newton step
 
                ! compute H^{-1} norm of gradf
                ngf = glamax(qngradf,nb)
-
-c              call comp_qnf(uu,rhs,helm,invhelm,qnf,amax,amin,
-c    $               par,bflag) ! update qn-f
 
                jmax = max(j,jmax)
 
@@ -300,8 +296,6 @@ c-----------------------------------------------------------------------
       real bpar
       integer barr_func 
 
-      barr_func = 1
-
       ! evaluate quasi-newton f
 
       ONE = 1.
@@ -340,8 +334,8 @@ c-----------------------------------------------------------------------
          enddo
       endif
 
-      bar1 = vlsum(tmp3,nb)
-      bar2 = vlsum(tmp4,nb)
+      bar1 = glsum(tmp3,nb)
+      bar2 = glsum(tmp4,nb)
       term4 = bpar*(bar1+bar2)
 
       qnf = term1 - term2 + term3 - term4
@@ -418,7 +412,10 @@ c-----------------------------------------------------------------------
       call findminalpha(minalpha,s,uu,amax,amin)
 
       call copy(uuo,uu,nb)
-      call add2s1(uu,s,alphak,nb)
+c     call add2s2(uu,s,alphak,nb)
+      do ii=1,nb
+         uu(ii) = uu(ii) + alphak*s(ii)
+      enddo
 
       do ii=1,nb
          if ((uu(ii)-amax(ii)).ge.bctol) then
@@ -438,7 +435,10 @@ c-----------------------------------------------------------------------
       do while (cond1.OR.(chekbc.eq.1))
          counter = counter + 1
          alphak = alphak * facb
-         call add3s2(uu,uuo,s,1.0,alphak,nb)
+         do ii=1,nb
+            uu(ii) = uuo(ii) + alphak*s(ii)
+         enddo
+c        call add3s2(uu,uuo,s,1.0,alphak,nb)
 
          chekbc = 0
          countbc = 0
