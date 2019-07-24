@@ -127,14 +127,12 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       real helm(nb,nb),invhelm(nb,nb)
-      real tmp(nb,nb)
-      real qgo(nb),qngradf(nb),ngf
-      real qnf
-      real ww(nb),pert
+      real qgo(nb),qngradf(nb)
       real uu(nb),vv(nb),rhs(nb)
       real amax(nb),amin(nb),adis(nb)
-      real bpar,par
       real sk(nb,50),yk(nb,50)
+      real qnf,ngf
+      real bpar,par
 
       ! parameter for barrier function
       integer par_step,jmax,bflag,bstep
@@ -196,7 +194,6 @@ c        compute quasi-Newton step
                norm_step = norm_s/norm_uo
 
                ! compute H^{-1} norm of gradf
-               call copy(ww,qngradf,nb)
                ngf = glamax(qngradf,nb)
 
                call comp_qnf(uu,rhs,helm,invhelm,qnf,amax,amin,
