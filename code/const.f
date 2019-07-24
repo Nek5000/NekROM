@@ -131,16 +131,14 @@ c-----------------------------------------------------------------------
       real uu(nb),vv(nb),rhs(nb)
       real amax(nb),amin(nb),adis(nb)
       real sk(nb,50),yk(nb,50)
-      real qnf,ngf
-      real bpar,par
+      real qnf,ngf,ysk
+      real bpar,par,bctol
+      real norm_s,norm_step,norm_uo
 
       ! parameter for barrier function
       integer par_step,jmax,bflag,bstep
       integer chekbc ! flag for checking boundary
       integer uHcount,lncount
-      real bctol
-      real norm_s,norm_step,norm_uo
-      real ysk
 
       call copy(uu,vv,nb)
 
@@ -160,7 +158,7 @@ c-----------------------------------------------------------------------
          uHcount = 0
 
          ! use helm from BDF3/EXT3 as intial approximation
-         call comp_qnf(uu,rhs,helm,invhelm,qnf,amax,amin,par,bflag)
+c        call comp_qnf(uu,rhs,helm,invhelm,qnf,amax,amin,par,bflag)
          call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par,bflag)
 
          norm_uo = glamax(uu,nb)
@@ -180,6 +178,7 @@ c        compute quasi-Newton step
                call backtrackr(uu,qns,rhs,helm,invhelm,1e-4,0.5,
      $                     amax,amin,bctol,bflag,par,chekbc,lncount)
                lnsrch_time=lnsrch_time+dnekclock()-tlnsrch_time
+
                ! store qns
                call copy(sk(1,j),qns,nb)
 
@@ -196,8 +195,8 @@ c        compute quasi-Newton step
                ! compute H^{-1} norm of gradf
                ngf = glamax(qngradf,nb)
 
-               call comp_qnf(uu,rhs,helm,invhelm,qnf,amax,amin,
-     $               par,bflag) ! update qn-f
+c              call comp_qnf(uu,rhs,helm,invhelm,qnf,amax,amin,
+c    $               par,bflag) ! update qn-f
 
                jmax = max(j,jmax)
 
@@ -206,8 +205,8 @@ c        compute quasi-Newton step
                call invH_multiply(qns,invhelm,sk,yk,qngradf,j)
             endif
 
-            if (ngf .lt. 1e-6 .OR. ysk .lt. 1e-10 .OR. norm_step .lt.
-     $      1e-10  ) then 
+            if (ngf .lt. 1e-6 .OR. ysk .lt. 1e-6 .OR. norm_step .lt.
+     $      1e-8  ) then 
                exit
             endif
 
@@ -437,7 +436,7 @@ c-----------------------------------------------------------------------
       enddo
 
       call comp_qnf(uu,rhs,helm,invhelm,fk1,amax,amin,bpar,bflag) ! get new f
-      Jfks = vlsc2(Jfk,s,nb)   
+      Jfks = glsc2(Jfk,s,nb)   
 
       cond1 = fk1 .gt. (fk+sigmab*alphak*Jfks)
 
