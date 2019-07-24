@@ -168,14 +168,13 @@ c-----------------------------------------------------------------------
       call nekgsync
       dbas_time=dnekclock()
 
-      ifpo=.false.
       ifto=ifrom(2)
 
       do i=0,nb
          time=i
          itmp=i
          ifxyo=(i.eq.0)
-         call outpost(ub(1,i),vb(1,i),wb(1,i),pb(1,i),tb(1,i),'bas')
+         call outpost(ub(1,i),vb(1,i),wb(1,i),pb(1,i),tb(1,i),'   ')
       enddo
 
       istep=itmp
