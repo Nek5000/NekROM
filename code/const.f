@@ -475,10 +475,12 @@ c    $   then
       call cmult(s,alphak,nb)
 
       if (mod(ad_step,ad_iostep).eq.0) then
-         if (nio.eq.0) write(6,*)
-     $         ad_step,'# lnsrch:',counter,'alpha',alphak,
-     $         minalpha,chekbc,cond1
+         if (nio.eq.0) write(6,1)
+     $         ad_step,bpar,' #lnsrch:',counter,' step length:',
+     $         alphak,minalpha,chekbc,cond1
       endif
+
+    1 format (i6,1p1e16.8,a9,i3,a13,1p2e16.8,i3,' ',L1) 
 
       return
       end
@@ -497,7 +499,7 @@ c-----------------------------------------------------------------------
       integer uhcount,lncount
 
       if (nio.eq.0) then
-         write (6,*)'ad_step:',ad_step,ad_iostep,par,qstep,uhcount,
+         write (6,2)'ad_step:',ad_step,ad_iostep,par,qstep,uhcount,
      $            lncount,ngf,qndf,norm_s,ysk
          if (ad_step.eq.ad_nsteps) then
             do j=1,nb
@@ -509,7 +511,7 @@ c-----------------------------------------------------------------------
             enddo
          endif
       endif
-      
+    2 format (a8,i6,i4,1p1e16.8,i3,i3,i3,1p4e16.8)  
       return
       end
 c-----------------------------------------------------------------------
@@ -562,7 +564,7 @@ c-----------------------------------------------------------------------
       real alphai(nb)
 
       do ii=1,nb
-         if (s(ii).le.0) then
+         if (s(ii).le.1e-10) then
             alphai(ii) = abs((uu(ii)-amin(ii))/s(ii))
          else
             alphai(ii) = ((amax(ii)-uu(ii))/s(ii))
