@@ -386,18 +386,12 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
 
-      call nekgsync
-      eig_time=dnekclock()
-
       if (.not.ifread) then
          do i=0,ldimt1
             if (ifpod(i)) call
      $         genevec(evec(1,1,i),eval(1,i),ug(1,1,i),i)
          enddo
       endif
-
-      call nekgsync
-      if (nio.eq.0) write (6,*) 'eig_time:',dnekclock()-eig_time
 
       return
       end
@@ -596,25 +590,32 @@ c-----------------------------------------------------------------------
       save    icalld
       data    icalld /0/
       
-      common /scrgvec/ eye(ls,ls),gc(ls,ls),wk(ls,ls),eigv(ls,ls)
+c     common /scrgvec/ eye(ls,ls),gc(ls,ls),wk(ls,ls),eigv(ls,ls)
+      common /scrgvec/ gc(ls,ls),wk(ls,ls),eigv(ls,ls)
 
       real gram(ls,ls),vec(ls,nb),val(ls)
 
       if (nio.eq.0) write (6,*) 'inside genevec'
 
+      call nekgsync
+      eig_time=dnekclock()
+
       if (icalld.eq.0) then
          icalld=1
       endif
 
-      call rzero(eye,ls*ls)
-      do j=1,ls
-         eye(j,j) = 1.
-      enddo
-
+c     call rzero(eye,ls*ls)
+c     do j=1,ls
+c        eye(j,j) = 1.
+c     enddo
       call copy(gc,gram,ls*ls)
 
-      call generalev(gc,eye,val,ls,wk)
+c     call generalev(gc,eye,val,ls,wk)
+      call regularev(gc,val,ls,wk)
       call copy(eigv,gc,ls*ls)
+
+      call nekgsync
+      eval_time=dnekclock()
 
       do l = 1,nb
          call copy(vec(1,l),eigv(1,ls-l+1),ls) ! reverse order of eigv
@@ -624,6 +625,12 @@ c-----------------------------------------------------------------------
          if (nio.eq.0) write (6,'(i5,1p1e16.6,3x,a,i1)')
      $      i,val(ns-i+1),'eval',ifld
       enddo
+
+      call nekgsync
+      evec_time=dnekclock()
+
+      if (nio.eq.0) write (6,*) 'eval_time:',eval_time-eig_time
+      if (nio.eq.0) write (6,*) 'evec_time:',evec_time-eval_time
 
       if (nio.eq.0) write (6,*) 'exiting genevec'
 
@@ -775,6 +782,46 @@ c-----------------------------------------------------------------------
       if (nio.eq.0) write (6,*) 'exiting hlmpv2b'
 
     1 format(' hlmcoef',1p3e16.8)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine regularev(a,lam,n,w)
+c
+c     Solve the eigenvalue problem  A x = lam x
+c
+c     A -- symmetric matrix
+c
+c     "SIZE" is included here only to deduce WDSIZE, the working
+c     precision, in bytes, so as to know whether dsygv or ssygv
+c     should be called.
+
+      include 'SIZE'
+      include 'PARALLEL'
+
+      real a(n,n),lam(n),w(n,n)
+      real aa(100)
+
+      parameter (lbw=4*lx1*ly1*lz1*lelv)
+      common /bigw/ bw(lbw)
+
+      lw = n*n
+
+      call copy(aa,a,100)
+
+      call dsyev('V','U',n,a,n,lam,bw,lbw,info)
+
+      if (info.ne.0) then
+         if (nid.eq.0) then
+            call outmat2(aa ,n,n,n,'aa  ')
+            call outmat2(a  ,n,n,n,'Aeig')
+            call outmat2(lam,1,n,n,'Deig')
+         endif
+
+         ninf = n-info
+         write(6,*) 'Error in regularev, info=',info,n,ninf
+         call exitt
+      endif
 
       return
       end
