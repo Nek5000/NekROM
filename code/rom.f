@@ -25,6 +25,12 @@ c-----------------------------------------------------------------------
          icalld=1
          call rom_setup
          time=ttime
+         if (isolve.ne.0) then
+            ubarr0=1e-1
+            ubarrseq=8 
+            tbarr0=1e-1
+            tbarrseq=8
+         endif
       endif
 
       ad_step = istep

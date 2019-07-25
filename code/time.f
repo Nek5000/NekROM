@@ -92,7 +92,7 @@ c-----------------------------------------------------------------------
          endif
       else if (isolve.eq.1) then ! constrained solve with inverse update
          call BFGS_new(rhs(1),u(1,1),helmu,invhelmu,umax,umin,udis,
-     $   1e-3,5)
+     $   ubarr0,ubarrseq)
       else if (isolve.eq.2) then ! constrained solve with inverse update
                                  ! and mix with standard solver
          call copy(rhstmp,rhs,nb+1)
@@ -110,14 +110,14 @@ c-----------------------------------------------------------------------
          if (chekbc.eq.1) then
             ucopt_count = ucopt_count + 1
             call BFGS_new(rhs(1),u(1,1),helmu,invhelmu,umax,umin,udis,
-     $      1e-3,5)
+     $      ubarr0,ubarrseq)
          else
             call copy(rhs,rhstmp,nb+1)
          endif
 
       else if (isolve.eq.3) then ! constrained solve with Hessian update
          call BFGS(rhs(1),u(1,1),helmu,invhelmu,umax,umin,udis,
-     $   1e-1,8)
+     $   ubarr0,ubarrseq)
       else if (isolve.eq.4) then ! constrained solve with Hessian update
                                  ! and mix with standard solver
          call copy(rhstmp,rhs,nb+1)
@@ -135,7 +135,7 @@ c-----------------------------------------------------------------------
          if (chekbc.eq.1) then
             ucopt_count = ucopt_count + 1
             call BFGS(rhs(1),u(1,1),helmu,invhelmu,umax,umin,udis,
-     $      1e-1,8)
+     $      ubarr0,ubarrseq)
          else
             call copy(rhs,rhstmp,nb+1)
          endif
@@ -263,7 +263,7 @@ c-----------------------------------------------------------------------
          call dgetrs('N',nb,1,flut,lub,ipiv,rhs(1),nb,info)
       else if (isolve.eq.1) then ! constrained solve
          call BFGS_new(rhs(1),ut(1,1),helmt,invhelmt,tmax,tmin,tdis,
-     $   1e-3,5) 
+     $   tbarr0,tbarrseq) 
       else if (isolve.eq.2) then
 
          call copy(rhstmp,rhs,nb+1)
@@ -281,14 +281,14 @@ c-----------------------------------------------------------------------
          if (chekbc.eq.1) then
             tcopt_count = tcopt_count + 1
             call BFGS_new(rhs(1),ut(1,1),helmt,invhelmt,tmax,tmin,tdis,
-     $      1e-3,5) 
+     $      tbarr0,tbarrseq) 
          else
             call copy(rhs,rhstmp,nb+1)
          endif
 
       else if (isolve.eq.3) then ! constrained solve
          call BFGS(rhs(1),ut(1,1),helmt,invhelmt,tmax,tmin,tdis,
-     $   1e-1,8) 
+     $   tbarr0,tbarrseq)
       else if (isolve.eq.4) then
 
          call copy(rhstmp,rhs,nb+1)
@@ -306,7 +306,7 @@ c-----------------------------------------------------------------------
          if (chekbc.eq.1) then
             tcopt_count = tcopt_count + 1
             call BFGS(rhs(1),ut(1,1),helmt,invhelmt,tmax,tmin,tdis,
-     $      1e-1,8) 
+     $      tbarr0,tbarrseq) 
          else
             call copy(rhs,rhstmp,nb+1)
          endif
