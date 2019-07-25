@@ -1,41 +1,32 @@
-      subroutine BFGS(rhs,helm,invhelm,amax,amin,adis,bpar,bstep)
+      subroutine BFGS(rhs,vv,helm,invhelm,amax,amin,adis,bpar,bstep)
 
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
 
-      real B_qn(nb,nb),helm(nb,nb),invhelm(nb,nb)
-      real tmp(nb,nb)
-      real qgo(nb),qngradf(nb),ngf
-      real qnf
-      real ww(nb),pert
-      real uu(nb),rhs(nb)
+      real helm(nb,nb),invhelm(nb,nb),B_qn(nb,nb)
+      real qgo(nb),qngradf(nb)
+      real uu(nb),vv(nb),rhs(nb)
       real amax(nb),amin(nb),adis(nb)
-      real bpar,par
-      real norm_s,norm_step
-      real norm_uo
-      real ysk
+      real tmp(nb,nb)
+      real ngf,ysk
+      real bpar,par,bctol
+      real norm_s,norm_step,norm_uo
 
       ! parameter for barrier function
-      real bctol
-      integer par_step,bflag,bstep
+      integer par_step,jmax,bflag,bstep,chekbc
+      integer uHcount,lncount
 
-      ! parameter for quasi-newton
-      integer uHcount,jamx,chekbc
+      call copy(uu,vv,nb)
 
-      ! parameter for lnsrch
-      integer lncount
-      lncount = 0
-
-      call copy(uu,u(1,1),nb)
-
+      bctol = 1e-12
       jmax = 0
 
       bflag = 1 
       par = bpar 
       par_step = bstep 
-      bctol = 1e-8
 
+      tcopt_time=dnekclock()
       ! BFGS method with barrier function starts
       do k=1,par_step
 
@@ -44,11 +35,11 @@
 
          ! use helm from BDF3/EXT3 as intial approximation
          call copy(B_qn(1,1),helm(1,1),nb*nb)
-         call comp_qnf(uu,rhs,helm,invhelm,qnf,amax,amin,par,bflag)
          call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par,bflag)
 
          norm_uo = glamax(uu,nb)
 
+         tquasi_time=dnekclock()
 c        compute quasi-Newton step
          do j=1,100
 
@@ -58,10 +49,12 @@ c        compute quasi-Newton step
             call chsign(qns,nb)
             call dgetrs('N',nb,1,tmp,lub,ipiv,qns,nb,info)
 
-            if (isolve.eq.1) then
+            if (isolve.eq.3.OR.isolve.eq.4) then
+               tlnsrch_time=dnekclock()
                call backtrackr(uu,qns,rhs,helm,invhelm,1e-4,0.5,
      $                     amax,amin,bctol,bflag,par,chekbc,lncount)
-            elseif (isolve.eq.2) then      
+               lnsrch_time=lnsrch_time+dnekclock()-tlnsrch_time
+            elseif (isolve.eq.5) then      
                call add2(uu,qns,nb)
                ! check the boundary 
                do ii=1,nb
@@ -78,11 +71,14 @@ c        compute quasi-Newton step
             norm_s = glamax(qns,nb)
             norm_step = norm_s/norm_uo
 
-            call copy(qgo,qngradf,nb) ! store old qn-gradf
+            ! store old qn-gradf
+            call copy(qgo,qngradf,nb) 
+            ! update qn-gradf
             call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,
-     $                  par,bflag) ! update qn-gradf
+     $                  par,bflag) 
             call sub3(qny,qngradf,qgo,nb) 
 
+            ! compute curvature condition
             ysk = glsc2(qny,qns,nb)
 
             ! update approximate Hessian by two rank-one update if chekbc = 0
@@ -92,29 +88,39 @@ c        compute quasi-Newton step
             endif
 
             ! compute H^{-1} norm of gradf
-            call copy(ww,qngradf,nb)
             ngf = glamax(qngradf,nb)
-
-            call comp_qnf(uu,rhs,helm,invhelm,qnf,amax,amin,par,bflag) ! update qn-f
 
             ! reset chekbc 
             chekbc = 0
             
             jmax = max(j,jmax)
 
-            if (ngf .lt. 1e-6 .OR. norm_step .lt. 1e-10) then 
+c           if (ngf .lt. 1e-6 .OR. norm_step .lt. 1e-10) then 
+            if (ngf .lt. 1e-4 .OR. ysk .lt. 1e-6 .OR. norm_step .lt.
+     $      1e-6  ) then 
+               if (ysk .lt. 1e-10) then 
+                  if (nio.eq.0) then
+                     ! curvature condition not satisfied
+                     write(6,*)'WARNING: decrease barrseq or increase
+     $               barr0' 
+                  endif
+               endif
                exit
             endif
 
          enddo
+         quasi_time=quasi_time+dnekclock()-tquasi_time
 
          if (mod(ad_step,ad_iostep).eq.0) then
             if (nio.eq.0) write (6,*) 'lnconst_ana'
             call cpod_ana(uu,par,j,uHcount,lncount,ngf,norm_step
-     $      ,norm_s,ysk)
+     $                   ,norm_s,ysk)
          endif
          par = par*0.1
+
       enddo
+      copt_time=copt_time+dnekclock()-tcopt_time
+
       call copy(rhs,uu,nb)
 
       return
@@ -127,33 +133,27 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       real helm(nb,nb),invhelm(nb,nb)
-      real tmp(nb,nb)
-      real qgo(nb),qngradf(nb),ngf
-      real qnf
-      real ww(nb),pert
+      real qgo(nb),qngradf(nb)
       real uu(nb),vv(nb),rhs(nb)
       real amax(nb),amin(nb),adis(nb)
-      real bpar,par
       real sk(nb,50),yk(nb,50)
+      real qnf,ngf,ysk
+      real bpar,par,bctol
+      real norm_s,norm_step,norm_uo
 
       ! parameter for barrier function
-      integer par_step,jmax,bflag,bstep
-      integer chekbc ! flag for checking boundary
+      integer par_step,jmax,bflag,bstep,chekbc
       integer uHcount,lncount
-      real bctol
-      real norm_s,norm_step,norm_uo
-      real ysk
 
       call copy(uu,vv,nb)
 
       bctol = 1e-12
       jmax = 0
 
-      bflag = 1
+      bflag = 2
       par = bpar 
       par_step = bstep 
 
-   
       tcopt_time=dnekclock()
       ! BFGS method with barrier function starts
       do k=1,par_step
@@ -162,7 +162,6 @@ c-----------------------------------------------------------------------
          uHcount = 0
 
          ! use helm from BDF3/EXT3 as intial approximation
-         call comp_qnf(uu,rhs,helm,invhelm,qnf,amax,amin,par,bflag)
          call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par,bflag)
 
          norm_uo = glamax(uu,nb)
@@ -182,6 +181,7 @@ c        compute quasi-Newton step
                call backtrackr(uu,qns,rhs,helm,invhelm,1e-4,0.5,
      $                     amax,amin,bctol,bflag,par,chekbc,lncount)
                lnsrch_time=lnsrch_time+dnekclock()-tlnsrch_time
+
                ! store qns
                call copy(sk(1,j),qns,nb)
 
@@ -196,11 +196,7 @@ c        compute quasi-Newton step
                norm_step = norm_s/norm_uo
 
                ! compute H^{-1} norm of gradf
-               call copy(ww,qngradf,nb)
                ngf = glamax(qngradf,nb)
-
-               call comp_qnf(uu,rhs,helm,invhelm,qnf,amax,amin,
-     $               par,bflag) ! update qn-f
 
                jmax = max(j,jmax)
 
@@ -209,14 +205,13 @@ c        compute quasi-Newton step
                call invH_multiply(qns,invhelm,sk,yk,qngradf,j)
             endif
 
-            if (ngf .lt. 1e-6 .OR. ysk .lt. 1e-10 .OR. norm_step .lt.
-     $      1e-10  ) then 
+            if (ngf .lt. 1e-6 .OR. ysk .lt. 1e-6 .OR. norm_step .lt.
+     $      1e-8  ) then 
                exit
             endif
 
       ! update solution
          enddo
-
          quasi_time=quasi_time+dnekclock()-tquasi_time
 
          if (mod(ad_step,ad_iostep).eq.0) then
@@ -227,7 +222,6 @@ c        compute quasi-Newton step
          par = par*0.1
 
       enddo
-
       copt_time=copt_time+dnekclock()-tcopt_time
 
       call copy(rhs,uu,nb)
@@ -309,8 +303,6 @@ c-----------------------------------------------------------------------
       real bpar
       integer barr_func 
 
-      barr_func = 1
-
       ! evaluate quasi-newton f
 
       ONE = 1.
@@ -349,8 +341,8 @@ c-----------------------------------------------------------------------
          enddo
       endif
 
-      bar1 = vlsum(tmp3,nb)
-      bar2 = vlsum(tmp4,nb)
+      bar1 = glsum(tmp3,nb)
+      bar2 = glsum(tmp4,nb)
       term4 = bpar*(bar1+bar2)
 
       qnf = term1 - term2 + term3 - term4
@@ -404,16 +396,17 @@ c-----------------------------------------------------------------------
       real rhs(nb),s(nb)
       real uuo(nb),uu(nb)
       real helm(nb,nb),invhelm(nb,nb)
-      real Jfk(nb)
+      real Jfk(nb),Jfk1(nb)
       real amax(nb),amin(nb)
       real fk,fk1
-      real Jfks
+      real Jfks,Jfks1
       real sigmab,facb,alphak
       real bctol,bpar,minalpha
+
       integer chekbc,counter
       integer bflag
       integer countbc
-      logical cond1
+      logical cond1,cond2
 
       alphak = 1.0
       chekbc = 0
@@ -426,7 +419,10 @@ c-----------------------------------------------------------------------
       call findminalpha(minalpha,s,uu,amax,amin)
 
       call copy(uuo,uu,nb)
-      call add2s1(uu,s,alphak,nb)
+c     call add2s2(uu,s,alphak,nb)
+      do ii=1,nb
+         uu(ii) = uu(ii) + alphak*s(ii)
+      enddo
 
       do ii=1,nb
          if ((uu(ii)-amax(ii)).ge.bctol) then
@@ -439,14 +435,21 @@ c-----------------------------------------------------------------------
       enddo
 
       call comp_qnf(uu,rhs,helm,invhelm,fk1,amax,amin,bpar,bflag) ! get new f
-      Jfks = vlsc2(Jfk,s,nb)   
+      call comp_qngradf(uu,rhs,helm,Jfk1,amax,amin,bpar,bflag)
+
+      Jfks = glsc2(Jfk,s,nb)   
+      Jfks1 = glsc2(Jfk1,s,nb)   
 
       cond1 = fk1 .gt. (fk+sigmab*alphak*Jfks)
+      cond2 = Jfks1 .lt. (0.9*Jfks)
 
       do while (cond1.OR.(chekbc.eq.1))
          counter = counter + 1
          alphak = alphak * facb
-         call add3s2(uu,uuo,s,1.0,alphak,nb)
+         do ii=1,nb
+            uu(ii) = uuo(ii) + alphak*s(ii)
+         enddo
+c        call add3s2(uu,uuo,s,1.0,alphak,nb)
 
          chekbc = 0
          countbc = 0
@@ -461,11 +464,15 @@ c-----------------------------------------------------------------------
          enddo
 
          call comp_qnf(uu,rhs,helm,invhelm,fk1,amax,amin,bpar,bflag)
+         call comp_qngradf(uu,rhs,helm,Jfk1,amax,amin,bpar,bflag)
+         Jfks1 = glsc2(Jfk1,s,nb)   
+
          cond1 = fk1 .gt. (fk+sigmab*alphak*Jfks)
+         cond2 = Jfks1 .lt. (0.9*Jfks)
          
 c        if (alphak < minalpha .AND. (fk1.gt.(fk+sigmab*alphak*Jfks))) 
 c    $   then
-         if ((alphak < minalpha .AND. cond1).OR. alphak < 1e-8) then
+         if ((alphak < minalpha.AND..not.cond1).OR.alphak < 1e-8) then
             exit
          endif
       enddo
@@ -473,10 +480,12 @@ c    $   then
       call cmult(s,alphak,nb)
 
       if (mod(ad_step,ad_iostep).eq.0) then
-         if (nio.eq.0) write(6,*)
-     $         ad_step,'# lnsrch:',counter,'alpha',alphak,
-     $         minalpha,chekbc,cond1
+         if (nio.eq.0) write(6,1)
+     $         ad_step,bpar,' #lnsrch:',counter,' step length:',
+     $         alphak,minalpha,chekbc,cond1,cond2
       endif
+
+    1 format (i6,1p1e16.8,a9,i3,a13,1p2e16.8,i3,' ',2L2) 
 
       return
       end
@@ -490,12 +499,12 @@ c-----------------------------------------------------------------------
 
       real uu(nb)
       real par
-      real ngf,qndf,norm_s,yks
+      real ngf,qndf,norm_s,ysk
       integer qstep 
       integer uhcount,lncount
 
       if (nio.eq.0) then
-         write (6,*)'ad_step:',ad_step,ad_iostep,par,qstep,uhcount,
+         write (6,2)'ad_step:',ad_step,ad_iostep,par,qstep,uhcount,
      $            lncount,ngf,qndf,norm_s,ysk
          if (ad_step.eq.ad_nsteps) then
             do j=1,nb
@@ -507,7 +516,7 @@ c-----------------------------------------------------------------------
             enddo
          endif
       endif
-      
+    2 format (a8,i6,i4,1p1e16.8,i3,i3,i3,1p4e16.8)  
       return
       end
 c-----------------------------------------------------------------------
@@ -560,7 +569,7 @@ c-----------------------------------------------------------------------
       real alphai(nb)
 
       do ii=1,nb
-         if (s(ii).le.0) then
+         if (s(ii).le.1e-10) then
             alphai(ii) = abs((uu(ii)-amin(ii))/s(ii))
          else
             alphai(ii) = ((amax(ii)-uu(ii))/s(ii))
