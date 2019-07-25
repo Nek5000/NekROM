@@ -27,9 +27,9 @@ c-----------------------------------------------------------------------
          time=ttime
          if (isolve.ne.0) then
             ubarr0=1e-1
-            ubarrseq=8 
+            ubarrseq=5 
             tbarr0=1e-1
-            tbarrseq=8
+            tbarrseq=5
          endif
       endif
 
