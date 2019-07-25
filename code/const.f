@@ -101,7 +101,8 @@ c           if (ngf .lt. 1e-6 .OR. norm_step .lt. 1e-10) then
                if (ysk .lt. 1e-10) then 
                   if (nio.eq.0) then
                      ! curvature condition not satisfied
-                     write(6,*)'WARNING: increase barr0'
+                     write(6,*)'WARNING: decrease barrseq or increase
+     $               barr0' 
                   endif
                endif
                exit
