@@ -102,11 +102,14 @@ c-----------------------------------------------------------------------
       call rom_init_fields
 
       call setgram
+      if (ifdumpops) call dump_gram
       call setevec
 
       call setbases
+      if (ifdumpops) call dump_bas
 
       call setops
+      if (ifdumpops) call dump_ops
 
       if (nio.eq.0) write (6,*) 'begin setup for qoi'
 
@@ -136,7 +139,7 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'end range setup'
 
-      if (ifdumpops) call dump_all
+      if (ifdumpops) call dump_misc
 
       call nekgsync
       setup_end=dnekclock()

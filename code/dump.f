@@ -192,3 +192,168 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine dump_ops
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /dumpglobal/ wk1(lcloc),wk2(lcloc)
+
+      logical iftmp1,iftmp2,iftmp3
+
+      call nekgsync
+      dops_time=dnekclock()
+
+      if (ifrom(1)) then
+         call dump_serial(au0,(nb+1)**2,'ops/au ',nid)
+         call dump_serial(bu0,(nb+1)**2,'ops/bu ',nid)
+         call dump_global(cul,ncloc,'ops/cu ',wk1,wk2,nid)
+      endif
+
+      if (ifrom(2)) then
+         call dump_serial(at0,(nb+1)**2,'ops/at ',nid)
+         call dump_serial(bt0,(nb+1)**2,'ops/bt ',nid)
+         call dump_global(ctl,ncloc,'ops/ct ',wk1,wk2,nid)
+      endif
+
+      call nekgsync
+      if (nio.eq.0) write (6,*) 'dops_time:',dnekclock()-dops_time
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine dump_bas
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /dumpglobal/ wk1(lcloc),wk2(lcloc)
+
+      logical iftmp1,iftmp2,iftmp3
+
+      call nekgsync
+      dbas_time=dnekclock()
+
+      ttmp=time
+      itmp=istep
+
+      iftmp1=ifxyo
+      iftmp2=ifpo
+      iftmp3=ifto
+
+      ifpo=.false.
+      ifto=ifrom(2)
+
+      call nekgsync
+      dbas_time=dnekclock()
+
+      do i=0,nb
+         time=i
+         itmp=i
+         ifxyo=(i.eq.0)
+         call outpost(ub(1,i),vb(1,i),wb(1,i),pb(1,i),tb(1,i),'bas')
+      enddo
+
+      istep=itmp
+      time=ttmp
+
+      ifxyo=iftmp1
+      ifpo=iftmp2
+      ifto=iftmp3
+
+      call nekgsync
+      if (nio.eq.0) write (6,*) 'dbas_time:',dnekclock()-dbas_time
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine dump_gram
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      call nekgsync
+      dgram_time=dnekclock()
+
+      if (ifpod(1)) then
+         call dump_serial(ug(1,1,1),ls*ls,'ops/gu ',nid)
+      endif
+
+      if (ifpod(2)) then
+         call dump_serial(ug(1,1,2),ls*ls,'ops/gt ',nid)
+      endif
+
+      call nekgsync
+      if (nio.eq.0) write (6,*) 'dgram_time:',dnekclock()-dgram_time
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine dump_misc
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /dumpglobal/ wk1(lcloc),wk2(lcloc)
+
+      call nekgsync
+      dmisc_time=dnekclock()
+
+      if (ifrom(1)) then
+         call dump_serial(u,(nb+1)*3,'ops/u ',nid)
+         call dump_serial(uk,ns*(nb+1),'ops/uk ',nid)
+         call dump_serial(umin,nb,'ops/umin ',nid)
+         call dump_serial(umax,nb,'ops/umax ',nid)
+         call dump_serial(timek,ns,'ops/timek ',nid)
+
+         if (ifcdrag) then
+            call dump_serial(rdgx,nb+1,'qoi/rdgx ',nid)
+            call dump_serial(rdgy,nb+1,'qoi/rdgy ',nid)
+            if (ldim.eq.3) call dump_serial(rdgz,nb+1,'qoi/rdgz ',nid)
+
+            call dump_serial(fd1,ldim*(nb+1),'qoi/fd1 ',nid)
+            call dump_serial(fd2,ldim*(nb+1)**2,'qoi/fd2 ',nid)
+            call dump_serial(fd3,ldim*(nb+1),'qoi/fd3 ',nid)
+         endif
+      endif
+
+      if (ifrom(2)) then
+         call dump_serial(ut,(nb+1)*3,'ops/t ',nid)
+         call dump_serial(tk,ns*(nb+1),'ops/tk ',nid)
+         call dump_serial(tmin,nb,'ops/tmin ',nid)
+         call dump_serial(tmax,nb,'ops/tmax ',nid)
+         if (.not.ifpod(1))
+     $      call dump_serial(timek,ns,'ops/timek ',nid)
+      endif
+
+      if (ifforce)  call dump_serial(rf,nb,'ops/rf ',nid)
+      if (ifsource) call dump_serial(rq,nb,'ops/rq ',nid)
+      if (ifbuoy)   call dump_serial(but0,(nb+1)**2,'ops/but ',nid)
+
+      if (ifei) then
+         l=1
+         do j=1,nres
+         do i=1,nres
+            sigtmp(l,1)=sigma(i,j)
+            l=l+1
+         enddo
+         enddo
+         call dump_serial(sigtmp,nres*nres,'ops/sigma ',nid)
+      endif
+
+      call nekgsync
+      if (nio.eq.0) write (6,*) 'dmisc_time:',dnekclock()-dmisc_time
+
+      return
+      end
+c-----------------------------------------------------------------------
