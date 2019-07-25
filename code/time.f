@@ -6,8 +6,8 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       real rhs(0:nb),rhstmp(0:nb)
-      logical ifdebug
       real bctol
+      logical ifdebug
       integer chekbc
 
       chekbc=0
@@ -90,11 +90,11 @@ c-----------------------------------------------------------------------
             if (rhs(i).lt.umin(i)) rhs(i)=umin(i)+(rhs(i)-umin(i))*damp
             enddo
          endif
-      else if (isolve.eq.1) then ! constrained solve
+      else if (isolve.eq.1) then ! constrained solve with inverse update
          call BFGS_new(rhs(1),u(1,1),helmu,invhelmu,umax,umin,udis,
-     $   1e-1,8)
-      else if (isolve.eq.2) then
-
+     $   1e-3,5)
+      else if (isolve.eq.2) then ! constrained solve with inverse update
+                                 ! and mix with standard solver
          call copy(rhstmp,rhs,nb+1)
          call dgetrs('N',nb,1,fluv,lub,ipiv,rhstmp(1),nb,info)
 
@@ -110,11 +110,35 @@ c-----------------------------------------------------------------------
          if (chekbc.eq.1) then
             ucopt_count = ucopt_count + 1
             call BFGS_new(rhs(1),u(1,1),helmu,invhelmu,umax,umin,udis,
-     $      1e-1,8)
+     $      1e-3,5)
          else
             call copy(rhs,rhstmp,nb+1)
          endif
 
+      else if (isolve.eq.3) then ! constrained solve with Hessian update
+         call BFGS(rhs(1),u(1,1),helmu,invhelmu,umax,umin,udis,
+     $   1e-1,8)
+      else if (isolve.eq.4) then ! constrained solve with Hessian update
+                                 ! and mix with standard solver
+         call copy(rhstmp,rhs,nb+1)
+         call dgetrs('N',nb,1,fluv,lub,ipiv,rhstmp(1),nb,info)
+
+         bctol = 1e-12
+         do ii=1,nb
+            if ((rhstmp(ii)-umax(ii)).ge.bctol) then
+               chekbc = 1
+            elseif ((umin(ii)-rhstmp(ii)).ge.bctol) then
+               chekbc = 1
+            endif
+         enddo
+
+         if (chekbc.eq.1) then
+            ucopt_count = ucopt_count + 1
+            call BFGS(rhs(1),u(1,1),helmu,invhelmu,umax,umin,udis,
+     $      1e-1,8)
+         else
+            call copy(rhs,rhstmp,nb+1)
+         endif
       else   
          call exitti('incorrect isolve specified...$',isolve)
       endif
@@ -239,7 +263,7 @@ c-----------------------------------------------------------------------
          call dgetrs('N',nb,1,flut,lub,ipiv,rhs(1),nb,info)
       else if (isolve.eq.1) then ! constrained solve
          call BFGS_new(rhs(1),ut(1,1),helmt,invhelmt,tmax,tmin,tdis,
-     $   1e-1,8) 
+     $   1e-3,5) 
       else if (isolve.eq.2) then
 
          call copy(rhstmp,rhs,nb+1)
@@ -257,11 +281,35 @@ c-----------------------------------------------------------------------
          if (chekbc.eq.1) then
             tcopt_count = tcopt_count + 1
             call BFGS_new(rhs(1),ut(1,1),helmt,invhelmt,tmax,tmin,tdis,
-     $      1e-1,8) 
+     $      1e-3,5) 
          else
             call copy(rhs,rhstmp,nb+1)
          endif
 
+      else if (isolve.eq.3) then ! constrained solve
+         call BFGS(rhs(1),ut(1,1),helmt,invhelmt,tmax,tmin,tdis,
+     $   1e-1,8) 
+      else if (isolve.eq.4) then
+
+         call copy(rhstmp,rhs,nb+1)
+         call dgetrs('N',nb,1,flut,lub,ipiv,rhstmp(1),nb,info)
+
+         bctol = 1e-12
+         do ii=1,nb
+            if ((rhstmp(ii)-tmax(ii)).ge.bctol) then
+               chekbc = 1
+            elseif ((tmin(ii)-rhstmp(ii)).ge.bctol) then
+               chekbc = 1
+            endif
+         enddo
+
+         if (chekbc.eq.1) then
+            tcopt_count = tcopt_count + 1
+            call BFGS(rhs(1),ut(1,1),helmt,invhelmt,tmax,tmin,tdis,
+     $      1e-1,8) 
+         else
+            call copy(rhs,rhstmp,nb+1)
+         endif
       else
          call exitti('incorrect isolve specified...$',isolve)
       endif
