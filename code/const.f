@@ -49,24 +49,10 @@ c        compute quasi-Newton step
             call chsign(qns,nb)
             call dgetrs('N',nb,1,tmp,lub,ipiv,qns,nb,info)
 
-            if (isolve.eq.3.OR.isolve.eq.4) then
-               tlnsrch_time=dnekclock()
-               call backtrackr(uu,qns,rhs,helm,invhelm,1e-4,0.5,
-     $                     amax,amin,bctol,bflag,par,chekbc,lncount)
-               lnsrch_time=lnsrch_time+dnekclock()-tlnsrch_time
-            elseif (isolve.eq.5) then      
-               call add2(uu,qns,nb)
-               ! check the boundary 
-               do ii=1,nb
-                  if ((uu(ii)-amax(ii)).ge.bctol) then
-                     chekbc = 1
-                     uu(ii) = amax(ii) - 0.1*adis(ii)
-                  elseif ((amin(ii)-uu(ii)).ge.bctol) then
-                     chekbc = 1
-                     uu(ii) = amin(ii) + 0.1*adis(ii)
-                  endif
-               enddo
-            endif
+            tlnsrch_time=dnekclock()
+            call backtrackr(uu,qns,rhs,helm,invhelm,1e-4,0.5,
+     $                  amax,amin,bctol,bflag,par,chekbc,lncount)
+            lnsrch_time=lnsrch_time+dnekclock()-tlnsrch_time
 
             norm_s = glamax(qns,nb)
             norm_step = norm_s/norm_uo
@@ -82,10 +68,8 @@ c        compute quasi-Newton step
             ysk = glsc2(qny,qns,nb)
 
             ! update approximate Hessian by two rank-one update if chekbc = 0
-            if (chekbc .ne. 1) then
-               uHcount = uHcount + 1
-               call Hessian_update(B_qn,qns,qny,nb)
-            endif
+            uHcount = uHcount + 1
+            call Hessian_update(B_qn,qns,qny,nb)
 
             ! compute H^{-1} norm of gradf
             ngf = glamax(qngradf,nb)
