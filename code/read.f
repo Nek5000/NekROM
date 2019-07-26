@@ -59,7 +59,14 @@ c-----------------------------------------------------------------------
 
       if (ifexist) then
          nn=nb+1
-         call get_saved_fields(us0,ps,ts0,nn,timek,'bas.list ')
+         nsu=1
+         nsp=1
+         nst=1
+         if (ifrom(0)) nsp=nn
+         if (ifrom(1)) nsu=nn
+         if (ifrom(2)) nst=nn
+
+         call get_saved_fields(us0,ps,ts0,nsu,nsp,nst,timek,'bas.list ')
          do i=0,nb
             call copy_sol(ub(1,i),vb(1,i),wb(1,i),pb(1,i),tb(1,i),
      $   us0(1,1,i+1),us0(1,2,i+1),us0(1,ldim,i+1),ps(1,i+1),ts0(1,i+1))
@@ -150,7 +157,7 @@ c     This routine reads files specificed in fname
       return
       end
 c-----------------------------------------------------------------------
-      subroutine get_saved_fields(usave,psave,tsave,nsave,timek,fname)
+      subroutine get_saved_fields(usave,psave,tsave,nsu,nsp,nst,tk,fn)
 
 c     This routine reads files specificed in fname
 
@@ -162,16 +169,17 @@ c     This routine reads files specificed in fname
       parameter (lt=lx1*ly1*lz1*lelt)
       parameter (lt2=lx2*ly2*lz2*lelt)
 
-      real usave(lt,ldim,nsave),psave(lt2,nsave),tsave(lt,ldimt,nsave)
-      real timek(nsave)
+      parameter (ns=max(nsu,nsp,nst))
+      real usave(lt,ldim,nsu),psave(lt2,nsp),tsave(lt,nst)
+      real tk(ns)
 
-      character*128 fname
+      character*128 fn
       character*128 fnlint
 
       common /scrk2/ t4(lt),t5(lt),t6(lt)
 
       ierr = 0
-      call lints(fnlint,fname,128)
+      call lints(fnlint,fn,128)
       if (nid.eq.0) open(77,file=fnlint,status='old',err=199)
       ierr = iglmax(ierr,1)
       if (ierr.gt.0) goto 199
@@ -184,6 +192,8 @@ c     This routine reads files specificed in fname
       call zero_sol(urms,vrms,wrms,prms,trms)
       call opzero(vwms,wums,uvms)
       call opcopy(t4,t5,t6,xm1,ym1,zm1)
+
+      nsave=ns
 
       icount = 0
       do ipass=1,nsave
@@ -199,7 +209,7 @@ c     This routine reads files specificed in fname
             nfiles = 1
             ttmp=time
             call restart(nfiles)  ! Note -- time is reset.
-            timek(icount)=time
+            tk(icount)=time
             time=ttmp
 
             ip=ipass
@@ -211,8 +221,12 @@ c     This routine reads files specificed in fname
             call add2col2(vwms,vx,t,n)
             call add2col2(wums,vy,t,n)
             if (ldim.eq.3) call add2col2(uvms,vz,t,n)
-            call copy_sol(usave(1,1,ip),usave(1,2,ip),usave(1,ldim,ip),
-     $                    psave(1,ip),tsave(1,1,ip),vx,vy,vz,pr,t)
+            if (icount.le.nsu)
+     $         call opcopy(usave(1,1,ip),usave(1,2,ip),usave(1,ldim,ip),
+     $                    vx,vy,vz)
+
+            if (icount.le.nsp) call copy(psave(1,ip),pr,n2)
+            if (icount.le.nst) call copy(tsave(1,ip),t,n)
          else
             goto 999
          endif
@@ -225,10 +239,13 @@ c     This routine reads files specificed in fname
 
       call pop_sol(vx,vy,vz,pr,t)
 
-      s=1./real(nsave)
-      call scale_sol(uavg,vavg,wavg,pavg,tavg,s)
-      call scale_sol(urms,vrms,wrms,prms,trms,s)
-      call opcmult(vwms,wums,uvms,s,n)
+      su=1./real(min(nsave,nsu))
+      sp=1./real(min(nsave,nsp))
+      st=1./real(min(nsave,nsp))
+
+      call scale_sol(uavg,vavg,wavg,pavg,tavg,su)
+      call scale_sol(urms,vrms,wrms,prms,trms,su)
+      call opcmult(vwms,wums,uvms,su,n)
       call opcopy(xm1,ym1,zm1,t4,t5,t6)
 
       return

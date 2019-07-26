@@ -390,7 +390,13 @@ c-----------------------------------------------------------------------
          fname1='file.list '
          call nekgsync
          gsf_time=dnekclock()
-         call get_saved_fields(us0,ps,ts0,ns,timek,fname1)
+         nsu=1
+         nsp=1
+         nst=1
+         if (ifrom(0)) nsp=nn
+         if (ifrom(1)) nsu=nn
+         if (ifrom(2)) nst=nn
+         call get_saved_fields(us0,ps,ts0,nsu,nsp,nst,timek,fname1)
          call nekgsync
          if (nio.eq.0) write (6,*) 'gsf_time:',dnekclock()-gsf_time
 
