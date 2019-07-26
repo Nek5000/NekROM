@@ -82,6 +82,7 @@ c-----------------------------------------------------------------------
       if (isolve.eq.0) then ! standard matrix inversion
          if (.not.iffasth.or.ad_step.le.3) then
             call dgetrs('N',nb,1,fluv,lub,ipiv,rhs(1),nb,info)
+            call count_gal(num_galu,anum_galu,rhs(1),umax,umin,1e-12,nb)
          else
             eps=.20
             damp=1.-eps*ad_dt
@@ -93,6 +94,7 @@ c-----------------------------------------------------------------------
       else if (isolve.eq.1) then ! constrained solve with inverse update
          call BFGS_new(rhs(1),u(1,1),helmu,invhelmu,umax,umin,udis,
      $   ubarr0,ubarrseq)
+         call count_gal(num_galu,anum_galu,rhs(1),umax,umin,1e-12,nb)
       else if (isolve.eq.2) then ! constrained solve with inverse update
                                  ! and mix with standard solver
          call copy(rhstmp,rhs,nb+1)
@@ -111,13 +113,16 @@ c-----------------------------------------------------------------------
             ucopt_count = ucopt_count + 1
             call BFGS_new(rhs(1),u(1,1),helmu,invhelmu,umax,umin,udis,
      $      ubarr0,ubarrseq)
+            call count_gal(num_galu,anum_galu,rhs(1),umax,umin,1e-12,nb)
          else
             call copy(rhs,rhstmp,nb+1)
+            call count_gal(num_galu,anum_galu,rhs(1),umax,umin,1e-12,nb)
          endif
 
       else if (isolve.eq.3) then ! constrained solve with Hessian update
          call BFGS(rhs(1),u(1,1),helmu,invhelmu,umax,umin,udis,
      $   ubarr0,ubarrseq)
+         call count_gal(num_galu,anum_galu,rhs(1),umax,umin,1e-12,nb)
       else if (isolve.eq.4) then ! constrained solve with Hessian update
                                  ! and mix with standard solver
          call copy(rhstmp,rhs,nb+1)
@@ -136,8 +141,10 @@ c-----------------------------------------------------------------------
             ucopt_count = ucopt_count + 1
             call BFGS(rhs(1),u(1,1),helmu,invhelmu,umax,umin,udis,
      $      ubarr0,ubarrseq)
+            call count_gal(num_galu,anum_galu,rhs(1),umax,umin,1e-12,nb)
          else
             call copy(rhs,rhstmp,nb+1)
+            call count_gal(num_galu,anum_galu,rhs(1),umax,umin,1e-12,nb)
          endif
       else   
          call exitti('incorrect isolve specified...$',isolve)
@@ -205,6 +212,15 @@ c        call cubar
          endif
       endif
 
+      if (ad_step.eq.ad_nsteps) then
+         if (nio.eq.0) then
+            do j=1,nb
+               write(6,*)j,num_galu(j)/ad_nsteps,'num_galu'
+            enddo
+            write(6,*)anum_galu/ad_nsteps,'anum_galu'
+         endif
+      endif
+
       return
       end
 c-----------------------------------------------------------------------
@@ -261,9 +277,11 @@ c-----------------------------------------------------------------------
       ttime=dnekclock()
       if (isolve.eq.0) then ! standard matrix inversion
          call dgetrs('N',nb,1,flut,lub,ipiv,rhs(1),nb,info)
+         call count_gal(num_galt,anum_galt,rhs(1),tmax,tmin,1e-12,nb)
       else if (isolve.eq.1) then ! constrained solve
          call BFGS_new(rhs(1),ut(1,1),helmt,invhelmt,tmax,tmin,tdis,
      $   tbarr0,tbarrseq) 
+         call count_gal(num_galt,anum_galt,rhs(1),tmax,tmin,1e-12,nb)
       else if (isolve.eq.2) then
 
          call copy(rhstmp,rhs,nb+1)
@@ -282,13 +300,16 @@ c-----------------------------------------------------------------------
             tcopt_count = tcopt_count + 1
             call BFGS_new(rhs(1),ut(1,1),helmt,invhelmt,tmax,tmin,tdis,
      $      tbarr0,tbarrseq) 
+            call count_gal(num_galt,anum_galt,rhs(1),tmax,tmin,1e-12,nb)
          else
             call copy(rhs,rhstmp,nb+1)
+            call count_gal(num_galt,anum_galt,rhs(1),tmax,tmin,1e-12,nb)
          endif
 
       else if (isolve.eq.3) then ! constrained solve
          call BFGS(rhs(1),ut(1,1),helmt,invhelmt,tmax,tmin,tdis,
      $   tbarr0,tbarrseq)
+         call count_gal(num_galt,anum_galt,rhs(1),tmax,tmin,1e-12,nb)
       else if (isolve.eq.4) then
 
          call copy(rhstmp,rhs,nb+1)
@@ -307,8 +328,10 @@ c-----------------------------------------------------------------------
             tcopt_count = tcopt_count + 1
             call BFGS(rhs(1),ut(1,1),helmt,invhelmt,tmax,tmin,tdis,
      $      tbarr0,tbarrseq) 
+            call count_gal(num_galt,anum_galt,rhs(1),tmax,tmin,1e-12,nb)
          else
             call copy(rhs,rhstmp,nb+1)
+            call count_gal(num_galt,anum_galt,rhs(1),tmax,tmin,1e-12,nb)
          endif
       else
          call exitti('incorrect isolve specified...$',isolve)
@@ -343,6 +366,15 @@ c-----------------------------------------------------------------------
                   write(6,*) j,time,ut(j,1),'romt'
                enddo
             endif
+         endif
+      endif
+
+      if (ad_step.eq.ad_nsteps) then
+         if (nio.eq.0) then
+            do j=1,nb
+               write(6,*)j,num_galt(j)/ad_nsteps,'num_galt'
+            enddo
+            write(6,*)anum_galt/ad_nsteps,'anum_galt'
          endif
       endif
 
