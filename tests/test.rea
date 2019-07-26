@@ -188,10 +188,10 @@
    0.00000     p184
    0.00000     p185
    0.00000     p186
-   0.00000     p187
-   0.00000     p188
-   0.00000     p189
-   0.00000     p190
+   0.00000     p187 constrained barrier initial parameter for velocity
+   0.00000     p188 # of constrained barrier parameter loop for vel
+   0.00000     p189 constrained barrier initial parameter for temperature
+   0.00000     p190 # of constrained barrier parameter loop for temp
    0.00000     p191 MOR: != 0 -> fast c-evaluation
    0.00000     p192
    0.00000     p193 MOR: != 0 -> forcing  (set fx,fy,fz with mass)
