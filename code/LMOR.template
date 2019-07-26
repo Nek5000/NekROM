@@ -1,8 +1,32 @@
       ! MOR Parameters
 
-      parameter (ls=100) ! number of snapshots
-      parameter (nb=20)  ! number of basis vectors
+      !  Overall Settings
 
-      parameter (lres=1) ! max length of xi & theta
+      parameter (lmu=1)   ! 0 -> disable velocity,    1 -> use velocity
+      parameter (lmp=0)   ! 0 -> disable pressure,    1 -> use pressure
+      parameter (lmt=0)   ! 0 -> disable temperature, 1 -> use temperature
+
+      ! Snapshots
+
+      parameter (ls=50)             ! number of snapshots
+      parameter (lsu=(ls-1)*lmu+1)  ! number of velocity snapshots
+      parameter (lsp=(ls-1)*lmp+1)  ! number of pressure snapshots
+      parameter (lst=(ls-1)*lmt+1)  ! number of temperature snapshots
+
+      ! Elements
+
+      parameter (lelm=lelt)
+
+      ! Basis
+
+      parameter (lb=2)
+      parameter (nb=lb)
+      parameter (lub=(lb-1)*lmu+1)
+      parameter (lpb=(lb-1)*lmp+1)
+      parameter (ltb=(lb-1)*lmt+1)
+
+      ! Misc
+
       parameter (lk=1)   ! largest wave number for pdrag calculation
       parameter (lmsk=1) ! number of partitions
+      parameter (lres=1) ! number of partitions
