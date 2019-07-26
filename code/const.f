@@ -37,7 +37,7 @@
          call copy(B_qn(1,1),helm(1,1),nb*nb)
          call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par,bflag)
 
-         norm_uo = glamax(uu,nb)
+         norm_uo = vlamax(uu,nb)
 
          tquasi_time=dnekclock()
 c        compute quasi-Newton step
@@ -68,7 +68,7 @@ c        compute quasi-Newton step
                enddo
             endif
 
-            norm_s = glamax(qns,nb)
+            norm_s = vlamax(qns,nb)
             norm_step = norm_s/norm_uo
 
             ! store old qn-gradf
@@ -79,7 +79,7 @@ c        compute quasi-Newton step
             call sub3(qny,qngradf,qgo,nb) 
 
             ! compute curvature condition
-            ysk = glsc2(qny,qns,nb)
+            ysk = vlsc2(qny,qns,nb)
 
             ! update approximate Hessian by two rank-one update if chekbc = 0
             if (chekbc .ne. 1) then
@@ -88,7 +88,7 @@ c        compute quasi-Newton step
             endif
 
             ! compute H^{-1} norm of gradf
-            ngf = glamax(qngradf,nb)
+            ngf = vlamax(qngradf,nb)
 
             ! reset chekbc 
             chekbc = 0
@@ -164,7 +164,7 @@ c-----------------------------------------------------------------------
          ! use helm from BDF3/EXT3 as intial approximation
          call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par,bflag)
 
-         norm_uo = glamax(uu,nb)
+         norm_uo = vlamax(uu,nb)
 
          tquasi_time=dnekclock()
 c        compute quasi-Newton step
@@ -190,13 +190,13 @@ c        compute quasi-Newton step
      $                     par,bflag) ! update qn-gradf
                call sub3(qny,qngradf,qgo,nb) 
 
-               ysk = glsc2(qny,qns,nb)
+               ysk = vlsc2(qny,qns,nb)
 
-               norm_s = glamax(qns,nb)
+               norm_s = vlamax(qns,nb)
                norm_step = norm_s/norm_uo
 
                ! compute H^{-1} norm of gradf
-               ngf = glamax(qngradf,nb)
+               ngf = vlamax(qngradf,nb)
 
                jmax = max(j,jmax)
 
@@ -309,14 +309,14 @@ c-----------------------------------------------------------------------
       ZERO= 0.
 
       call dgemv('N',nb,nb,ONE,helm,nb,uu,1,ZERO,tmp6,1) ! H*coef
-      term1 = 0.5 * glsc2(tmp6,uu,nb) ! coef'*H*coef
+      term1 = 0.5 * vlsc2(tmp6,uu,nb) ! coef'*H*coef
 
-      term2 = glsc2(uu,rhs,nb) ! coef'*rhs
+      term2 = vlsc2(uu,rhs,nb) ! coef'*rhs
 
       ! 0.5*rhs'*inv(H)*rhs
       call copy(tmp5,rhs,nb)
       call dgetrs('N',nb,1,invhelm,lub,ipiv,tmp5,nb,info)
-      term3 = 0.5 * glsc2(rhs,tmp5,nb)
+      term3 = 0.5 * vlsc2(rhs,tmp5,nb)
 
       if (barr_func .eq. 1) then ! use logarithmetic as barrier function
          ! barrier term
@@ -341,8 +341,8 @@ c-----------------------------------------------------------------------
          enddo
       endif
 
-      bar1 = glsum(tmp3,nb)
-      bar2 = glsum(tmp4,nb)
+      bar1 = vlsum(tmp3,nb)
+      bar2 = vlsum(tmp4,nb)
       term4 = bpar*(bar1+bar2)
 
       qnf = term1 - term2 + term3 - term4
@@ -370,13 +370,13 @@ c-----------------------------------------------------------------------
       ! s_k^T * B_k * s_k 
       call mxm(B,nb,s,nb,w4,1)
 
-      sBs = glsc2(s,w4,nb)
+      sBs = vlsc2(s,w4,nb)
 
       ! second rank-one update
       ! y_k * y_k^T               
       call mxm(y,nb,y,1,yy,nb)
       ! y_k^T * s_k
-      ys = glsc2(y,s,nb)
+      ys = vlsc2(y,s,nb)
 
       call cmult(w3,-1.0/sBs,nb*nb)
       call cmult(yy,1.0/ys,nb*nb)
@@ -437,8 +437,8 @@ c     call add2s2(uu,s,alphak,nb)
       call comp_qnf(uu,rhs,helm,invhelm,fk1,amax,amin,bpar,bflag) ! get new f
       call comp_qngradf(uu,rhs,helm,Jfk1,amax,amin,bpar,bflag)
 
-      Jfks = glsc2(Jfk,s,nb)   
-      Jfks1 = glsc2(Jfk1,s,nb)   
+      Jfks = vlsc2(Jfk,s,nb)   
+      Jfks1 = vlsc2(Jfk1,s,nb)   
 
       cond1 = fk1 .gt. (fk+sigmab*alphak*Jfks)
       cond2 = Jfks1 .lt. (0.9*Jfks)
@@ -465,7 +465,7 @@ c        call add3s2(uu,uuo,s,1.0,alphak,nb)
 
          call comp_qnf(uu,rhs,helm,invhelm,fk1,amax,amin,bpar,bflag)
          call comp_qngradf(uu,rhs,helm,Jfk1,amax,amin,bpar,bflag)
-         Jfks1 = glsc2(Jfk1,s,nb)   
+         Jfks1 = vlsc2(Jfk1,s,nb)   
 
          cond1 = fk1 .gt. (fk+sigmab*alphak*Jfks)
          cond2 = Jfks1 .lt. (0.9*Jfks)
@@ -538,8 +538,8 @@ c-----------------------------------------------------------------------
 
       ! compute right product
       do i=qnstep,1,-1
-         qnrho(i) = glsc2(yk(1,i),sk(1,i),nb)
-         qnalpha(i) = glsc2(sk(1,i),qnsol,nb)/qnrho(i)
+         qnrho(i) = vlsc2(yk(1,i),sk(1,i),nb)
+         qnalpha(i) = vlsc2(sk(1,i),qnsol,nb)/qnrho(i)
          call add2s2(qnsol,yk(1,i),-qnalpha(i),nb)
       enddo
 
@@ -550,7 +550,7 @@ c-----------------------------------------------------------------------
 
       ! compute left product
       do i=1,qnstep
-         qnbeta(i) = glsc2(yk(1,i),qnsol,nb)/qnrho(i)
+         qnbeta(i) = vlsc2(yk(1,i),qnsol,nb)/qnrho(i)
          qnfact(i) = (qnalpha(i)-qnbeta(i))
          call add2s2(qnsol,sk(1,i),qnfact(i),nb)
       enddo
