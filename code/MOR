@@ -29,7 +29,7 @@ c     parameters and common blocks for MOR
       common /morwbt/ wbt(lx1*ly1*lz1*lelm,0:lub)
       common /mortbt/ tbt(lx1*ly1*lz1*lelm,0:ltb)
 
-      common /morcoef/ uk(0:lub,lsu),tk(0:lut,lst),timek(ls)
+      common /morcoef/ uk(0:lub,lsu),tk(0:ltb,lst),timek(ls)
 
       common /morusnap/ us0(lx1*ly1*lz1*lelm,ldim,lsu)
       common /morpsnap/ ps(lx2*ly2*lz2*lelm,lsp)
