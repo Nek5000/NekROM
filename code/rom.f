@@ -23,6 +23,10 @@ c-----------------------------------------------------------------------
          postu_time=0.
          postt_time=0.
          icalld=1
+         call rzero(num_galu,nb)
+         call rzero(num_galt,nb)
+         anum_galu=0.
+         anum_galt=0.
          call rom_setup
          time=ttime
          if (isolve.ne.0) then
