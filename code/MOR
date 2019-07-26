@@ -149,7 +149,11 @@ c     parameters and common blocks for MOR
      $                 postu_time,postt_time
 
       integer ucopt_count,tcopt_count
-      common /morcount/ ucopt_count,tcopt_count
+      real num_galu,num_galt,
+     $     anum_galu,anum_galt
+      common /morcount/ ucopt_count,tcopt_count,
+     $                  num_galu(nb),num_galt(nb),
+     $                  anum_galu,anum_galt
 
       real mtke
       common /morstat/ mtke
