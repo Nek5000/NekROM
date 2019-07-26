@@ -29,12 +29,6 @@ c-----------------------------------------------------------------------
          anum_galt=0.
          call rom_setup
          time=ttime
-         if (isolve.ne.0) then
-            ubarr0=1e-1
-            ubarrseq=5 
-            tbarr0=1e-1
-            tbarrseq=5
-         endif
       endif
 
       ad_step = istep
@@ -323,6 +317,12 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
 
       ifpart=.false.
       ifcintp=.false.
+
+      ! barrier initial parameter and number of loop
+      ubarr0  =param(187)
+      ubarrseq=param(188)
+      tbarr0  =param(189)
+      tbarrseq=param(190)
 
       call compute_BDF_coef(ad_alpha,ad_beta)
 
