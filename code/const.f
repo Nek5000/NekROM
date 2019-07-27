@@ -51,7 +51,7 @@ c        compute quasi-Newton step
 
             tlnsrch_time=dnekclock()
             call backtrackr(uu,qns,rhs,helm,invhelm,1e-4,0.5,
-     $                  amax,amin,bctol,bflag,par,chekbc,lncount)
+     $                  amax,amin,par,chekbc,lncount)
             lnsrch_time=lnsrch_time+dnekclock()-tlnsrch_time
 
             norm_s = vlamax(qns,nb)
@@ -163,7 +163,7 @@ c        compute quasi-Newton step
 
                tlnsrch_time=dnekclock()
                call backtrackr(uu,qns,rhs,helm,invhelm,1e-4,0.5,
-     $                     amax,amin,bctol,bflag,par,chekbc,lncount)
+     $                     amax,amin,par,chekbc,lncount)
                lnsrch_time=lnsrch_time+dnekclock()-tlnsrch_time
 
                ! store qns
@@ -371,7 +371,7 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine backtrackr(uu,s,rhs,helm,invhelm,sigmab,facb,
-     $            amax,amin,bctol,bflag,bpar,chekbc,counter)
+     $            amax,amin,bpar,chekbc,counter)
 
       include 'SIZE'
       include 'MOR'
