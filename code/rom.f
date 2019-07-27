@@ -162,6 +162,7 @@ c-----------------------------------------------------------------------
       call nekgsync
       asnap_time=dnekclock()
 
+      ! TODO uas and tas are not 1,0,0,0
       call pv2b(uas,uavg,vavg,wavg,ub,vb,wb)
       call rzero(uvs,nb+1)
 
