@@ -57,6 +57,7 @@ jobs:
   - env: TEST=C0_H10_UNIT
   - stage: integration
     env: TEST=CYL_L2_INTEG
+  - env: TEST=CYL_L2_COPT_INTEG
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
