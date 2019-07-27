@@ -125,7 +125,6 @@ c-----------------------------------------------------------------------
       call nekgsync
       proj_time=dnekclock()
 
-      ! TODO bug: in baffle case L2 results NaN
       if (ifpod(1)) call pv2k(uk,us0,ub,vb,wb)
       if (ifpod(2)) call ps2k(tk,ts0,tb)
 
