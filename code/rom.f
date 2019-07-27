@@ -424,6 +424,10 @@ c-----------------------------------------------------------------------
             if (ldim.eq.3) call sub2(us0(1,ldim,i),wb,n)
             if (ifpod(2)) call sub2(ts0(1,i),tb,n)
          enddo
+         call sub2(uavg,ub,n)
+         call sub2(vavg,vb,n)
+         if (ldim.eq.3) call sub2(wavg,wb,n)
+         if (ifpod(2)) call sub2(tavg,tb,n)
       endif
 
       if (ifbuoy) call set_ra
