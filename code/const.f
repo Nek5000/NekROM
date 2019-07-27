@@ -10,19 +10,17 @@
       real amax(nb),amin(nb),adis(nb)
       real tmp(nb,nb)
       real ngf,ysk
-      real bpar,par,bctol
+      real bpar,par
       real norm_s,norm_step,norm_uo
 
       ! parameter for barrier function
-      integer par_step,jmax,bflag,bstep,chekbc
+      integer par_step,jmax,bstep,chekbc
       integer uHcount,lncount
 
       call copy(uu,vv,nb)
 
-      bctol = 1e-12
       jmax = 0
 
-      bflag = 1 
       par = bpar 
       par_step = bstep 
 
@@ -35,7 +33,7 @@
 
          ! use helm from BDF3/EXT3 as intial approximation
          call copy(B_qn(1,1),helm(1,1),nb*nb)
-         call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par,bflag)
+         call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par)
 
          norm_uo = vlamax(uu,nb)
 
@@ -61,7 +59,7 @@ c        compute quasi-Newton step
             call copy(qgo,qngradf,nb) 
             ! update qn-gradf
             call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,
-     $                  par,bflag) 
+     $                  par)
             call sub3(qny,qngradf,qgo,nb) 
 
             ! compute curvature condition
@@ -122,19 +120,17 @@ c-----------------------------------------------------------------------
       real amax(nb),amin(nb),adis(nb)
       real sk(nb,50),yk(nb,50)
       real qnf,ngf,ysk
-      real bpar,par,bctol
+      real bpar,par
       real norm_s,norm_step,norm_uo
 
       ! parameter for barrier function
-      integer par_step,jmax,bflag,bstep,chekbc
+      integer par_step,jmax,bstep,chekbc
       integer uHcount,lncount
 
       call copy(uu,vv,nb)
 
-      bctol = 1e-12
       jmax = 0
 
-      bflag = 1
       par = bpar 
       par_step = bstep 
 
@@ -146,7 +142,7 @@ c-----------------------------------------------------------------------
          uHcount = 0
 
          ! use helm from BDF3/EXT3 as intial approximation
-         call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par,bflag)
+         call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par)
 
          norm_uo = vlamax(uu,nb)
 
@@ -171,7 +167,7 @@ c        compute quasi-Newton step
 
                call copy(qgo,qngradf,nb) ! store old qn-gradf
                call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,
-     $                     par,bflag) ! update qn-gradf
+     $                     par) ! update qn-gradf
                call sub3(qny,qngradf,qgo,nb) 
 
                ysk = vlsc2(qny,qns,nb)
@@ -213,7 +209,7 @@ c        compute quasi-Newton step
       return
       end
 c-----------------------------------------------------------------------
-      subroutine comp_qngradf(uu,rhs,helm,s,amax,amin,bpar,barrf)
+      subroutine comp_qngradf(uu,rhs,helm,s,amax,amin,bpar)
       
       include 'SIZE'
       include 'MOR'
@@ -223,7 +219,6 @@ c-----------------------------------------------------------------------
       real amax(nb),amin(nb) 
       real tmp1(nb),tmp2(nb),tmp3(nb),tmp4(nb)
       real bpar,mpar,pert
-      integer barrf
 
       if (barr_func .eq. 1) then ! use logarithmic as barrier function
 
@@ -270,8 +265,7 @@ c        call sub2(tmp4,s,nb)
       return 
       end
 c-----------------------------------------------------------------------
-      subroutine comp_qnf(uu,rhs,helm,invhelm,qnf,amax,amin,bpar,
-     $                     barrf)
+      subroutine comp_qnf(uu,rhs,helm,invhelm,qnf,amax,amin,bpar)
       
       include 'SIZE'
       include 'MOR'
@@ -285,7 +279,6 @@ c-----------------------------------------------------------------------
       real helm(nb,nb), invhelm(nb,nb)
       real qnf
       real bpar
-      integer barrf 
 
       ! evaluate quasi-newton f
 
@@ -385,10 +378,9 @@ c-----------------------------------------------------------------------
       real fk,fk1
       real Jfks,Jfks1
       real sigmab,facb,alphak
-      real bctol,bpar,minalpha
+      real bpar,minalpha
 
       integer chekbc,counter
-      integer bflag
       integer countbc
       logical cond1,cond2
 
@@ -397,8 +389,8 @@ c-----------------------------------------------------------------------
       counter = 0
       countbc = 0
 
-      call comp_qnf(uu,rhs,helm,invhelm,fk,amax,amin,bpar,bflag) ! get old f
-      call comp_qngradf(uu,rhs,helm,Jfk,amax,amin,bpar,bflag)
+      call comp_qnf(uu,rhs,helm,invhelm,fk,amax,amin,bpar) ! get old f
+      call comp_qngradf(uu,rhs,helm,Jfk,amax,amin,bpar)
 
       call findminalpha(minalpha,s,uu,amax,amin)
 
@@ -418,8 +410,8 @@ c     call add2s2(uu,s,alphak,nb)
          endif
       enddo
 
-      call comp_qnf(uu,rhs,helm,invhelm,fk1,amax,amin,bpar,bflag) ! get new f
-      call comp_qngradf(uu,rhs,helm,Jfk1,amax,amin,bpar,bflag)
+      call comp_qnf(uu,rhs,helm,invhelm,fk1,amax,amin,bpar) ! get new f
+      call comp_qngradf(uu,rhs,helm,Jfk1,amax,amin,bpar)
 
       Jfks = vlsc2(Jfk,s,nb)   
       Jfks1 = vlsc2(Jfk1,s,nb)   
@@ -447,8 +439,8 @@ c        call add3s2(uu,uuo,s,1.0,alphak,nb)
             endif
          enddo
 
-         call comp_qnf(uu,rhs,helm,invhelm,fk1,amax,amin,bpar,bflag)
-         call comp_qngradf(uu,rhs,helm,Jfk1,amax,amin,bpar,bflag)
+         call comp_qnf(uu,rhs,helm,invhelm,fk1,amax,amin,bpar)
+         call comp_qngradf(uu,rhs,helm,Jfk1,amax,amin,bpar)
          Jfks1 = vlsc2(Jfk1,s,nb)   
 
          cond1 = fk1 .gt. (fk+sigmab*alphak*Jfks)
