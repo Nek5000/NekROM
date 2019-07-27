@@ -213,7 +213,7 @@ c        compute quasi-Newton step
       return
       end
 c-----------------------------------------------------------------------
-      subroutine comp_qngradf(uu,rhs,helm,s,amax,amin,bpar,barr_func)
+      subroutine comp_qngradf(uu,rhs,helm,s,amax,amin,bpar,barrf)
       
       include 'SIZE'
       include 'MOR'
@@ -223,7 +223,7 @@ c-----------------------------------------------------------------------
       real amax(nb),amin(nb) 
       real tmp1(nb),tmp2(nb),tmp3(nb),tmp4(nb)
       real bpar,mpar,pert
-      integer barr_func
+      integer barrf
 
       if (barr_func .eq. 1) then ! use logarithmic as barrier function
 
@@ -271,7 +271,7 @@ c        call sub2(tmp4,s,nb)
       end
 c-----------------------------------------------------------------------
       subroutine comp_qnf(uu,rhs,helm,invhelm,qnf,amax,amin,bpar,
-     $                     barr_func)
+     $                     barrf)
       
       include 'SIZE'
       include 'MOR'
@@ -285,7 +285,7 @@ c-----------------------------------------------------------------------
       real helm(nb,nb), invhelm(nb,nb)
       real qnf
       real bpar
-      integer barr_func 
+      integer barrf 
 
       ! evaluate quasi-newton f
 
@@ -409,10 +409,10 @@ c     call add2s2(uu,s,alphak,nb)
       enddo
 
       do ii=1,nb
-         if ((uu(ii)-amax(ii)).ge.bctol) then
+         if ((uu(ii)-amax(ii)).ge.box_tol) then
             chekbc = 1
             countbc = countbc + 1
-         elseif ((amin(ii)-uu(ii)).ge.bctol) then
+         elseif ((amin(ii)-uu(ii)).ge.box_tol) then
             chekbc = 1
             countbc = countbc + 1
          endif
@@ -438,10 +438,10 @@ c        call add3s2(uu,uuo,s,1.0,alphak,nb)
          chekbc = 0
          countbc = 0
          do ii=1,nb
-            if ((uu(ii)-amax(ii)).ge.bctol) then
+            if ((uu(ii)-amax(ii)).ge.box_tol) then
                chekbc = 1
                countbc = countbc + 1
-            elseif ((amin(ii)-uu(ii)).ge.bctol) then
+            elseif ((amin(ii)-uu(ii)).ge.box_tol) then
                chekbc = 1
                countbc = countbc + 1
             endif
