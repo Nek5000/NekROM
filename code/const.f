@@ -80,7 +80,7 @@ c        compute quasi-Newton step
             jmax = max(j,jmax)
 
 c           if (ngf .lt. 1e-6 .OR. norm_step .lt. 1e-10) then 
-            if (ngf .lt. 1e-4 .OR. ysk .lt. 1e-6 .OR. norm_step .lt.
+            if (ngf .lt. 1e-6 .OR. ysk .lt. 1e-6 .OR. norm_step .lt.
      $      1e-6  ) then 
                if (ysk .lt. 1e-10) then 
                   if (nio.eq.0) then
@@ -134,7 +134,7 @@ c-----------------------------------------------------------------------
       bctol = 1e-12
       jmax = 0
 
-      bflag = 2
+      bflag = 1
       par = bpar 
       par_step = bstep 
 
@@ -190,7 +190,7 @@ c        compute quasi-Newton step
             endif
 
             if (ngf .lt. 1e-6 .OR. ysk .lt. 1e-6 .OR. norm_step .lt.
-     $      1e-8  ) then 
+     $      1e-6  ) then 
                exit
             endif
 
