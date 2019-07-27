@@ -220,7 +220,7 @@ c-----------------------------------------------------------------------
       real tmp1(nb),tmp2(nb),tmp3(nb),tmp4(nb)
       real bpar,mpar,pert
 
-      if (barr_func .eq. 1) then ! use logarithmic as barrier function
+      if (barr_func.eq.1) then ! use logarithmic as barrier function
 
          call sub3(tmp1,uu,amax,nb)  
          call sub3(tmp2,uu,amin,nb)  
@@ -240,7 +240,6 @@ c-----------------------------------------------------------------------
          ZERO= 0.
          call dgemv('N',nb,nb,ONE,helm,nb,uu,1,ZERO,tmp4,1)
          call add2(s,tmp4,nb)
-c        call sub2(tmp4,s,nb)
 
       else ! use inverse function as barrier function
 
@@ -273,7 +272,7 @@ c-----------------------------------------------------------------------
       real tmp1(nb),tmp2(nb),tmp3(nb)
       real tmp4(nb),tmp5(nb),tmp6(nb)
       real term1,term2,term3,term4
-      real bar1,bar2 ! bar1 and bar2 are the barrier function for two constrains
+      real bar1,bar2 
       real uu(nb), rhs(nb)
       real amax(nb), amin(nb)
       real helm(nb,nb), invhelm(nb,nb)
@@ -295,7 +294,7 @@ c-----------------------------------------------------------------------
       call dgetrs('N',nb,1,invhelm,lub,ipiv,tmp5,nb,info)
       term3 = 0.5 * vlsc2(rhs,tmp5,nb)
 
-      if (barr_func .eq. 1) then ! use logarithmetic as barrier function
+      if (barr_func.eq.1) then ! use logarithmetic as barrier function
          ! barrier term
          call sub3(tmp1,amax,uu,nb)  
          call sub3(tmp2,uu,amin,nb)  
@@ -395,7 +394,6 @@ c-----------------------------------------------------------------------
       call findminalpha(minalpha,s,uu,amax,amin)
 
       call copy(uuo,uu,nb)
-c     call add2s2(uu,s,alphak,nb)
       do ii=1,nb
          uu(ii) = uu(ii) + alphak*s(ii)
       enddo
@@ -413,7 +411,7 @@ c     call add2s2(uu,s,alphak,nb)
       call comp_qnf(uu,rhs,helm,invhelm,fk1,amax,amin,bpar) ! get new f
       call comp_qngradf(uu,rhs,helm,Jfk1,amax,amin,bpar)
 
-      Jfks = vlsc2(Jfk,s,nb)   
+      Jfks  = vlsc2(Jfk,s,nb)   
       Jfks1 = vlsc2(Jfk1,s,nb)   
 
       cond1 = fk1 .gt. (fk+sigmab*alphak*Jfks)
@@ -425,7 +423,6 @@ c     call add2s2(uu,s,alphak,nb)
          do ii=1,nb
             uu(ii) = uuo(ii) + alphak*s(ii)
          enddo
-c        call add3s2(uu,uuo,s,1.0,alphak,nb)
 
          chekbc = 0
          countbc = 0
@@ -446,8 +443,6 @@ c        call add3s2(uu,uuo,s,1.0,alphak,nb)
          cond1 = fk1 .gt. (fk+sigmab*alphak*Jfks)
          cond2 = Jfks1 .lt. (0.9*Jfks)
          
-c        if (alphak < minalpha .AND. (fk1.gt.(fk+sigmab*alphak*Jfks))) 
-c    $   then
          if ((alphak < minalpha.AND..not.cond1).OR.alphak < 1e-8) then
             exit
          endif
