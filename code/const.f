@@ -330,9 +330,10 @@ c-----------------------------------------------------------------------
 
       real B(nb,nb)
       real s(nb),y(nb)
-      real w1(nb,nb),w2(nb,nb),w3(nb,nb)
-      real w4(nb),w5(nb),w6(nb,nb),w7(nb,nb)
-      real yy(nb,nb),ys,sBs
+      real rk1up(nb,nb),rk2up(nb,nb)
+      real w1(nb,nb),w2(nb,nb)
+      real w4(nb)
+      real ys,sBs
       
       ! s_k * s_k^T               
       call mxm(s,nb,s,1,w1,nb)
@@ -341,23 +342,24 @@ c-----------------------------------------------------------------------
       call mxm(w1,nb,B,nb,w2,nb)
 
       ! B_k * s_k * s_k^T * B_k 
-      call mxm(B,nb,w2,nb,w3,nb)
+      call mxm(B,nb,w2,nb,rk1up,nb)
 
       ! s_k^T * B_k * s_k 
       call mxm(B,nb,s,nb,w4,1)
 
       sBs = vlsc2(s,w4,nb)
 
+      call cmult(rk1up,-1.0/sBs,nb*nb)
+
       ! second rank-one update
       ! y_k * y_k^T               
-      call mxm(y,nb,y,1,yy,nb)
+      call mxm(y,nb,y,1,rk2up,nb)
       ! y_k^T * s_k
       ys = vlsc2(y,s,nb)
 
-      call cmult(w3,-1.0/sBs,nb*nb)
-      call cmult(yy,1.0/ys,nb*nb)
+      call cmult(rk2up,1.0/ys,nb*nb)
 
-      call add4(B(1,1),B(1,1),w3(1,1),yy(1,1),nb*nb)
+      call add4(B(1,1),B(1,1),rk1up(1,1),rk2up(1,1),nb*nb)
 
       return
       end
