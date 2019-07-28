@@ -329,10 +329,9 @@ c-----------------------------------------------------------------------
       subroutine Hessian_update(B,s,y,nb)
 
       real B(nb,nb)
-      real s(nb),y(nb)
       real rk1up(nb,nb),rk2up(nb,nb)
       real w1(nb,nb),w2(nb,nb)
-      real w4(nb)
+      real s(nb),y(nb),w3(nb)
       real ys,sBs
       
       ! s_k * s_k^T               
@@ -345,9 +344,9 @@ c-----------------------------------------------------------------------
       call mxm(B,nb,w2,nb,rk1up,nb)
 
       ! s_k^T * B_k * s_k 
-      call mxm(B,nb,s,nb,w4,1)
+      call mxm(B,nb,s,nb,w3,1)
 
-      sBs = vlsc2(s,w4,nb)
+      sBs = vlsc2(s,w3,nb)
 
       call cmult(rk1up,-1.0/sBs,nb*nb)
 
