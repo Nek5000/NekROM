@@ -576,8 +576,11 @@ c-----------------------------------------------------------------------
          call gengraml2(gram,s,ms,mdim)
       else if (ips.eq.'H10') then
          call h10gg(gram,s,ms,mdim)
-      else
+      else if (ips.eq.'HLM') then
          call hlmgg(gram,s,ms,mdim)
+      else
+         if (nid.eq.0) write (6,*) 'unsupported ips in gengram'
+         call exitti('failed in gengram, exiting...$',1)
       endif
 
       return
