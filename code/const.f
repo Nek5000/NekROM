@@ -10,19 +10,17 @@
       real amax(nb),amin(nb),adis(nb)
       real tmp(nb,nb)
       real ngf,ysk
-      real bpar,par,bctol
+      real bpar,par
       real norm_s,norm_step,norm_uo
 
       ! parameter for barrier function
-      integer par_step,jmax,bflag,bstep,chekbc
+      integer par_step,jmax,bstep,chekbc
       integer uHcount,lncount
 
       call copy(uu,vv,nb)
 
-      bctol = 1e-12
       jmax = 0
 
-      bflag = 1 
       par = bpar 
       par_step = bstep 
 
@@ -35,7 +33,7 @@
 
          ! use helm from BDF3/EXT3 as intial approximation
          call copy(B_qn(1,1),helm(1,1),nb*nb)
-         call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par,bflag)
+         call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par)
 
          norm_uo = vlamax(uu,nb)
 
@@ -49,24 +47,10 @@ c        compute quasi-Newton step
             call chsign(qns,nb)
             call dgetrs('N',nb,1,tmp,lub,ipiv,qns,nb,info)
 
-            if (isolve.eq.3.OR.isolve.eq.4) then
-               tlnsrch_time=dnekclock()
-               call backtrackr(uu,qns,rhs,helm,invhelm,1e-4,0.5,
-     $                     amax,amin,bctol,bflag,par,chekbc,lncount)
-               lnsrch_time=lnsrch_time+dnekclock()-tlnsrch_time
-            elseif (isolve.eq.5) then      
-               call add2(uu,qns,nb)
-               ! check the boundary 
-               do ii=1,nb
-                  if ((uu(ii)-amax(ii)).ge.bctol) then
-                     chekbc = 1
-                     uu(ii) = amax(ii) - 0.1*adis(ii)
-                  elseif ((amin(ii)-uu(ii)).ge.bctol) then
-                     chekbc = 1
-                     uu(ii) = amin(ii) + 0.1*adis(ii)
-                  endif
-               enddo
-            endif
+            tlnsrch_time=dnekclock()
+            call backtrackr(uu,qns,rhs,helm,invhelm,1e-4,0.5,
+     $                  amax,amin,par,chekbc,lncount)
+            lnsrch_time=lnsrch_time+dnekclock()-tlnsrch_time
 
             norm_s = vlamax(qns,nb)
             norm_step = norm_s/norm_uo
@@ -75,17 +59,15 @@ c        compute quasi-Newton step
             call copy(qgo,qngradf,nb) 
             ! update qn-gradf
             call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,
-     $                  par,bflag) 
+     $                  par)
             call sub3(qny,qngradf,qgo,nb) 
 
             ! compute curvature condition
             ysk = vlsc2(qny,qns,nb)
 
             ! update approximate Hessian by two rank-one update if chekbc = 0
-            if (chekbc .ne. 1) then
-               uHcount = uHcount + 1
-               call Hessian_update(B_qn,qns,qny,nb)
-            endif
+            uHcount = uHcount + 1
+            call Hessian_update(B_qn,qns,qny,nb)
 
             ! compute H^{-1} norm of gradf
             ngf = vlamax(qngradf,nb)
@@ -96,7 +78,7 @@ c        compute quasi-Newton step
             jmax = max(j,jmax)
 
 c           if (ngf .lt. 1e-6 .OR. norm_step .lt. 1e-10) then 
-            if (ngf .lt. 1e-4 .OR. ysk .lt. 1e-6 .OR. norm_step .lt.
+            if (ngf .lt. 1e-6 .OR. ysk .lt. 1e-6 .OR. norm_step .lt.
      $      1e-6  ) then 
                if (ysk .lt. 1e-10) then 
                   if (nio.eq.0) then
@@ -138,19 +120,17 @@ c-----------------------------------------------------------------------
       real amax(nb),amin(nb),adis(nb)
       real sk(nb,50),yk(nb,50)
       real qnf,ngf,ysk
-      real bpar,par,bctol
+      real bpar,par
       real norm_s,norm_step,norm_uo
 
       ! parameter for barrier function
-      integer par_step,jmax,bflag,bstep,chekbc
+      integer par_step,jmax,bstep,chekbc
       integer uHcount,lncount
 
       call copy(uu,vv,nb)
 
-      bctol = 1e-12
       jmax = 0
 
-      bflag = 2
       par = bpar 
       par_step = bstep 
 
@@ -162,7 +142,7 @@ c-----------------------------------------------------------------------
          uHcount = 0
 
          ! use helm from BDF3/EXT3 as intial approximation
-         call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par,bflag)
+         call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par)
 
          norm_uo = vlamax(uu,nb)
 
@@ -179,7 +159,7 @@ c        compute quasi-Newton step
 
                tlnsrch_time=dnekclock()
                call backtrackr(uu,qns,rhs,helm,invhelm,1e-4,0.5,
-     $                     amax,amin,bctol,bflag,par,chekbc,lncount)
+     $                     amax,amin,par,chekbc,lncount)
                lnsrch_time=lnsrch_time+dnekclock()-tlnsrch_time
 
                ! store qns
@@ -187,7 +167,7 @@ c        compute quasi-Newton step
 
                call copy(qgo,qngradf,nb) ! store old qn-gradf
                call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,
-     $                     par,bflag) ! update qn-gradf
+     $                     par) ! update qn-gradf
                call sub3(qny,qngradf,qgo,nb) 
 
                ysk = vlsc2(qny,qns,nb)
@@ -206,7 +186,7 @@ c        compute quasi-Newton step
             endif
 
             if (ngf .lt. 1e-6 .OR. ysk .lt. 1e-6 .OR. norm_step .lt.
-     $      1e-8  ) then 
+     $      1e-6  ) then 
                exit
             endif
 
@@ -229,7 +209,7 @@ c        compute quasi-Newton step
       return
       end
 c-----------------------------------------------------------------------
-      subroutine comp_qngradf(uu,rhs,helm,s,amax,amin,bpar,barr_func)
+      subroutine comp_qngradf(uu,rhs,helm,s,amax,amin,bpar)
       
       include 'SIZE'
       include 'MOR'
@@ -239,9 +219,8 @@ c-----------------------------------------------------------------------
       real amax(nb),amin(nb) 
       real tmp1(nb),tmp2(nb),tmp3(nb),tmp4(nb)
       real bpar,mpar,pert
-      integer barr_func
 
-      if (barr_func .eq. 1) then ! use logarithmic as barrier function
+      if (barr_func.eq.1) then ! use logarithmic as barrier function
 
          call sub3(tmp1,uu,amax,nb)  
          call sub3(tmp2,uu,amin,nb)  
@@ -261,7 +240,6 @@ c-----------------------------------------------------------------------
          ZERO= 0.
          call dgemv('N',nb,nb,ONE,helm,nb,uu,1,ZERO,tmp4,1)
          call add2(s,tmp4,nb)
-c        call sub2(tmp4,s,nb)
 
       else ! use inverse function as barrier function
 
@@ -286,8 +264,7 @@ c        call sub2(tmp4,s,nb)
       return 
       end
 c-----------------------------------------------------------------------
-      subroutine comp_qnf(uu,rhs,helm,invhelm,qnf,amax,amin,bpar,
-     $                     barr_func)
+      subroutine comp_qnf(uu,rhs,helm,invhelm,qnf,amax,amin,bpar)
       
       include 'SIZE'
       include 'MOR'
@@ -295,13 +272,12 @@ c-----------------------------------------------------------------------
       real tmp1(nb),tmp2(nb),tmp3(nb)
       real tmp4(nb),tmp5(nb),tmp6(nb)
       real term1,term2,term3,term4
-      real bar1,bar2 ! bar1 and bar2 are the barrier function for two constrains
+      real bar1,bar2 
       real uu(nb), rhs(nb)
       real amax(nb), amin(nb)
       real helm(nb,nb), invhelm(nb,nb)
       real qnf
       real bpar
-      integer barr_func 
 
       ! evaluate quasi-newton f
 
@@ -318,7 +294,7 @@ c-----------------------------------------------------------------------
       call dgetrs('N',nb,1,invhelm,lub,ipiv,tmp5,nb,info)
       term3 = 0.5 * vlsc2(rhs,tmp5,nb)
 
-      if (barr_func .eq. 1) then ! use logarithmetic as barrier function
+      if (barr_func.eq.1) then ! use logarithmetic as barrier function
          ! barrier term
          call sub3(tmp1,amax,uu,nb)  
          call sub3(tmp2,uu,amin,nb)  
@@ -353,10 +329,10 @@ c-----------------------------------------------------------------------
       subroutine Hessian_update(B,s,y,nb)
 
       real B(nb,nb)
-      real s(nb),y(nb)
-      real w1(nb,nb),w2(nb,nb),w3(nb,nb)
-      real w4(nb),w5(nb),w6(nb,nb),w7(nb,nb)
-      real yy(nb,nb),ys,sBs
+      real rk1up(nb,nb),rk2up(nb,nb)
+      real w1(nb,nb),w2(nb,nb)
+      real s(nb),y(nb),w3(nb)
+      real ys,sBs
       
       ! s_k * s_k^T               
       call mxm(s,nb,s,1,w1,nb)
@@ -365,29 +341,30 @@ c-----------------------------------------------------------------------
       call mxm(w1,nb,B,nb,w2,nb)
 
       ! B_k * s_k * s_k^T * B_k 
-      call mxm(B,nb,w2,nb,w3,nb)
+      call mxm(B,nb,w2,nb,rk1up,nb)
 
       ! s_k^T * B_k * s_k 
-      call mxm(B,nb,s,nb,w4,1)
+      call mxm(B,nb,s,nb,w3,1)
 
-      sBs = vlsc2(s,w4,nb)
+      sBs = vlsc2(s,w3,nb)
+
+      call cmult(rk1up,-1.0/sBs,nb*nb)
 
       ! second rank-one update
       ! y_k * y_k^T               
-      call mxm(y,nb,y,1,yy,nb)
+      call mxm(y,nb,y,1,rk2up,nb)
       ! y_k^T * s_k
       ys = vlsc2(y,s,nb)
 
-      call cmult(w3,-1.0/sBs,nb*nb)
-      call cmult(yy,1.0/ys,nb*nb)
+      call cmult(rk2up,1.0/ys,nb*nb)
 
-      call add4(B(1,1),B(1,1),w3(1,1),yy(1,1),nb*nb)
+      call add4(B(1,1),B(1,1),rk1up(1,1),rk2up(1,1),nb*nb)
 
       return
       end
 c-----------------------------------------------------------------------
       subroutine backtrackr(uu,s,rhs,helm,invhelm,sigmab,facb,
-     $            amax,amin,bctol,bflag,bpar,chekbc,counter)
+     $            amax,amin,bpar,chekbc,counter)
 
       include 'SIZE'
       include 'MOR'
@@ -401,10 +378,9 @@ c-----------------------------------------------------------------------
       real fk,fk1
       real Jfks,Jfks1
       real sigmab,facb,alphak
-      real bctol,bpar,minalpha
+      real bpar,minalpha
 
       integer chekbc,counter
-      integer bflag
       integer countbc
       logical cond1,cond2
 
@@ -413,31 +389,30 @@ c-----------------------------------------------------------------------
       counter = 0
       countbc = 0
 
-      call comp_qnf(uu,rhs,helm,invhelm,fk,amax,amin,bpar,bflag) ! get old f
-      call comp_qngradf(uu,rhs,helm,Jfk,amax,amin,bpar,bflag)
+      call comp_qnf(uu,rhs,helm,invhelm,fk,amax,amin,bpar) ! get old f
+      call comp_qngradf(uu,rhs,helm,Jfk,amax,amin,bpar)
 
       call findminalpha(minalpha,s,uu,amax,amin)
 
       call copy(uuo,uu,nb)
-c     call add2s2(uu,s,alphak,nb)
       do ii=1,nb
          uu(ii) = uu(ii) + alphak*s(ii)
       enddo
 
       do ii=1,nb
-         if ((uu(ii)-amax(ii)).ge.bctol) then
+         if ((uu(ii)-amax(ii)).ge.box_tol) then
             chekbc = 1
             countbc = countbc + 1
-         elseif ((amin(ii)-uu(ii)).ge.bctol) then
+         elseif ((amin(ii)-uu(ii)).ge.box_tol) then
             chekbc = 1
             countbc = countbc + 1
          endif
       enddo
 
-      call comp_qnf(uu,rhs,helm,invhelm,fk1,amax,amin,bpar,bflag) ! get new f
-      call comp_qngradf(uu,rhs,helm,Jfk1,amax,amin,bpar,bflag)
+      call comp_qnf(uu,rhs,helm,invhelm,fk1,amax,amin,bpar) ! get new f
+      call comp_qngradf(uu,rhs,helm,Jfk1,amax,amin,bpar)
 
-      Jfks = vlsc2(Jfk,s,nb)   
+      Jfks  = vlsc2(Jfk,s,nb)   
       Jfks1 = vlsc2(Jfk1,s,nb)   
 
       cond1 = fk1 .gt. (fk+sigmab*alphak*Jfks)
@@ -449,29 +424,26 @@ c     call add2s2(uu,s,alphak,nb)
          do ii=1,nb
             uu(ii) = uuo(ii) + alphak*s(ii)
          enddo
-c        call add3s2(uu,uuo,s,1.0,alphak,nb)
 
          chekbc = 0
          countbc = 0
          do ii=1,nb
-            if ((uu(ii)-amax(ii)).ge.bctol) then
+            if ((uu(ii)-amax(ii)).ge.box_tol) then
                chekbc = 1
                countbc = countbc + 1
-            elseif ((amin(ii)-uu(ii)).ge.bctol) then
+            elseif ((amin(ii)-uu(ii)).ge.box_tol) then
                chekbc = 1
                countbc = countbc + 1
             endif
          enddo
 
-         call comp_qnf(uu,rhs,helm,invhelm,fk1,amax,amin,bpar,bflag)
-         call comp_qngradf(uu,rhs,helm,Jfk1,amax,amin,bpar,bflag)
+         call comp_qnf(uu,rhs,helm,invhelm,fk1,amax,amin,bpar)
+         call comp_qngradf(uu,rhs,helm,Jfk1,amax,amin,bpar)
          Jfks1 = vlsc2(Jfk1,s,nb)   
 
          cond1 = fk1 .gt. (fk+sigmab*alphak*Jfks)
          cond2 = Jfks1 .lt. (0.9*Jfks)
          
-c        if (alphak < minalpha .AND. (fk1.gt.(fk+sigmab*alphak*Jfks))) 
-c    $   then
          if ((alphak < minalpha.AND..not.cond1).OR.alphak < 1e-8) then
             exit
          endif

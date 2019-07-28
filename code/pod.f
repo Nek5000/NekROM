@@ -30,14 +30,14 @@ c-----------------------------------------------------------------------
 
          ! ub, vb, wb, are the modes
          if (ifrom(1)) then
-         do j=1,ns
-         do i=1,nb
-            call opadds(ub(1,i),vb(1,i),wb(1,i),
-     $         us0(1,1,j),us0(1,2,j),us0(1,ldim,j),evec(j,i,1),n,2)
-         enddo
-         enddo
+           do j=1,ns
+           do i=1,nb
+              call opadds(ub(1,i),vb(1,i),wb(1,i),
+     $           us0(1,1,j),us0(1,2,j),us0(1,ldim,j),evec(j,i,1),n,2)
+           enddo
+           enddo
 
-         call vnorm(ub,vb,wb)
+           call vnorm(ub,vb,wb)
          else
             call opcopy(ub,vb,wb,uic,vic,wic)
          endif
@@ -159,6 +159,7 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'
       include 'MOR'
+      include 'TOTAL'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
@@ -173,12 +174,17 @@ c-----------------------------------------------------------------------
       coef(0) = 1.
       if (nio.eq.0) write (6,1) coef(0),coef(0),1.
 
+      jfield=ifield
+      ifield=1
+
       do i=1,nb
          ww=vip(uub(1,i),vvb(1,i),wwb(1,i),uub(1,i),vvb(1,i),wwb(1,i))
          vv=vip(uub(1,i),vvb(1,i),wwb(1,i),ux,uy,uz)
          coef(i) = vv/ww
          if (nio.eq.0) write (6,1) coef(i),vv,ww,ips
       enddo
+
+      ifield=jfield
 
       if (nio.eq.0) write (6,*) 'exiting pv2b'
 
@@ -346,6 +352,7 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'
       include 'MASS'
+
 
       parameter (lt=lx1*ly1*lz1*lelt)
 

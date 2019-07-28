@@ -23,6 +23,10 @@ c-----------------------------------------------------------------------
          postu_time=0.
          postt_time=0.
          icalld=1
+         call rzero(num_galu,nb)
+         call rzero(num_galt,nb)
+         anum_galu=0.
+         anum_galt=0.
          call rom_setup
          time=ttime
       endif
@@ -125,7 +129,6 @@ c-----------------------------------------------------------------------
       call nekgsync
       proj_time=dnekclock()
 
-      ! TODO bug: in baffle case L2 results NaN
       if (ifpod(1)) call pv2k(uk,us0,ub,vb,wb)
       if (ifpod(2)) call ps2k(tk,ts0,tb)
 
@@ -162,6 +165,7 @@ c-----------------------------------------------------------------------
       call nekgsync
       asnap_time=dnekclock()
 
+      ! TODO uas and tas are not 1,0,0,0
       call pv2b(uas,uavg,vavg,wavg,ub,vb,wb)
       call rzero(uvs,nb+1)
 
@@ -323,6 +327,16 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
       ifpart=.false.
       ifcintp=.false.
 
+      ! constrained optimization parameter
+      barr_func=param(185)
+      box_tol=param(186)
+
+      ! barrier initial parameter and number of loop
+      ubarr0  =param(187)
+      ubarrseq=param(188)
+      tbarr0  =param(189)
+      tbarrseq=param(190)
+
       call compute_BDF_coef(ad_alpha,ad_beta)
 
       if (nio.eq.0) then
@@ -352,6 +366,12 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
          do i=0,ldimt1
             write (6,*) 'rp_ifrom(',i,')   ',ifrom(i)
          enddo
+         write (6,*) 'rp_barr_func   ',barr_func
+         write (6,*) 'rp_box_tol     ',box_tol
+         write (6,*) 'ubarr0         ',ubarr0
+         write (6,*) 'ubarrseq       ',ubarrseq
+         write (6,*) 'tbarr0         ',tbarr0
+         write (6,*) 'tbarrseq       ',tbarrseq
       endif
 
       if (nio.eq.0) write (6,*) 'exiting rom_init_params'
@@ -424,6 +444,10 @@ c-----------------------------------------------------------------------
             if (ldim.eq.3) call sub2(us0(1,ldim,i),wb,n)
             if (ifpod(2)) call sub2(ts0(1,i),tb,n)
          enddo
+         call sub2(uavg,ub,n)
+         call sub2(vavg,vb,n)
+         if (ldim.eq.3) call sub2(wavg,wb,n)
+         if (ifpod(2)) call sub2(tavg,tb,n)
       endif
 
       if (ifbuoy) call set_ra

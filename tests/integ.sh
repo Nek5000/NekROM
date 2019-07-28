@@ -1,3 +1,9 @@
+if [[ $1 =~ COPT ]]; then
+    ifcopt=1
+else
+    ifcopt=0
+fi
+
 if [[ $1 =~ _L2_ ]]; then
     ifl2='.TRUE.'
     $MOR_DIR/bin/gops cyl_rect_l2
@@ -28,4 +34,9 @@ Z
 
 ./nek5000 | tee test.log.1
 
-../../tests/tdragx
+if [[ $ifcopt == 1 ]]; then
+   sed -i.bu 's/nb=20/nb=10/g' LMOR
+   ../../tests/tcopt
+else
+   ../../tests/tdragx
+fi

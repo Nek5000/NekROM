@@ -1262,3 +1262,25 @@ c       call interp_setup(0,0,intp_h)      ! v17
       return
       end
 c-----------------------------------------------------------------------
+      subroutine count_gal(cgal,acgal,uu,amax,amin,bctol,n)
+
+      real cgal(n),uu(n)
+      real amax(n),amin(n)
+      real bctol,acgal
+      integer chekbc
+
+      chekbc=0
+
+      do ii=1,n
+         if ((amax(ii)-uu(ii)).ge.bctol.AND.(uu(ii)-amin(ii)).ge.bctol) 
+     $   then
+            cgal(ii) = cgal(ii) + 1
+         else
+            chekbc=1
+         endif
+      enddo
+
+      if (chekbc.eq.0) acgal=acgal+1
+
+      return
+      end
