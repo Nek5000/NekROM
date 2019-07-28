@@ -186,12 +186,12 @@
    1.00000     p182 MOR: != 0 -> compute drag
    0.00000     p183 MOR: != 0 -> compute nu
    0.00000     p184
-   0.00000     p185 barrier function: 1 for log, 2 for inverse
-   0.00000     p186 box tolerance
-   0.00000     p187 constrained barrier initial parameter for velocity
-   0.00000     p188 # of constrained barrier parameter loop for vel
-   0.00000     p189 constrained barrier initial parameter for temperature
-   0.00000     p190 # of constrained barrier parameter loop for temp
+   2.00000     p185 barrier function: 1 for log, 2 for inverse
+   1.00000E-12 p186 box tolerance
+   1.00000E-01 p187 constrained barrier initial parameter for velocity
+   8.00000     p188 # of constrained barrier parameter loop for vel
+   1.00000E-01 p189 constrained barrier initial parameter for temperature
+   8.00000     p190 # of constrained barrier parameter loop for temp
    0.00000     p191 MOR: != 0 -> fast c-evaluation
    0.00000     p192
    0.00000     p193 MOR: != 0 -> forcing  (set fx,fy,fz with mass)
