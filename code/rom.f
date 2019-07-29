@@ -18,11 +18,9 @@ c-----------------------------------------------------------------------
       stime=dnekclock()
 
       if (icalld.eq.0) then
-         ttime=time
          rom_time=0.
          icalld=1
          call rom_setup
-         time=ttime
       endif
 
       ad_step = istep
@@ -87,6 +85,8 @@ c-----------------------------------------------------------------------
       call nekgsync
       setup_start=dnekclock()
 
+      ttime=time
+
       n=lx1*ly1*lz1*nelt
 
       call opcopy(uic,vic,wic,vx,vy,vz)
@@ -133,6 +133,8 @@ c-----------------------------------------------------------------------
       if (nio.eq.0) write (6,*) 'end range setup'
 
       if (ifdumpops) call dump_misc
+
+      time=ttime
 
       call nekgsync
       setup_end=dnekclock()
