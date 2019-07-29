@@ -591,10 +591,6 @@ c-----------------------------------------------------------------------
 
       nomina=ys+yhy
 
-c     call mxm(w4,nb,w1,nb,w5,nb)
-c     call cmult(w5(1,1),1.0/ys,nb*nb)
-c     call cmult(w5(1,1),1.0/ys,nb*nb)
-
       ! second rank-one update
       ! s_k * s_k^T               
       call mxm(s,nb,s,1,ss,nb)
@@ -602,14 +598,9 @@ c     call cmult(w5(1,1),1.0/ys,nb*nb)
       call cmult(ss(1,1),ys2inv,nb*nb)
       call cmult(ss(1,1),nomina,nb*nb)
 
-      do ii=1,nb
-      do jj=1,nb
-         B(ii,jj) = B(ii,jj)-w3(ii,jj)-w4(ii,jj)+ss(ii,jj)
-      enddo
-      enddo
-c     call add4(B(1,1),w3(1,1),w4(1,1),ss(1,1),nb*nb)
-
-c     call add2(B(1,1),ss(1,1),nb*nb)
+      call sub2(B(1,1),w3(1,1),nb*nb)
+      call sub2(B(1,1),w4(1,1),nb*nb)
+      call add2(B(1,1),ss(1,1),nb*nb)
 
       return
       end
