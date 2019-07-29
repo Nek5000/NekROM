@@ -124,7 +124,7 @@ c     parameters and common blocks for MOR
      $               sigtmp(lres,lres)
 
       common /eiivar/ nres
-      common /eivar/ res
+      common /eivar/ res,eierr
 
       common /eiresu/ xi_u(lx1*ly1*lz1*lelm,ldim,lres),theta_u(lres),
      $                sigma_u(lres,lres)
