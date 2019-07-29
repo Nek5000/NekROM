@@ -20,13 +20,7 @@ c-----------------------------------------------------------------------
       if (icalld.eq.0) then
          ttime=time
          rom_time=0.
-         postu_time=0.
-         postt_time=0.
          icalld=1
-         call rzero(num_galu,nb)
-         call rzero(num_galt,nb)
-         anum_galu=0.
-         anum_galt=0.
          call rom_setup
          time=ttime
       endif
@@ -54,12 +48,8 @@ c-----------------------------------------------------------------------
             time=time+dt
             if (ifrom(2)) call rom_step_t
             if (ifrom(1)) call rom_step
-            tttime=dnekclock()
             call postu
-            postu_time=postu_time+dnekclock()-tttime
-            tttime=dnekclock()
             call postt
-            postt_time=postt_time+dnekclock()-tttime
             ad_step=ad_step+1
          enddo
          icalld=0
@@ -103,7 +93,6 @@ c-----------------------------------------------------------------------
       call copy(tic,t,n)
 
       call rom_init_params
-      write (6,*) 'ips0:',ips
       call rom_init_fields
 
       call setgram
@@ -247,6 +236,9 @@ c-----------------------------------------------------------------------
       tbarr0=1e-1
       tbarrseq=5
 
+      anum_galu=0.
+      anum_galt=0.
+
       ad_dt = dt
       ad_re = 1/param(2)
       ad_pe = 1/param(8)
@@ -340,6 +332,14 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
       call compute_BDF_coef(ad_alpha,ad_beta)
 
       if (nio.eq.0) then
+         write (6,*) 'rp_nb         ',nb
+         write (6,*) 'rp_lub        ',lub
+         write (6,*) 'rp_lut        ',lut
+         write (6,*) ' '
+         write (6,*) 'rp_ls         ',ls
+         write (6,*) 'rp_lsu        ',lsu
+         write (6,*) 'rp_lst        ',lst
+         write (6,*) ' '
          write (6,*) 'rp_isolve     ',isolve
          write (6,*) 'rp_ips        ',ips
          write (6,*) 'rp_ifavg0     ',ifavg0
@@ -352,6 +352,7 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
          write (6,*) 'rp_iffastc    ',iffastc
          write (6,*) 'rp_iffasth    ',iffasth
          write (6,*) 'rp_ifavisc    ',ifavisc
+         write (6,*) 'rp_ifei       ',ifei      
          write (6,*) ' '
          write (6,*) 'rp_ifforce    ',ifforce
          write (6,*) 'rp_ifsource   ',ifsource
@@ -360,12 +361,14 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
          write (6,*) 'rp_ifdump     ',ifdump
          write (6,*) 'rp_ifvort     ',ifvort
          write (6,*) 'rp_ifcintp    ',ifcintp
+         write (6,*) ' '
          do i=0,ldimt1
             write (6,*) 'rp_ifpod(',i,')   ',ifpod(i)
          enddo
          do i=0,ldimt1
             write (6,*) 'rp_ifrom(',i,')   ',ifrom(i)
          enddo
+         write (6,*) ' '
          write (6,*) 'rp_barr_func   ',barr_func
          write (6,*) 'rp_box_tol     ',box_tol
          write (6,*) 'ubarr0         ',ubarr0
@@ -401,6 +404,9 @@ c-----------------------------------------------------------------------
       call rone(wm1,n)
       call rone(ones,n)
       call rzero(zeros,n)
+
+      call rzero(num_galu,nb)
+      call rzero(num_galt,nb)
 
       ns = ls
 

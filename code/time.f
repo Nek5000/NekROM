@@ -154,7 +154,18 @@ c-----------------------------------------------------------------------
       common /scrrstep/ t1(lt),t2(lt),t3(lt),work(lt)
       common /nekmpi/ nidd,npp,nekcomm,nekgroup,nekreal
 
+      save icalld
+      data icalld /0/
+
       real vort(lt)
+
+      if (icalld.eq.0) then
+         postu_time=0.
+         icalld=1
+      endif
+
+      call nekgsync
+      tttime=dnekclock()
 
       call setuavg
       call setuj
@@ -199,6 +210,9 @@ c        call cubar
             write(6,*)anum_galu/ad_nsteps,'anum_galu'
          endif
       endif
+
+      call nekgsync
+      postu_time=postu_time+dnekclock()-tttime
 
       return
       end
@@ -347,6 +361,17 @@ c-----------------------------------------------------------------------
       common /scrrstep/ t1(lt),t2(lt),t3(lt),work(lt)
       common /nekmpi/ nidd,npp,nekcomm,nekgroup,nekreal
 
+      save icalld
+      data icalld /0/
+
+      if (icalld.eq.0) then
+         postt_time=0.
+         icalld=1
+      endif
+
+      call nekgsync
+      tttime=dnekclock()
+
       call settavg
       call settj
 
@@ -368,6 +393,9 @@ c-----------------------------------------------------------------------
             write(6,*)anum_galt/ad_nsteps,'anum_galt'
          endif
       endif
+
+      call nekgsync
+      postt_time=postt_time+dnekclock()-tttime
 
       return
       end
