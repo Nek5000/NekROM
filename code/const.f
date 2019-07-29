@@ -82,9 +82,8 @@ c           if (ngf .lt. 1e-6 .OR. norm_step .lt. 1e-10) then
      $      1e-6  ) then 
                if (ysk .lt. 1e-10) then 
                   if (nio.eq.0) then
-                     ! curvature condition not satisfied
-                     write(6,*)'WARNING: decrease barrseq or increase
-     $               barr0' 
+                  ! curvature condition not satisfied
+                  write(6,*)'WARNING:decrease barrseq or increase barr0'
                   endif
                endif
                exit
@@ -382,7 +381,7 @@ c-----------------------------------------------------------------------
 
       integer chekbc,counter
       integer countbc
-      logical cond1,cond2
+      logical cond1,cond2,cond3
 
       alphak = 1.0
       chekbc = 0
@@ -415,8 +414,8 @@ c-----------------------------------------------------------------------
       Jfks  = vlsc2(Jfk,s,nb)   
       Jfks1 = vlsc2(Jfk1,s,nb)   
 
-      cond1 = fk1 .gt. (fk+sigmab*alphak*Jfks)
-      cond2 = Jfks1 .lt. (0.9*Jfks)
+      cond1 = (fk1-(fk+sigmab*alphak*Jfks)).gt.1e-10
+      cond2 = (Jfks1-(0.9*Jfks)).lt.1e-10
 
       do while (cond1.OR.(chekbc.eq.1))
          counter = counter + 1
@@ -441,10 +440,16 @@ c-----------------------------------------------------------------------
          call comp_qngradf(uu,rhs,helm,Jfk1,amax,amin,bpar)
          Jfks1 = vlsc2(Jfk1,s,nb)   
 
-         cond1 = fk1 .gt. (fk+sigmab*alphak*Jfks)
-         cond2 = Jfks1 .lt. (0.9*Jfks)
+         cond1 = (fk1-(fk+sigmab*alphak*Jfks)).gt.1e-10
+         cond2 = (Jfks1-(0.9*Jfks)).lt.1e-10
+
+c        cond1 = fk1.gt.(fk+sigmab*alphak*Jfks)
+c        cond2 = Jfks1.lt.(0.9*Jfks)
+c        write(6,*)'cond1',cond1,fk1,(fk+sigmab*alphak*Jfks)
+c        write(6,*)'cond2',cond2,Jfks1,(0.9*Jfks)
          
-         if ((alphak < minalpha.AND..not.cond1).OR.alphak < 1e-8) then
+         cond3 = (alphak-minalpha).lt.1e-10
+         if ((cond3.AND..not.cond1).OR.alphak.lt.1e-8) then
             exit
          endif
       enddo
@@ -549,5 +554,62 @@ c-----------------------------------------------------------------------
       enddo
 
       minalpha = vlmin(alphai,nb)
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine invHessian_update(B,s,y,nb)
+
+      real B(nb,nb)
+      real s(nb),y(nb)
+      real rk1up(nb,nb)
+      real rk2up(nb,nb)
+      real w1(nb,nb),w2(nb,nb)
+      real w3(nb,nb),w4(nb,nb),w5(nb,nb)
+      real ss(nb,nb),ys,ys2
+      real hy(nb),yhy,nomina
+
+      ! y_k^T * s_k
+      ys = vlsc2(y,s,nb)
+      ysinv = 1./ys
+
+      ys2 = ys*ys
+      ys2inv = 1./ys2
+
+      ! y_k * s_k^T
+      call mxm(y,nb,s,1,w1,nb)
+      ! s_k * y_k^T
+      call mxm(s,nb,y,1,w2,nb)
+
+      call mxm(B,nb,w1,nb,w3,nb)
+      call cmult(w3(1,1),ysinv,nb*nb)
+
+      call mxm(w2,nb,B,nb,w4,nb)
+      call cmult(w4(1,1),ysinv,nb*nb)
+
+      call mxm(B,nb,y,nb,hy,1)
+      yhy = vlsc2(y,hy,nb)
+
+      nomina=ys+yhy
+
+c     call mxm(w4,nb,w1,nb,w5,nb)
+c     call cmult(w5(1,1),1.0/ys,nb*nb)
+c     call cmult(w5(1,1),1.0/ys,nb*nb)
+
+      ! second rank-one update
+      ! s_k * s_k^T               
+      call mxm(s,nb,s,1,ss,nb)
+
+      call cmult(ss(1,1),ys2inv,nb*nb)
+      call cmult(ss(1,1),nomina,nb*nb)
+
+      do ii=1,nb
+      do jj=1,nb
+         B(ii,jj) = B(ii,jj)-w3(ii,jj)-w4(ii,jj)+ss(ii,jj)
+      enddo
+      enddo
+c     call add4(B(1,1),w3(1,1),w4(1,1),ss(1,1),nb*nb)
+
+c     call add2(B(1,1),ss(1,1),nb*nb)
+
       return
       end
