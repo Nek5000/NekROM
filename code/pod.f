@@ -209,6 +209,7 @@ c-----------------------------------------------------------------------
       else if (ips.eq.'HLM') then
          sip=hlmsip(t1,t2)
       else
+         if (nid.eq.0) write (6,*) 'ips: ',ips
          call exitti('did not provide supported inner product space$',1)
       endif
 
@@ -231,6 +232,7 @@ c-----------------------------------------------------------------------
       else if (ips.eq.'HLM') then
          vip=hlmvip(t1,t2,t3,t4,t5,t6)
       else
+         if (nid.eq.0) write (6,*) 'ips: ',ips
          call exitti('did not provide supported inner product space$',1)
       endif
 
