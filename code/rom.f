@@ -60,13 +60,8 @@ c-----------------------------------------------------------------------
       dtime=dnekclock()-stime
       rom_time=rom_time+dtime
 
-      if (ifmult) then
-         if (nio.eq.0) write (6,*) 'romd_time: ',dtime
-      endif
-
-      if (.not.ifmult.or.nsteps.eq.istep) then
-         call final
-      endif
+      if (ifmult.and.nio.eq.0) write (6,*) 'romd_time: ',dtime
+      if (.not.ifmult.or.nsteps.eq.istep) call final
 
       return
       end
