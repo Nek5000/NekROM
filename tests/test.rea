@@ -177,7 +177,7 @@
    1.00000     p173 MOR: 0 -> gen ops, 1 -> dump ops, 2 -> read ops
    0.00000     p174 MOR: < 0 -> temp, == 0 -> vel, > 0 -> vel + temp
    0.00000     p175 MOR: !0 = -> error indicator
-   0.00000     p176
+   0.00000     p176 MOR: initial step number of averaging
    0.00000     p177
    0.00000     p178
    0.00000     p179
