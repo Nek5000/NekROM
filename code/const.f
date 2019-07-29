@@ -13,6 +13,9 @@
       real bpar,par
       real norm_s,norm_step,norm_uo
 
+      real invB_qn(nb,nb)
+      real copt_work(nb*nb)
+
       ! parameter for barrier function
       integer par_step,jmax,bstep,chekbc
       integer uHcount,lncount
@@ -24,8 +27,8 @@
       par = bpar 
       par_step = bstep 
 
-      tcopt_time=dnekclock()
       ! BFGS method with barrier function starts
+      tcopt_time=dnekclock()
       do k=1,par_step
 
          chekbc = 0
@@ -35,17 +38,28 @@
          call copy(B_qn(1,1),helm(1,1),nb*nb)
          call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par)
 
+         if (isolve.eq.5) then
+            call copy(invB_qn(1,1),invhelm(1,1),nb*nb)
+            call dgetri(nb,invB_qn,nb,ipiv,copt_work,nb*nb,info)
+         endif
          norm_uo = vlamax(uu,nb)
 
+         ! compute quasi-Newton step
          tquasi_time=dnekclock()
-c        compute quasi-Newton step
          do j=1,100
 
-            call copy(tmp(1,1),B_qn(1,1),nb*nb)
-            call dgetrf(nb,nb,tmp,lub,ipiv,info)
-            call copy(qns,qngradf,nb)
-            call chsign(qns,nb)
-            call dgetrs('N',nb,1,tmp,lub,ipiv,qns,nb,info)
+            if (isolve.eq.5) then
+               ONE = 1.
+               ZERO = 0.
+               call dgemv('N',nb,nb,ONE,invB_qn,nb,qngradf,1,ZERO,qns,1)
+               call chsign(qns,nb)
+            else
+               call copy(tmp(1,1),B_qn(1,1),nb*nb)
+               call dgetrf(nb,nb,tmp,lub,ipiv,info)
+               call copy(qns,qngradf,nb)
+               call chsign(qns,nb)
+               call dgetrs('N',nb,1,tmp,lub,ipiv,qns,nb,info)
+            endif
 
             tlnsrch_time=dnekclock()
             call backtrackr(uu,qns,rhs,helm,invhelm,1e-4,0.5,
@@ -58,18 +72,20 @@ c        compute quasi-Newton step
             ! store old qn-gradf
             call copy(qgo,qngradf,nb) 
             ! update qn-gradf
-            call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,
-     $                  par)
+            call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par)
             call sub3(qny,qngradf,qgo,nb) 
 
             ! compute curvature condition
             ysk = vlsc2(qny,qns,nb)
 
-            ! update approximate Hessian by two rank-one update if chekbc = 0
             uHcount = uHcount + 1
-            call Hessian_update(B_qn,qns,qny,nb)
+            if (isolve.eq.5) then
+               call invHessian_update(invB_qn,qns,qny,nb)
+            else
+               call Hessian_update(B_qn,qns,qny,nb)
+            endif
 
-            ! compute H^{-1} norm of gradf
+            ! compute norm of gradf
             ngf = vlamax(qngradf,nb)
 
             ! reset chekbc 
@@ -77,7 +93,6 @@ c        compute quasi-Newton step
             
             jmax = max(j,jmax)
 
-c           if (ngf .lt. 1e-6 .OR. norm_step .lt. 1e-10) then 
             if (ngf .lt. 1e-6 .OR. ysk .lt. 1e-6 .OR. norm_step .lt.
      $      1e-6  ) then 
                if (ysk .lt. 1e-10) then 
@@ -133,8 +148,8 @@ c-----------------------------------------------------------------------
       par = bpar 
       par_step = bstep 
 
-      tcopt_time=dnekclock()
       ! BFGS method with barrier function starts
+      tcopt_time=dnekclock()
       do k=1,par_step
 
          chekbc = 0
@@ -145,11 +160,11 @@ c-----------------------------------------------------------------------
 
          norm_uo = vlamax(uu,nb)
 
+         ! compute quasi-Newton step
          tquasi_time=dnekclock()
-c        compute quasi-Newton step
          do j=1,50
 
-            if (isolve.eq.1.OR.isolve.eq.2.OR.isolve.eq.3) then
+            if (isolve.eq.1.OR.isolve.eq.2) then
                if (j.eq.1) then
                   call copy(qns,qngradf,nb)
                   call chsign(qns,nb)
@@ -164,9 +179,11 @@ c        compute quasi-Newton step
                ! store qns
                call copy(sk(1,j),qns,nb)
 
-               call copy(qgo,qngradf,nb) ! store old qn-gradf
-               call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,
-     $                     par) ! update qn-gradf
+               ! store old qn-gradf
+               call copy(qgo,qngradf,nb) 
+
+               ! update qn-gradf
+               call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par)
                call sub3(qny,qngradf,qgo,nb) 
 
                ysk = vlsc2(qny,qns,nb)
@@ -174,7 +191,7 @@ c        compute quasi-Newton step
                norm_s = vlamax(qns,nb)
                norm_step = norm_s/norm_uo
 
-               ! compute H^{-1} norm of gradf
+               ! compute norm of gradf
                ngf = vlamax(qngradf,nb)
 
                jmax = max(j,jmax)
@@ -189,7 +206,7 @@ c        compute quasi-Newton step
                exit
             endif
 
-      ! update solution
+         ! update solution
          enddo
          quasi_time=quasi_time+dnekclock()-tquasi_time
 
