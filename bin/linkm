@@ -8,19 +8,22 @@ cwd="$(pwd -P)"
 rm MOR              &> /dev/null
 rm test.usr         &> /dev/null
 rm makefile_usr.inc &> /dev/null
+rm pdrive           &> /dev/null
 
 # link files
 
 ln -s {$MOR_DIR/code,${cwd}}/MOR
 ln -s {$MOR_DIR/tests,$cwd}/test.usr
+ln -s {$MOR_DIR/bin,$cwd}/pdrive
 
 echo "MOR_DIR=${MOR_DIR}" > makefile_usr.inc
 cat $MOR_DIR/code/makefile_usr.inc >> $cwd/makefile_usr.inc
 
-# copy SIZE & LMOR if it does not exist
+# copy SIZE & LMOR & config.json if it does not exist
 
 cp -n $MOR_DIR/template/LMOR.template LMOR
 cp -n $MOR_DIR/template/SIZE.template SIZE
+cp -n $MOR_DIR/template/config.json.template config.json
 
 # create directories for dumping
 
