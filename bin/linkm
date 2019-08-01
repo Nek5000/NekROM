@@ -21,9 +21,9 @@ cat $MOR_DIR/code/makefile_usr.inc >> $cwd/makefile_usr.inc
 
 # copy SIZE & LMOR & config.json if it does not exist
 
-cp -n $MOR_DIR/template/LMOR.template LMOR
-cp -n $MOR_DIR/template/SIZE.template SIZE
-cp -n $MOR_DIR/template/config.json.template config.json
+cp -n $MOR_DIR/templates/LMOR.template LMOR
+cp -n $MOR_DIR/templates/SIZE.template SIZE
+cp -n $MOR_DIR/templates/config.json.template config.json
 
 # create directories for dumping
 
