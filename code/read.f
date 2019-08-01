@@ -83,6 +83,11 @@ c-----------------------------------------------------------------------
             call chcopy(fn1(4+len),'0.f',3)
             write (fnum,'(i5.5)') i+1
             call chcopy(fn1(7+len),fnum,5)
+            if (i.eq.0) then
+               inquire (file=fname,exist=ifexist)
+               if (nio.eq.0) write (6,*) 'did not find basis files'
+               if (.not.ifexist) goto 1
+            endif
 
             call restart_filen(fname,11+len)
             if (ifrom(0)) call copy(pb(1,i),pr,n2)
@@ -90,6 +95,8 @@ c-----------------------------------------------------------------------
             if (ifrom(2)) call copy(tb(1,i),t,n)
          enddo
       endif
+
+    1 continue
 
       call pop_sol(vx,vy,vz,pr,t)
 
