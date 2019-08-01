@@ -62,7 +62,6 @@ c-----------------------------------------------------------------------
                call lap2d(a1,ub(1,i))
                call lap2d(a2,vb(1,i))
                if (ldim.eq.3) call lap2d(a3,wb(1,i))
-               call opcmult(a1,a2,a3,param(2))
                call cint(fd1(1,i),ub(1,i),vb(1,i),wb(1,i))
                call cint(fd3(1,i),a1,a2,a3)
             enddo
