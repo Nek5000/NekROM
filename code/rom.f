@@ -201,19 +201,22 @@ c-----------------------------------------------------------------------
       ops_time=dnekclock()
 
       jfield=ifield
-      ifield=1
-      call seta(au,au0,'ops/au ')
-      call setb(bu,bu0,'ops/bu ')
-      call setc(cul,icul,'ops/cu ')
+      if (ifrom(1)) then
+         ifield=1
+         call seta(au,au0,'ops/au ')
+         call setb(bu,bu0,'ops/bu ')
+         call setc(cul,icul,'ops/cu ')
+      endif
       if (ifrom(2)) then
          ifield=2
          call seta(at,at0,'ops/at ')
          call setb(bt,bt0,'ops/bt ')
          call setc(ctl,ictl,'ops/ct ')
       endif
+      ifield=jfield
+
       call setu
       call setf
-      ifield=jfield
 
       call nekgsync
       if (nio.eq.0) write (6,*) 'ops_time:',dnekclock()-ops_time
@@ -699,66 +702,76 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelv
 
-      jfield=ifield
-      ifield=1
+      if (ifread) then
+         inquire (file='ops/u0',exist=ifexist)
+         if (ifexist) call read_serial(u,nb+1,'ops/u0 ',wk,nid)
 
-      call opsub2(uic,vic,wic,ub,vb,wb)
-      if (ifrom(1)) then
-         if (ips.eq.'H10') then
-            call h10pv2b(u,uic,vic,wic,ub,vb,wb)
-         else if (ips.eq.'HLM') then
-            call hlmpv2b(u,uic,vic,wic,ub,vb,wb)
-         else
-            call pv2b(u,uic,vic,wic,ub,vb,wb)
-         endif
+         inquire (file='ops/t0',exist=ifexist)
+         if (ifexist) call read_serial(ut,nb+1,'ops/t0 ',wk,nid)
       else
-         call rzero(u,(nb+1)*3)
-         u(0,1)=1.
-         u(0,2)=1.
-         u(0,3)=1.
+         jfield=ifield
+
+         if (ifrom(1)) then
+            ifield=1
+            call opsub2(uic,vic,wic,ub,vb,wb)
+            if (ips.eq.'H10') then
+               call h10pv2b(u,uic,vic,wic,ub,vb,wb)
+            else if (ips.eq.'HLM') then
+               call hlmpv2b(u,uic,vic,wic,ub,vb,wb)
+            else
+               call pv2b(u,uic,vic,wic,ub,vb,wb)
+            endif
+            do i=0,nb
+               if (nio.eq.0) write (6,*) 'ut',ut(i,1)
+            enddo
+            call opadd2(uic,vic,wic,ub,vb,wb)
+         else
+            call rzero(u,(nb+1)*3)
+            u(0,1)=1.
+            u(0,2)=1.
+            u(0,3)=1.
+         endif
+
+         if (ifdumpops) call dump_serial(u,nb+1,'ops/u0 ',nid)
+
+         if (ifrom(2)) then
+            ifield=2
+            call sub2(tic,tb,n)
+            call ps2b(ut,tic,tb)
+            do i=0,nb
+               if (nio.eq.0) write (6,*) 'ut',ut(i,1)
+            enddo
+            call add2(tic,tb,n)
+            if (ifdumpops) call dump_serial(ut,nb+1,'ops/t0 ',nid)
+         endif
+         ifield=jfield
+
+         call reconv(uu,vv,ww,u)
+         call recont(tt,ut)
+
+         iftmp=ifxyo
+         ifxyo=.true.
+         call outpost(uu,vv,ww,pr,tt,'rom')
+
+         ttime=time
+         jstep=istep
+         time=1.
+         istep=1
+         call outpost(uic,vic,wic,pr,tic,'uic')
+         ifxyo=.false.
+         time=2.
+         istep=2
+         call outpost(uu,vv,ww,pr,tt,'uic')
+         call opsub2(uu,vv,ww,uic,vic,wic)
+         call sub2(tt,tic,n)
+         time=3.
+         istep=3
+         call outpost(uu,vv,ww,pr,tt,'uic')
+         time=ttime
+         istep=jstep
+
+         ifxyo=iftmp
       endif
-      call opadd2(uic,vic,wic,ub,vb,wb)
-
-      call sub2(tic,tb,n)
-      if (ifrom(2)) then
-         call ps2b(ut,tic,tb)
-         do i=0,nb
-            if (nio.eq.0) write (6,*) 'ut',ut(i,1)
-         enddo
-      endif
-      call add2(tic,tb,n)
-
-      inquire (file='ops/u0',exist=ifexist)
-      if (ifexist) call read_serial(u,nb+1,'ops/u0 ',wk,nid)
-
-      inquire (file='ops/t0',exist=ifexist)
-      if (ifexist) call read_serial(ut,nb+1,'ops/t0 ',wk,nid)
-
-      call reconv(uu,vv,ww,u)
-      call recont(tt,ut)
-
-      iftmp=ifxyo
-      ifxyo=.true.
-      call outpost(uu,vv,ww,pr,tt,'rom')
-
-      ttime=time
-      jstep=istep
-      time=1.
-      istep=1
-      call outpost(uic,vic,wic,pr,tic,'uic')
-      time=2.
-      istep=2
-      call outpost(uu,vv,ww,pr,tt,'uic')
-      call opsub2(uu,vv,ww,uic,vic,wic)
-      call sub2(tt,tic,n)
-      time=3.
-      istep=3
-      call outpost(uu,vv,ww,pr,tt,'uic')
-      time=ttime
-      istep=jstep
-      ifield=jfield
-
-      ifxyo=iftmp
 
       if (nio.eq.0) write (6,*) 'exiting setu'
 
