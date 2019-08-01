@@ -199,13 +199,13 @@ c-----------------------------------------------------------------------
       call seta(au,au0,'ops/au ')
       call setb(bu,bu0,'ops/bu ')
       call setc(cul,icul,'ops/cu ')
-      call setu
       if (ifrom(2)) then
          ifield=2
          call seta(at,at0,'ops/at ')
          call setb(bt,bt0,'ops/bt ')
          call setc(ctl,ictl,'ops/ct ')
       endif
+      call setu
       call setf
       ifield=jfield
 
@@ -687,7 +687,7 @@ c-----------------------------------------------------------------------
 
       common /scrsetu/ uu(lt),vv(lt),ww(lt),tt(lt),wk(nb+1)
 
-      logical iftmp
+      logical iftmp,ifexist
 
       if (nio.eq.0) write (6,*) 'inside setu'
 
@@ -722,9 +722,11 @@ c-----------------------------------------------------------------------
       endif
       call add2(tic,tb,n)
 
-      ! TODO: add ops/u and ops/t to tar file
-c     call read_serial(u,nb+1,'ops/u ',wk,nid)
-c     call read_serial(ut,nb+1,'ops/t ',wk,nid)
+      inquire (file='ops/u0',exist=ifexist)
+      if (ifexist) call read_serial(u,nb+1,'ops/u0 ',wk,nid)
+
+      inquire (file='ops/t0',exist=ifexist)
+      if (ifexist) call read_serial(ut,nb+1,'ops/t0 ',wk,nid)
 
       call reconv(uu,vv,ww,u)
       call recont(tt,ut)
