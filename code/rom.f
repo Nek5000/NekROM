@@ -151,26 +151,32 @@ c-----------------------------------------------------------------------
       call nekgsync
       asnap_time=dnekclock()
 
-      ! TODO uas and tas are not 1,0,0,0
-      call pv2b(uas,uavg,vavg,wavg,ub,vb,wb)
-      call rzero(uvs,nb+1)
-
-      call ps2b(tas,tavg,tb)
-      call rzero(tvs,nb+1)
-
-      do j=1,ns
-         do i=0,nb
-            uvs(i)=uvs(i)+(uk(i,j)-uas(i))**2
-            tvs(i)=tvs(i)+(tk(i,j)-tas(i))**2
-         enddo
-      enddo
-
       s=1./real(ns)
-      do i=0,nb
-         uvs(i)=uvs(i)*s
-         tvs(i)=tvs(i)*s
-      enddo
-      if (ifrom(2)) then 
+
+      if (ifrom(1)) then
+         call pv2b(uas,uavg,vavg,wavg,ub,vb,wb)
+         call rzero(uvs,nb+1)
+         do j=1,ns
+            do i=0,nb
+               uvs(i)=uvs(i)+(uk(i,j)-uas(i))**2
+            enddo
+         enddo
+         call cmult(uvs,s,nb+1)
+
+         call dump_serial(uas,nb+1,'ops/uas ',nid)
+         call dump_serial(uvs,nb+1,'ops/uvs ',nid)
+      endif
+
+      if (ifrom(2)) then
+         call ps2b(tas,tavg,tb)
+         call rzero(tvs,nb+1)
+         do j=1,ns
+            do i=0,nb
+               tvs(i)=tvs(i)+(tk(i,j)-tas(i))**2
+            enddo
+         enddo
+         call cmult(tvs,s,nb+1)
+
          call dump_serial(tas,nb+1,'ops/tas ',nid)
          call dump_serial(tvs,nb+1,'ops/tvs ',nid)
       endif
