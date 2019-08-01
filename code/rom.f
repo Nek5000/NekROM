@@ -151,34 +151,45 @@ c-----------------------------------------------------------------------
       call nekgsync
       asnap_time=dnekclock()
 
-      s=1./real(ns)
+      if (ifread) then
+         if (ifrom(1)) then
+            call read_serial(uas,nb+1,'ops/uas ',t1,nid)
+            call read_serial(uvs,nb+1,'ops/uvs ',t1,nid)
+         endif
+         if (ifrom(2)) then
+            call read_serial(tas,nb+1,'ops/tas ',t1,nid)
+            call read_serial(tvs,nb+1,'ops/tvs ',t1,nid)
+         endif
+      else
+         s=1./real(ns)
 
-      if (ifrom(1)) then
-         call pv2b(uas,uavg,vavg,wavg,ub,vb,wb)
-         call rzero(uvs,nb+1)
-         do j=1,ns
-            do i=0,nb
-               uvs(i)=uvs(i)+(uk(i,j)-uas(i))**2
+         if (ifrom(1)) then
+            call pv2b(uas,uavg,vavg,wavg,ub,vb,wb)
+            call rzero(uvs,nb+1)
+            do j=1,ns
+               do i=0,nb
+                  uvs(i)=uvs(i)+(uk(i,j)-uas(i))**2
+               enddo
             enddo
-         enddo
-         call cmult(uvs,s,nb+1)
+            call cmult(uvs,s,nb+1)
 
-         call dump_serial(uas,nb+1,'ops/uas ',nid)
-         call dump_serial(uvs,nb+1,'ops/uvs ',nid)
-      endif
+            call dump_serial(uas,nb+1,'ops/uas ',nid)
+            call dump_serial(uvs,nb+1,'ops/uvs ',nid)
+         endif
 
-      if (ifrom(2)) then
-         call ps2b(tas,tavg,tb)
-         call rzero(tvs,nb+1)
-         do j=1,ns
-            do i=0,nb
-               tvs(i)=tvs(i)+(tk(i,j)-tas(i))**2
+         if (ifrom(2)) then
+            call ps2b(tas,tavg,tb)
+            call rzero(tvs,nb+1)
+            do j=1,ns
+               do i=0,nb
+                  tvs(i)=tvs(i)+(tk(i,j)-tas(i))**2
+               enddo
             enddo
-         enddo
-         call cmult(tvs,s,nb+1)
+            call cmult(tvs,s,nb+1)
 
-         call dump_serial(tas,nb+1,'ops/tas ',nid)
-         call dump_serial(tvs,nb+1,'ops/tvs ',nid)
+            call dump_serial(tas,nb+1,'ops/tas ',nid)
+            call dump_serial(tvs,nb+1,'ops/tvs ',nid)
+         endif
       endif
 
       call nekgsync
@@ -351,6 +362,7 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
          write (6,*) 'rp_isolve     ',isolve
          write (6,*) 'rp_ips        ',ips
          write (6,*) 'rp_ifavg0     ',ifavg0
+         write (6,*) 'rp_ifsub0     ',ifsub0
          write (6,*) 'rp_ifdumpops  ',ifdumpops
          write (6,*) 'rp_ifread     ',ifread
          write (6,*) 'rp_ad_qstep   ',ad_qstep
@@ -453,10 +465,12 @@ c-----------------------------------------------------------------------
 
       if (ifsub0) then
          do i=1,ns
-            call sub2(us0(1,1,i),ub,n)
-            call sub2(us0(1,2,i),vb,n)
-            if (ldim.eq.3) call sub2(us0(1,ldim,i),wb,n)
-            if (ifpod(2)) call sub2(ts0(1,i),tb,n)
+            if (ifrom(1)) then
+               call sub2(us0(1,1,i),ub,n)
+               call sub2(us0(1,2,i),vb,n)
+               if (ldim.eq.3) call sub2(us0(1,ldim,i),wb,n)
+            endif
+            if (ifrom(2)) call sub2(ts0(1,i),tb,n)
          enddo
          call sub2(uavg,ub,n)
          call sub2(vavg,vb,n)
