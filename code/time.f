@@ -445,7 +445,8 @@ c-----------------------------------------------------------------------
 
       common /scrc/ work(lx1*ly1*lz1*lelt)
 
-      real cl(lcloc),uu(0:nb)
+      real cl(lub,0:lub,0:lub)
+      real uu(0:nb)
       integer icl(3,lcloc)
 
       if (icalld.eq.0) then
@@ -462,14 +463,23 @@ c-----------------------------------------------------------------------
 
          call rzero(cu,nb)
 
-         do l=1,ncloc
-            i=icl(1,l)
-            j=icl(2,l)
-            k=icl(3,l)
-            cu(i)=cu(i)+cl(l)*uu(j)*u(k,1)
-         enddo
-
-         call gop(cu,work,'+  ',nb)
+         if (np.eq.1) then ! don't use index
+            do i=0,nb
+            do k=1,nb
+            do j=1,nb
+               cu(i)=cu(i)+cl(i,j,k)*uu(j)*u(k,1)
+            enddo
+            enddo
+            enddo
+         else
+            do l=1,ncloc
+               i=icl(1,l)
+               j=icl(2,l)
+               k=icl(3,l)
+               cu(i)=cu(i)+cl(l,0,0)*uu(j)*u(k,1)
+            enddo
+            call gop(cu,work,'+  ',nb)
+         endif
       endif
 
       evalc_time=evalc_time+dnekclock()-stime
