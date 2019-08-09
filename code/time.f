@@ -464,9 +464,9 @@ c-----------------------------------------------------------------------
          call rzero(cu,nb)
 
          if (np.eq.1) then ! don't use index
-            do i=0,nb
-            do k=1,nb
-            do j=1,nb
+            do i=1,nb
+            do k=0,nb
+            do j=0,nb
                cu(i)=cu(i)+cl(i,j,k)*uu(j)*u(k,1)
             enddo
             enddo
