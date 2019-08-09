@@ -883,15 +883,17 @@ c-----------------------------------------------------------------------
          write (6,*) 'postt_time:  ',postt_time
       endif
 
+      call dump_serial(u,nb+1,'ops/uf ',nid)
+      if (ifrom(2)) then
+         call dump_serial(ut,nb+1,'ops/tf ',nid)
+      endif
+      do i=0,nb
+         t1(i)=u2a(i,i)-ua(i)*ua(i)
+      enddo
+
+      call dump_serial(t1,nb+1,'ops/uv ',nid)
+
       if (ifdumpops) then
-         call dump_serial(u,nb+1,'ops/uf ',nid)
-         if (ifrom(2)) then 
-            call dump_serial(ut,nb+1,'ops/tf ',nid)
-         endif
-         do i=0,nb
-            t1(i)=u2a(i,i)-ua(i)*ua(i)
-         enddo
-         call dump_serial(t1,nb+1,'ops/uv ',nid)
          call dump_serial(uas,nb+1,'ops/uas ',nid)
          call dump_serial(uvs,nb+1,'ops/uvs ',nid)
       endif
