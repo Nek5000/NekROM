@@ -13,6 +13,9 @@
       real bpar,par
       real norm_s,norm_step,norm_uo
 
+      real invB_qn(nb,nb)
+      real copt_work(nb*nb)
+
       ! parameter for barrier function
       integer par_step,jmax,bstep,chekbc
       integer uHcount,lncount
@@ -24,8 +27,8 @@
       par = bpar 
       par_step = bstep 
 
-      tcopt_time=dnekclock()
       ! BFGS method with barrier function starts
+      tcopt_time=dnekclock()
       do k=1,par_step
 
          chekbc = 0
@@ -35,17 +38,28 @@
          call copy(B_qn(1,1),helm(1,1),nb*nb)
          call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par)
 
+         if (isolve.eq.5) then
+            call copy(invB_qn(1,1),invhelm(1,1),nb*nb)
+            call dgetri(nb,invB_qn,nb,ipiv,copt_work,nb*nb,info)
+         endif
          norm_uo = vlamax(uu,nb)
 
+         ! compute quasi-Newton step
          tquasi_time=dnekclock()
-c        compute quasi-Newton step
          do j=1,100
 
-            call copy(tmp(1,1),B_qn(1,1),nb*nb)
-            call dgetrf(nb,nb,tmp,lub,ipiv,info)
-            call copy(qns,qngradf,nb)
-            call chsign(qns,nb)
-            call dgetrs('N',nb,1,tmp,lub,ipiv,qns,nb,info)
+            if (isolve.eq.5) then
+               ONE = 1.
+               ZERO = 0.
+               call dgemv('N',nb,nb,ONE,invB_qn,nb,qngradf,1,ZERO,qns,1)
+               call chsign(qns,nb)
+            else
+               call copy(tmp(1,1),B_qn(1,1),nb*nb)
+               call dgetrf(nb,nb,tmp,lub,ipiv,info)
+               call copy(qns,qngradf,nb)
+               call chsign(qns,nb)
+               call dgetrs('N',nb,1,tmp,lub,ipiv,qns,nb,info)
+            endif
 
             tlnsrch_time=dnekclock()
             call backtrackr(uu,qns,rhs,helm,invhelm,1e-4,0.5,
@@ -58,18 +72,20 @@ c        compute quasi-Newton step
             ! store old qn-gradf
             call copy(qgo,qngradf,nb) 
             ! update qn-gradf
-            call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,
-     $                  par)
+            call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par)
             call sub3(qny,qngradf,qgo,nb) 
 
             ! compute curvature condition
             ysk = vlsc2(qny,qns,nb)
 
-            ! update approximate Hessian by two rank-one update if chekbc = 0
             uHcount = uHcount + 1
-            call Hessian_update(B_qn,qns,qny,nb)
+            if (isolve.eq.5) then
+               call invHessian_update(invB_qn,qns,qny,nb)
+            else
+               call Hessian_update(B_qn,qns,qny,nb)
+            endif
 
-            ! compute H^{-1} norm of gradf
+            ! compute norm of gradf
             ngf = vlamax(qngradf,nb)
 
             ! reset chekbc 
@@ -77,14 +93,12 @@ c        compute quasi-Newton step
             
             jmax = max(j,jmax)
 
-c           if (ngf .lt. 1e-6 .OR. norm_step .lt. 1e-10) then 
             if (ngf .lt. 1e-6 .OR. ysk .lt. 1e-6 .OR. norm_step .lt.
      $      1e-6  ) then 
                if (ysk .lt. 1e-10) then 
                   if (nio.eq.0) then
-                     ! curvature condition not satisfied
-                     write(6,*)'WARNING: decrease barrseq or increase
-     $               barr0' 
+                  ! curvature condition not satisfied
+                  write(6,*)'WARNING:decrease barrseq or increase barr0'
                   endif
                endif
                exit
@@ -118,7 +132,7 @@ c-----------------------------------------------------------------------
       real qgo(nb),qngradf(nb)
       real uu(nb),vv(nb),rhs(nb)
       real amax(nb),amin(nb),adis(nb)
-      real sk(nb,50),yk(nb,50)
+      real sk(nb,nb),yk(nb,nb)
       real qnf,ngf,ysk
       real bpar,par
       real norm_s,norm_step,norm_uo
@@ -134,8 +148,8 @@ c-----------------------------------------------------------------------
       par = bpar 
       par_step = bstep 
 
-      tcopt_time=dnekclock()
       ! BFGS method with barrier function starts
+      tcopt_time=dnekclock()
       do k=1,par_step
 
          chekbc = 0
@@ -146,11 +160,11 @@ c-----------------------------------------------------------------------
 
          norm_uo = vlamax(uu,nb)
 
+         ! compute quasi-Newton step
          tquasi_time=dnekclock()
-c        compute quasi-Newton step
-         do j=1,50
+         do j=1,nb
 
-            if (isolve.eq.1.OR.isolve.eq.2.OR.isolve.eq.3) then
+            if (isolve.eq.1.OR.isolve.eq.2) then
                if (j.eq.1) then
                   call copy(qns,qngradf,nb)
                   call chsign(qns,nb)
@@ -165,9 +179,11 @@ c        compute quasi-Newton step
                ! store qns
                call copy(sk(1,j),qns,nb)
 
-               call copy(qgo,qngradf,nb) ! store old qn-gradf
-               call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,
-     $                     par) ! update qn-gradf
+               ! store old qn-gradf
+               call copy(qgo,qngradf,nb) 
+
+               ! update qn-gradf
+               call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par)
                call sub3(qny,qngradf,qgo,nb) 
 
                ysk = vlsc2(qny,qns,nb)
@@ -175,7 +191,7 @@ c        compute quasi-Newton step
                norm_s = vlamax(qns,nb)
                norm_step = norm_s/norm_uo
 
-               ! compute H^{-1} norm of gradf
+               ! compute norm of gradf
                ngf = vlamax(qngradf,nb)
 
                jmax = max(j,jmax)
@@ -190,7 +206,7 @@ c        compute quasi-Newton step
                exit
             endif
 
-      ! update solution
+         ! update solution
          enddo
          quasi_time=quasi_time+dnekclock()-tquasi_time
 
@@ -382,7 +398,7 @@ c-----------------------------------------------------------------------
 
       integer chekbc,counter
       integer countbc
-      logical cond1,cond2
+      logical cond1,cond2,cond3
 
       alphak = 1.0
       chekbc = 0
@@ -415,8 +431,8 @@ c-----------------------------------------------------------------------
       Jfks  = vlsc2(Jfk,s,nb)   
       Jfks1 = vlsc2(Jfk1,s,nb)   
 
-      cond1 = fk1 .gt. (fk+sigmab*alphak*Jfks)
-      cond2 = Jfks1 .lt. (0.9*Jfks)
+      cond1 = (fk1-(fk+sigmab*alphak*Jfks)).gt.1e-10
+      cond2 = (Jfks1-(0.9*Jfks)).lt.1e-10
 
       do while (cond1.OR.(chekbc.eq.1))
          counter = counter + 1
@@ -441,10 +457,16 @@ c-----------------------------------------------------------------------
          call comp_qngradf(uu,rhs,helm,Jfk1,amax,amin,bpar)
          Jfks1 = vlsc2(Jfk1,s,nb)   
 
-         cond1 = fk1 .gt. (fk+sigmab*alphak*Jfks)
-         cond2 = Jfks1 .lt. (0.9*Jfks)
+         cond1 = (fk1-(fk+sigmab*alphak*Jfks)).gt.1e-10
+         cond2 = (Jfks1-(0.9*Jfks)).lt.1e-10
+
+c        cond1 = fk1.gt.(fk+sigmab*alphak*Jfks)
+c        cond2 = Jfks1.lt.(0.9*Jfks)
+c        write(6,*)'cond1',cond1,fk1,(fk+sigmab*alphak*Jfks)
+c        write(6,*)'cond2',cond2,Jfks1,(0.9*Jfks)
          
-         if ((alphak < minalpha.AND..not.cond1).OR.alphak < 1e-8) then
+         cond3 = (alphak-minalpha).lt.1e-10
+         if ((cond3.AND..not.cond1).OR.alphak.lt.1e-8) then
             exit
          endif
       enddo
@@ -499,9 +521,9 @@ c-----------------------------------------------------------------------
       include 'MOR'            
 
       real invh0(nb,nb)
-      real sk(nb,50),yk(nb,50),qnd(nb),qnsol(nb)
-      real qnrho(50),qnalpha(50),qnbeta(50)
-      real qnfact(50)
+      real sk(nb,nb),yk(nb,nb),qnd(nb),qnsol(nb)
+      real qnrho(nb),qnalpha(nb),qnbeta(nb)
+      real qnfact(nb)
       real work(nb)
       integer qnstep
 
@@ -549,5 +571,53 @@ c-----------------------------------------------------------------------
       enddo
 
       minalpha = vlmin(alphai,nb)
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine invHessian_update(B,s,y,nb)
+
+      real B(nb,nb)
+      real s(nb),y(nb)
+      real rk1up(nb,nb)
+      real rk2up(nb,nb)
+      real w1(nb,nb),w2(nb,nb)
+      real w3(nb,nb),w4(nb,nb),w5(nb,nb)
+      real ss(nb,nb),ys,ys2
+      real hy(nb),yhy,nomina
+
+      ! y_k^T * s_k
+      ys = vlsc2(y,s,nb)
+      ysinv = 1./ys
+
+      ys2 = ys*ys
+      ys2inv = 1./ys2
+
+      ! y_k * s_k^T
+      call mxm(y,nb,s,1,w1,nb)
+      ! s_k * y_k^T
+      call mxm(s,nb,y,1,w2,nb)
+
+      call mxm(B,nb,w1,nb,w3,nb)
+      call cmult(w3(1,1),ysinv,nb*nb)
+
+      call mxm(w2,nb,B,nb,w4,nb)
+      call cmult(w4(1,1),ysinv,nb*nb)
+
+      call mxm(B,nb,y,nb,hy,1)
+      yhy = vlsc2(y,hy,nb)
+
+      nomina=ys+yhy
+
+      ! second rank-one update
+      ! s_k * s_k^T               
+      call mxm(s,nb,s,1,ss,nb)
+
+      call cmult(ss(1,1),ys2inv,nb*nb)
+      call cmult(ss(1,1),nomina,nb*nb)
+
+      call sub2(B(1,1),w3(1,1),nb*nb)
+      call sub2(B(1,1),w4(1,1),nb*nb)
+      call add2(B(1,1),ss(1,1),nb*nb)
+
       return
       end
