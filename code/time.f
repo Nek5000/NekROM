@@ -113,14 +113,19 @@ c-----------------------------------------------------------------------
             call copy(rhs,rhstmp,nb+1)
          endif
 
-      else if (isolve.eq.3) then ! constrained solve with Hessian update
+      else if (isolve.eq.3) then 
+         ! constrained solve with Hessian update
          call BFGS(rhs(1),u(1,1),helmu,invhelmu,umax,umin,udis,
      $   ubarr0,ubarrseq)
-      else if (isolve.eq.4) then ! constrained solve with Hessian update
-                                 ! and mix with standard solver
-
+      else if (isolve.eq.4) then 
+         ! constrained solve with Hessian update
+         ! and mix with standard solver
          call hybrid_advance(rhs,u(1,1),helmu,invhelmu,umax,umin,
      $                       udis,ubarr0,ubarrseq,ucopt_count)
+      else if (isolve.eq.5) then 
+         ! constrained solve with Hessian update
+         call BFGS(rhs(1),u(1,1),helmu,invhelmu,umax,umin,udis,
+     $   ubarr0,ubarrseq)
       else   
          call exitti('incorrect isolve specified...$',isolve)
       endif
