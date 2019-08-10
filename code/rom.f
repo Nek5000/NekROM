@@ -103,14 +103,18 @@ c-----------------------------------------------------------------------
       call copy(tic,t,n)
 
       call rom_init_params
+      write (6,*) 'ips0:',ips
       call rom_init_fields
 
       call setgram
+      if (ifdumpops) call dump_gram
       call setevec
 
       call setbases
+      if (ifdumpops) call dump_bas
 
       call setops
+      if (ifdumpops) call dump_ops
 
       if (nio.eq.0) write (6,*) 'begin setup for qoi'
 
@@ -139,7 +143,7 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'end range setup'
 
-      if (ifdumpops) call dump_all
+      if (ifdumpops) call dump_misc
 
       call nekgsync
       setup_end=dnekclock()
@@ -237,6 +241,11 @@ c-----------------------------------------------------------------------
 
       ad_nsteps=nsteps
       ad_iostep=iostep
+
+      ubarr0=1e-1
+      ubarrseq=5
+      tbarr0=1e-1
+      tbarrseq=5
 
       ad_dt = dt
       ad_re = 1/param(2)
@@ -399,11 +408,13 @@ c-----------------------------------------------------------------------
 
       if (.not.ifread) then
          fname1='file.list '
-         call nekgsync
-         gsf_time=dnekclock()
-         call get_saved_fields(us0,ps,ts0,ns,timek,fname1)
-         call nekgsync
-         if (nio.eq.0) write (6,*) 'gsf_time:',dnekclock()-gsf_time
+         nsu=1
+         nsp=1
+         nst=1
+         if (ifrom(0)) nsp=ls
+         if (ifrom(1)) nsu=ls
+         if (ifrom(2)) nst=ls
+         call get_saved_fields(us0,ps,ts0,nsu,nsp,nst,timek,fname1)
 
          fname1='avg.list'
          inquire (file=fname1,exist=alist)
