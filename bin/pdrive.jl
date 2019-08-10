@@ -30,9 +30,7 @@ function gflog(conf)
     for i=1:ntrain
         dir=conf["data"]*"/"*lpad(i,2,"0");
         log="$dir/logfile";
-        if isfile(log)
-            cp("$dir/logfile","fom."*lpad(i,2,"0")*".log",force=true);
-        end
+        if isfile(log); cp(log,"fom."*lpad(i,2,"0")*".log",force=true); end
     end
 end
 
@@ -52,7 +50,8 @@ function fom(conf,imu)
         cd(cwd);
     else
         println("pdrive: FOM run mu=$(imu) found ...");
-        cp("$dir/logfile","fom."*lpad(imu,2,"0")*".log",force=true);
+        log="$dir/logfile";
+        if isfile(log); cp(log,"fom."*lpad(imu,2,"0")*".log",force=true); end
     end
 end
 
