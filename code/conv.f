@@ -164,3 +164,37 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine cpart(ic1,ic2,jc1,jc2,kc1,kc2,nb,np,ip)
+
+      icount=1
+
+      if (np.le.nb) then
+         do i=1,np
+            nk=nb/np+max(min(i-np+nb-(nb/np)*np,1),0)
+            if (ip.eq.i) then
+               ic1=icount
+               ic2=icount+nk-1
+               jc1=0
+               jc2=nb
+               kc1=0
+               kc2=nb
+            endif
+            icount=icount+nk
+         enddo
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      function ncpart(i,np,nb)
+
+      ncpart=0
+
+      if (np.le.nb) then
+         nk=nb/np+max(min(i-np+nb-(nb/np)*np,1),0)
+         ncpart=nk*(nb+1)**2
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------

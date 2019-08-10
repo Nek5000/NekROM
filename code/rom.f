@@ -487,6 +487,109 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine setc_new(cl,fname)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real cux(lt),cuy(lt),cuz(lt)
+
+      common /scrcwk/ wk(lcloc),wk2(0:lub)
+
+      real cl(lcloc),icl(3,lcloc)
+
+      character*128 fname
+      character*128 fnlint
+
+      if (nio.eq.0) write (6,*) 'inside setc'
+
+      call nekgsync
+      conv_time=dnekclock()
+
+      call lints(fnlint,fname,128)
+
+      if (iffastc) then
+         jj=nb
+         ntot=nb*(nb+1)*(nb+2)/2
+      else
+         jj=0
+         ntot=nb*(nb+1)*(nb+1)
+      endif
+
+      ntp=ntot/np
+      mm=ntot-(ntot/np)*np
+
+      l=0
+      mid=0
+
+      n=lx1*ly1*lz1*nelv
+
+      if (nio.eq.0) write (6,*) 'file=',fnlint
+      if (ifread.and.ifcdrag)
+     $   call read_serial(fd2,(nb+1)**2,'qoi/fd2 ',wk2,nid)
+      if (ifread.and.nid.eq.0) open (unit=12,file=fnlint)
+
+      if (.not.ifread.and..not.ifaxis) then
+         do i=0,nb
+            call set_convect_new(c1v(1,i),c2v(1,i),c3v(1,i),
+     $                           ub(1,i),vb(1,i),wb(1,i))
+            if (ifield.eq.1) then
+               call intp_rstd_all(u1v(1,i),ub(1,i),nelv)
+               call intp_rstd_all(u2v(1,i),vb(1,i),nelv)
+               if (ldim.eq.3) call intp_rstd_all(u3v(1,i),wb(1,i),nelv)
+            else
+               call intp_rstd_all(u1v(1,i),tb(1,i),nelv)
+            endif
+         enddo
+      endif
+
+      ip=1
+      nc=ncpart(ip,np,nb)
+
+      do k=1,nb
+         do j=0,nb
+            do i=0,nb
+               l=l+1
+               if (ifield.eq.1) then
+                  call ccu(cux,cuy,cuz,i,j)
+               else
+                  call cct(cux,i,j)
+               endif
+               if (ifield.eq.1) then
+                  cultmp(l)=op_glsc2_wt(
+     $               ub(1,k),vb(1,k),wb(1,k),cux,cuy,cuz,ones)
+               else
+                  cultmp(l)=glsc2(tb(1,i),cux,n)
+               endif
+
+               if (l.eq.nc) then
+                     call rzero(cultmp,mcloc)
+                  if ((nid+1).eq.ip) then
+                     ncloc=nc
+                     call copy(cl,cultmp,ncloc)
+                     call icopy(icl,icultmp,ncloc*3)
+                  endif
+                  mid=mid+1
+                  l = 0
+               endif
+            enddo
+         enddo
+      enddo
+
+      if (ifread.and.nid.eq.0) close (unit=12)
+
+      call nekgsync
+      if (nio.eq.0) write (6,*) 'conv_time: ',dnekclock()-conv_time
+      if (nio.eq.0) write (6,*) 'ncloc=',ncloc
+
+      if (nio.eq.0) write (6,*) 'exiting setc'
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine setc(cl,icl,fname)
 
       include 'SIZE'
