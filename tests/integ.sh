@@ -35,8 +35,8 @@ Z
 ./nek5000 | tee test.log.1
 
 if [[ $ifcopt == 1 ]]; then
-   sed -i.bu 's/nb=20/nb=10/g' LMOR
-   ../../tests/tcopt
+   sed -i "s/.*p170/   1     p170/" test.rea 
+   ../../tests/tbox
 else
    ../../tests/tdragx
 fi
