@@ -132,7 +132,7 @@ c-----------------------------------------------------------------------
       real qgo(nb),qngradf(nb)
       real uu(nb),vv(nb),rhs(nb)
       real amax(nb),amin(nb),adis(nb)
-      real sk(nb,50),yk(nb,50)
+      real sk(nb,nb),yk(nb,nb)
       real qnf,ngf,ysk
       real bpar,par
       real norm_s,norm_step,norm_uo
@@ -162,7 +162,7 @@ c-----------------------------------------------------------------------
 
          ! compute quasi-Newton step
          tquasi_time=dnekclock()
-         do j=1,50
+         do j=1,nb
 
             if (isolve.eq.1.OR.isolve.eq.2) then
                if (j.eq.1) then
@@ -521,9 +521,9 @@ c-----------------------------------------------------------------------
       include 'MOR'            
 
       real invh0(nb,nb)
-      real sk(nb,50),yk(nb,50),qnd(nb),qnsol(nb)
-      real qnrho(50),qnalpha(50),qnbeta(50)
-      real qnfact(50)
+      real sk(nb,nb),yk(nb,nb),qnd(nb),qnsol(nb)
+      real qnrho(nb),qnalpha(nb),qnbeta(nb)
+      real qnfact(nb)
       real work(nb)
       integer qnstep
 
