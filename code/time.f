@@ -6,7 +6,6 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       real rhs(0:nb),rhstmp(0:nb)
-      real bctol
       logical ifdebug
       integer chekbc
 
@@ -98,11 +97,10 @@ c-----------------------------------------------------------------------
          call copy(rhstmp,rhs,nb+1)
          call dgetrs('N',nb,1,fluv,lub,ipiv,rhstmp(1),nb,info)
 
-         bctol = 1e-12
          do ii=1,nb
-            if ((rhstmp(ii)-umax(ii)).ge.bctol) then
+            if ((rhstmp(ii)-umax(ii)).ge.box_tol) then
                chekbc = 1
-            elseif ((umin(ii)-rhstmp(ii)).ge.bctol) then
+            elseif ((umin(ii)-rhstmp(ii)).ge.box_tol) then
                chekbc = 1
             endif
          enddo
@@ -115,14 +113,19 @@ c-----------------------------------------------------------------------
             call copy(rhs,rhstmp,nb+1)
          endif
 
-      else if (isolve.eq.3) then ! constrained solve with Hessian update
+      else if (isolve.eq.3) then 
+         ! constrained solve with Hessian update
          call BFGS(rhs(1),u(1,1),helmu,invhelmu,umax,umin,udis,
      $   ubarr0,ubarrseq)
-      else if (isolve.eq.4) then ! constrained solve with Hessian update
-                                 ! and mix with standard solver
-
+      else if (isolve.eq.4) then 
+         ! constrained solve with Hessian update
+         ! and mix with standard solver
          call hybrid_advance(rhs,u(1,1),helmu,invhelmu,umax,umin,
      $                       udis,ubarr0,ubarrseq,ucopt_count)
+      else if (isolve.eq.5) then 
+         ! constrained solve with Hessian update
+         call BFGS(rhs(1),u(1,1),helmu,invhelmu,umax,umin,udis,
+     $   ubarr0,ubarrseq)
       else   
          call exitti('incorrect isolve specified...$',isolve)
       endif
@@ -227,7 +230,6 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       real rhs(0:nb),rhstmp(0:nb)
-      real bctol
       logical ifdebug
       integer chekbc
 
@@ -308,11 +310,10 @@ c-----------------------------------------------------------------------
          call copy(rhstmp,rhs,nb+1)
          call dgetrs('N',nb,1,flut,lub,ipiv,rhstmp(1),nb,info)
 
-         bctol = 1e-12
          do ii=1,nb
-            if ((rhstmp(ii)-tmax(ii)).ge.bctol) then
+            if ((rhstmp(ii)-tmax(ii)).ge.box_tol) then
                chekbc = 1
-            elseif ((tmin(ii)-rhstmp(ii)).ge.bctol) then
+            elseif ((tmin(ii)-rhstmp(ii)).ge.box_tol) then
                chekbc = 1
             endif
          enddo
@@ -762,7 +763,7 @@ c-----------------------------------------------------------------------
       real helm(nb,nb),invhelm(nb,nb)
       real uu(nb),rhs(0:nb),rhstmp(0:nb)
       real amax(nb),amin(nb),adis(nb)
-      real bpar,bctol
+      real bpar
       integer bstep,chekbc,copt_count
 
       chekbc=0
@@ -770,11 +771,10 @@ c-----------------------------------------------------------------------
       call copy(rhstmp,rhs,nb+1)
       call dgetrs('N',nb,1,invhelm,lub,ipiv,rhstmp(1),nb,info)
 
-      bctol = 1e-12
       do ii=1,nb
-         if ((rhstmp(ii)-amax(ii)).ge.bctol) then
+         if ((rhstmp(ii)-amax(ii)).ge.box_tol) then
             chekbc = 1
-         elseif ((amin(ii)-rhstmp(ii)).ge.bctol) then
+         elseif ((amin(ii)-rhstmp(ii)).ge.box_tol) then
             chekbc = 1
          endif
       enddo
