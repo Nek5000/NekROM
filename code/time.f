@@ -627,7 +627,7 @@ c-----------------------------------------------------------------------
 
       common /scravg/ ux(lt),uy(lt),uz(lt)
 
-      if (ad_step.eq.navg_start) then
+      if (ad_step.eq.navg_step) then
          call rzero(ua,nb+1)
          call rzero(u2a,(nb+1)**2)
       endif
@@ -641,7 +641,7 @@ c-----------------------------------------------------------------------
       enddo
 
       if (ad_step.eq.ad_nsteps) then
-         s=1./real(ad_nsteps-navg_start-1)
+         s=1./real(ad_nsteps-navg_step-1)
          call cmult(ua,s,nb+1)
          call cmult(u2a,s,(nb+1)**2)
       endif
@@ -655,7 +655,7 @@ c-----------------------------------------------------------------------
       include 'MOR'
       include 'AVG'
 
-      if (ad_step.eq.navg_start) then
+      if (ad_step.eq.navg_step) then
          call rzero(uta,nb+1)
          call rzero(uuta,(nb+1)**2)
          call rzero(utua,(nb+1)**2)
@@ -673,7 +673,7 @@ c-----------------------------------------------------------------------
       enddo
 
       if (ad_step.eq.ad_nsteps) then
-         s=1./real(ad_nsteps-navg_start+1)
+         s=1./real(ad_nsteps-navg_step+1)
          call cmult(uta,s,nb+1)
          call cmult(uuta,s,(nb+1)**2)
          call cmult(utua,s,(nb+1)**2)
@@ -688,7 +688,7 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
 
-      if (ad_step.eq.(navg_start+1)) then
+      if (ad_step.eq.(navg_step+1)) then
          call copy(uj(0,1),u(0,3),nb+1)
          call copy(uj(0,2),u(0,2),nb+1)
          call copy(uj(0,3),u(0,1),nb+1)
@@ -714,7 +714,7 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
 
-      if (ad_step.eq.(navg_start+1)) then
+      if (ad_step.eq.(navg_step+1)) then
          call copy(utj(0,1),ut(0,3),nb+1)
          call copy(utj(0,2),ut(0,2),nb+1)
          call copy(utj(0,3),ut(0,1),nb+1)
