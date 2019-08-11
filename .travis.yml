@@ -35,7 +35,8 @@ before_install:
   - /usr/bin/env julia --version
 
   # install numpy
-  - pip show numpy  # pre-installed
+  - sudo apt-get update
+  - sudo apt-get install python3
   - pip install -U --only-binary=numpy,scipy numpy scipy
 
 before_script:
