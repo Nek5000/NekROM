@@ -907,13 +907,21 @@ c-----------------------------------------------------------------------
       common /testb/ ux2(lt),uy2(lt),uz2(lt)
 
       if (ifrom(1)) then
-         call reconv(ux2,uy2,uz2,ua)
+         call reconv(ux1,uy1,uz1,ua)
          if (ifrom(2)) call recont(tt,uta)
-         call outpost(ux2,uy2,uz2,pr,tt,'avg')
+         call outpost(ux1,uy1,uz1,pr,tt,'avg')
 
          call reconu_rms(ux2,uy2,uz2,u2a)
          if (ifrom(2)) call recont_rms(tt)
          call outpost(ux2,uy2,uz2,pr,tt,'rms')
+
+         call opcol2(ux1,uy1,uz1,ux1,uy1,uz1)
+         call opsub2(ux2,uy2,uz2,ux1,uy1,uz1)
+         do i=1,lx1*ly1*lz1*nelv
+            wk(i)=.5*(ux2(i)+uy2(i)+uz2(i))
+         enddo
+
+         call outpost(ux2,uy2,uz2,pr,wk,'tke')
       endif
 
       if (ifrom(1).and.ifrom(2)) then
