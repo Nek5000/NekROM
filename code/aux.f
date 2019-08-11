@@ -64,25 +64,20 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real v1(lt),v2(lt),v3(lt)
       real ux(lt),uy(lt),uz(lt)
 
       n=lx1*ly1*lz1*nelv
 
-      call opzero(v1,v2,v3)
-
-      call outpost(v1,v2,v3,v3,v3,'ttt')
+      call opzero(ux,uy,uz)
 
       do j=0,nb
-      do i=0,nb
-         call col3(ubt,ub(1,i),ub(1,j),n)
-         call col3(vbt,vb(1,i),vb(1,j),n)
-         if (ldim.eq.3) call col3(wbt,wb(1,i),wb(1,j),n)
-         call opadds(v1,v2,v3,ubt,vbt,wbt,u2a(i,j),n,2)
+         if (nio.eq.0) write (6,*) 'reconu_rms:',j,'/',nb
+         do i=0,nb
+            call admcol3(ux,ub(1,i),ub(1,j),u2a(i,j),n)
+            call admcol3(uy,vb(1,i),vb(1,j),u2a(i,j),n)
+            if (ldim.eq.3) call admcol3(uz,wb(1,i),wb(1,j),u2a(i,j),n)
+         enddo
       enddo
-      enddo
-
-      call opcopy(ux,uy,uz,v1,v2,v3)
 
       return
       end
