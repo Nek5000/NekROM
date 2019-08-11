@@ -58,7 +58,10 @@ before_install:
   #- wget http://repo.continuum.io/miniconda/Miniconda-3.8.3-Linux-x86_64.sh -O miniconda.sh
   #- chmod +x miniconda.sh
   #- export PATH=/home/travis/miniconda/bin:$PATH
-  - conda install -c anaconda numpy 
+  - conda create --yes -n test python=$TRAVIS_PYTHON_VERSION
+  - source activate test
+  - conda install --yes numpy=$NUMPY scipy=$SCIPY astropy matplotlib pytest pip
+    #  - conda install -c anaconda numpy 
 
 before_script:
   - export FC=mpif77
