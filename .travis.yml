@@ -40,8 +40,8 @@ before_install:
   - pip install -U wheel
   - pip install numpy
   - pip install pytest
-  - python setup.py build
-  - python -m pytest
+    #  - python setup.py build
+    #  - python -m pytest
 
 before_script:
   - export FC=mpif77
