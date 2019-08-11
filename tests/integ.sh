@@ -35,7 +35,7 @@ Z
 ./nek5000 | tee test.log.1
 
 if [[ $ifcopt == 1 ]]; then
-   sed -i "s/.*p170/   1     p170/" test.rea 
+   sed -i "s/.*p170/   1.00000     p170/" test.rea 
    ../../tests/tbox
 else
    ../../tests/tdragx
