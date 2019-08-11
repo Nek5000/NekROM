@@ -17,6 +17,8 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelt
 
+      ifrecon=.true.
+
       if (ifread) then
          call loadbases
       else

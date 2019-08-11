@@ -457,9 +457,11 @@ c-----------------------------------------------------------------------
 
          iftmp=ifxyo
          ifxyo=.true.
-         call outpost(uavg,vavg,wavg,pavg,tavg,'avg')
-         call outpost(urms,vrms,wrms,prms,trms,'rms')
-         call outpost(vwms,wums,uvms,prms,trms,'tmn')
+         if (ifrecon) then
+            call outpost(uavg,vavg,wavg,pavg,tavg,'avg')
+            call outpost(urms,vrms,wrms,prms,trms,'rms')
+            call outpost(vwms,wums,uvms,prms,trms,'tmn')
+         endif
          ifxyo=iftmp
       endif
 
@@ -765,7 +767,7 @@ c-----------------------------------------------------------------------
 
          iftmp=ifxyo
          ifxyo=.true.
-         call outpost(uu,vv,ww,pr,tt,'rom')
+         if (ifrecon) call outpost(uu,vv,ww,pr,tt,'rom')
 
          ttime=time
          jstep=istep
@@ -901,7 +903,7 @@ c-----------------------------------------------------------------------
       call dump_serial(ua,nb+1,'ops/ua ',nid)
       if (ifrom(2)) call dump_serial(uta,nb+1,'ops/uta ',nid)
 
-      call dump_sfld
+      if (ifrecon) call dump_sfld
 
       return
       end

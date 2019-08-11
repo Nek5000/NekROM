@@ -86,6 +86,7 @@ c-----------------------------------------------------------------------
             if (i.eq.0) then
                inquire (file=fname,exist=ifexist)
                if (nio.eq.0) write (6,*) 'did not find basis files'
+               ifrecon=.false.
                if (.not.ifexist) goto 1
             endif
 
