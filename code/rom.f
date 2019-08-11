@@ -290,7 +290,7 @@ c-----------------------------------------------------------------------
 
       ifei=nint(param(175)).ne.0
 
-      navg_step=nint(min(1.,param(176)))
+      navg_step=nint(max(1.,param(176)))
 
       ad_qstep=nint(param(180))+ad_iostep*max(1-nint(param(180)),0)
 
