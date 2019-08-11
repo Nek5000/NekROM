@@ -9,9 +9,6 @@ notifications:
 
 sudo: required
 
-env: 
-  - NUMPY_VERSION=1.11.0
-
 before_install:
   - export MOR_DIR=$(pwd -P)
 
@@ -41,7 +38,7 @@ before_install:
   - source venv/bin/activate
   - python -m pip install -U pip
   - pip install -U wheel
-  - pip install numpy==$NUMPY_VERSION
+  - pip install numpy
   - pip install pytest
   - python setup.py build
   - python -m pytest
