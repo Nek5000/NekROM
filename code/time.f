@@ -157,7 +157,18 @@ c-----------------------------------------------------------------------
       common /scrrstep/ t1(lt),t2(lt),t3(lt),work(lt)
       common /nekmpi/ nidd,npp,nekcomm,nekgroup,nekreal
 
+      save icalld
+      data icalld /0/
+
       real vort(lt)
+
+      if (icalld.eq.0) then
+         postu_time=0.
+         icalld=1
+      endif
+
+      call nekgsync
+      tttime=dnekclock()
 
       call setuavg
       call setuj
@@ -202,6 +213,9 @@ c        call cubar
             write(6,*)anum_galu/ad_nsteps,'anum_galu'
          endif
       endif
+
+      call nekgsync
+      postu_time=postu_time+dnekclock()-tttime
 
       return
       end
@@ -348,6 +362,17 @@ c-----------------------------------------------------------------------
       common /scrrstep/ t1(lt),t2(lt),t3(lt),work(lt)
       common /nekmpi/ nidd,npp,nekcomm,nekgroup,nekreal
 
+      save icalld
+      data icalld /0/
+
+      if (icalld.eq.0) then
+         postt_time=0.
+         icalld=1
+      endif
+
+      call nekgsync
+      tttime=dnekclock()
+
       call settavg
       call settj
 
@@ -369,6 +394,9 @@ c-----------------------------------------------------------------------
             write(6,*)anum_galt/ad_nsteps,'anum_galt'
          endif
       endif
+
+      call nekgsync
+      postt_time=postt_time+dnekclock()-tttime
 
       return
       end
@@ -418,7 +446,8 @@ c-----------------------------------------------------------------------
 
       common /scrc/ work(lx1*ly1*lz1*lelt)
 
-      real cl(lcloc),uu(0:nb)
+      real cl(lub,0:lub,0:lub)
+      real uu(0:nb)
       integer icl(3,lcloc)
 
       if (icalld.eq.0) then
@@ -435,14 +464,23 @@ c-----------------------------------------------------------------------
 
          call rzero(cu,nb)
 
-         do l=1,ncloc
-            i=icl(1,l)
-            j=icl(2,l)
-            k=icl(3,l)
-            cu(i)=cu(i)+cl(l)*uu(j)*u(k,1)
-         enddo
-
-         call gop(cu,work,'+  ',nb)
+         if (np.eq.1) then ! don't use index
+            do i=1,nb
+            do k=0,nb
+            do j=0,nb
+               cu(i)=cu(i)+cl(i,j,k)*uu(j)*u(k,1)
+            enddo
+            enddo
+            enddo
+         else
+            do l=1,ncloc
+               i=icl(1,l)
+               j=icl(2,l)
+               k=icl(3,l)
+               cu(i)=cu(i)+cl(l,0,0)*uu(j)*u(k,1)
+            enddo
+            call gop(cu,work,'+  ',nb)
+         endif
       endif
 
       evalc_time=evalc_time+dnekclock()-stime
@@ -589,7 +627,7 @@ c-----------------------------------------------------------------------
 
       common /scravg/ ux(lt),uy(lt),uz(lt)
 
-      if (ad_step.eq.1) then
+      if (ad_step.eq.navg_start) then
          call rzero(ua,nb+1)
          call rzero(u2a,(nb+1)**2)
       endif
@@ -603,7 +641,7 @@ c-----------------------------------------------------------------------
       enddo
 
       if (ad_step.eq.ad_nsteps) then
-         s=1./real(ad_nsteps)
+         s=1./real(ad_nsteps-navg_start-1)
          call cmult(ua,s,nb+1)
          call cmult(u2a,s,(nb+1)**2)
       endif
@@ -617,7 +655,7 @@ c-----------------------------------------------------------------------
       include 'MOR'
       include 'AVG'
 
-      if (ad_step.eq.1) then
+      if (ad_step.eq.navg_start) then
          call rzero(uta,nb+1)
          call rzero(uuta,(nb+1)**2)
          call rzero(utua,(nb+1)**2)
@@ -635,7 +673,7 @@ c-----------------------------------------------------------------------
       enddo
 
       if (ad_step.eq.ad_nsteps) then
-         s=1./real(ad_nsteps)
+         s=1./real(ad_nsteps-navg_start+1)
          call cmult(uta,s,nb+1)
          call cmult(uuta,s,(nb+1)**2)
          call cmult(utua,s,(nb+1)**2)
@@ -650,7 +688,7 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
 
-      if (ad_step.eq.2) then
+      if (ad_step.eq.(navg_start+1)) then
          call copy(uj(0,1),u(0,3),nb+1)
          call copy(uj(0,2),u(0,2),nb+1)
          call copy(uj(0,3),u(0,1),nb+1)
@@ -676,7 +714,7 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
 
-      if (ad_step.eq.2) then
+      if (ad_step.eq.(navg_start+1)) then
          call copy(utj(0,1),ut(0,3),nb+1)
          call copy(utj(0,2),ut(0,2),nb+1)
          call copy(utj(0,3),ut(0,1),nb+1)

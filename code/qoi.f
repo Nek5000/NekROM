@@ -17,7 +17,6 @@ c-----------------------------------------------------------------------
       real px(lt),py(lt),pz(lt)
       real fd(ldim)
 
-c     call setup_pdrag(px,py,pz)
       call cint_helper(px,py,pz)
 
       n=lx1*ly1*lz1*nelt
@@ -181,15 +180,15 @@ c-----------------------------------------------------------------------
             call push_op(vx,vy,vz)
 
             do i=0,nb
-               nio = -1
                call opcopy(vx,vy,vz,ub(1,i),vb(1,i),wb(1,i))
+               nio = -1
                call torque_calc(1.,x0,.true.,.false.)
-               rdgx(i)=dragvx(1)
-               rdgy(i)=dragvy(1)
-               rdgz(i)=dragvz(1)
+               rdgx(i)=dragvx(1)*ad_re
+               rdgy(i)=dragvy(1)*ad_re
+               rdgz(i)=dragvz(1)*ad_re
                nio = nid
                if (nio.eq.0) then
-                  write (6,*) i,rdgx(i),rdgy(i),rdgz(i),'dragi'
+                  write (6,*) i,rdgx(i),rdgy(i),rdgz(i),ad_re,'dragi'
                endif
             enddo
 
@@ -210,8 +209,8 @@ c-----------------------------------------------------------------------
 
       if (ifcdrag) then
          if (nio.eq.0) then
-            vdx=vlsc2(rdgx,u,nb+1)
-            vdy=vlsc2(rdgy,u,nb+1)
+            vdx=vlsc2(rdgx,u,nb+1)/ad_re
+            vdy=vlsc2(rdgy,u,nb+1)/ad_re
             pdx1=0.
             pdx2=0.
             pdx3=0.
@@ -229,14 +228,14 @@ c-----------------------------------------------------------------------
                pdx3=pdx3+fd3(1,j)*u(j,1)
                pdy3=pdy3+fd3(2,j)*u(j,1)
             enddo
+            pdx3=pdx3/ad_re
+            pdy3=pdy3/ad_re
             dx=pdx1+pdx2+pdx3+vdx
             dy=pdy1+pdy2+pdy3+vdy
-c           if (nio.eq.0) write (6,1) time,vdx,pdx1,pdx2,pdx3,dx,'dragx'
-c           if (nio.eq.0) write (6,1) time,vdy,pdy1,pdy2,pdy3,dy,'dragy'
             if (nio.eq.0) write (6,2) time,vdx,pdx3,dx,'dragx'
             if (nio.eq.0) write (6,2) time,vdy,pdy3,dy,'dragy'
             if (ldim.eq.3) then
-               dz=vlsc2(rdgz,u,nb+1)
+               dz=vlsc2(rdgz,u,nb+1)/ad_re
                write (6,*) ad_step*dt,vdz,'dragz'
             endif
          endif

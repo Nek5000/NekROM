@@ -6,7 +6,7 @@ c-----------------------------------------------------------------------
 
       param(173)=1.
       call rom_setup
-      call tj_analysis
+c     call tj_analysis
 
       ! todo add timing
 
@@ -37,7 +37,6 @@ c-----------------------------------------------------------------------
          param(173)=2.
          icalld=1
          call rom_setup
-         ifei=.false.
          time=ttime
       endif
 
@@ -112,9 +111,21 @@ c-----------------------------------------------------------------------
       enddo
       enddo
 
+      res=sqrt(res)
+
+      eierr=0.
+      do i=0,nb
+      do j=0,nb
+         eierr=eierr+bu0(i,j)*(ua(i)-uas(i))*(ua(j)-uas(j))
+      enddo
+      enddo
+
+      eierr=sqrt(eierr)
+
       if (res.le.0) call exitti('negative semidefinite residual$',n)
 
-      res=sqrt(res)
+      if (nid.eq.0) write (6,*) 'res:',res
+      if (nid.eq.0) write (6,*) 'err:',eierr
 
       return
       end

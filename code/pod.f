@@ -62,7 +62,6 @@ c-----------------------------------------------------------------------
                call lap2d(a1,ub(1,i))
                call lap2d(a2,vb(1,i))
                if (ldim.eq.3) call lap2d(a3,wb(1,i))
-               call opcmult(a1,a2,a3,param(2))
                call cint(fd1(1,i),ub(1,i),vb(1,i),wb(1,i))
                call cint(fd3(1,i),a1,a2,a3)
             enddo
@@ -209,6 +208,7 @@ c-----------------------------------------------------------------------
       else if (ips.eq.'HLM') then
          sip=hlmsip(t1,t2)
       else
+         if (nid.eq.0) write (6,*) 'ips: ',ips
          call exitti('did not provide supported inner product space$',1)
       endif
 
@@ -231,6 +231,7 @@ c-----------------------------------------------------------------------
       else if (ips.eq.'HLM') then
          vip=hlmvip(t1,t2,t3,t4,t5,t6)
       else
+         if (nid.eq.0) write (6,*) 'ips: ',ips
          call exitti('did not provide supported inner product space$',1)
       endif
 

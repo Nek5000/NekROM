@@ -18,17 +18,9 @@ c-----------------------------------------------------------------------
       stime=dnekclock()
 
       if (icalld.eq.0) then
-         ttime=time
          rom_time=0.
-         postu_time=0.
-         postt_time=0.
          icalld=1
-         call rzero(num_galu,nb)
-         call rzero(num_galt,nb)
-         anum_galu=0.
-         anum_galt=0.
          call rom_setup
-         time=ttime
       endif
 
       ad_step = istep
@@ -54,12 +46,8 @@ c-----------------------------------------------------------------------
             time=time+dt
             if (ifrom(2)) call rom_step_t
             if (ifrom(1)) call rom_step
-            tttime=dnekclock()
             call postu
-            postu_time=postu_time+dnekclock()-tttime
-            tttime=dnekclock()
             call postt
-            postt_time=postt_time+dnekclock()-tttime
             ad_step=ad_step+1
          enddo
          icalld=0
@@ -72,13 +60,8 @@ c-----------------------------------------------------------------------
       dtime=dnekclock()-stime
       rom_time=rom_time+dtime
 
-      if (ifmult) then
-         if (nio.eq.0) write (6,*) 'romd_time: ',dtime
-      endif
-
-      if (.not.ifmult.or.nsteps.eq.istep) then
-         call final
-      endif
+      if (ifmult.and.nio.eq.0) write (6,*) 'romd_time: ',dtime
+      if (.not.ifmult.or.nsteps.eq.istep) call final
 
       return
       end
@@ -97,13 +80,14 @@ c-----------------------------------------------------------------------
       call nekgsync
       setup_start=dnekclock()
 
+      ttime=time
+
       n=lx1*ly1*lz1*nelt
 
       call opcopy(uic,vic,wic,vx,vy,vz)
       call copy(tic,t,n)
 
       call rom_init_params
-      write (6,*) 'ips0:',ips
       call rom_init_fields
 
       call setgram
@@ -145,6 +129,8 @@ c-----------------------------------------------------------------------
 
       if (ifdumpops) call dump_misc
 
+      time=ttime
+
       call nekgsync
       setup_end=dnekclock()
 
@@ -165,28 +151,45 @@ c-----------------------------------------------------------------------
       call nekgsync
       asnap_time=dnekclock()
 
-      ! TODO uas and tas are not 1,0,0,0
-      call pv2b(uas,uavg,vavg,wavg,ub,vb,wb)
-      call rzero(uvs,nb+1)
+      if (ifread) then
+         if (ifrom(1)) then
+            call read_serial(uas,nb+1,'ops/uas ',t1,nid)
+            call read_serial(uvs,nb+1,'ops/uvs ',t1,nid)
+         endif
+         if (ifrom(2)) then
+            call read_serial(tas,nb+1,'ops/tas ',t1,nid)
+            call read_serial(tvs,nb+1,'ops/tvs ',t1,nid)
+         endif
+      else
+         s=1./real(ns)
 
-      call ps2b(tas,tavg,tb)
-      call rzero(tvs,nb+1)
+         if (ifrom(1)) then
+            call pv2b(uas,uavg,vavg,wavg,ub,vb,wb)
+            call rzero(uvs,nb+1)
+            do j=1,ns
+               do i=0,nb
+                  uvs(i)=uvs(i)+(uk(i,j)-uas(i))**2
+               enddo
+            enddo
+            call cmult(uvs,s,nb+1)
 
-      do j=1,ns
-         do i=0,nb
-            uvs(i)=uvs(i)+(uk(i,j)-uas(i))**2
-            tvs(i)=tvs(i)+(tk(i,j)-tas(i))**2
-         enddo
-      enddo
+            call dump_serial(uas,nb+1,'ops/uas ',nid)
+            call dump_serial(uvs,nb+1,'ops/uvs ',nid)
+         endif
 
-      s=1./real(ns)
-      do i=0,nb
-         uvs(i)=uvs(i)*s
-         tvs(i)=tvs(i)*s
-      enddo
-      if (ifrom(2)) then 
-         call dump_serial(tas,nb+1,'ops/tas ',nid)
-         call dump_serial(tvs,nb+1,'ops/tvs ',nid)
+         if (ifrom(2)) then
+            call ps2b(tas,tavg,tb)
+            call rzero(tvs,nb+1)
+            do j=1,ns
+               do i=0,nb
+                  tvs(i)=tvs(i)+(tk(i,j)-tas(i))**2
+               enddo
+            enddo
+            call cmult(tvs,s,nb+1)
+
+            call dump_serial(tas,nb+1,'ops/tas ',nid)
+            call dump_serial(tvs,nb+1,'ops/tvs ',nid)
+         endif
       endif
 
       call nekgsync
@@ -209,19 +212,22 @@ c-----------------------------------------------------------------------
       ops_time=dnekclock()
 
       jfield=ifield
-      ifield=1
-      call seta(au,au0,'ops/au ')
-      call setb(bu,bu0,'ops/bu ')
-      call setc(cul,icul,'ops/cu ')
-      call setu
+      if (ifrom(1)) then
+         ifield=1
+         call seta(au,au0,'ops/au ')
+         call setb(bu,bu0,'ops/bu ')
+         call setc(cul,icul,'ops/cu ')
+      endif
       if (ifrom(2)) then
          ifield=2
          call seta(at,at0,'ops/at ')
          call setb(bt,bt0,'ops/bt ')
          call setc(ctl,ictl,'ops/ct ')
       endif
-      call setf
       ifield=jfield
+
+      call setu
+      call setf
 
       call nekgsync
       if (nio.eq.0) write (6,*) 'ops_time:',dnekclock()-ops_time
@@ -246,6 +252,9 @@ c-----------------------------------------------------------------------
       ubarrseq=5
       tbarr0=1e-1
       tbarrseq=5
+
+      anum_galu=0.
+      anum_galt=0.
 
       ad_dt = dt
       ad_re = 1/param(2)
@@ -280,6 +289,8 @@ c-----------------------------------------------------------------------
       endif
 
       ifei=nint(param(175)).ne.0
+
+      navg_step=nint(min(1.,param(176)))
 
       ad_qstep=nint(param(180))+ad_iostep*max(1-nint(param(180)),0)
 
@@ -340,9 +351,18 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
       call compute_BDF_coef(ad_alpha,ad_beta)
 
       if (nio.eq.0) then
+         write (6,*) 'rp_nb         ',nb
+         write (6,*) 'rp_lub        ',lub
+         write (6,*) 'rp_lut        ',lut
+         write (6,*) ' '
+         write (6,*) 'rp_ls         ',ls
+         write (6,*) 'rp_lsu        ',lsu
+         write (6,*) 'rp_lst        ',lst
+         write (6,*) ' '
          write (6,*) 'rp_isolve     ',isolve
          write (6,*) 'rp_ips        ',ips
          write (6,*) 'rp_ifavg0     ',ifavg0
+         write (6,*) 'rp_ifsub0     ',ifsub0
          write (6,*) 'rp_ifdumpops  ',ifdumpops
          write (6,*) 'rp_ifread     ',ifread
          write (6,*) 'rp_ad_qstep   ',ad_qstep
@@ -352,6 +372,7 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
          write (6,*) 'rp_iffastc    ',iffastc
          write (6,*) 'rp_iffasth    ',iffasth
          write (6,*) 'rp_ifavisc    ',ifavisc
+         write (6,*) 'rp_ifei       ',ifei      
          write (6,*) ' '
          write (6,*) 'rp_ifforce    ',ifforce
          write (6,*) 'rp_ifsource   ',ifsource
@@ -360,12 +381,14 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
          write (6,*) 'rp_ifdump     ',ifdump
          write (6,*) 'rp_ifvort     ',ifvort
          write (6,*) 'rp_ifcintp    ',ifcintp
+         write (6,*) ' '
          do i=0,ldimt1
             write (6,*) 'rp_ifpod(',i,')   ',ifpod(i)
          enddo
          do i=0,ldimt1
             write (6,*) 'rp_ifrom(',i,')   ',ifrom(i)
          enddo
+         write (6,*) ' '
          write (6,*) 'rp_barr_func   ',barr_func
          write (6,*) 'rp_box_tol     ',box_tol
          write (6,*) 'ubarr0         ',ubarr0
@@ -401,6 +424,9 @@ c-----------------------------------------------------------------------
       call rone(wm1,n)
       call rone(ones,n)
       call rzero(zeros,n)
+
+      call rzero(num_galu,nb)
+      call rzero(num_galt,nb)
 
       ns = ls
 
@@ -439,10 +465,12 @@ c-----------------------------------------------------------------------
 
       if (ifsub0) then
          do i=1,ns
-            call sub2(us0(1,1,i),ub,n)
-            call sub2(us0(1,2,i),vb,n)
-            if (ldim.eq.3) call sub2(us0(1,ldim,i),wb,n)
-            if (ifpod(2)) call sub2(ts0(1,i),tb,n)
+            if (ifrom(1)) then
+               call sub2(us0(1,1,i),ub,n)
+               call sub2(us0(1,2,i),vb,n)
+               if (ldim.eq.3) call sub2(us0(1,ldim,i),wb,n)
+            endif
+            if (ifrom(2)) call sub2(ts0(1,i),tb,n)
          enddo
          call sub2(uavg,ub,n)
          call sub2(vavg,vb,n)
@@ -682,70 +710,82 @@ c-----------------------------------------------------------------------
 
       common /scrsetu/ uu(lt),vv(lt),ww(lt),tt(lt),wk(nb+1)
 
-      logical iftmp
+      logical iftmp,ifexist
 
       if (nio.eq.0) write (6,*) 'inside setu'
 
       n=lx1*ly1*lz1*nelv
 
-      jfield=ifield
-      ifield=1
+      if (ifread) then
+         inquire (file='ops/u0',exist=ifexist)
+         if (ifexist) call read_serial(u,nb+1,'ops/u0 ',wk,nid)
 
-      call opsub2(uic,vic,wic,ub,vb,wb)
-      if (ifrom(1)) then
-         if (ips.eq.'H10') then
-            call h10pv2b(u,uic,vic,wic,ub,vb,wb)
-         else if (ips.eq.'HLM') then
-            call hlmpv2b(u,uic,vic,wic,ub,vb,wb)
-         else
-            call pv2b(u,uic,vic,wic,ub,vb,wb)
-         endif
+         inquire (file='ops/t0',exist=ifexist)
+         if (ifexist) call read_serial(ut,nb+1,'ops/t0 ',wk,nid)
       else
-         call rzero(u,(nb+1)*3)
-         u(0,1)=1.
-         u(0,2)=1.
-         u(0,3)=1.
+         jfield=ifield
+
+         if (ifrom(1)) then
+            ifield=1
+            call opsub2(uic,vic,wic,ub,vb,wb)
+            if (ips.eq.'H10') then
+               call h10pv2b(u,uic,vic,wic,ub,vb,wb)
+            else if (ips.eq.'HLM') then
+               call hlmpv2b(u,uic,vic,wic,ub,vb,wb)
+            else
+               call pv2b(u,uic,vic,wic,ub,vb,wb)
+            endif
+            do i=0,nb
+               if (nio.eq.0) write (6,*) 'ut',ut(i,1)
+            enddo
+            call opadd2(uic,vic,wic,ub,vb,wb)
+         else
+            call rzero(u,(nb+1)*3)
+            u(0,1)=1.
+            u(0,2)=1.
+            u(0,3)=1.
+         endif
+
+         if (ifdumpops) call dump_serial(u,nb+1,'ops/u0 ',nid)
+
+         if (ifrom(2)) then
+            ifield=2
+            call sub2(tic,tb,n)
+            call ps2b(ut,tic,tb)
+            do i=0,nb
+               if (nio.eq.0) write (6,*) 'ut',ut(i,1)
+            enddo
+            call add2(tic,tb,n)
+            if (ifdumpops) call dump_serial(ut,nb+1,'ops/t0 ',nid)
+         endif
+         ifield=jfield
+
+         call reconv(uu,vv,ww,u)
+         call recont(tt,ut)
+
+         iftmp=ifxyo
+         ifxyo=.true.
+         call outpost(uu,vv,ww,pr,tt,'rom')
+
+         ttime=time
+         jstep=istep
+         time=1.
+         istep=1
+         call outpost(uic,vic,wic,pr,tic,'uic')
+         ifxyo=.false.
+         time=2.
+         istep=2
+         call outpost(uu,vv,ww,pr,tt,'uic')
+         call opsub2(uu,vv,ww,uic,vic,wic)
+         call sub2(tt,tic,n)
+         time=3.
+         istep=3
+         call outpost(uu,vv,ww,pr,tt,'uic')
+         time=ttime
+         istep=jstep
+
+         ifxyo=iftmp
       endif
-      call opadd2(uic,vic,wic,ub,vb,wb)
-
-      call sub2(tic,tb,n)
-      if (ifrom(2)) then
-         call ps2b(ut,tic,tb)
-         do i=0,nb
-            if (nio.eq.0) write (6,*) 'ut',ut(i,1)
-         enddo
-      endif
-      call add2(tic,tb,n)
-
-      ! TODO: add ops/u and ops/t to tar file
-c     call read_serial(u,nb+1,'ops/u ',wk,nid)
-c     call read_serial(ut,nb+1,'ops/t ',wk,nid)
-
-      call reconv(uu,vv,ww,u)
-      call recont(tt,ut)
-
-      iftmp=ifxyo
-      ifxyo=.true.
-      call outpost(uu,vv,ww,pr,tt,'rom')
-
-      ttime=time
-      jstep=istep
-      time=1.
-      istep=1
-      call outpost(uic,vic,wic,pr,tic,'uic')
-      time=2.
-      istep=2
-      call outpost(uu,vv,ww,pr,tt,'uic')
-      call opsub2(uu,vv,ww,uic,vic,wic)
-      call sub2(tt,tic,n)
-      time=3.
-      istep=3
-      call outpost(uu,vv,ww,pr,tt,'uic')
-      time=ttime
-      istep=jstep
-      ifield=jfield
-
-      ifxyo=iftmp
 
       if (nio.eq.0) write (6,*) 'exiting setu'
 
@@ -843,15 +883,17 @@ c-----------------------------------------------------------------------
          write (6,*) 'postt_time:  ',postt_time
       endif
 
+      call dump_serial(u,nb+1,'ops/uf ',nid)
+      if (ifrom(2)) then
+         call dump_serial(ut,nb+1,'ops/tf ',nid)
+      endif
+      do i=0,nb
+         t1(i)=u2a(i,i)-ua(i)*ua(i)
+      enddo
+
+      call dump_serial(t1,nb+1,'ops/uv ',nid)
+
       if (ifdumpops) then
-         call dump_serial(u,nb+1,'ops/uf ',nid)
-         if (ifrom(2)) then 
-            call dump_serial(ut,nb+1,'ops/tf ',nid)
-         endif
-         do i=0,nb
-            t1(i)=u2a(i,i)-ua(i)*ua(i)
-         enddo
-         call dump_serial(t1,nb+1,'ops/uv ',nid)
          call dump_serial(uas,nb+1,'ops/uas ',nid)
          call dump_serial(uvs,nb+1,'ops/uvs ',nid)
       endif

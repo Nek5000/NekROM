@@ -1,85 +1,48 @@
 #!/usr/bin/env julia
 
-using Plots
-using LaTeXStrings; pgfplots()
+# Driver Script for Nek5000 pMOR
 
-function sweep!(err,res,ptrain,n)
-    for i in 1:ntrain
-        open("mu","w") do f
-            write(f,"$(ptrain[i])");
+import JSON;
+
+if isfile("config.json")
+    println("pdrive: found config.json ...");
+    conf=JSON.parse(String(read("config.json")));
+
+    mdir   = conf["mdir"];
+    nit    = conf["nit"];
+    ptrain = conf["ptrain"];
+    ntrain = length(ptrain);
+    imu    = haskey(conf, "imu") ? conf["imu"] : 1;
+    if !haskey(conf,"np"); conf["np"]=1; end
+
+    err=fill(0.,(nit,ntrain));
+    res=fill(0.,(nit,ntrain));
+    imus=fill(imu,nit);
+
+    pdloc=mdir*"/bin/pdrive.jl";
+
+    if isfile(pdloc)
+        println("pdrive: found pdrive.jl, loading ...");
+        include(pdloc);
+
+        ifqoi=false;
+        if isfile("qoi.jl"); include("qoi.jl"); ifqoi=true; end
+
+        for it=1:nit
+            global imu
+            println("pdrive: mu*=$imu ...");
+            fom(conf,imu);
+            sweep!(err,res,conf,imu,it);
+            imu=findmax(res[findmin(res[1:it,:],dims=1)[2]])[2][2];
+            if it != nit; imus[it+1]=imu; end
         end
-        run(`nekmpi poisson 1`);
-        res[i,:]=readdlm("res.log");
-        err[i,:]=readdlm("err.log");
+
+        gflog(conf);
+
+        post(ptrain,err,res,imus,ifqoi);
+    else
+        println("pdrive: missing pdrive.jl, exiting ...");
     end
+else
+    println("pdrive: missing conf.json, exiting ...");
 end
-
-base="/Users/kaneko/Developer/MOR/docs/ei/assets/";
-
-ntrain=51;
-ptrain=(0:ntrain-1).*0.1;
-
-rmax=1.e9;
-tol=1.e-7;
-
-ncount=1;
-ind=1;
-
-err=Array{Float64}(undef,ntrain,2);
-res=Array{Float64}(undef,ntrain,2);
-nit=10;
-
-mu=Array{Float64}(undef,nit);
-eres=Array{Float64}(undef,nit);
-eerr=Array{Float64}(undef,nit);
-
-for j in 1:nit
-    global ncount
-    global ind
-    global mu
-    global v
-
-    open("mu","w") do f
-        write(f,"$(ptrain[ind])");
-    end
-
-    tgt="snaps/snap0.f"*lpad("$ncount",5,"0");
-    run(`./mn poisson`);
-    run(`nekmpi poisson 1`); mv("poisson0.f00001",tgt,force=true);
-
-    run(`./rep $ncount`);
-    run(`./mn prom`);
-    sweep!(err,res,ptrain,ntrain);
-
-    t=vcat(err[:,2],res[:,2]);
-    (ymax,_)=findmax(t); ymax=log(ymax)
-    (ymin,_)=findmin(t); ymin=log(ymin);
-    yl=[ymin,ymax+(ymax-ymin)*.2];
-    yl=exp.(yl);
-
-    scatter(err[:,1],err[:,2],label=L"||u-u_g||");
-    scatter!(res[:,1],res[:,2],yscale=:log10,ylim=yl,label=L"\Delta");
-
-    title!("Iteration $ncount");
-    xlabel!(L"\mu");
-    ylabel!("Error");
-
-    savefig(base*"err"*lpad("$ncount",2,"0")*".pdf");
-    ncount=ncount+1;
-
-    (eerr[j],ind)=findmax(err[:,2]);
-    (eres[j],ind)=findmax(res[:,2]);
-    mu[j]=ptrain[ind];
-end
-
-for i=1:nit
-    println("iteration: $i $(eerr[i]) $(mu[i])");
-end
-
-scatter(eerr,yscale=:log10,label=L"||u-u_g||");
-scatter!(eres,yscale=:log10,label=L"\Delta");
-title!("Maximum Error vs. Iteration Number");
-xlabel!("Iteration");
-ylabel!("Max Error");
-
-savefig(base*"iteration.pdf");

@@ -68,8 +68,10 @@ c-----------------------------------------------------------------------
 
          call get_saved_fields(us0,ps,ts0,nsu,nsp,nst,timek,'bas.list ')
          do i=0,nb
-            call copy_sol(ub(1,i),vb(1,i),wb(1,i),pb(1,i),tb(1,i),
-     $   us0(1,1,i+1),us0(1,2,i+1),us0(1,ldim,i+1),ps(1,i+1),ts0(1,i+1))
+            if (ifrom(0)) call copy(pb(1,i),ps(1,i+1),n2)
+            if (ifrom(1)) call opcopy(ub(1,i),vb(1,i),wb(1,i),
+     $                        us0(1,1,i+1),us0(1,2,i+1),us0(1,ldim,i+1))
+            if (ifrom(2)) call copy(tb(1,i),ts0(1,i+1),n)
          enddo
          if (nn.lt.nb) call exitti(
      $   'number of files in bas.list fewer than nb$',nb-nn)
@@ -81,12 +83,20 @@ c-----------------------------------------------------------------------
             call chcopy(fn1(4+len),'0.f',3)
             write (fnum,'(i5.5)') i+1
             call chcopy(fn1(7+len),fnum,5)
+            if (i.eq.0) then
+               inquire (file=fname,exist=ifexist)
+               if (nio.eq.0) write (6,*) 'did not find basis files'
+               if (.not.ifexist) goto 1
+            endif
 
             call restart_filen(fname,11+len)
-            call copy_sol(ub(1,i),vb(1,i),wb(1,i),pb(1,i),tb(1,i),
-     $                    vx,vy,vz,pr,t)
+            if (ifrom(0)) call copy(pb(1,i),pr,n2)
+            if (ifrom(1)) call opcopy(ub(1,i),vb(1,i),wb(1,i),vx,vy,vz)
+            if (ifrom(2)) call copy(tb(1,i),t,n)
          enddo
       endif
+
+    1 continue
 
       call pop_sol(vx,vy,vz,pr,t)
 
