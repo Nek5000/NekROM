@@ -32,10 +32,12 @@ test
 .01
 Z
 
+if [[ $ifcopt == 1 ]]; then
+   sed -i "s/.*p170/   1.00000     p170/" test.rea 
+fi
 ./nek5000 | tee test.log.1
 
 if [[ $ifcopt == 1 ]]; then
-   sed -i "s/.*p170/   1.00000     p170/" test.rea 
    ../../tests/tbox
 else
    ../../tests/tdragx
