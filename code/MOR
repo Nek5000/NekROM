@@ -99,7 +99,7 @@ c     parameters and common blocks for MOR
 
       integer ad_nsteps,ad_iostep,ad_step,ad_qstep
       common /moripar/ ad_nsteps,ad_iostep,ad_step,ad_qstep,inus,
-     $                 navg_start
+     $                 navg_step
 
       common /morivars/ i0,j0,k0,i1,j1,k1,ns,navg,ncloc,npr,npart,isolve
 
