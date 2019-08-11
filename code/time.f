@@ -641,7 +641,7 @@ c-----------------------------------------------------------------------
       enddo
 
       if (ad_step.eq.ad_nsteps) then
-         s=1./real(ad_nsteps-navg_step-1)
+         s=1./real(ad_nsteps-(navg_step-1))
          call cmult(ua,s,nb+1)
          call cmult(u2a,s,(nb+1)**2)
       endif
