@@ -166,25 +166,71 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine cpart(ic1,ic2,jc1,jc2,kc1,kc2,nloc,nb,np,ip)
 
-      icount=1
+      call cpart_helper(npi,npj,npk,np)
 
-      if (np.le.nb) then
-         do i=1,np
-            nk=nb/np+max(min(i-np+nb-(nb/np)*np,1),0)
-            if (ip.eq.i) then
-               ic1=0
-               ic2=nb
-               jc1=0
-               jc2=nb
-               kc1=icount
-               kc2=icount+nk-1
-               nloc=(ic2-ic1+1)*(jc2-jc1+1)*(kc2-kc1+1)
+      l=1
+
+      do i=1,npi
+         if (i.eq.1) then
+            ic=0
+         else
+            ic=ic+ni
+         endif
+         ni=(nb+1)/npi+max(min(i-npi+(nb+1)-((nb+1)/npi)*np,1),0)
+         do j=1,npj
+            if (j.eq.1) then
+               jc=0
+            else
+               jc=jc+nk
             endif
-            icount=icount+nk
+            nj=(nb+1)/npj+max(min(j-npj+(nb+1)-((nb+1)/npj)*np,1),0)
+            do k=1,npk
+               if (k.eq.1) then
+                  kc=1
+               else
+                  kc=kc+nk
+               endif
+               nk=nb/npk+max(min(k-npk+nb-(nb/npk)*np,1),0)
+               if (ip.eq.l) then
+                  ic1=ic
+                  ic2=ic+ni-1
+                  jc1=jc
+                  jc2=jc+nj-1
+                  kc1=kc
+                  kc2=kc+nk-1
+                  nloc=(ic2-ic1+1)*(jc2-jc1+1)*(kc2-kc1+1)
+               endif
+               l=l+1
+            enddo
          enddo
-      else
-         nloc=0
-      endif
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine cpart_helper(ni,nj,nk,np)
+
+      ntmp=np
+
+      nk=ceiling((1.*ntmp)**(1./3.))
+
+      do while ((ntmp/nk)*nk.ne.ntmp)
+         nk=nk+1
+      enddo
+
+      ntmp=ntmp/nk
+
+      nj=ceiling((1.*ntmp)**(1./2.))
+
+      do while ((ntmp/nj)*nj.ne.ntmp)
+         nj=nj+1
+      enddo
+
+      ntmp=ntmp/nj
+
+      ni=ceiling((1.*ntmp)**(1./1.))
+
+      if (ni*nj*nk.ne.np) call exitti('ni*nj*nk != np$',ni*nj*nk)
 
       return
       end

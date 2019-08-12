@@ -473,6 +473,15 @@ c-----------------------------------------------------------------------
          call gop(cu,work,'+  ',n)
       endif
 
+      if (nio.eq.0) then
+         do i=1,n
+            write (6,*) i,cu(i)
+         enddo
+      endif
+
+      call nekgsync
+      call exitt0
+
       evalc_time=evalc_time+dnekclock()-stime
 
       return
@@ -599,6 +608,7 @@ c     call add2s2(rhs,av0,s,nb+1) ! not working...
       enddo
 
       call evalc(tmp1(1),cul,u,nb)
+c     call evalc_legacy(tmp1(1),cul,icul,u,nb)
       call chsign(tmp1(1),nb)
 
       if (ifbuoy) then
