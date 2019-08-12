@@ -520,16 +520,18 @@ c     call cpart(ic1,ic2,jc1,jc2,kc1,kc2,ncloc,nb,np,nid+1) ! new indexing
       if (ifread) then
          call lints(fnlint,fname,128)
          if (nio.eq.0) write (6,*) 'file=',fnlint
-         open (unit=100,file=fnlint)
+         if (nid.eq.0) open (unit=100,file=fnlint)
          do k=0,nb
          do j=0,nb
          do i=1,nb
-            read(100,*) cel
+            cel=0.
+            if (nid.eq.0) read(100,*) cel
+            call glsum(cel,1)
             call setc_local(cl,cel,ic1,ic2,jc1,jc2,kc1,kc2,i,j,k)
          enddo
          enddo
          enddo
-         close (unit=100)
+         if (nid.eq.0) close (unit=100)
       else
          if (.not.ifaxis) then
             do i=0,nb
