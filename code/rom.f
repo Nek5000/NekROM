@@ -216,7 +216,8 @@ c-----------------------------------------------------------------------
          ifield=1
          call seta(au,au0,'ops/au ')
          call setb(bu,bu0,'ops/bu ')
-         call setc(cul,icul,'ops/cu ')
+c        call setc_legacy(cul,icul,'ops/cu ')
+         call setc(cul,'ops/cu ')
       endif
       if (ifrom(2)) then
          ifield=2
@@ -487,7 +488,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine setc_new(cl,fname)
+      subroutine setc(cl,fname)
 
       include 'SIZE'
       include 'TOTAL'
@@ -509,77 +510,62 @@ c-----------------------------------------------------------------------
       call nekgsync
       conv_time=dnekclock()
 
-      call lints(fnlint,fname,128)
+      if (iffastc) call exitti('fastc not supported in setc_new$',nb)
 
-      if (iffastc) then
-         jj=nb
-         ntot=nb*(nb+1)*(nb+2)/2
-      else
-         jj=0
-         ntot=nb*(nb+1)*(nb+1)
-      endif
-
-      ntp=ntot/np
-      mm=ntot-(ntot/np)*np
-
-      l=0
-      mid=0
+      call cpart(kc1,kc2,jc1,jc2,ic1,ic2,ncloc,nb,np,nid+1) ! old indexing
+c     call cpart(ic1,ic2,jc1,jc2,kc1,kc2,ncloc,nb,np,nid+1) ! new indexing
 
       n=lx1*ly1*lz1*nelv
 
-      if (nio.eq.0) write (6,*) 'file=',fnlint
-      if (ifread.and.ifcdrag)
-     $   call read_serial(fd2,(nb+1)**2,'qoi/fd2 ',wk2,nid)
-      if (ifread.and.nid.eq.0) open (unit=12,file=fnlint)
-
-      if (.not.ifread.and..not.ifaxis) then
-         do i=0,nb
-            call set_convect_new(c1v(1,i),c2v(1,i),c3v(1,i),
-     $                           ub(1,i),vb(1,i),wb(1,i))
-            if (ifield.eq.1) then
-               call intp_rstd_all(u1v(1,i),ub(1,i),nelv)
-               call intp_rstd_all(u2v(1,i),vb(1,i),nelv)
-               if (ldim.eq.3) call intp_rstd_all(u3v(1,i),wb(1,i),nelv)
-            else
-               call intp_rstd_all(u1v(1,i),tb(1,i),nelv)
-            endif
-         enddo
-      endif
-
-      ip=1
-      nc=ncpart(ip,np,nb)
-
-      do k=1,nb
+      if (ifread) then
+         call lints(fnlint,fname,128)
+         if (nio.eq.0) write (6,*) 'file=',fnlint
+         open (unit=100,file=fnlint)
+         do k=0,nb
          do j=0,nb
+         do i=1,nb
+            read(100,*) cel
+            call setc_local(cl,cel,ic1,ic2,jc1,jc2,kc1,kc2,i,j,k)
+         enddo
+         enddo
+         enddo
+         close (unit=100)
+      else
+         if (.not.ifaxis) then
             do i=0,nb
-               l=l+1
+               call set_convect_new(c1v(1,i),c2v(1,i),c3v(1,i),
+     $                              ub(1,i),vb(1,i),wb(1,i))
                if (ifield.eq.1) then
-                  call ccu(cux,cuy,cuz,i,j)
+                  call intp_rstd_all(u1v(1,i),ub(1,i),nelv)
+                  call intp_rstd_all(u2v(1,i),vb(1,i),nelv)
+                  if (ldim.eq.3) 
+     $               call intp_rstd_all(u3v(1,i),wb(1,i),nelv)
                else
-                  call cct(cux,i,j)
-               endif
-               if (ifield.eq.1) then
-                  cultmp(l)=op_glsc2_wt(
-     $               ub(1,k),vb(1,k),wb(1,k),cux,cuy,cuz,ones)
-               else
-                  cultmp(l)=glsc2(tb(1,i),cux,n)
-               endif
-
-               if (l.eq.nc) then
-                     call rzero(cultmp,mcloc)
-                  if ((nid+1).eq.ip) then
-                     ncloc=nc
-                     call copy(cl,cultmp,ncloc)
-                     call icopy(icl,icultmp,ncloc*3)
-                  endif
-                  mid=mid+1
-                  l = 0
+                  call intp_rstd_all(u1v(1,i),tb(1,i),nelv)
                endif
             enddo
-         enddo
-      enddo
+         endif
 
-      if (ifread.and.nid.eq.0) close (unit=12)
+         do k=0,nb
+            if (nio.eq.0) write (6,*) 'setc: ',k,'/',nb
+            do j=0,nb
+               if (ifield.eq.1) then
+                  call ccu(cux,cuy,cuz,k,j)
+               else
+                  call cct(cux,k,j)
+               endif
+               do i=1,nb
+                  if (ifield.eq.1) then
+                     cel=op_glsc2_wt(
+     $                  ub(1,i),vb(1,i),wb(1,i),cux,cuy,cuz,ones)
+                  else
+                     cel=glsc2(tb(1,i),cux,n)
+                  endif
+                  call setc_local(cl,cel,ic1,ic2,jc1,jc2,kc1,kc2,i,j,k)
+               enddo
+            enddo
+         enddo
+      endif
 
       call nekgsync
       if (nio.eq.0) write (6,*) 'conv_time: ',dnekclock()-conv_time
@@ -590,7 +576,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine setc(cl,icl,fname)
+      subroutine setc_legacy(cl,icl,fname)
 
       include 'SIZE'
       include 'TOTAL'

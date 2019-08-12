@@ -164,7 +164,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine cpart(ic1,ic2,jc1,jc2,kc1,kc2,nb,np,ip)
+      subroutine cpart(ic1,ic2,jc1,jc2,kc1,kc2,nloc,nb,np,ip)
 
       icount=1
 
@@ -172,28 +172,30 @@ c-----------------------------------------------------------------------
          do i=1,np
             nk=nb/np+max(min(i-np+nb-(nb/np)*np,1),0)
             if (ip.eq.i) then
-               ic1=icount
-               ic2=icount+nk-1
+               ic1=0
+               ic2=nb
                jc1=0
                jc2=nb
-               kc1=0
-               kc2=nb
+               kc1=icount
+               kc2=icount+nk-1
+               nloc=(ic2-ic1+1)*(jc2-jc1+1)*(kc2-kc1+1)
             endif
             icount=icount+nk
          enddo
+      else
+         nloc=0
       endif
 
       return
       end
 c-----------------------------------------------------------------------
-      function ncpart(i,np,nb)
+      subroutine setc_local(cl,cel,ic1,ic2,jc1,jc2,kc1,kc2,ic,jc,kc)
 
-      ncpart=0
+      real cl(ic1:ic2,jc1:jc2,kc1:kc2)
 
-      if (np.le.nb) then
-         nk=nb/np+max(min(i-np+nb-(nb/np)*np,1),0)
-         ncpart=nk*(nb+1)**2
-      endif
+      if (ic.ge.ic1.and.ic.le.ic2 .and.
+     $    jc.ge.jc1.and.jc.le.jc2 .and.
+     $    kc.ge.kc1.and.kc.le.kc2) cl(ic,jc,kc)=cel
 
       return
       end
