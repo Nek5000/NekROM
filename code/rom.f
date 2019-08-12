@@ -216,7 +216,8 @@ c-----------------------------------------------------------------------
          ifield=1
          call seta(au,au0,'ops/au ')
          call setb(bu,bu0,'ops/bu ')
-         call setc(cul,icul,'ops/cu ')
+c        call setc_legacy(cul,icul,'ops/cu ')
+         call setc(cul,'ops/cu ')
       endif
       if (ifrom(2)) then
          ifield=2
@@ -489,7 +490,97 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine setc(cl,icl,fname)
+      subroutine setc(cl,fname)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real cux(lt),cuy(lt),cuz(lt)
+
+      common /scrcwk/ wk(lcloc),wk2(0:lub)
+
+      real cl(lcloc),icl(3,lcloc)
+
+      character*128 fname
+      character*128 fnlint
+
+      if (nio.eq.0) write (6,*) 'inside setc'
+
+      call nekgsync
+      conv_time=dnekclock()
+
+      if (iffastc) call exitti('fastc not supported in setc_new$',nb)
+
+      call cpart(kc1,kc2,jc1,jc2,ic1,ic2,ncloc,nb,np,nid+1) ! old indexing
+c     call cpart(ic1,ic2,jc1,jc2,kc1,kc2,ncloc,nb,np,nid+1) ! new indexing
+
+      n=lx1*ly1*lz1*nelv
+
+      if (ifread) then
+         call lints(fnlint,fname,128)
+         if (nio.eq.0) write (6,*) 'file=',fnlint
+         if (nid.eq.0) open (unit=100,file=fnlint)
+         do k=0,nb
+         do j=0,nb
+         do i=1,nb
+            cel=0.
+            if (nid.eq.0) read(100,*) cel
+            cel=glsum(cel,1)
+            call setc_local(cl,cel,ic1,ic2,jc1,jc2,kc1,kc2,i,j,k)
+         enddo
+         enddo
+         enddo
+         if (nid.eq.0) close (unit=100)
+      else
+         if (.not.ifaxis) then
+            do i=0,nb
+               call set_convect_new(c1v(1,i),c2v(1,i),c3v(1,i),
+     $                              ub(1,i),vb(1,i),wb(1,i))
+               if (ifield.eq.1) then
+                  call intp_rstd_all(u1v(1,i),ub(1,i),nelv)
+                  call intp_rstd_all(u2v(1,i),vb(1,i),nelv)
+                  if (ldim.eq.3) 
+     $               call intp_rstd_all(u3v(1,i),wb(1,i),nelv)
+               else
+                  call intp_rstd_all(u1v(1,i),tb(1,i),nelv)
+               endif
+            enddo
+         endif
+
+         do k=0,nb
+            if (nio.eq.0) write (6,*) 'setc: ',k,'/',nb
+            do j=0,nb
+               if (ifield.eq.1) then
+                  call ccu(cux,cuy,cuz,k,j)
+               else
+                  call cct(cux,k,j)
+               endif
+               do i=1,nb
+                  if (ifield.eq.1) then
+                     cel=op_glsc2_wt(
+     $                  ub(1,i),vb(1,i),wb(1,i),cux,cuy,cuz,ones)
+                  else
+                     cel=glsc2(tb(1,i),cux,n)
+                  endif
+                  call setc_local(cl,cel,ic1,ic2,jc1,jc2,kc1,kc2,i,j,k)
+               enddo
+            enddo
+         enddo
+      endif
+
+      call nekgsync
+      if (nio.eq.0) write (6,*) 'conv_time: ',dnekclock()-conv_time
+      if (nio.eq.0) write (6,*) 'ncloc=',ncloc
+
+      if (nio.eq.0) write (6,*) 'exiting setc'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine setc_legacy(cl,icl,fname)
 
       include 'SIZE'
       include 'TOTAL'
