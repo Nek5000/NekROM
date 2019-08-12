@@ -431,7 +431,54 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine evalc(cu,cl,icl,uu)
+      subroutine evalc(cu,cl,uu,n)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      real cu(n)
+      real uu(0:n)
+      real cl(ic1:ic2,jc1:jc2,kc1:kc2)
+
+      common /scrc/ work(max(lub,ltb))
+
+      integer icalld
+      save    icalld
+      data    icalld /0/
+
+      if (icalld.eq.0) then
+         evalc_time=0.
+         icalld=1
+      endif
+
+      stime=dnekclock()
+
+      if (ifcintp) then
+         call mxm(cintp,n,uu,n+1,cu,1)
+      else
+         if (ncloc.ne.0) then
+            l=1
+
+            call rzero(cu,n)
+
+            do k=kc1,kc2
+            do j=jc1,jc2
+            do i=ic1,ic2
+               cu(i)=cu(i)+cl(i,j,k)*uu(j)*u(k,1)
+            enddo
+            enddo
+            enddo
+         endif
+         call gop(cu,work,'+  ',n)
+      endif
+
+      evalc_time=evalc_time+dnekclock()-stime
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine evalc_legacy(cu,cl,icl,uu)
 
       include 'SIZE'
       include 'TOTAL'
@@ -514,7 +561,7 @@ c     call add2s2(rhs,av0,s,nb+1) ! not working...
          rhs(i)=rhs(i)+s*at0(i,0)
       enddo
 
-      call evalc(tmp(1),ctl,ictl,ut)
+      call evalc(tmp(1),ctl,ut,nb)
 
       call shift3(ctr,tmp(1),nb)
 
@@ -551,7 +598,7 @@ c     call add2s2(rhs,av0,s,nb+1) ! not working...
          rhs(i)=rhs(i)+s*au0(i,0)
       enddo
 
-      call evalc(tmp1(1),cul,icul,u)
+      call evalc(tmp1(1),cul,u,nb)
       call chsign(tmp1(1),nb)
 
       if (ifbuoy) then
