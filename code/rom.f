@@ -526,7 +526,7 @@ c     call cpart(ic1,ic2,jc1,jc2,kc1,kc2,ncloc,nb,np,nid+1) ! new indexing
          do i=1,nb
             cel=0.
             if (nid.eq.0) read(100,*) cel
-            call glsum(cel,1)
+            cel=glsum(cel,1)
             call setc_local(cl,cel,ic1,ic2,jc1,jc2,kc1,kc2,i,j,k)
          enddo
          enddo
