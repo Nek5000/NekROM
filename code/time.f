@@ -473,14 +473,7 @@ c-----------------------------------------------------------------------
          call gop(cu,work,'+  ',n)
       endif
 
-      if (nio.eq.0) then
-         do i=1,n
-            write (6,*) i,cu(i)
-         enddo
-      endif
-
       call nekgsync
-      call exitt0
 
       evalc_time=evalc_time+dnekclock()-stime
 
