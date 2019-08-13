@@ -91,14 +91,14 @@ c-----------------------------------------------------------------------
       call rom_init_fields
 
       call setgram
-      if (ifdumpops) call dump_gram
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') call dump_gram
       call setevec
 
       call setbases
-      if (ifdumpops) call dump_bas
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') call dump_bas
 
       call setops
-      if (ifdumpops) call dump_ops
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') call dump_ops
 
       if (nio.eq.0) write (6,*) 'begin setup for qoi'
 
@@ -127,7 +127,7 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'end range setup'
 
-      if (ifdumpops) call dump_misc
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') call dump_misc
 
       time=ttime
 
@@ -151,7 +151,7 @@ c-----------------------------------------------------------------------
       call nekgsync
       asnap_time=dnekclock()
 
-      if (ifread) then
+      if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
          if (ifrom(1)) then
             call read_serial(uas,nb+1,'ops/uas ',t1,nid)
             call read_serial(uvs,nb+1,'ops/uvs ',t1,nid)
@@ -244,6 +244,8 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
+      real a(1)
+
       if (nio.eq.0) write (6,*) 'inside rom_init_params'
 
       ad_nsteps=nsteps
@@ -280,13 +282,18 @@ c-----------------------------------------------------------------------
       if (nb.gt.ls)
      $   call exitti('nb > ls is undefined configuration$',nb)
 
-      ifdumpops=.false.
-      ifread=.false.
       np173=nint(param(173))
-      if (np173.eq.1) then
-         ifdumpops=.true.
+
+      if (np173.eq.0) then
+         rmode='ALL'
+      else if (np173.eq.1) then
+         rmode='OFF'
       else if (np173.eq.2) then
-         ifread=.true.
+         rmode='ON '
+      else if (np173.eq.2) then
+         rmode='ONB'
+      else
+         call exitti('unsupported param(173), exiting...$',np173)
       endif
 
       ifei=nint(param(175)).ne.0
@@ -330,7 +337,6 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
       ifpod(1)=ifpod(1).or.ifrom(2)
 
       ifvort=.false. ! default to false for now
-      ifdump=((.not.ifheat).or.ifrom(2))
 
       ifforce=param(193).ne.0.
       ifsource=param(194).ne.0.
@@ -364,8 +370,7 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
          write (6,*) 'rp_ips        ',ips
          write (6,*) 'rp_ifavg0     ',ifavg0
          write (6,*) 'rp_ifsub0     ',ifsub0
-         write (6,*) 'rp_ifdumpops  ',ifdumpops
-         write (6,*) 'rp_ifread     ',ifread
+         write (6,*) 'rp_rmode      ',rp_rmode
          write (6,*) 'rp_ad_qstep   ',ad_qstep
          write (6,*) 'rp_ifctke     ',ifctke
          write (6,*) 'rp_ifcdrag    ',ifcdrag
@@ -379,7 +384,6 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
          write (6,*) 'rp_ifsource   ',ifsource
          write (6,*) 'rp_ifbuoy     ',ifbuoy
          write (6,*) 'rp_ifpart     ',ifpart
-         write (6,*) 'rp_ifdump     ',ifdump
          write (6,*) 'rp_ifvort     ',ifvort
          write (6,*) 'rp_ifcintp    ',ifcintp
          write (6,*) ' '
@@ -396,6 +400,11 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
          write (6,*) 'ubarrseq       ',ubarrseq
          write (6,*) 'tbarr0         ',tbarr0
          write (6,*) 'tbarrseq       ',tbarrseq
+      endif
+
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
+         a(1)=nb*1.
+         call dump_serial(a,1,'ops/nb ',nid)
       endif
 
       if (nio.eq.0) write (6,*) 'exiting rom_init_params'
@@ -433,7 +442,7 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'call get_saved_fields'
 
-      if (.not.ifread) then
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
          fname1='file.list '
          nsu=1
          nsp=1
@@ -519,7 +528,7 @@ c     call cpart(ic1,ic2,jc1,jc2,kc1,kc2,ncloc,nb,np,nid+1) ! new indexing
 
       n=lx1*ly1*lz1*nelv
 
-      if (ifread) then
+      if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
          call lints(fnlint,fname,128)
          if (nio.eq.0) write (6,*) 'file=',fnlint
          if (nid.eq.0) open (unit=100,file=fnlint)
@@ -718,7 +727,7 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelt
 
-      if (ifread) then
+      if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
          call read_serial(a0,(nb+1)**2,fname,wk1,nid)
       else
          nio=-1
@@ -762,7 +771,7 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'inside setb'
 
-      if (ifread) then
+      if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
          call read_serial(b0,(nb+1)**2,fname,tab,nid)
       else
          mio=nio
@@ -809,7 +818,7 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelv
 
-      if (ifread) then
+      if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
          inquire (file='ops/u0',exist=ifexist)
          if (ifexist) call read_serial(u,nb+1,'ops/u0 ',wk,nid)
 
@@ -839,7 +848,8 @@ c-----------------------------------------------------------------------
             u(0,3)=1.
          endif
 
-         if (ifdumpops) call dump_serial(u,nb+1,'ops/u0 ',nid)
+         if (rmode.eq.'ALL'.or.rmode.eq.'OFF')
+     $      call dump_serial(u,nb+1,'ops/u0 ',nid)
 
          if (ifrom(2)) then
             ifield=2
@@ -849,7 +859,8 @@ c-----------------------------------------------------------------------
                if (nio.eq.0) write (6,*) 'ut',ut(i,1)
             enddo
             call add2(tic,tb,n)
-            if (ifdumpops) call dump_serial(ut,nb+1,'ops/t0 ',nid)
+            if (rmode.eq.'All'.or.rmode.eq.'OFF')
+     $         call dump_serial(ut,nb+1,'ops/t0 ',nid)
          endif
          ifield=jfield
 
@@ -986,7 +997,7 @@ c-----------------------------------------------------------------------
 
       call dump_serial(t1,nb+1,'ops/uv ',nid)
 
-      if (ifdumpops) then
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
          call dump_serial(uas,nb+1,'ops/uas ',nid)
          call dump_serial(uvs,nb+1,'ops/uvs ',nid)
       endif

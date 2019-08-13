@@ -154,7 +154,7 @@ c     call snorm(tb)
 
 c      call asnap
 
-      if (ifdumpops) call dump_all
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') call dump_all
 
       ad_step = istep
       jfield=ifield

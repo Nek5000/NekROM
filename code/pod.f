@@ -19,9 +19,9 @@ c-----------------------------------------------------------------------
 
       ifrecon=.true.
 
-      if (ifread) then
+      if (rmode.eq.'ONB') then
          call loadbases
-      else
+      else if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
          n=lx1*ly1*lz1*nelt
 
          do i=1,nb
@@ -56,7 +56,7 @@ c-----------------------------------------------------------------------
       endif
 
       if (ifcdrag) then
-         if (ifread) then
+         if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
             call read_serial(fd1,nb+1,'qoi/fd1 ',wk,nid)
             call read_serial(fd3,nb+1,'qoi/fd3 ',wk,nid)
          else
@@ -88,7 +88,7 @@ c-----------------------------------------------------------------------
 
       real ck(0:nb,ls),ux(lt,ls),uub(lt,0:nb)
 
-      if (.not.ifread) then
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
          nio=-1
          do i=1,ns
             call ps2b(ck(0,i),ux(1,i),uub)
@@ -112,7 +112,7 @@ c-----------------------------------------------------------------------
       real ck(0:nb,ls),usnap(lt,ldim,ls),
      $     uub(lt,0:nb),vvb(lt,0:nb),wwb(lt,0:nb)
 
-      if (.not.ifread) then
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
          nio=-1
          do i=1,ns
             call pv2b(ck(0,i),usnap(1,1,i),usnap(1,2,i),usnap(1,ldim,i),
@@ -375,7 +375,7 @@ c-----------------------------------------------------------------------
       call nekgsync
       sg_start=dnekclock()
 
-      if (.not.ifread) then
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
          jfield=ifield
          ifield=1
          if (ifpod(1)) call gengram(ug(1,1,1),us0,ns,ldim)
@@ -396,7 +396,7 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
 
-      if (.not.ifread) then
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
          do i=0,ldimt1
             if (ifpod(i)) call
      $         genevec(evec(1,1,i),eval(1,i),ug(1,1,i),i)

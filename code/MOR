@@ -131,13 +131,13 @@ c     parameters and common blocks for MOR
       common /eiresu/ xi_u(lx1*ly1*lz1*lelm,ldim,lres),theta_u(lres),
      $                sigma_u(lres,lres)
 
-      logical ifl2,ifvort,ifdump,ifstep,ifpart,ifavg0,
-     $        ifdumpops,ifcdrag,ifrms,ifread,ifforce,ifpod(0:ldimt1),
+      logical ifl2,ifvort,ifstep,ifpart,ifavg0,
+     $        ifcdrag,ifrms,ifread,ifforce,ifpod(0:ldimt1),
      $        ifbuoy,ifrom(0:ldimt1),ifcintp,iffastc,ifcnuss,ifctke,
      $        iffasth,ifavisc,ifsource,ifei,ifsub0,ifrecon
 
-      common /morflags/ ifl2,ifvort,ifdump,ifstep,ifavg0,
-     $                  ifdumpops,ifcdrag,ifrms,ifread,ifforce,ifpod,
+      common /morflags/ ifl2,ifvort,ifstep,ifavg0,
+     $                  ifcdrag,ifrms,ifread,ifforce,ifpod,
      $                  ifbuoy,ifrom,ifcintp,iffastc,ifcnuss,ifctke,
      $                  iffasth,ifavisc,ifsource,ifei,ifsub0,ifrecon
 
@@ -163,7 +163,7 @@ c     parameters and common blocks for MOR
 
       common /mortest/ ul2(lub),uh10(lub)
 
-      character*3 ips, eqn
-      common /morchar/ ips,eqn
+      character*3 ips,eqn,rmode
+      common /morchar/ ips,eqn,rmode
 
       common /morid/ ones(lx1*ly1*lz1*lelm),zeros(lx1*ly1*lz1*lelm)

@@ -83,12 +83,10 @@ c-----------------------------------------------------------------------
             call chcopy(fn1(4+len),'0.f',3)
             write (fnum,'(i5.5)') i+1
             call chcopy(fn1(7+len),fnum,5)
-            if (i.eq.0) then
-               inquire (file=fname,exist=ifexist)
-               if (nio.eq.0) write (6,*) 'did not find basis files'
-               ifrecon=.false.
-               if (.not.ifexist) goto 1
-            endif
+
+            inquire (file=fname,exist=ifexist)
+            if (.not.ifexist)
+     $        call exitti('missing basis file, exiting...$',i+1)
 
             call restart_filen(fname,11+len)
             if (ifrom(0)) call copy(pb(1,i),pr,n2)
