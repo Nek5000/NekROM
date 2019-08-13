@@ -100,8 +100,6 @@ c-----------------------------------------------------------------------
 
       call setqoi
       call setmisc
-      call setei
-
       if (ifei) call set_sigma
 
       if (nio.eq.0) write (6,*) 'end range setup'
