@@ -8,7 +8,6 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       real u0(lt,3)
-      common /scrk2/ a1(lt),a2(lt),a3(lt),wk(nb+1)
 
       if (nio.eq.0) write (6,*) 'inside setbases'
 

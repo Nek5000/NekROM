@@ -218,6 +218,10 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
 
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /scrk2/ a1(lt),a2(lt),a3(lt),wk(lub+1)
+
       if (nio.eq.0) write (6,*) 'begin setup for qoi'
 
       call cvdrag_setup
