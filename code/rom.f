@@ -216,6 +216,7 @@ c-----------------------------------------------------------------------
       subroutine setqoi
 
       include 'SIZE'
+      include 'MOR'
 
       if (nio.eq.0) write (6,*) 'begin setup for qoi'
 
