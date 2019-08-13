@@ -565,11 +565,12 @@ c     call cpart(ic1,ic2,jc1,jc2,kc1,kc2,ncloc,nb,np,nid+1) ! new indexing
 
       n=lx1*ly1*lz1*nelv
 
+      call lints(fnlint,fname,128)
+      if (nio.eq.0) write (6,*) 'setc file:',fnlint
+
       if (nid.eq.0) open (unit=100,file=fnlint)
 
       if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
-         call lints(fnlint,fname,128)
-         if (nio.eq.0) write (6,*) 'file=',fnlint
          do k=0,mb
          do j=0,mb
          do i=1,mb
