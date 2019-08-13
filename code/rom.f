@@ -609,7 +609,7 @@ c     call cpart(ic1,ic2,jc1,jc2,kc1,kc2,ncloc,nb,np,nid+1) ! new indexing
                      cel=glsc2(tb(1,i),cux,n)
                   endif
                   call setc_local(cl,cel,ic1,ic2,jc1,jc2,kc1,kc2,i,j,k)
-                  write (100,*) cel
+                  if (nid.eq.0) write (100,*) cel
                enddo
             enddo
          enddo
