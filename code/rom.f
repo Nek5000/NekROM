@@ -95,6 +95,8 @@ c-----------------------------------------------------------------------
 
       call setbases
       call setops
+      call setu
+      call setf
 
       call setqoi
       call setmisc
@@ -193,7 +195,6 @@ c-----------------------------------------------------------------------
          ifield=1
          call seta(au,au0,'ops/au ')
          call setb(bu,bu0,'ops/bu ')
-c        call setc_legacy(cul,icul,'ops/cu ')
          call setc(cul,'ops/cu ')
       endif
       if (ifrom(2)) then
@@ -203,9 +204,6 @@ c        call setc_legacy(cul,icul,'ops/cu ')
          call setc(ctl,ictl,'ops/ct ')
       endif
       ifield=jfield
-
-      call setu
-      call setf
 
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF') call dump_ops
 
