@@ -227,6 +227,21 @@ c-----------------------------------------------------------------------
       call cnuss_setup
       call cubar_setup
 
+      if (ifcdrag) then
+         if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
+            call read_serial(fd1,nb+1,'qoi/fd1 ',wk,nid)
+            call read_serial(fd3,nb+1,'qoi/fd3 ',wk,nid)
+         else
+            do i=0,nb
+               call lap2d(a1,ub(1,i))
+               call lap2d(a2,vb(1,i))
+               if (ldim.eq.3) call lap2d(a3,wb(1,i))
+               call cint(fd1(1,i),ub(1,i),vb(1,i),wb(1,i))
+               call cint(fd3(1,i),a1,a2,a3)
+            enddo
+         endif
+      endif
+
       if (nio.eq.0) write (6,*) 'end setup for qoi'
 
       return
