@@ -70,6 +70,8 @@ c-----------------------------------------------------------------------
          endif
       endif
 
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') call dump_bas
+
       call nekgsync
       if (nio.eq.0) write (6,*) 'bas_time:',dnekclock()-bas_time
 
@@ -89,11 +91,12 @@ c-----------------------------------------------------------------------
       real ck(0:nb,ls),ux(lt,ls),uub(lt,0:nb)
 
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
-         nio=-1
          do i=1,ns
+            if (nio.eq.0) write (6,*) 'ps2k: ',i,'/',ns
+            nio=-1
             call ps2b(ck(0,i),ux(1,i),uub)
+            nio=nid
          enddo
-         nio=nid
       else
          ! implement read here
       endif
@@ -113,12 +116,13 @@ c-----------------------------------------------------------------------
      $     uub(lt,0:nb),vvb(lt,0:nb),wwb(lt,0:nb)
 
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
-         nio=-1
          do i=1,ns
+            if (nio.eq.0) write (6,*) 'pv2k: ',i,'/',ns
+            nio=-1
             call pv2b(ck(0,i),usnap(1,1,i),usnap(1,2,i),usnap(1,ldim,i),
      $           uub,vvb,wwb)
+            nio=nid
          enddo
-         nio=nid
       else
          ! implement read here
       endif
@@ -384,8 +388,9 @@ c-----------------------------------------------------------------------
          ifield=jfield
       endif
 
-      call nekgsync
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') call dump_gram
 
+      call nekgsync
       if (nio.eq.0) write (6,*) 'gram_time:',dnekclock()-sg_start
 
       return

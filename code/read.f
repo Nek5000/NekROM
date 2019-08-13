@@ -32,6 +32,46 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine read_mat_serial(a,n1,n2,fname,m1,m2,wk,nid)
+
+      character*128 fname
+      character*128 fntrunc
+
+      real a(n1,n2),wk(n1*n2)
+
+      if (nid.eq.0) then
+         call blank(fntrunc,128)
+         len=ltruncr(fname,128)
+         call chcopy(fntrunc,fname,len)
+         call read_mat_serial_helper(a,n1,n2,fntrunc,m1,m2)
+      else
+         call rzero(a,n1*n2)
+      endif
+
+      call gop(a,wk,'+  ',n1*n2)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine read_mat_serial_helper(a,n1,n2,fname,m1,m2)
+
+      real a(n1,n2)
+      character*128 fname
+
+      open (unit=12,file=fname)
+
+      do j=1,m2
+      do i=1,m1
+         read (12,*) b
+         if (j.le.n2.and.i.le.n1) a(i,j)=b
+      enddo
+      enddo
+
+      close (unit=12)
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine loadbases
 
       include 'SIZE'

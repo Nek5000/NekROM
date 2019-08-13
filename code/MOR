@@ -99,7 +99,7 @@ c     parameters and common blocks for MOR
 
       integer ad_nsteps,ad_iostep,ad_step,ad_qstep
       common /moripar/ ad_nsteps,ad_iostep,ad_step,ad_qstep,inus,
-     $                 navg_step
+     $                 navg_step,mb
 
       common /morivars/ i0,j0,k0,i1,j1,k1,ns,navg,ncloc,npr,npart,
      $                  isolve,ic1,ic2,jc1,jc2,kc1,kc2
@@ -155,7 +155,7 @@ c     parameters and common blocks for MOR
       real num_galu,num_galt,
      $     anum_galu,anum_galt
       common /morcount/ ucopt_count,tcopt_count,
-     $                  num_galu(nb),num_galt(nb),
+     $                  num_galu(lub),num_galt(lub),
      $                  anum_galu,anum_galt
 
       real mtke

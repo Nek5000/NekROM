@@ -84,44 +84,21 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelt
 
-      call opcopy(uic,vic,wic,vx,vy,vz)
-      call copy(tic,t,n)
+      if (ifrom(1)) call opcopy(uic,vic,wic,vx,vy,vz)
+      if (ifrom(2)) call copy(tic,t,n)
 
       call rom_init_params
       call rom_init_fields
 
       call setgram
-      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') call dump_gram
       call setevec
 
       call setbases
-      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') call dump_bas
-
       call setops
-      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') call dump_ops
 
-      if (nio.eq.0) write (6,*) 'begin setup for qoi'
-
-      call cvdrag_setup
-      call cnuss_setup
-      call cubar_setup
-
-      if (nio.eq.0) write (6,*) 'end setup for qoi'
-
-      if (nio.eq.0) write (6,*) 'begin range setup'
-
-      call nekgsync
-      proj_time=dnekclock()
-
-      if (ifpod(1)) call pv2k(uk,us0,ub,vb,wb)
-      if (ifpod(2)) call ps2k(tk,ts0,tb)
-
-      call nekgsync
-      if (nio.eq.0) write (6,*) 'proj_time:',dnekclock()-proj_time
-
-      call asnap
-
-      call hyperpar
+      call setqoi
+      call setmisc
+      call setei
 
       if (ifei) call set_sigma
 
@@ -230,10 +207,51 @@ c        call setc_legacy(cul,icul,'ops/cu ')
       call setu
       call setf
 
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') call dump_ops
+
       call nekgsync
       if (nio.eq.0) write (6,*) 'ops_time:',dnekclock()-ops_time
 
       if (nio.eq.0) write (6,*) 'exiting setops'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine setqoi
+
+      include 'SIZE'
+
+      if (nio.eq.0) write (6,*) 'begin setup for qoi'
+
+      call cvdrag_setup
+      call cnuss_setup
+      call cubar_setup
+
+      if (nio.eq.0) write (6,*) 'end setup for qoi'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine setmisc
+
+      include 'SIZE'
+      include 'MOR'
+
+      if (nio.eq.0) write (6,*) 'begin range setup'
+
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
+         call nekgsync
+         proj_time=dnekclock()
+
+         if (ifpod(1)) call pv2k(uk,us0,ub,vb,wb)
+         if (ifpod(2)) call ps2k(tk,ts0,tb)
+
+         call nekgsync
+         if (nio.eq.0) write (6,*) 'proj_time:',dnekclock()-proj_time
+      endif
+
+      call asnap
+      call hyperpar
 
       return
       end
@@ -244,7 +262,7 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
-      real a(1)
+      real a(1),b(1)
 
       if (nio.eq.0) write (6,*) 'inside rom_init_params'
 
@@ -357,6 +375,14 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
 
       call compute_BDF_coef(ad_alpha,ad_beta)
 
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
+         a(1)=nb*1.
+         call dump_serial(a,1,'ops/nb ',nid)
+      else
+         call read_serial(a,1,'ops/nb ',b,nid)
+         mb=a(1)
+      endif
+
       if (nio.eq.0) then
          write (6,*) 'rp_nb         ',nb
          write (6,*) 'rp_lub        ',lub
@@ -400,11 +426,6 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
          write (6,*) 'ubarrseq       ',ubarrseq
          write (6,*) 'tbarr0         ',tbarr0
          write (6,*) 'tbarrseq       ',tbarrseq
-      endif
-
-      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
-         a(1)=nb*1.
-         call dump_serial(a,1,'ops/nb ',nid)
       endif
 
       if (nio.eq.0) write (6,*) 'exiting rom_init_params'
@@ -603,25 +624,26 @@ c-----------------------------------------------------------------------
 
       character*128 fname
 
-      if (nio.eq.0) write (6,*) 'inside seta'
-
       n=lx1*ly1*lz1*nelt
 
       if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
-         call read_serial(a0,(nb+1)**2,fname,wk1,nid)
+         if (nio.eq.0) write (6,*) 'reading a...'
+         call read_mat_serial(a0,nb,nb,fname,mb,mb,wk1,nid)
       else
-         nio=-1
-         do j=0,nb ! Form the A matrix for basis function
-         do i=0,nb
-            if (ifield.eq.1) then
-               a0(i,j)=h10vip(ub(1,i),vb(1,i),wb(1,i),
-     $                        ub(1,j),vb(1,j),wb(1,j))
-            else
-               a0(i,j)=h10sip(tb(1,i),tb(1,j))
-            endif
+         if (nio.eq.0) write (6,*) 'forming a...'
+         do j=0,nb
+            if (nio.eq.0) write (6,*) 'seta: ',j,'/',nb
+            nio=-1
+            do i=0,nb
+               if (ifield.eq.1) then
+                  a0(i,j)=h10vip(ub(1,i),vb(1,i),wb(1,i),
+     $                           ub(1,j),vb(1,j),wb(1,j))
+               else
+                  a0(i,j)=h10sip(tb(1,i),tb(1,j))
+               endif
+            enddo
+            nio=nid
          enddo
-         enddo
-         nio=nid
       endif
 
       do j=1,nb
@@ -629,8 +651,6 @@ c-----------------------------------------------------------------------
          a(i,j)=a0(i,j)
       enddo
       enddo
-
-      if (nio.eq.0) write (6,*) 'exiting seta'
 
       return
       end
@@ -643,7 +663,7 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /scrread/ tab((nb+1)**2)
+      common /scrread/ tab((lub+1)**2)
 
       real b(nb,nb),b0(0:nb,0:nb)
 
@@ -652,21 +672,23 @@ c-----------------------------------------------------------------------
       if (nio.eq.0) write (6,*) 'inside setb'
 
       if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
-         call read_serial(b0,(nb+1)**2,fname,tab,nid)
+         if (nio.eq.0) write (6,*) 'reading b...'
+         call read_mat_serial(b0,nb+1,nb+1,fname,mb+1,mb+1,tab,nid)
       else
-         mio=nio
-         nio=-1
+         if (nio.eq.0) write (6,*) 'forming b...'
          do j=0,nb
-         do i=0,nb
-            if (ifield.eq.1) then
-               b0(i,j)=wl2vip(ub(1,i),vb(1,i),wb(1,i),
-     $                        ub(1,j),vb(1,j),wb(1,j))
-            else
-               b0(i,j)=wl2sip(tb(1,i),tb(1,j))
-            endif
+            if (nio.eq.0) write (6,*) 'setb: ',j,'/',nb
+            nio=-1
+            do i=0,nb
+               if (ifield.eq.1) then
+                  b0(i,j)=wl2vip(ub(1,i),vb(1,i),wb(1,i),
+     $                           ub(1,j),vb(1,j),wb(1,j))
+               else
+                  b0(i,j)=wl2sip(tb(1,i),tb(1,j))
+               endif
+            enddo
+            nio=nid
          enddo
-         enddo
-         nio=mio
       endif
 
       do j=1,nb
@@ -674,8 +696,6 @@ c-----------------------------------------------------------------------
          b(i,j)=b0(i,j)
       enddo
       enddo
-
-      if (nio.eq.0) write (6,*) 'exiting setb'
 
       return
       end
