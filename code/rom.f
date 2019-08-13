@@ -562,13 +562,14 @@ c     call cpart(ic1,ic2,jc1,jc2,kc1,kc2,ncloc,nb,np,nid+1) ! new indexing
 
       n=lx1*ly1*lz1*nelv
 
+      if (nid.eq.0) open (unit=100,file=fnlint)
+
       if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
          call lints(fnlint,fname,128)
          if (nio.eq.0) write (6,*) 'file=',fnlint
-         if (nid.eq.0) open (unit=100,file=fnlint)
-         do k=0,nb
-         do j=0,nb
-         do i=1,nb
+         do k=0,mb
+         do j=0,mb
+         do i=1,mb
             cel=0.
             if (nid.eq.0) read(100,*) cel
             cel=glsum(cel,1)
@@ -576,7 +577,6 @@ c     call cpart(ic1,ic2,jc1,jc2,kc1,kc2,ncloc,nb,np,nid+1) ! new indexing
          enddo
          enddo
          enddo
-         if (nid.eq.0) close (unit=100)
       else
          if (.not.ifaxis) then
             do i=0,nb
@@ -609,10 +609,13 @@ c     call cpart(ic1,ic2,jc1,jc2,kc1,kc2,ncloc,nb,np,nid+1) ! new indexing
                      cel=glsc2(tb(1,i),cux,n)
                   endif
                   call setc_local(cl,cel,ic1,ic2,jc1,jc2,kc1,kc2,i,j,k)
+                  write (100,*) cel
                enddo
             enddo
          enddo
       endif
+
+      if (nid.eq.0) close (unit=100)
 
       call nekgsync
       if (nio.eq.0) write (6,*) 'conv_time: ',dnekclock()-conv_time
