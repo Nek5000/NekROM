@@ -95,8 +95,7 @@ c     enddo
             endif
          endif
 
-         ifdump=.true.
-         if (ifdump) then
+         if (rmode.eq.'ALL'.or.rmode.eq.'ONB') then
             idump=ad_step/ad_iostep
             call recon(vx,vy,vz,u)
 
@@ -105,7 +104,6 @@ c     enddo
             call comp_vort3(vort,work1,work2,t1,t2,t3)
             ifto = .true. ! turn on temp in fld file
             call outpost(vx,vy,vz,pr,vort,'rom')
-            if (nio.eq.0) write (6,*) 'inside ifdump'
          endif
       endif
 
@@ -132,7 +130,7 @@ c-----------------------------------------------------------------------
       call setu
 c     call setops
 
-      if (ifdumpops) call dump_all
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') call dump_all
 
 c     call qoisetup
 

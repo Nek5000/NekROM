@@ -189,7 +189,7 @@ c        call cubar
             endif
          endif
 
-         if (ifdump.and.ifrecon) then
+         if (rmode.ne.'ON ') then
             idump=ad_step/ad_iostep
             call reconv(vx,vy,vz,u)
             call opcopy(t1,t2,t3,vx,vy,vz)

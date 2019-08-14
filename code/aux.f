@@ -526,7 +526,7 @@ c-----------------------------------------------------------------------
 
       n  = lx1*ly1*lz1*nelt
       if (ifpod(1)) then
-         if (ifread) then
+         if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
             call read_serial(umin,nb,'ops/umin ',wk,nid)
             call read_serial(umax,nb,'ops/umax ',wk,nid)
          else
@@ -554,14 +554,14 @@ c-----------------------------------------------------------------------
                write (6,*) i,udis(i)
             enddo
          endif
-         if (.not.ifread) then
+         if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
             call dump_serial(umin,nb,'ops/umin ',nid)
             call dump_serial(umax,nb,'ops/umax ',nid)
          endif
       endif   
 
       if (ifpod(2)) then
-         if (ifread) then
+         if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
             call read_serial(tmin,nb,'ops/tmin ',wk,nid)
             call read_serial(tmax,nb,'ops/tmax ',wk,nid)
          else
@@ -589,7 +589,7 @@ c-----------------------------------------------------------------------
             enddo
          endif
 
-         if (.not.ifread) then
+         if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
             call dump_serial(tmin,nb,'ops/tmin ',nid)
             call dump_serial(tmax,nb,'ops/tmax ',nid)
          endif

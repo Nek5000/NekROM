@@ -94,7 +94,8 @@ c-----------------------------------------------------------------------
      $                                c1v(1,i),c2v(1,i),c3v(1,i),.true.)
       endif
 
-      if (ifcdrag.and.ifield.eq.1.and..not.ifread) then
+      if (ifcdrag.and.ifield.eq.1 .and.
+     $   (rmode.eq.'ALL'.or.rmode.eq.'OFF')) then
          call opcopy(wk4,wk5,wk6,cu1,cu2,cu3)
          call opbinv1(wk1,wk2,wk3,wk4,wk5,wk6,1.)
          call cint(fd2(1,j,i),wk1,wk2,wk3)

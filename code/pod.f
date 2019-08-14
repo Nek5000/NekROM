@@ -8,7 +8,6 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       real u0(lt,3)
-      common /scrk2/ a1(lt),a2(lt),a3(lt),wk(nb+1)
 
       if (nio.eq.0) write (6,*) 'inside setbases'
 
@@ -19,9 +18,9 @@ c-----------------------------------------------------------------------
 
       ifrecon=.true.
 
-      if (ifread) then
+      if (rmode.eq.'ONB') then
          call loadbases
-      else
+      else if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
          n=lx1*ly1*lz1*nelt
 
          do i=1,nb
@@ -55,20 +54,7 @@ c-----------------------------------------------------------------------
          endif
       endif
 
-      if (ifcdrag) then
-         if (ifread) then
-            call read_serial(fd1,nb+1,'qoi/fd1 ',wk,nid)
-            call read_serial(fd3,nb+1,'qoi/fd3 ',wk,nid)
-         else
-            do i=0,nb
-               call lap2d(a1,ub(1,i))
-               call lap2d(a2,vb(1,i))
-               if (ldim.eq.3) call lap2d(a3,wb(1,i))
-               call cint(fd1(1,i),ub(1,i),vb(1,i),wb(1,i))
-               call cint(fd3(1,i),a1,a2,a3)
-            enddo
-         endif
-      endif
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') call dump_bas
 
       call nekgsync
       if (nio.eq.0) write (6,*) 'bas_time:',dnekclock()-bas_time
@@ -88,12 +74,13 @@ c-----------------------------------------------------------------------
 
       real ck(0:nb,ls),ux(lt,ls),uub(lt,0:nb)
 
-      if (.not.ifread) then
-         nio=-1
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
          do i=1,ns
+            if (nio.eq.0) write (6,*) 'ps2k: ',i,'/',ns
+            nio=-1
             call ps2b(ck(0,i),ux(1,i),uub)
+            nio=nid
          enddo
-         nio=nid
       else
          ! implement read here
       endif
@@ -112,13 +99,14 @@ c-----------------------------------------------------------------------
       real ck(0:nb,ls),usnap(lt,ldim,ls),
      $     uub(lt,0:nb),vvb(lt,0:nb),wwb(lt,0:nb)
 
-      if (.not.ifread) then
-         nio=-1
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
          do i=1,ns
+            if (nio.eq.0) write (6,*) 'pv2k: ',i,'/',ns
+            nio=-1
             call pv2b(ck(0,i),usnap(1,1,i),usnap(1,2,i),usnap(1,ldim,i),
      $           uub,vvb,wwb)
+            nio=nid
          enddo
-         nio=nid
       else
          ! implement read here
       endif
@@ -375,7 +363,7 @@ c-----------------------------------------------------------------------
       call nekgsync
       sg_start=dnekclock()
 
-      if (.not.ifread) then
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
          jfield=ifield
          ifield=1
          if (ifpod(1)) call gengram(ug(1,1,1),us0,ns,ldim)
@@ -384,8 +372,9 @@ c-----------------------------------------------------------------------
          ifield=jfield
       endif
 
-      call nekgsync
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') call dump_gram
 
+      call nekgsync
       if (nio.eq.0) write (6,*) 'gram_time:',dnekclock()-sg_start
 
       return
@@ -396,7 +385,7 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
 
-      if (.not.ifread) then
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
          do i=0,ldimt1
             if (ifpod(i)) call
      $         genevec(evec(1,1,i),eval(1,i),ug(1,1,i),i)

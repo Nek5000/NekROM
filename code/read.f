@@ -32,6 +32,46 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine read_mat_serial(a,n1,n2,fname,m1,m2,wk,nid)
+
+      character*128 fname
+      character*128 fntrunc
+
+      real a(n1,n2),wk(n1*n2)
+
+      if (nid.eq.0) then
+         call blank(fntrunc,128)
+         len=ltruncr(fname,128)
+         call chcopy(fntrunc,fname,len)
+         call read_mat_serial_helper(a,n1,n2,fntrunc,m1,m2)
+      else
+         call rzero(a,n1*n2)
+      endif
+
+      call gop(a,wk,'+  ',n1*n2)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine read_mat_serial_helper(a,n1,n2,fname,m1,m2)
+
+      real a(n1,n2)
+      character*128 fname
+
+      open (unit=12,file=fname)
+
+      do j=1,m2
+      do i=1,m1
+         read (12,*) b
+         if (j.le.n2.and.i.le.n1) a(i,j)=b
+      enddo
+      enddo
+
+      close (unit=12)
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine loadbases
 
       include 'SIZE'
@@ -83,12 +123,10 @@ c-----------------------------------------------------------------------
             call chcopy(fn1(4+len),'0.f',3)
             write (fnum,'(i5.5)') i+1
             call chcopy(fn1(7+len),fnum,5)
-            if (i.eq.0) then
-               inquire (file=fname,exist=ifexist)
-               if (nio.eq.0) write (6,*) 'did not find basis files'
-               ifrecon=.false.
-               if (.not.ifexist) goto 1
-            endif
+
+            inquire (file=fname,exist=ifexist)
+            if (.not.ifexist)
+     $        call exitti('missing basis file, exiting...$',i+1)
 
             call restart_filen(fname,11+len)
             if (ifrom(0)) call copy(pb(1,i),pr,n2)
