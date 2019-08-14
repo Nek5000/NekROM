@@ -174,7 +174,7 @@
    0.00000     p170 MOR: 0 -> std., 1 -> copt., 2 -> selective copt.
    0.00000     p171 MOR: 0 -> L2 POD, else -> H10 POD
    1.00000     p172 MOR: 0 -> mode 0 = IC, else -> mode 0 = average
-   0.00000     p173 MOR: 0 -> all, 1 -> offline, 2 -> online, 3 -> online + rec.
+   0.00000     p173 MOR: (0,1,2,3) -> ('ALL','OFF','ON ','ONB')
    0.00000     p174 MOR: < 0 -> temp, == 0 -> vel, > 0 -> vel + temp
    0.00000     p175 MOR: !0 = -> error indicator
    0.00000     p176 MOR: initial step number of averaging
