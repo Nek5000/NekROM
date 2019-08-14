@@ -321,7 +321,7 @@ c-----------------------------------------------------------------------
          rmode='OFF'
       else if (np173.eq.2) then
          rmode='ON '
-      else if (np173.eq.2) then
+      else if (np173.eq.3) then
          rmode='ONB'
       else
          call exitti('unsupported param(173), exiting...$',np173)
