@@ -740,8 +740,6 @@ c              if (nio.eq.0) write (6,*) l,mcloc,'mcloc'
       enddo
 
       if (ifread.and.nid.eq.0) close (unit=12)
-=======
->>>>>>> cleanup
 
       call nekgsync
       if (nio.eq.0) write (6,*) 'conv_time: ',dnekclock()-conv_time
