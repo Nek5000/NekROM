@@ -49,7 +49,7 @@ c-----------------------------------------------------------------------
       nmax=iglmax(iwk,1)
 
       iwk(1)=nid
-      ipmax=iglmax(iwk,1)
+      ipmax=iglmax(iwk,0)
 
       do ip=0,ipmax
          if (nid.eq.ip) then
