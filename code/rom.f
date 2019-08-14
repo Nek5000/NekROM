@@ -84,9 +84,6 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelt
 
-      if (ifrom(1)) call opcopy(uic,vic,wic,vx,vy,vz)
-      if (ifrom(2)) call copy(tic,t,n)
-
       call rom_init_params
       call rom_init_fields
 
@@ -474,6 +471,9 @@ c-----------------------------------------------------------------------
 
       call rzero(num_galu,nb)
       call rzero(num_galt,nb)
+
+      if (ifrom(1)) call opcopy(uic,vic,wic,vx,vy,vz)
+      if (ifrom(2)) call copy(tic,t,n)
 
       ns = ls
 
