@@ -619,7 +619,6 @@ c     call cpart(ic1,ic2,jc1,jc2,kc1,kc2,ncloc,nb,np,nid+1) ! new indexing
       endif
 
       if (nid.eq.0) close (unit=100)
-<<<<<<< HEAD
 
       call nekgsync
       if (nio.eq.0) write (6,*) 'conv_time: ',dnekclock()-conv_time
