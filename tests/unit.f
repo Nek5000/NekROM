@@ -61,7 +61,7 @@ c-----------------------------------------------------------------------
       include 'INPUT'
       include 'MOR'
 
-      common /scrtest/ wk(nb+1)
+      common /scrtest/ wk(lb+1)
 
       logical iflag
       real u0(0:nb)
@@ -105,7 +105,7 @@ c-----------------------------------------------------------------------
       include 'INPUT'
       include 'MOR'
 
-      common /scrtest/ wk(nb+1,nb+1)
+      common /scrtest/ wk(lb+1,lb+1)
 
       logical iflag
 
@@ -183,7 +183,7 @@ c-----------------------------------------------------------------------
       include 'INPUT'
       include 'MOR'
 
-      common /scrtest/ wk(nb+1,nb+1)
+      common /scrtest/ wk(lb+1,lb+1)
 
       logical iflag
 
@@ -261,7 +261,7 @@ c-----------------------------------------------------------------------
       include 'INPUT'
       include 'MOR'
 
-      common /scrtest/ wk(nb+1,nb+1,nb+1)
+      common /scrtest/ wk(lb+1,lb+1,lb+1)
 
       logical iflag
 

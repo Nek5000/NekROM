@@ -129,7 +129,7 @@ c-----------------------------------------------------------------------
       include 'MOR'
       include 'TSTEP'
 
-      common /ctkea/ cdiff(0:nb)
+      common /ctkea/ cdiff(0:lb)
 
       parameter (lt=lx1*ly1*lz1*lelt)
 

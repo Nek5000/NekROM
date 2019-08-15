@@ -7,11 +7,11 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /ctrack/ tlast,tdiff,tke,cmax(0:nb),cmin(0:nb),cavg(0:nb),
-     $                cvar(0:nb)
-      common /strack/ smax(0:nb),smin(0:nb),savg(0:nb),svar(0:nb)
+      common /ctrack/ tlast,tdiff,tke,cmax(0:lub),cmin(0:lub),
+     $                cavg(0:lub),cvar(0:lub)
+      common /strack/ smax(0:lub),smin(0:lub),savg(0:lub),svar(0:lub)
 
-      common /scrm1/ rt1(0:nb),rt2(0:nb),rt3(0:nb)
+      common /scrm1/ rt1(0:lub),rt2(0:lub),rt3(0:lub)
 
       character (len=72) fmt1
       character (len=72) fmt2
@@ -85,7 +85,7 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       common /scrana/ t1(lt),t2(lt),t3(lt)
-      common /ctrack/ cmax(0:nb), cmin(0:nb)
+      common /ctrack/ cmax(0:lub), cmin(0:lub)
 
       integer icalld
       save    icalld
@@ -165,9 +165,9 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       common /scrana/ t1(lt),t2(lt),t3(lt)
-      common /scrss/ utmp(0:nb)
+      common /scrss/ utmp(0:lub)
 
-      real savg(0:nb), smax(0:nb), smin(0:nb), svar(0:nb)
+      real savg(0:lub), smax(0:lub), smin(0:lub), svar(0:lub)
 
       character (len=72) fmt1
       character (len=72) fmt2
@@ -266,7 +266,7 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       common /scrana/ t1(lt),t2(lt),t3(lt)
-      common /ctrack/ cmax(0:nb), cmin(0:nb)
+      common /ctrack/ cmax(0:lb), cmin(0:lb)
 
       character (len=72) fmt1
       character (len=72) fmt2
@@ -379,7 +379,7 @@ c     This subroutine computes the sample mean and the sample variance
       include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
-      common /ctrack/ cavg(0:nb),cvar(0:nb)
+      common /ctrack/ cavg(0:lb),cvar(0:lb)
 
       real coef(0:nb) 
 
@@ -444,7 +444,7 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       common /scrana/ t1(lt),t2(lt),t3(lt),t4(lt)
-      common /ctrack/ cmax(0:nb), cmin(0:nb)
+      common /ctrack/ cmax(0:lb), cmin(0:lb)
 
       integer icalld
       save    icalld

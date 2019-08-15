@@ -5,7 +5,7 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
-      real rhs(0:nb),rhstmp(0:nb)
+      real rhs(0:lb),rhstmp(0:lb)
       logical ifdebug
       integer chekbc
 
@@ -229,7 +229,7 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real rhs(0:nb),rhstmp(0:nb)
+      real rhs(0:lb),rhstmp(0:lb)
       logical ifdebug
       integer chekbc
 
@@ -496,7 +496,7 @@ c-----------------------------------------------------------------------
       common /scrc/ work(lx1*ly1*lz1*lelt)
 
       real cl(lub,0:lub,0:lub)
-      real uu(0:nb)
+      real uu(0:lb)
       integer icl(3,lcloc)
 
       if (icalld.eq.0) then
@@ -547,7 +547,7 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
 
-      common /scrrhs/ tmp(0:nb)
+      common /scrrhs/ tmp(0:lb)
 
       real rhs(nb)
 
@@ -584,7 +584,7 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
 
-      common /scrrhs/ tmp1(0:nb),tmp2(0:nb)
+      common /scrrhs/ tmp1(0:lb),tmp2(0:lb)
 
       real rhs(nb)
 

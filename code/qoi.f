@@ -255,8 +255,8 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /cnus1/ tbn(0:nb,0:nb),tbd(0:nb),tsa(0:nb)
-      common /cnus2/ qwall(0:nb)
+      common /cnus1/ tbn(0:lb,0:lb),tbd(0:lb),tsa(0:lb)
+      common /cnus2/ qwall(0:lb)
       common /scrk0/ tx(lt),ty(lt),tz(lt)
 
       if (inus.eq.1) then
@@ -510,8 +510,8 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
-      common /cnus1/ tbn(0:nb,0:nb),tbd(0:nb),tsa(0:nb)
-      common /cnus2/ qwall(0:nb)
+      common /cnus1/ tbn(0:lb,0:lb),tbd(0:lb),tsa(0:lb)
+      common /cnus2/ qwall(0:lb)
       common /nusvars/ diam
 
       parameter (lt=lx1*ly1*lz1*lelt)
@@ -653,7 +653,7 @@ c-----------------------------------------------------------------------
       include 'MASS'
       include 'MOR'
 
-      common /morubar/ uu(0:nb),vv(0:nb),ww(0:nb)
+      common /morubar/ uu(0:lb),vv(0:lb),ww(0:lb)
 
       n=lx1*ly1*lz1*nelv
 
@@ -673,7 +673,7 @@ c-----------------------------------------------------------------------
       include 'TSTEP'
       include 'MOR'
 
-      common /morubar/ uu(0:nb),vv(0:nb),ww(0:nb)
+      common /morubar/ uu(0:lb),vv(0:lb),ww(0:lb)
 
       n=lx1*ly1*lz1*nelv
 

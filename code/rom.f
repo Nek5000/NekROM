@@ -122,7 +122,7 @@ c-----------------------------------------------------------------------
       include 'MOR'
       include 'AVG'
 
-      common /scrasnap/ t1(0:nb)
+      common /scrasnap/ t1(0:lub)
 
       call nekgsync
       asnap_time=dnekclock()
@@ -280,6 +280,8 @@ c-----------------------------------------------------------------------
       real a(1),b(1)
 
       if (nio.eq.0) write (6,*) 'inside rom_init_params'
+
+      nb=lb
 
       ad_nsteps=nsteps
       ad_iostep=iostep
@@ -851,7 +853,7 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /scrsetu/ uu(lt),vv(lt),ww(lt),tt(lt),wk(nb+1)
+      common /scrsetu/ uu(lt),vv(lt),ww(lt),tt(lt),wk(lb+1)
 
       logical iftmp,ifexist
 
