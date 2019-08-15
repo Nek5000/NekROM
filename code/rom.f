@@ -768,7 +768,7 @@ c-----------------------------------------------------------------------
 
       if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
          if (nio.eq.0) write (6,*) 'reading a...'
-         call read_mat_serial(a0,nb,nb,fname,mb,mb,wk1,nid)
+         call read_mat_serial(a0,nb+1,nb+1,fname,mb+1,mb+1,wk1,nid)
       else
          if (nio.eq.0) write (6,*) 'forming a...'
          do j=0,nb
