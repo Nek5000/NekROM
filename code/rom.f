@@ -479,8 +479,6 @@ c-----------------------------------------------------------------------
 
       ns = ls
 
-      if (nio.eq.0) write (6,*) 'call get_saved_fields'
-
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
          fname1='file.list '
          nsu=1
@@ -489,6 +487,7 @@ c-----------------------------------------------------------------------
          if (ifrom(0)) nsp=ls
          if (ifrom(1)) nsu=ls
          if (ifrom(2)) nst=ls
+
          call get_saved_fields(us0,ps,ts0,nsu,nsp,nst,timek,fname1)
 
          fname1='avg.list'
