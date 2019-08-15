@@ -29,6 +29,7 @@ c-----------------------------------------------------------------------
 
       ifmult=.not.ifrom(2).and.ifheat
 
+      if (rmode.ne.'OFF') then
       if (ifmult) then
          if (ifflow) call exitti(
      $   'error: running rom_update with ifflow = .true.$',nelv)
@@ -51,6 +52,7 @@ c-----------------------------------------------------------------------
             ad_step=ad_step+1
          enddo
          icalld=0
+      endif
       endif
 
       if (ifei) call cres
