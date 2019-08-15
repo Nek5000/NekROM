@@ -411,7 +411,7 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
          write (6,*) 'rp_ips        ',ips
          write (6,*) 'rp_ifavg0     ',ifavg0
          write (6,*) 'rp_ifsub0     ',ifsub0
-         write (6,*) 'rp_rmode      ',rp_rmode
+         write (6,*) 'rp_rmode      ',rmode
          write (6,*) 'rp_ad_qstep   ',ad_qstep
          write (6,*) 'rp_ifctke     ',ifctke
          write (6,*) 'rp_ifcdrag    ',ifcdrag
