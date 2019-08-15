@@ -229,8 +229,8 @@ c-----------------------------------------------------------------------
 
       if (ifcdrag) then
          if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
-            call read_serial(fd1,nb+1,'qoi/fd1 ',wk,nid)
-            call read_serial(fd3,nb+1,'qoi/fd3 ',wk,nid)
+            call read_serial(fd1,ldim*(nb+1),'qoi/fd1 ',wk,nid)
+            call read_serial(fd3,ldim*(nb+1),'qoi/fd3 ',wk,nid)
          else
             do i=0,nb
                call lap2d(a1,ub(1,i))
