@@ -571,7 +571,7 @@ c     call cpart(ic1,ic2,jc1,jc2,kc1,kc2,ncloc,nb,np,nid+1) ! new indexing
       if (nio.eq.0) write (6,*) 'setc file:',fnlint
 
       if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
-         do k=0,mb
+         do k=0,nb
          do j=0,mb
          do i=1,mb
             cel=0.
@@ -768,7 +768,7 @@ c-----------------------------------------------------------------------
 
       if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
          if (nio.eq.0) write (6,*) 'reading a...'
-         call read_mat_serial(a0,nb+1,nb+1,fname,mb+1,mb+1,wk1,nid)
+         call read_mat_serial(a0,nb+1,nb+1,fname,mb+1,nb+1,wk1,nid)
       else
          if (nio.eq.0) write (6,*) 'forming a...'
          do j=0,nb
@@ -813,7 +813,7 @@ c-----------------------------------------------------------------------
 
       if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
          if (nio.eq.0) write (6,*) 'reading b...'
-         call read_mat_serial(b0,nb+1,nb+1,fname,mb+1,mb+1,tab,nid)
+         call read_mat_serial(b0,nb+1,nb+1,fname,mb+1,nb+1,tab,nid)
       else
          if (nio.eq.0) write (6,*) 'forming b...'
          do j=0,nb
