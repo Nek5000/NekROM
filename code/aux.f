@@ -898,8 +898,13 @@ c-----------------------------------------------------------------------
 
       real ux(lt),uy(lt),uz(lt)
 
+      logical iftmp
+
       common /scrdump2/ ux1(lt),uy1(lt),uz1(lt),tt(lt),wk(lt)
       common /testb/ ux2(lt),uy2(lt),uz2(lt)
+
+      iftmp=ifxyo
+      ifxyo=.true.
 
       if (ifrom(1)) then
          call reconv(ux1,uy1,uz1,ua)
@@ -931,6 +936,8 @@ c-----------------------------------------------------------------------
          enddo
          call outpost(ux1,uy1,uz1,pr,tt,'tmn')
       endif
+
+      ifxyo=iftmp
 
       return
       end
