@@ -511,21 +511,21 @@ c-----------------------------------------------------------------------
             call outpost(vwms,wums,uvms,prms,trms,'tmn')
          endif
          ifxyo=iftmp
-      endif
 
-      if (ifsub0) then
-         do i=1,ns
-            if (ifrom(1)) then
-               call sub2(us0(1,1,i),ub,n)
-               call sub2(us0(1,2,i),vb,n)
-               if (ldim.eq.3) call sub2(us0(1,ldim,i),wb,n)
-            endif
-            if (ifrom(2)) call sub2(ts0(1,i),tb,n)
-         enddo
-         call sub2(uavg,ub,n)
-         call sub2(vavg,vb,n)
-         if (ldim.eq.3) call sub2(wavg,wb,n)
-         if (ifpod(2)) call sub2(tavg,tb,n)
+         if (ifsub0) then
+            do i=1,ns
+               if (ifrom(1)) then
+                  call sub2(us0(1,1,i),ub,n)
+                  call sub2(us0(1,2,i),vb,n)
+                  if (ldim.eq.3) call sub2(us0(1,ldim,i),wb,n)
+               endif
+               if (ifrom(2)) call sub2(ts0(1,i),tb,n)
+            enddo
+            call sub2(uavg,ub,n)
+            call sub2(vavg,vb,n)
+            if (ldim.eq.3) call sub2(wavg,wb,n)
+            if (ifpod(2)) call sub2(tavg,tb,n)
+         endif
       endif
 
       if (ifbuoy) call set_ra
