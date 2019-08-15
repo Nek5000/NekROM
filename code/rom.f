@@ -396,6 +396,7 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
       else
          call read_serial(a,1,'ops/nb ',b,nid)
          mb=a(1)
+         if (mb.lt.nb) call exitti('mb less than nb, exiting...$',mb)
       endif
 
       if (nio.eq.0) then
