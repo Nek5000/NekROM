@@ -171,10 +171,10 @@
    0.00000     p167
    0.00000     p168
    0.00000     p169
-   0.00000     p170 MOR: 0 -> standard solver, 1 -> w only copt, 2 -> with copt + standard solver 
+   0.00000     p170 MOR: 0 -> std., 1 -> copt., 2 -> selective copt.
    0.00000     p171 MOR: 0 -> L2 POD, else -> H10 POD
    1.00000     p172 MOR: 0 -> mode 0 = IC, else -> mode 0 = average
-   1.00000     p173 MOR: 0 -> gen ops, 1 -> dump ops, 2 -> read ops
+   0.00000     p173 MOR: (0,1,2,3) -> ('ALL','OFF','ON ','ONB')
    0.00000     p174 MOR: < 0 -> temp, == 0 -> vel, > 0 -> vel + temp
    0.00000     p175 MOR: !0 = -> error indicator
    0.00000     p176 MOR: initial step number of averaging

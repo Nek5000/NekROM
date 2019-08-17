@@ -51,7 +51,7 @@ c     parameters and common blocks for MOR
 
       common /mormsk/ dmask(lx1,ly1,lz1,lelm,lmsk+1)
 
-      parameter (lcglo=lub*(lub+1)*(lub+1))
+      parameter (lcglo=2*lub*(lub+1)*(lub+1))
       parameter (lcloc=lcglo/lpmin+1)
 
       common /morvops/ au0(0:lub,0:lub),bu0(0:lub,0:lub),
@@ -99,9 +99,10 @@ c     parameters and common blocks for MOR
 
       integer ad_nsteps,ad_iostep,ad_step,ad_qstep
       common /moripar/ ad_nsteps,ad_iostep,ad_step,ad_qstep,inus,
-     $                 navg_start
+     $                 navg_step,mb
 
-      common /morivars/ i0,j0,k0,i1,j1,k1,ns,navg,ncloc,npr,npart,isolve
+      common /morivars/ i0,j0,k0,i1,j1,k1,ns,navg,ncloc,npr,npart,
+     $                  isolve,ic1,ic2,jc1,jc2,kc1,kc2
 
       integer ipiv
       common /morlu/ fluv(lub,lub),flut(lub,lub)
@@ -130,15 +131,15 @@ c     parameters and common blocks for MOR
       common /eiresu/ xi_u(lx1*ly1*lz1*lelm,ldim,lres),theta_u(lres),
      $                sigma_u(lres,lres)
 
-      logical ifl2,ifvort,ifdump,ifstep,ifpart,ifavg0,
-     $        ifdumpops,ifcdrag,ifrms,ifread,ifforce,ifpod(0:ldimt1),
+      logical ifl2,ifvort,ifstep,ifpart,ifavg0,
+     $        ifcdrag,ifrms,ifread,ifforce,ifpod(0:ldimt1),
      $        ifbuoy,ifrom(0:ldimt1),ifcintp,iffastc,ifcnuss,ifctke,
-     $        iffasth,ifavisc,ifsource,ifei,ifsub0
+     $        iffasth,ifavisc,ifsource,ifei,ifsub0,ifrecon
 
-      common /morflags/ ifl2,ifvort,ifdump,ifstep,ifavg0,
-     $                  ifdumpops,ifcdrag,ifrms,ifread,ifforce,ifpod,
+      common /morflags/ ifl2,ifvort,ifstep,ifavg0,
+     $                  ifcdrag,ifrms,ifread,ifforce,ifpod,
      $                  ifbuoy,ifrom,ifcintp,iffastc,ifcnuss,ifctke,
-     $                  iffasth,ifavisc,ifsource,ifei,ifsub0
+     $                  iffasth,ifavisc,ifsource,ifei,ifsub0,ifrecon
 
       real last_time,misc_time,lu_time,
      $     copt_time,quasi_time,lnsrch_time,
@@ -154,7 +155,7 @@ c     parameters and common blocks for MOR
       real num_galu,num_galt,
      $     anum_galu,anum_galt
       common /morcount/ ucopt_count,tcopt_count,
-     $                  num_galu(nb),num_galt(nb),
+     $                  num_galu(lub),num_galt(lub),
      $                  anum_galu,anum_galt
 
       real mtke
@@ -162,7 +163,7 @@ c     parameters and common blocks for MOR
 
       common /mortest/ ul2(lub),uh10(lub)
 
-      character*3 ips, eqn
-      common /morchar/ ips,eqn
+      character*3 ips,eqn,rmode
+      common /morchar/ ips,eqn,rmode
 
       common /morid/ ones(lx1*ly1*lz1*lelm),zeros(lx1*ly1*lz1*lelm)

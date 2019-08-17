@@ -378,7 +378,7 @@ c-----------------------------------------------------------------------
       if (nres.gt.lres) call exitti('nres > lres$',nres)
       if (nres.le.0) call exitti('nres <= 0$',nres)
 
-      if (ifread) then
+      if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
          call read_serial(sigtmp,nres*nres,'ops/sigma ',sigma,nid)
          l=1
          do j=1,nres

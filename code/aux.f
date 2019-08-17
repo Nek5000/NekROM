@@ -64,25 +64,20 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real v1(lt),v2(lt),v3(lt)
       real ux(lt),uy(lt),uz(lt)
 
       n=lx1*ly1*lz1*nelv
 
-      call opzero(v1,v2,v3)
-
-      call outpost(v1,v2,v3,v3,v3,'ttt')
+      call opzero(ux,uy,uz)
 
       do j=0,nb
-      do i=0,nb
-         call col3(ubt,ub(1,i),ub(1,j),n)
-         call col3(vbt,vb(1,i),vb(1,j),n)
-         if (ldim.eq.3) call col3(wbt,wb(1,i),wb(1,j),n)
-         call opadds(v1,v2,v3,ubt,vbt,wbt,u2a(i,j),n,2)
+         if (nio.eq.0) write (6,*) 'reconu_rms:',j,'/',nb
+         do i=0,nb
+            call admcol3(ux,ub(1,i),ub(1,j),u2a(i,j),n)
+            call admcol3(uy,vb(1,i),vb(1,j),u2a(i,j),n)
+            if (ldim.eq.3) call admcol3(uz,wb(1,i),wb(1,j),u2a(i,j),n)
+         enddo
       enddo
-      enddo
-
-      call opcopy(ux,uy,uz,v1,v2,v3)
 
       return
       end
@@ -531,7 +526,7 @@ c-----------------------------------------------------------------------
 
       n  = lx1*ly1*lz1*nelt
       if (ifpod(1)) then
-         if (ifread) then
+         if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
             call read_serial(umin,nb,'ops/umin ',wk,nid)
             call read_serial(umax,nb,'ops/umax ',wk,nid)
          else
@@ -559,14 +554,14 @@ c-----------------------------------------------------------------------
                write (6,*) i,udis(i)
             enddo
          endif
-         if (.not.ifread) then
+         if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
             call dump_serial(umin,nb,'ops/umin ',nid)
             call dump_serial(umax,nb,'ops/umax ',nid)
          endif
       endif   
 
       if (ifpod(2)) then
-         if (ifread) then
+         if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
             call read_serial(tmin,nb,'ops/tmin ',wk,nid)
             call read_serial(tmax,nb,'ops/tmax ',wk,nid)
          else
@@ -594,7 +589,7 @@ c-----------------------------------------------------------------------
             enddo
          endif
 
-         if (.not.ifread) then
+         if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
             call dump_serial(tmin,nb,'ops/tmin ',nid)
             call dump_serial(tmax,nb,'ops/tmax ',nid)
          endif
@@ -903,17 +898,30 @@ c-----------------------------------------------------------------------
 
       real ux(lt),uy(lt),uz(lt)
 
+      logical iftmp
+
       common /scrdump2/ ux1(lt),uy1(lt),uz1(lt),tt(lt),wk(lt)
       common /testb/ ux2(lt),uy2(lt),uz2(lt)
 
+      iftmp=ifxyo
+      ifxyo=.true.
+
       if (ifrom(1)) then
-         call reconv(ux2,uy2,uz2,ua)
+         call reconv(ux1,uy1,uz1,ua)
          if (ifrom(2)) call recont(tt,uta)
-         call outpost(ux2,uy2,uz2,pr,tt,'avg')
+         call outpost(ux1,uy1,uz1,pr,tt,'avg')
 
          call reconu_rms(ux2,uy2,uz2,u2a)
          if (ifrom(2)) call recont_rms(tt)
          call outpost(ux2,uy2,uz2,pr,tt,'rms')
+
+         call opcol2(ux1,uy1,uz1,ux1,uy1,uz1)
+         call opsub2(ux2,uy2,uz2,ux1,uy1,uz1)
+         do i=1,lx1*ly1*lz1*nelv
+            wk(i)=.5*(ux2(i)+uy2(i)+uz2(i))
+         enddo
+
+         call outpost(ux2,uy2,uz2,pr,wk,'tke')
       endif
 
       if (ifrom(1).and.ifrom(2)) then
@@ -928,6 +936,8 @@ c-----------------------------------------------------------------------
          enddo
          call outpost(ux1,uy1,uz1,pr,tt,'tmn')
       endif
+
+      ifxyo=iftmp
 
       return
       end
@@ -1284,3 +1294,4 @@ c-----------------------------------------------------------------------
 
       return
       end
+c-----------------------------------------------------------------------

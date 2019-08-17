@@ -94,7 +94,8 @@ c-----------------------------------------------------------------------
      $                                c1v(1,i),c2v(1,i),c3v(1,i),.true.)
       endif
 
-      if (ifcdrag.and.ifield.eq.1.and..not.ifread) then
+      if (ifcdrag.and.ifield.eq.1 .and.
+     $   (rmode.eq.'ALL'.or.rmode.eq.'OFF')) then
          call opcopy(wk4,wk5,wk6,cu1,cu2,cu3)
          call opbinv1(wk1,wk2,wk3,wk4,wk5,wk6,1.)
          call cint(fd2(1,j,i),wk1,wk2,wk3)
@@ -160,6 +161,88 @@ c-----------------------------------------------------------------------
       do i=1,nel
          call intp_rstd(uf(1,i),u(1,i),lx1,lxd,if3d,0) ! 0 --> forward
       enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine cpart(ic1,ic2,jc1,jc2,kc1,kc2,nloc,nb,np,ip)
+
+      call cpart_helper(npi,npj,npk,np)
+
+      l=1
+
+      do i=1,npi
+         if (i.eq.1) then
+            ic=0
+         else
+            ic=ic+ni
+         endif
+         ni=(nb+1)/npi+max(min(i-npi+(nb+1)-((nb+1)/npi)*np,1),0)
+         do j=1,npj
+            if (j.eq.1) then
+               jc=0
+            else
+               jc=jc+nk
+            endif
+            nj=(nb+1)/npj+max(min(j-npj+(nb+1)-((nb+1)/npj)*np,1),0)
+            do k=1,npk
+               if (k.eq.1) then
+                  kc=1
+               else
+                  kc=kc+nk
+               endif
+               nk=nb/npk+max(min(k-npk+nb-(nb/npk)*np,1),0)
+               if (ip.eq.l) then
+                  ic1=ic
+                  ic2=ic+ni-1
+                  jc1=jc
+                  jc2=jc+nj-1
+                  kc1=kc
+                  kc2=kc+nk-1
+                  nloc=(ic2-ic1+1)*(jc2-jc1+1)*(kc2-kc1+1)
+               endif
+               l=l+1
+            enddo
+         enddo
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine cpart_helper(ni,nj,nk,np)
+
+      ntmp=np
+
+      nk=ceiling((1.*ntmp)**(1./3.))
+
+      do while ((ntmp/nk)*nk.ne.ntmp)
+         nk=nk+1
+      enddo
+
+      ntmp=ntmp/nk
+
+      nj=ceiling((1.*ntmp)**(1./2.))
+
+      do while ((ntmp/nj)*nj.ne.ntmp)
+         nj=nj+1
+      enddo
+
+      ntmp=ntmp/nj
+
+      ni=ceiling((1.*ntmp)**(1./1.))
+
+      if (ni*nj*nk.ne.np) call exitti('ni*nj*nk != np$',ni*nj*nk)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine setc_local(cl,cel,ic1,ic2,jc1,jc2,kc1,kc2,ic,jc,kc)
+
+      real cl(ic1:ic2,jc1:jc2,kc1:kc2)
+
+      if (ic.ge.ic1.and.ic.le.ic2 .and.
+     $    jc.ge.jc1.and.jc.le.jc2 .and.
+     $    kc.ge.kc1.and.kc.le.kc2) cl(ic,jc,kc)=cel
 
       return
       end

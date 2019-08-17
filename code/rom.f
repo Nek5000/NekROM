@@ -29,6 +29,7 @@ c-----------------------------------------------------------------------
 
       ifmult=.not.ifrom(2).and.ifheat
 
+      if (rmode.ne.'OFF') then
       if (ifmult) then
          if (ifflow) call exitti(
      $   'error: running rom_update with ifflow = .true.$',nelv)
@@ -51,6 +52,7 @@ c-----------------------------------------------------------------------
             ad_step=ad_step+1
          enddo
          icalld=0
+      endif
       endif
 
       if (ifei) call cres
@@ -84,50 +86,24 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelt
 
-      call opcopy(uic,vic,wic,vx,vy,vz)
-      call copy(tic,t,n)
-
       call rom_init_params
       call rom_init_fields
 
       call setgram
-      if (ifdumpops) call dump_gram
       call setevec
 
       call setbases
-      if (ifdumpops) call dump_bas
-
       call setops
-      if (ifdumpops) call dump_ops
+      call setu
+      call setf
 
-      if (nio.eq.0) write (6,*) 'begin setup for qoi'
-
-      call cvdrag_setup
-      call cnuss_setup
-      call cubar_setup
-
-      if (nio.eq.0) write (6,*) 'end setup for qoi'
-
-      if (nio.eq.0) write (6,*) 'begin range setup'
-
-      call nekgsync
-      proj_time=dnekclock()
-
-      if (ifpod(1)) call pv2k(uk,us0,ub,vb,wb)
-      if (ifpod(2)) call ps2k(tk,ts0,tb)
-
-      call nekgsync
-      if (nio.eq.0) write (6,*) 'proj_time:',dnekclock()-proj_time
-
-      call asnap
-
-      call hyperpar
-
+      call setqoi
+      call setmisc
       if (ifei) call set_sigma
 
       if (nio.eq.0) write (6,*) 'end range setup'
 
-      if (ifdumpops) call dump_misc
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') call dump_misc
 
       time=ttime
 
@@ -151,7 +127,7 @@ c-----------------------------------------------------------------------
       call nekgsync
       asnap_time=dnekclock()
 
-      if (ifread) then
+      if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
          if (ifrom(1)) then
             call read_serial(uas,nb+1,'ops/uas ',t1,nid)
             call read_serial(uvs,nb+1,'ops/uvs ',t1,nid)
@@ -216,7 +192,7 @@ c-----------------------------------------------------------------------
          ifield=1
          call seta(au,au0,'ops/au ')
          call setb(bu,bu0,'ops/bu ')
-         call setc(cul,icul,'ops/cu ')
+         call setc(cul,'ops/cu ')
       endif
       if (ifrom(2)) then
          ifield=2
@@ -226,8 +202,7 @@ c-----------------------------------------------------------------------
       endif
       ifield=jfield
 
-      call setu
-      call setf
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') call dump_ops
 
       call nekgsync
       if (nio.eq.0) write (6,*) 'ops_time:',dnekclock()-ops_time
@@ -237,11 +212,72 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine setqoi
+
+      include 'SIZE'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /scrk2/ a1(lt),a2(lt),a3(lt),wk(lub+1)
+
+      if (nio.eq.0) write (6,*) 'begin setup for qoi'
+
+      call cvdrag_setup
+      call cnuss_setup
+      call cubar_setup
+
+      if (ifcdrag) then
+         if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
+            call read_serial(fd1,ldim*(nb+1),'qoi/fd1 ',wk,nid)
+            call read_serial(fd3,ldim*(nb+1),'qoi/fd3 ',wk,nid)
+         else
+            do i=0,nb
+               call lap2d(a1,ub(1,i))
+               call lap2d(a2,vb(1,i))
+               if (ldim.eq.3) call lap2d(a3,wb(1,i))
+               call cint(fd1(1,i),ub(1,i),vb(1,i),wb(1,i))
+               call cint(fd3(1,i),a1,a2,a3)
+            enddo
+         endif
+      endif
+
+      if (nio.eq.0) write (6,*) 'end setup for qoi'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine setmisc
+
+      include 'SIZE'
+      include 'MOR'
+
+      if (nio.eq.0) write (6,*) 'begin range setup'
+
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
+         call nekgsync
+         proj_time=dnekclock()
+
+         if (ifpod(1)) call pv2k(uk,us0,ub,vb,wb)
+         if (ifpod(2)) call ps2k(tk,ts0,tb)
+
+         call nekgsync
+         if (nio.eq.0) write (6,*) 'proj_time:',dnekclock()-proj_time
+      endif
+
+      call asnap
+      call hyperpar
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine rom_init_params
 
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
+
+      real a(1),b(1)
 
       if (nio.eq.0) write (6,*) 'inside rom_init_params'
 
@@ -279,18 +315,23 @@ c-----------------------------------------------------------------------
       if (nb.gt.ls)
      $   call exitti('nb > ls is undefined configuration$',nb)
 
-      ifdumpops=.false.
-      ifread=.false.
       np173=nint(param(173))
-      if (np173.eq.1) then
-         ifdumpops=.true.
+
+      if (np173.eq.0) then
+         rmode='ALL'
+      else if (np173.eq.1) then
+         rmode='OFF'
       else if (np173.eq.2) then
-         ifread=.true.
+         rmode='ON '
+      else if (np173.eq.3) then
+         rmode='ONB'
+      else
+         call exitti('unsupported param(173), exiting...$',np173)
       endif
 
       ifei=nint(param(175)).ne.0
 
-      navg_step=nint(min(1.,param(176)))
+      navg_step=nint(max(1.,param(176)))
 
       ad_qstep=nint(param(180))+ad_iostep*max(1-nint(param(180)),0)
 
@@ -329,7 +370,6 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
       ifpod(1)=ifpod(1).or.ifrom(2)
 
       ifvort=.false. ! default to false for now
-      ifdump=((.not.ifheat).or.ifrom(2))
 
       ifforce=param(193).ne.0.
       ifsource=param(194).ne.0.
@@ -350,6 +390,14 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
 
       call compute_BDF_coef(ad_alpha,ad_beta)
 
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
+         a(1)=nb*1.
+         call dump_serial(a,1,'ops/nb ',nid)
+      else
+         call read_serial(a,1,'ops/nb ',b,nid)
+         mb=a(1)
+      endif
+
       if (nio.eq.0) then
          write (6,*) 'rp_nb         ',nb
          write (6,*) 'rp_lub        ',lub
@@ -363,8 +411,7 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
          write (6,*) 'rp_ips        ',ips
          write (6,*) 'rp_ifavg0     ',ifavg0
          write (6,*) 'rp_ifsub0     ',ifsub0
-         write (6,*) 'rp_ifdumpops  ',ifdumpops
-         write (6,*) 'rp_ifread     ',ifread
+         write (6,*) 'rp_rmode      ',rmode
          write (6,*) 'rp_ad_qstep   ',ad_qstep
          write (6,*) 'rp_ifctke     ',ifctke
          write (6,*) 'rp_ifcdrag    ',ifcdrag
@@ -378,7 +425,6 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
          write (6,*) 'rp_ifsource   ',ifsource
          write (6,*) 'rp_ifbuoy     ',ifbuoy
          write (6,*) 'rp_ifpart     ',ifpart
-         write (6,*) 'rp_ifdump     ',ifdump
          write (6,*) 'rp_ifvort     ',ifvort
          write (6,*) 'rp_ifcintp    ',ifcintp
          write (6,*) ' '
@@ -428,11 +474,12 @@ c-----------------------------------------------------------------------
       call rzero(num_galu,nb)
       call rzero(num_galt,nb)
 
+      if (ifrom(1)) call opcopy(uic,vic,wic,vx,vy,vz)
+      if (ifrom(2)) call copy(tic,t,n)
+
       ns = ls
 
-      if (nio.eq.0) write (6,*) 'call get_saved_fields'
-
-      if (.not.ifread) then
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
          fname1='file.list '
          nsu=1
          nsp=1
@@ -440,6 +487,7 @@ c-----------------------------------------------------------------------
          if (ifrom(0)) nsp=ls
          if (ifrom(1)) nsu=ls
          if (ifrom(2)) nst=ls
+
          call get_saved_fields(us0,ps,ts0,nsu,nsp,nst,timek,fname1)
 
          fname1='avg.list'
@@ -457,25 +505,27 @@ c-----------------------------------------------------------------------
 
          iftmp=ifxyo
          ifxyo=.true.
-         call outpost(uavg,vavg,wavg,pavg,tavg,'avg')
-         call outpost(urms,vrms,wrms,prms,trms,'rms')
-         call outpost(vwms,wums,uvms,prms,trms,'tmn')
+         if (ifrecon) then
+            call outpost(uavg,vavg,wavg,pavg,tavg,'avg')
+            call outpost(urms,vrms,wrms,prms,trms,'rms')
+            call outpost(vwms,wums,uvms,prms,trms,'tmn')
+         endif
          ifxyo=iftmp
-      endif
 
-      if (ifsub0) then
-         do i=1,ns
-            if (ifrom(1)) then
-               call sub2(us0(1,1,i),ub,n)
-               call sub2(us0(1,2,i),vb,n)
-               if (ldim.eq.3) call sub2(us0(1,ldim,i),wb,n)
-            endif
-            if (ifrom(2)) call sub2(ts0(1,i),tb,n)
-         enddo
-         call sub2(uavg,ub,n)
-         call sub2(vavg,vb,n)
-         if (ldim.eq.3) call sub2(wavg,wb,n)
-         if (ifpod(2)) call sub2(tavg,tb,n)
+         if (ifsub0) then
+            do i=1,ns
+               if (ifrom(1)) then
+                  call sub2(us0(1,1,i),ub,n)
+                  call sub2(us0(1,2,i),vb,n)
+                  if (ldim.eq.3) call sub2(us0(1,ldim,i),wb,n)
+               endif
+               if (ifrom(2)) call sub2(ts0(1,i),tb,n)
+            enddo
+            call sub2(uavg,ub,n)
+            call sub2(vavg,vb,n)
+            if (ldim.eq.3) call sub2(wavg,wb,n)
+            if (ifpod(2)) call sub2(tavg,tb,n)
+         endif
       endif
 
       if (ifbuoy) call set_ra
@@ -487,7 +537,100 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine setc(cl,icl,fname)
+      subroutine setc(cl,fname)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real cux(lt),cuy(lt),cuz(lt)
+
+      common /scrcwk/ wk(lcloc),wk2(0:lub)
+
+      real cl(lcloc),icl(3,lcloc)
+
+      character*128 fname
+      character*128 fnlint
+
+      if (nio.eq.0) write (6,*) 'inside setc'
+
+      call nekgsync
+      conv_time=dnekclock()
+
+      if (iffastc) call exitti('fastc not supported in setc_new$',nb)
+
+      call cpart(kc1,kc2,jc1,jc2,ic1,ic2,ncloc,nb,np,nid+1) ! old indexing
+c     call cpart(ic1,ic2,jc1,jc2,kc1,kc2,ncloc,nb,np,nid+1) ! new indexing
+
+      n=lx1*ly1*lz1*nelv
+
+      call lints(fnlint,fname,128)
+      if (nid.eq.0) open (unit=100,file=fnlint)
+      if (nio.eq.0) write (6,*) 'setc file:',fnlint
+
+      if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
+         do k=0,nb
+         do j=0,mb
+         do i=1,mb
+            cel=0.
+            if (nid.eq.0) read(100,*) cel
+            cel=glsum(cel,1)
+            call setc_local(cl,cel,ic1,ic2,jc1,jc2,kc1,kc2,i,j,k)
+         enddo
+         enddo
+         enddo
+      else
+         if (.not.ifaxis) then
+            do i=0,nb
+               call set_convect_new(c1v(1,i),c2v(1,i),c3v(1,i),
+     $                              ub(1,i),vb(1,i),wb(1,i))
+               if (ifield.eq.1) then
+                  call intp_rstd_all(u1v(1,i),ub(1,i),nelv)
+                  call intp_rstd_all(u2v(1,i),vb(1,i),nelv)
+                  if (ldim.eq.3) 
+     $               call intp_rstd_all(u3v(1,i),wb(1,i),nelv)
+               else
+                  call intp_rstd_all(u1v(1,i),tb(1,i),nelv)
+               endif
+            enddo
+         endif
+
+         do k=0,nb
+            if (nio.eq.0) write (6,*) 'setc: ',k,'/',nb
+            do j=0,nb
+               if (ifield.eq.1) then
+                  call ccu(cux,cuy,cuz,k,j)
+               else
+                  call cct(cux,k,j)
+               endif
+               do i=1,nb
+                  if (ifield.eq.1) then
+                     cel=op_glsc2_wt(
+     $                  ub(1,i),vb(1,i),wb(1,i),cux,cuy,cuz,ones)
+                  else
+                     cel=glsc2(tb(1,i),cux,n)
+                  endif
+                  call setc_local(cl,cel,ic1,ic2,jc1,jc2,kc1,kc2,i,j,k)
+                  if (nid.eq.0) write (100,*) cel
+               enddo
+            enddo
+         enddo
+      endif
+
+      if (nid.eq.0) close (unit=100)
+
+      call nekgsync
+      if (nio.eq.0) write (6,*) 'conv_time: ',dnekclock()-conv_time
+      if (nio.eq.0) write (6,*) 'ncloc=',ncloc
+
+      if (nio.eq.0) write (6,*) 'exiting setc'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine setc_legacy(cl,icl,fname)
 
       include 'SIZE'
       include 'TOTAL'
@@ -621,25 +764,26 @@ c-----------------------------------------------------------------------
 
       character*128 fname
 
-      if (nio.eq.0) write (6,*) 'inside seta'
-
       n=lx1*ly1*lz1*nelt
 
-      if (ifread) then
-         call read_serial(a0,(nb+1)**2,fname,wk1,nid)
+      if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
+         if (nio.eq.0) write (6,*) 'reading a...'
+         call read_mat_serial(a0,nb+1,nb+1,fname,mb+1,nb+1,wk1,nid)
       else
-         nio=-1
-         do j=0,nb ! Form the A matrix for basis function
-         do i=0,nb
-            if (ifield.eq.1) then
-               a0(i,j)=h10vip(ub(1,i),vb(1,i),wb(1,i),
-     $                        ub(1,j),vb(1,j),wb(1,j))
-            else
-               a0(i,j)=h10sip(tb(1,i),tb(1,j))
-            endif
+         if (nio.eq.0) write (6,*) 'forming a...'
+         do j=0,nb
+            if (nio.eq.0) write (6,*) 'seta: ',j,'/',nb
+            nio=-1
+            do i=0,nb
+               if (ifield.eq.1) then
+                  a0(i,j)=h10vip(ub(1,i),vb(1,i),wb(1,i),
+     $                           ub(1,j),vb(1,j),wb(1,j))
+               else
+                  a0(i,j)=h10sip(tb(1,i),tb(1,j))
+               endif
+            enddo
+            nio=nid
          enddo
-         enddo
-         nio=nid
       endif
 
       do j=1,nb
@@ -647,8 +791,6 @@ c-----------------------------------------------------------------------
          a(i,j)=a0(i,j)
       enddo
       enddo
-
-      if (nio.eq.0) write (6,*) 'exiting seta'
 
       return
       end
@@ -661,7 +803,7 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /scrread/ tab((nb+1)**2)
+      common /scrread/ tab((lub+1)**2)
 
       real b(nb,nb),b0(0:nb,0:nb)
 
@@ -669,22 +811,24 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'inside setb'
 
-      if (ifread) then
-         call read_serial(b0,(nb+1)**2,fname,tab,nid)
+      if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
+         if (nio.eq.0) write (6,*) 'reading b...'
+         call read_mat_serial(b0,nb+1,nb+1,fname,mb+1,nb+1,tab,nid)
       else
-         mio=nio
-         nio=-1
+         if (nio.eq.0) write (6,*) 'forming b...'
          do j=0,nb
-         do i=0,nb
-            if (ifield.eq.1) then
-               b0(i,j)=wl2vip(ub(1,i),vb(1,i),wb(1,i),
-     $                        ub(1,j),vb(1,j),wb(1,j))
-            else
-               b0(i,j)=wl2sip(tb(1,i),tb(1,j))
-            endif
+            if (nio.eq.0) write (6,*) 'setb: ',j,'/',nb
+            nio=-1
+            do i=0,nb
+               if (ifield.eq.1) then
+                  b0(i,j)=wl2vip(ub(1,i),vb(1,i),wb(1,i),
+     $                           ub(1,j),vb(1,j),wb(1,j))
+               else
+                  b0(i,j)=wl2sip(tb(1,i),tb(1,j))
+               endif
+            enddo
+            nio=nid
          enddo
-         enddo
-         nio=mio
       endif
 
       do j=1,nb
@@ -692,8 +836,6 @@ c-----------------------------------------------------------------------
          b(i,j)=b0(i,j)
       enddo
       enddo
-
-      if (nio.eq.0) write (6,*) 'exiting setb'
 
       return
       end
@@ -716,7 +858,7 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelv
 
-      if (ifread) then
+      if (rmode.eq.'ON ') then
          inquire (file='ops/u0',exist=ifexist)
          if (ifexist) call read_serial(u,nb+1,'ops/u0 ',wk,nid)
 
@@ -746,7 +888,8 @@ c-----------------------------------------------------------------------
             u(0,3)=1.
          endif
 
-         if (ifdumpops) call dump_serial(u,nb+1,'ops/u0 ',nid)
+         if (rmode.eq.'ALL'.or.rmode.eq.'OFF')
+     $      call dump_serial(u,nb+1,'ops/u0 ',nid)
 
          if (ifrom(2)) then
             ifield=2
@@ -756,7 +899,8 @@ c-----------------------------------------------------------------------
                if (nio.eq.0) write (6,*) 'ut',ut(i,1)
             enddo
             call add2(tic,tb,n)
-            if (ifdumpops) call dump_serial(ut,nb+1,'ops/t0 ',nid)
+            if (rmode.eq.'All'.or.rmode.eq.'OFF')
+     $         call dump_serial(ut,nb+1,'ops/t0 ',nid)
          endif
          ifield=jfield
 
@@ -765,7 +909,7 @@ c-----------------------------------------------------------------------
 
          iftmp=ifxyo
          ifxyo=.true.
-         call outpost(uu,vv,ww,pr,tt,'rom')
+         if (ifrecon) call outpost(uu,vv,ww,pr,tt,'rom')
 
          ttime=time
          jstep=istep
@@ -893,15 +1037,16 @@ c-----------------------------------------------------------------------
 
       call dump_serial(t1,nb+1,'ops/uv ',nid)
 
-      if (ifdumpops) then
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
          call dump_serial(uas,nb+1,'ops/uas ',nid)
          call dump_serial(uvs,nb+1,'ops/uvs ',nid)
       endif
 
       call dump_serial(ua,nb+1,'ops/ua ',nid)
+      call dump_serial(u2a,(nb+1)**2,'ops/u2a ',nid)
       if (ifrom(2)) call dump_serial(uta,nb+1,'ops/uta ',nid)
 
-      call dump_sfld
+      if (ifrecon) call dump_sfld
 
       return
       end
