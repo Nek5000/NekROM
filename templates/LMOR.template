@@ -14,8 +14,6 @@
 
       ! Auxiliary
 
-      parameter (nb=lb) ! temporary, will be removed
-
       parameter (lsu=(ls-1)*lmu+1) ! size of velocity snapshots allocation
       parameter (lsp=(ls-1)*lmp+1) ! size of pressure snapshots allocation
       parameter (lst=(ls-1)*lmt+1) ! size of temperature snapshots allocation

@@ -98,51 +98,7 @@ c-----------------------------------------------------------------------
      $   (rmode.eq.'ALL'.or.rmode.eq.'OFF')) then
          call opcopy(wk4,wk5,wk6,cu1,cu2,cu3)
          call opbinv1(wk1,wk2,wk3,wk4,wk5,wk6,1.)
-         call cint(fd2(1,j,i),wk1,wk2,wk3)
-      endif
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine ccu_new(cu1,cu2,cu3,i,j)
-
-      include 'SIZE'
-      include 'MOR'
-
-      parameter(lt=lx1*ly1*lz1*lelt)
-      parameter(ltd=lxd*lyd*lzd*lelt)
-
-      common /scrccunew/ t1(lt),t2(lt),t3(lt)
-      common /scrwk/ wk1(lt),wk2(lt),wk3(lt),wk4(lt),wk5(lt),wk6(lt)
-
-      real cu1(lt),cu2(lt),cu3(lt)
-
-      call convect_new(cu1,u1v(1,j),.true.,
-     $                 c1v(1,i),c2v(1,i),c3v(1,i),.true.)
-      call convect_new(cu2,u2v(1,j),.true.,
-     $                 c1v(1,i),c2v(1,i),c3v(1,i),.true.)
-      if (ldim.eq.3) call convect_new(cu3,u3v(1,j),.true.,
-     $                                c1v(1,i),c2v(1,i),c3v(1,i),.true.)
-
-      if (ifcdrag.and.ifield.eq.1) then
-         call opcopy(wk4,wk5,wk6,cu1,cu2,cu3)
-         call opbinv1(wk1,wk2,wk3,wk4,wk5,wk6,1.)
-         call cint(fd2(1,i,j),wk1,wk2,wk3)
-      endif
-
-      if (i.ne.j) then
-         call convect_new(t1,u1v(1,i),.true.,
-     $                    c1v(1,j),c2v(1,j),c3v(1,j),.true.)
-         call convect_new(t2,u2v(1,i),.true.,
-     $                    c1v(1,j),c2v(1,j),c3v(1,j),.true.)
-         if (ldim.eq.3) call convect_new(t3,u3v(1,i),.true.,
-     $                                c1v(1,j),c2v(1,j),c3v(1,j),.true.)
-         call opadd2(cu1,cu2,cu3,t1,t2,t3)
-         if (ifcdrag.and.ifield.eq.1) then
-            call opcopy(wk4,wk5,wk6,t1,t2,t3)
-            call opbinv1(wk1,wk2,wk3,wk4,wk5,wk6,1.)
-            call cint(fd2(1,j,j),wk1,wk2,wk3)
-         endif
+         call cint(fd2(ldim*j+ldim*(nb+1)*i),wk1,wk2,wk3)
       endif
 
       return

@@ -5,7 +5,7 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
-      real rhs(0:nb),rhstmp(0:nb)
+      real rhs(0:lb),rhstmp(0:lb)
       logical ifdebug
       integer chekbc
 
@@ -42,7 +42,7 @@ c-----------------------------------------------------------------------
       call setr_v(rhs(1),icount)
 
       do i=0,nb
-         if (ifdebug) write (6,*) i,u(i,1),'sol'
+         if (ifdebug) write (6,*) i,u(i),'sol'
       enddo
 
       do i=0,nb
@@ -54,33 +54,33 @@ c-----------------------------------------------------------------------
       if (ad_step.eq.3) call dump_serial(fluv,nb*nb,'ops/hu ',nid)
       if (ad_step.le.3) then
          call copy(helmu,fluv,nb*nb)
-         call dgetrf(nb,nb,fluv,lub,ipiv,info)
+         call dgetrf(nb,nb,fluv,nb,ipiv,info)
          call copy(invhelmu,fluv,nb*nb)
       endif
       lu_time=lu_time+dnekclock()-ttime
 
       do j=1,nb
       do i=1,nb
-         if (ifdebug) write (6,*) i,j,au(i,j),'au'
+         if (ifdebug) write (6,*) i,j,au(i+(j-1)*nb),'au'
       enddo
       enddo
 
       do j=1,nb
       do i=1,nb
-         if (ifdebug) write (6,*) i,j,bu(i,j),'bu'
+         if (ifdebug) write (6,*) i,j,bu(i+(j-1)*nb),'bu'
       enddo
       enddo
 
       do j=1,nb
       do i=1,nb
-         if (ifdebug) write (6,*) i,j,fluv(i,j),'LU'
+         if (ifdebug) write (6,*) i,j,fluv(i+(j-1)*nb),'LU'
       enddo
       enddo
 
       ttime=dnekclock()
       if (isolve.eq.0) then ! standard matrix inversion
          if (.not.iffasth.or.ad_step.le.3) then
-            call dgetrs('N',nb,1,fluv,lub,ipiv,rhs(1),nb,info)
+            call dgetrs('N',nb,1,fluv,nb,ipiv,rhs(1),nb,info)
          else
             eps=.20
             damp=1.-eps*ad_dt
@@ -90,12 +90,12 @@ c-----------------------------------------------------------------------
             enddo
          endif
       else if (isolve.eq.1) then ! constrained solve with inverse update
-         call BFGS_new(rhs(1),u(1,1),helmu,invhelmu,umax,umin,udis,
+         call BFGS_new(rhs(1),u(1),helmu,invhelmu,umax,umin,udis,
      $   ubarr0,ubarrseq)
       else if (isolve.eq.2) then ! constrained solve with inverse update
                                  ! and mix with standard solver
          call copy(rhstmp,rhs,nb+1)
-         call dgetrs('N',nb,1,fluv,lub,ipiv,rhstmp(1),nb,info)
+         call dgetrs('N',nb,1,fluv,nb,ipiv,rhstmp(1),nb,info)
 
          do ii=1,nb
             if ((rhstmp(ii)-umax(ii)).ge.box_tol) then
@@ -107,7 +107,7 @@ c-----------------------------------------------------------------------
 
          if (chekbc.eq.1) then
             ucopt_count = ucopt_count + 1
-            call BFGS_new(rhs(1),u(1,1),helmu,invhelmu,umax,umin,udis,
+            call BFGS_new(rhs(1),u(1),helmu,invhelmu,umax,umin,udis,
      $      ubarr0,ubarrseq)
          else
             call copy(rhs,rhstmp,nb+1)
@@ -115,16 +115,16 @@ c-----------------------------------------------------------------------
 
       else if (isolve.eq.3) then 
          ! constrained solve with Hessian update
-         call BFGS(rhs(1),u(1,1),helmu,invhelmu,umax,umin,udis,
+         call BFGS(rhs(1),u(1),helmu,invhelmu,umax,umin,udis,
      $   ubarr0,ubarrseq)
       else if (isolve.eq.4) then 
          ! constrained solve with Hessian update
          ! and mix with standard solver
-         call hybrid_advance(rhs,u(1,1),helmu,invhelmu,umax,umin,
+         call hybrid_advance(rhs,u(1),helmu,invhelmu,umax,umin,
      $                       udis,ubarr0,ubarrseq,ucopt_count)
       else if (isolve.eq.5) then 
          ! constrained solve with Hessian update
-         call BFGS(rhs(1),u(1,1),helmu,invhelmu,umax,umin,udis,
+         call BFGS(rhs(1),u(1),helmu,invhelmu,umax,umin,udis,
      $   ubarr0,ubarrseq)
       else   
          call exitti('incorrect isolve specified...$',isolve)
@@ -170,8 +170,8 @@ c-----------------------------------------------------------------------
       call nekgsync
       tttime=dnekclock()
 
-      call setuavg
-      call setuj
+      call setuavg(ua,u2a,u)
+      call setuj(uj,u2j,u)
 
       if (mod(ad_step,ad_qstep).eq.0) then
          if (ifctke) call ctke
@@ -184,7 +184,7 @@ c        call cubar
          if (nio.eq.0) then
             if (ifrom(1)) then
                do j=1,nb
-                  write(6,*) j,time,u(j,1),'romu'
+                  write(6,*) j,time,u(j),'romu'
                enddo
             endif
          endif
@@ -229,7 +229,7 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real rhs(0:nb),rhstmp(0:nb)
+      real rhs(0:lb),rhstmp(0:lb)
       logical ifdebug
       integer chekbc
 
@@ -266,7 +266,7 @@ c-----------------------------------------------------------------------
       call setr_t(rhs(1),icount)
 
       do i=0,nb
-         if (ifdebug) write (6,*) i,ut(i,1),'sol'
+         if (ifdebug) write (6,*) i,ut(i),'sol'
       enddo
 
       do i=0,nb
@@ -277,38 +277,38 @@ c-----------------------------------------------------------------------
       if (ad_step.eq.3) call dump_serial(flut,nb*nb,'ops/ht ',nid)
       if (ad_step.le.3) then
          call copy(helmt,flut,nb*nb)
-         call dgetrf(nb,nb,flut,lub,ipiv,info)
+         call dgetrf(nb,nb,flut,nb,ipiv,info)
          call copy(invhelmt,flut,nb*nb)
       endif
 
       do j=1,nb
       do i=1,nb
-         if (ifdebug) write (6,*) i,j,at(i,j),'at'
+         if (ifdebug) write (6,*) i,j,at(i+(j-1)*nb),'at'
       enddo
       enddo
 
       do j=1,nb
       do i=1,nb
-         if (ifdebug) write (6,*) i,j,bt(i,j),'bt'
+         if (ifdebug) write (6,*) i,j,bt(i+(j-1)*nb),'bt'
       enddo
       enddo
 
       do j=1,nb
       do i=1,nb
-         if (ifdebug) write (6,*) i,j,flut(i,j),'LU'
+         if (ifdebug) write (6,*) i,j,flut(i+(j-1)*nb),'LU'
       enddo
       enddo
 
       ttime=dnekclock()
       if (isolve.eq.0) then ! standard matrix inversion
-         call dgetrs('N',nb,1,flut,lub,ipiv,rhs(1),nb,info)
+         call dgetrs('N',nb,1,flut,nb,ipiv,rhs(1),nb,info)
       else if (isolve.eq.1) then ! constrained solve
-         call BFGS_new(rhs(1),ut(1,1),helmt,invhelmt,tmax,tmin,tdis,
+         call BFGS_new(rhs(1),ut(1),helmt,invhelmt,tmax,tmin,tdis,
      $   tbarr0,tbarrseq) 
       else if (isolve.eq.2) then
 
          call copy(rhstmp,rhs,nb+1)
-         call dgetrs('N',nb,1,flut,lub,ipiv,rhstmp(1),nb,info)
+         call dgetrs('N',nb,1,flut,nb,ipiv,rhstmp(1),nb,info)
 
          do ii=1,nb
             if ((rhstmp(ii)-tmax(ii)).ge.box_tol) then
@@ -320,18 +320,18 @@ c-----------------------------------------------------------------------
 
          if (chekbc.eq.1) then
             tcopt_count = tcopt_count + 1
-            call BFGS_new(rhs(1),ut(1,1),helmt,invhelmt,tmax,tmin,tdis,
+            call BFGS_new(rhs(1),ut(1),helmt,invhelmt,tmax,tmin,tdis,
      $      tbarr0,tbarrseq) 
          else
             call copy(rhs,rhstmp,nb+1)
          endif
 
       else if (isolve.eq.3) then ! constrained solve
-         call BFGS(rhs(1),ut(1,1),helmt,invhelmt,tmax,tmin,tdis,
+         call BFGS(rhs(1),ut(1),helmt,invhelmt,tmax,tmin,tdis,
      $   tbarr0,tbarrseq)
       else if (isolve.eq.4) then
 
-         call hybrid_advance(rhs,ut(1,1),helmt,invhelmt,tmax,tmin,
+         call hybrid_advance(rhs,ut(1),helmt,invhelmt,tmax,tmin,
      $                       tdis,tbarr0,tbarrseq,tcopt_count)
       else
          call exitti('incorrect isolve specified...$',isolve)
@@ -373,14 +373,14 @@ c-----------------------------------------------------------------------
       call nekgsync
       tttime=dnekclock()
 
-      call settavg
-      call settj
+      call settavg(uta,uuta,utua,ut2a,u,ut)
+      call settj(utj,uutj,utuj,uj,ut)
 
       if (mod(ad_step,ad_iostep).eq.0) then
          if (ifrom(2)) then
             if (nio.eq.0) then
                do j=1,nb
-                  write(6,*) j,time,ut(j,1),'romt'
+                  write(6,*) j,time,ut(j),'romt'
                enddo
             endif
          endif
@@ -432,15 +432,16 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine evalc(cu,cl,uu,n)
+      subroutine evalc(cu,cm,cl,uu)
 
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
 
-      real cu(n)
-      real uu(0:n)
+      real cu(nb)
+      real uu(0:nb)
       real cl(ic1:ic2,jc1:jc2,kc1:kc2)
+      real cm(ic1:ic2,jc1:jc2)
 
       common /scrc/ work(max(lub,ltb))
 
@@ -458,79 +459,15 @@ c-----------------------------------------------------------------------
       if (ifcintp) then
          call mxm(cintp,n,uu,n+1,cu,1)
       else
+         call rzero(cu,nb)
          if (ncloc.ne.0) then
-            l=1
-
-            call rzero(cu,n)
-
-            do k=kc1,kc2
-            do j=jc1,jc2
-            do i=ic1,ic2
-               cu(i)=cu(i)+cl(i,j,k)*uu(j)*u(k,1)
-            enddo
-            enddo
-            enddo
+            call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),u(kc1),(kc2-kc1+1),cm,1)
+            call mxm(cm,(ic2-ic1+1),u(jc1),(jc2-jc1+1),cu(ic1),1)
          endif
-         call gop(cu,work,'+  ',n)
+         call gop(cu,work,'+  ',nb)
       endif
 
       call nekgsync
-
-      evalc_time=evalc_time+dnekclock()-stime
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine evalc_legacy(cu,cl,icl,uu)
-
-      include 'SIZE'
-      include 'TOTAL'
-      include 'MOR'
-
-      real cu(nb)
-
-      integer icalld
-      save    icalld
-      data    icalld /0/
-
-      common /scrc/ work(lx1*ly1*lz1*lelt)
-
-      real cl(lub,0:lub,0:lub)
-      real uu(0:nb)
-      integer icl(3,lcloc)
-
-      if (icalld.eq.0) then
-         evalc_time=0.
-         icalld=1
-      endif
-
-      stime=dnekclock()
-
-      if (ifcintp) then
-         call mxm(cintp,nb,uu,nb+1,cu,1)
-      else
-         l=1
-
-         call rzero(cu,nb)
-
-         if (np.eq.1) then ! don't use index
-            do k=0,nb
-            do j=0,nb
-            do i=1,nb
-               cu(i)=cu(i)+cl(i,j,k)*uu(j)*u(k,1)
-            enddo
-            enddo
-            enddo
-         else
-            do l=1,ncloc
-               i=icl(1,l)
-               j=icl(2,l)
-               k=icl(3,l)
-               cu(i)=cu(i)+cl(l,0,0)*uu(j)*u(k,1)
-            enddo
-            call gop(cu,work,'+  ',nb)
-         endif
-      endif
 
       evalc_time=evalc_time+dnekclock()-stime
 
@@ -547,24 +484,22 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
 
-      common /scrrhs/ tmp(0:nb)
+      common /scrrhs/ tmp(0:lb)
 
       real rhs(nb)
 
       call mxm(ut,nb+1,ad_beta(2,icount),3,tmp,1)
-c     call mxm(bv0,nb+1,tmp,nb+1,rhs,1)
       call mxm(bt,nb,tmp(1),nb,rhs,1)
 
       call cmult(rhs,-1.0/ad_dt,nb)
 
       s=-1.0/ad_pe
 
-c     call add2s2(rhs,av0,s,nb+1) ! not working...
       do i=1,nb
-         rhs(i)=rhs(i)+s*at0(i,0)
+         rhs(i)=rhs(i)+s*at0(1+i)
       enddo
 
-      call evalc(tmp(1),ctl,ut,nb)
+      call evalc(tmp(1),ctmp,ctl,ut)
 
       call shift3(ctr,tmp(1),nb)
 
@@ -584,29 +519,26 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
 
-      common /scrrhs/ tmp1(0:nb),tmp2(0:nb)
+      common /scrrhs/ tmp1(0:lb),tmp2(0:lb)
 
       real rhs(nb)
 
       call mxm(u,nb+1,ad_beta(2,icount),3,tmp1,1)
-c     call mxm(bv0,nb+1,tmp,nb+1,rhs,1)
       call mxm(bu,nb,tmp1(1),nb,rhs,1)
 
       call cmult(rhs,-1.0/ad_dt,nb)
 
       s=-1.0/ad_re
 
-c     call add2s2(rhs,av0,s,nb+1) ! not working...
       do i=1,nb
-         rhs(i)=rhs(i)+s*au0(i,0)
+         rhs(i)=rhs(i)+s*au0(1+i)
       enddo
 
-      call evalc(tmp1(1),cul,u,nb)
-c     call evalc_legacy(tmp1(1),cul,icul,u,nb)
+      call evalc(tmp1(1),ctmp,cul,u)
       call chsign(tmp1(1),nb)
 
       if (ifbuoy) then
-         call mxm(but0,nb+1,ut(0,1),nb+1,tmp2(0),1)
+         call mxm(but0,nb+1,ut,nb+1,tmp2(0),1)
          call add2s2(tmp1(1),tmp2(1),ad_ra,nb)
       else if (ifforce) then
          call add2(tmp1(1),rg(1),nb)
@@ -623,7 +555,7 @@ c     call evalc_legacy(tmp1(1),cul,icul,u,nb)
       if (ifavisc) then
 c        call mxm(au0,nb+1,u,nb+1,tmp1,1)
          do i=1,nb
-            tmp1(i)=au(i,i)*u(i,1)
+            tmp1(i)=au(i+nb*(i-1))*u(i)
          enddo
 
          a=5.
@@ -641,18 +573,18 @@ c        call mxm(au0,nb+1,u,nb+1,tmp1,1)
          do i=1,nb
             um=(umax(i)+umin(i))*.5
             ud=(umax(i)-umin(i))*.5*(1.+pad)
-            d=(u(i,1)-um)/ud
+            d=(u(i)-um)/ud
 c           tmp2(i)=(cosh(d*acosh(2.))-1.)**a
-            if (u(i,1).gt.umax(i)) then
-               d=(u(i,1)/umax(i)-1.)/(1+pad)
+            if (u(i).gt.umax(i)) then
+               d=(u(i)/umax(i)-1.)/(1+pad)
 c              tmp2(i)=d*d
 c              tmp2(i)=d
                tmp2(i)=exp(d)-1.
 c              tmp2(i)=exp(d*d)-1.
 c              tmp2(i)=log(d)
             endif
-            if (u(i,1).lt.umin(i)) then
-               d=(u(i,1)/umin(i)-1.)/(1+pad)
+            if (u(i).lt.umin(i)) then
+               d=(u(i)/umin(i)-1.)/(1+pad)
 c              tmp2(i)=d*d
 c              tmp2(i)=d
                tmp2(i)=exp(d)-1.
@@ -667,119 +599,122 @@ c              tmp2(i)=log(d)
       return
       end
 c-----------------------------------------------------------------------
-      subroutine setuavg
+      subroutine setuavg(s1,s2,t1)
 
       include 'SIZE'
       include 'MOR'
-      include 'AVG'
 
-      parameter (lt=lx1*ly1*lz1*lelt)
-
-      common /scravg/ ux(lt),uy(lt),uz(lt)
+      real s1(0:nb),s2(0:nb,0:nb),t1(0:nb)
 
       if (ad_step.eq.navg_step) then
-         call rzero(ua,nb+1)
-         call rzero(u2a,(nb+1)**2)
+         call rzero(s1,nb+1)
+         call rzero(s2,(nb+1)**2)
       endif
 
-      call add2(ua,u,nb+1)
+      call add2(s1,t1,nb+1)
 
       do j=0,nb
       do i=0,nb
-         u2a(i,j)=u2a(i,j)+u(i,1)*u(j,1)
+         s2(i,j)=s2(i,j)+t1(i)*t1(j)
       enddo
       enddo
 
       if (ad_step.eq.ad_nsteps) then
          s=1./real(ad_nsteps-(navg_step-1))
-         call cmult(ua,s,nb+1)
-         call cmult(u2a,s,(nb+1)**2)
+         call cmult(s1,s,nb+1)
+         call cmult(s2,s,(nb+1)**2)
       endif
 
       return
       end
 c-----------------------------------------------------------------------
-      subroutine settavg
+      subroutine settavg(s1,s2,s3,s4,t1,t2)
 
       include 'SIZE'
       include 'MOR'
-      include 'AVG'
+
+      real s1(0:nb),s2(0:nb,0:nb),s3(0:nb,0:nb),s4(0:nb,0:nb)
+      real t1(0:nb),t2(0:nb)
+
 
       if (ad_step.eq.navg_step) then
-         call rzero(uta,nb+1)
-         call rzero(uuta,(nb+1)**2)
-         call rzero(utua,(nb+1)**2)
-         call rzero(ut2a,(nb+1)**2)
+         call rzero(s1,nb+1)
+         call rzero(s2,(nb+1)**2)
+         call rzero(s3,(nb+1)**2)
+         call rzero(s4,(nb+1)**2)
       endif
 
-      call add2(uta,ut,nb+1)
+      call add2(s1,ut,nb+1)
 
       do j=0,nb
       do i=0,nb
-         uuta(i,j)=uuta(i,j)+u(i,1)*ut(j,1)
-         utua(i,j)=utua(i,j)+u(j,1)*ut(i,1)
-         ut2a(i,j)=ut2a(i,j)+ut(j,1)*ut(i,1)
+         s2(i,j)=s2(i,j)+t1(i)*t2(j)
+         s2(i,j)=s3(i,j)+t1(j)*t2(i)
+         s2(i,j)=s4(i,j)+t2(j)*t2(i)
       enddo
       enddo
 
       if (ad_step.eq.ad_nsteps) then
          s=1./real(ad_nsteps-navg_step+1)
-         call cmult(uta,s,nb+1)
-         call cmult(uuta,s,(nb+1)**2)
-         call cmult(utua,s,(nb+1)**2)
-         call cmult(ut2a,s,(nb+1)**2)
+         call cmult(s1,s,nb+1)
+         call cmult(s2,s,(nb+1)**2)
+         call cmult(s3,s,(nb+1)**2)
+         call cmult(s4,s,(nb+1)**2)
       endif
 
       return
       end
 c-----------------------------------------------------------------------
-      subroutine setuj
+      subroutine setuj(s1,s2,t1)
 
       include 'SIZE'
       include 'MOR'
 
+      real s1(0:nb,6),s2(0:nb,0:nb,6),t1(0:nb,3)
+
       if (ad_step.eq.(navg_step+1)) then
-         call copy(uj(0,1),u(0,3),nb+1)
-         call copy(uj(0,2),u(0,2),nb+1)
-         call copy(uj(0,3),u(0,1),nb+1)
+         call copy(s1(0,1),t1(0,3),nb+1)
+         call copy(s1(0,2),t1(0,2),nb+1)
+         call copy(s1(0,3),t1(0,1),nb+1)
       endif
       if (ad_step.eq.ad_nsteps) then
-         call copy(uj(0,4),u(0,3),nb+1)
-         call copy(uj(0,5),u(0,2),nb+1)
-         call copy(uj(0,6),u(0,1),nb+1)
+         call copy(s1(0,4),t1(0,3),nb+1)
+         call copy(s1(0,5),t1(0,2),nb+1)
+         call copy(s1(0,6),t1(0,1),nb+1)
          do k=1,6
-         do j=0,nb
-         do i=0,nb
-            u2j(i,j,k)=uj(i,k)*uj(j,k)
-         enddo
-         enddo
+            call mxm(s1(0,k),nb+1,s1(0,k),1,s2(0,0,k),nb+1)
          enddo
       endif
 
       return
       end
 c-----------------------------------------------------------------------
-      subroutine settj
+      subroutine settj(s1,s2,s3,t1,t2)
 
       include 'SIZE'
       include 'MOR'
 
+      ! s1=utj,s2=uutj,s3=utuj,t1=uj,t2=ut
+
+      real s1(0:nb,6),s2(0:nb,0:nb,6),s3(0:nb,0:nb,6)
+      real t1(0:nb,6),t2(0:nb,3)
+
       if (ad_step.eq.(navg_step+1)) then
-         call copy(utj(0,1),ut(0,3),nb+1)
-         call copy(utj(0,2),ut(0,2),nb+1)
-         call copy(utj(0,3),ut(0,1),nb+1)
+         call copy(s1(0,1),t2(0,3),nb+1)
+         call copy(s1(0,2),t2(0,2),nb+1)
+         call copy(s1(0,3),t2(0,1),nb+1)
       endif
 
       if (ad_step.eq.ad_nsteps) then
-         call copy(utj(0,4),ut(0,3),nb+1)
-         call copy(utj(0,5),ut(0,2),nb+1)
-         call copy(utj(0,6),ut(0,1),nb+1)
+         call copy(s1(0,4),t2(0,3),nb+1)
+         call copy(s1(0,5),t2(0,2),nb+1)
+         call copy(s1(0,6),t2(0,1),nb+1)
 
          do k=1,6
          do j=0,nb
          do i=0,nb
-            uutj(i,j,k)=uj(i,k)*utj(j,k)
-            utuj(i,j,k)=uj(j,k)*utj(i,k)
+            s2(i,j,k)=t1(i,k)*s1(j,k)
+            s3(i,j,k)=t1(j,k)*s1(i,k)
          enddo
          enddo
          enddo

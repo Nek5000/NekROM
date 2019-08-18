@@ -178,7 +178,7 @@
    0.00000     p174 MOR: < 0 -> temp, == 0 -> vel, > 0 -> vel + temp
    0.00000     p175 MOR: !0 = -> error indicator
    0.00000     p176 MOR: initial step number of averaging
-   0.00000     p177
+   0.00000     p177 MOR: nb
    0.00000     p178
    0.00000     p179
   10.00000     p180 MOR: qoi dump freq. 0 -> IOSTEP
