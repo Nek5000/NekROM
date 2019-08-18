@@ -99,9 +99,11 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine a0_unit(iflag)
+
       include 'SIZE'
       include 'INPUT'
       include 'MOR'
+
       logical iflag
 
       param(171) = 1.
@@ -110,14 +112,14 @@ c-----------------------------------------------------------------------
       param(173) = 0.
 
       call rom_setup
-      call a0_unit_helper(au0,iflag)
+      call a0_unit_helper(au0)
+
       return
       end
 c-----------------------------------------------------------------------
-      subroutine a0_unit_helper(a0,iflag)
+      subroutine a0_unit_helper(a0)
 
       include 'SIZE'
-      include 'INPUT'
       include 'MOR'
 
       common /scrtest/ wk(lb+1,lb+1),aa(0:lb,0:lb)
@@ -183,22 +185,10 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine b0_unit(iflag)
-      include 'SIZE'
-      include 'MOR'
-      call b0_unit_helper(bu0,iflag)
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine b0_unit_helper(b0,iflag)
 
       include 'SIZE'
-      include 'SOLN'
       include 'INPUT'
       include 'MOR'
-
-      common /scrtest/ wk(lb+1,lb+1),bb(0:lb,0:lb)
-
-      real b0(0:nb,0:nb)
 
       logical iflag
 
@@ -208,6 +198,21 @@ c-----------------------------------------------------------------------
       param(173) = 0.
 
       call rom_setup
+      call b0_unit_helper(bu0)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine b0_unit_helper(b0)
+
+      include 'SIZE'
+      include 'SOLN'
+      include 'MOR'
+
+      common /scrtest/ wk(lb+1,lb+1),bb(0:lb,0:lb)
+
+      real b0(0:nb,0:nb)
+
       call read_serial(bb,(nb+1)**2,'ops/bu ',wk,nid)
 
       iexit=0
@@ -268,22 +273,10 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine c0_unit(iflag)
-      include 'SIZE'
-      include 'MOR'
-      call c0_unit_helper(cul,iflag)
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine c0_unit_helper(c,iflag)
 
       include 'SIZE'
-      include 'SOLN'
       include 'INPUT'
       include 'MOR'
-
-      common /scrtest/ wk(lb+1,lb+1,lb+1),cc(lb,0:lb,0:lb)
-
-      real c(nb,0:nb,0:nb)
 
       logical iflag
 
@@ -293,6 +286,21 @@ c-----------------------------------------------------------------------
       param(173) = 0.
 
       call rom_setup
+      call c0_unit_helper(cul)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine c0_unit_helper(c,iflag)
+
+      include 'SIZE'
+      include 'SOLN'
+      include 'MOR'
+
+      common /scrtest/ wk(lb+1,lb+1,lb+1),cc(lb,0:lb,0:lb)
+
+      real c(nb,0:nb,0:nb)
+
       call read_serial(cc,nb*(nb+1)**2,'ops/cu ',wk,nid)
 
       iexit=0
