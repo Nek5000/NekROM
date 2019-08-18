@@ -54,7 +54,7 @@ c-----------------------------------------------------------------------
       if (ad_step.eq.3) call dump_serial(fluv,nb*nb,'ops/hu ',nid)
       if (ad_step.le.3) then
          call copy(helmu,fluv,nb*nb)
-         call dgetrf(nb,nb,fluv,lub,ipiv,info)
+         call dgetrf(nb,nb,fluv,nb,ipiv,info)
          call copy(invhelmu,fluv,nb*nb)
       endif
       lu_time=lu_time+dnekclock()-ttime
@@ -80,7 +80,7 @@ c-----------------------------------------------------------------------
       ttime=dnekclock()
       if (isolve.eq.0) then ! standard matrix inversion
          if (.not.iffasth.or.ad_step.le.3) then
-            call dgetrs('N',nb,1,fluv,lub,ipiv,rhs(1),nb,info)
+            call dgetrs('N',nb,1,fluv,nb,ipiv,rhs(1),nb,info)
          else
             eps=.20
             damp=1.-eps*ad_dt
@@ -95,7 +95,7 @@ c-----------------------------------------------------------------------
       else if (isolve.eq.2) then ! constrained solve with inverse update
                                  ! and mix with standard solver
          call copy(rhstmp,rhs,nb+1)
-         call dgetrs('N',nb,1,fluv,lub,ipiv,rhstmp(1),nb,info)
+         call dgetrs('N',nb,1,fluv,nb,ipiv,rhstmp(1),nb,info)
 
          do ii=1,nb
             if ((rhstmp(ii)-umax(ii)).ge.box_tol) then
@@ -277,7 +277,7 @@ c-----------------------------------------------------------------------
       if (ad_step.eq.3) call dump_serial(flut,nb*nb,'ops/ht ',nid)
       if (ad_step.le.3) then
          call copy(helmt,flut,nb*nb)
-         call dgetrf(nb,nb,flut,lub,ipiv,info)
+         call dgetrf(nb,nb,flut,nb,ipiv,info)
          call copy(invhelmt,flut,nb*nb)
       endif
 
@@ -301,14 +301,14 @@ c-----------------------------------------------------------------------
 
       ttime=dnekclock()
       if (isolve.eq.0) then ! standard matrix inversion
-         call dgetrs('N',nb,1,flut,lub,ipiv,rhs(1),nb,info)
+         call dgetrs('N',nb,1,flut,nb,ipiv,rhs(1),nb,info)
       else if (isolve.eq.1) then ! constrained solve
          call BFGS_new(rhs(1),ut(1,1),helmt,invhelmt,tmax,tmin,tdis,
      $   tbarr0,tbarrseq) 
       else if (isolve.eq.2) then
 
          call copy(rhstmp,rhs,nb+1)
-         call dgetrs('N',nb,1,flut,lub,ipiv,rhstmp(1),nb,info)
+         call dgetrs('N',nb,1,flut,nb,ipiv,rhstmp(1),nb,info)
 
          do ii=1,nb
             if ((rhstmp(ii)-tmax(ii)).ge.box_tol) then
