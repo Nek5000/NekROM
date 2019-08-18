@@ -1,0 +1,25 @@
+#!/usr/bin/env python
+import numpy as np
+
+out_file = open("galnum.log","w")
+for line in open("test.log.1"):
+    if "num_galu" in line:
+        if 'anum_galu' not in line:
+            out_file.write(line)
+out_file.close()
+
+
+with open('galnum.log', 'r') as f:
+    k = f.read()
+    print(k)
+    list_of_lines = k.split('\n')
+    list_of_words = [[k for k in line.split(' ') if k and k != 'num_galu'] for line in list_of_lines][0:-1]
+
+    galnum = np.array(list_of_words).astype(np.float64)
+
+icode = 0
+for i in range(len(galnum[:,0])):
+    if (int(galnum[i,1]) != 1):
+        icode+=1
+exit(icode)
+
