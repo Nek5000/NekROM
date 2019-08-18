@@ -200,6 +200,9 @@ c-----------------------------------------------------------------------
          call setb(bt,bt0,'ops/bt ')
          call setc(ctl,ictl,'ops/ct ')
       endif
+
+      if (ifbuoy.and.ifrom(1).and.ifrom(2)) call setbut
+
       ifield=jfield
 
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF') call dump_ops
@@ -982,18 +985,6 @@ c-----------------------------------------------------------------------
          call outpost(vx,vy,vz,pavg,wk1,'qqq')
       endif
 
-      if (ifbuoy.and.ifrom(1).and.ifrom(2)) then ! assume gx,gy,gz has mass
-         do j=0,nb
-         do i=0,nb
-            but0(i,j)=op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),
-     $                            gx,gy,gz,tb(1,j))
-            if (nio.eq.0) write (6,*) i,j,but0(i,j),'but0'
-         enddo
-         enddo
-         call opcopy(wk1,wk2,wk3,gx,gy,gz)
-         call outpost(wk1,wk2,wk3,pavg,tavg,'ggg')
-      endif
-
       if (nio.eq.0) write (6,*) 'exiting setf'
 
       return
@@ -1072,6 +1063,36 @@ c-----------------------------------------------------------------------
       s=1./ad_ra
       call opcmult(gx,gy,gz,s)
 c     ad_ra=1.
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine setbut
+
+      include 'SIZE'
+      include 'MOR'
+      include 'AVG'
+
+      common /scrread/ tab((lb+1)**2)
+
+      character*128 fname
+
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
+         do j=0,nb
+         do i=0,nb
+            but0(i+j*(nb+1),0)=op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),
+     $                            gx,gy,gz,tb(1,j))
+            if (nio.eq.0) write (6,*) i,j,but0(i+j*(nb+1),0),'but0'
+         enddo
+         enddo
+         call opcopy(wk1,wk2,wk3,gx,gy,gz)
+         call outpost(wk1,wk2,wk3,pavg,tavg,'ggg')
+         call dump_serial(but0,(nb+1)**2,'ops/but ',nid)
+      else
+         fname='ops/but '
+         if (nio.eq.0) write (6,*) 'reading but...'
+         call read_mat_serial(but0,nb+1,nb+1,fname,mb+1,nb+1,tab,nid)
+      endif
 
       return
       end

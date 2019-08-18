@@ -589,20 +589,17 @@ c-----------------------------------------------------------------------
       real rhs(nb)
 
       call mxm(u,nb+1,ad_beta(2,icount),3,tmp1,1)
-c     call mxm(bv0,nb+1,tmp,nb+1,rhs,1)
       call mxm(bu,nb,tmp1(1),nb,rhs,1)
 
       call cmult(rhs,-1.0/ad_dt,nb)
 
       s=-1.0/ad_re
 
-c     call add2s2(rhs,av0,s,nb+1) ! not working...
       do i=1,nb
          rhs(i)=rhs(i)+s*au0(i,0)
       enddo
 
       call evalc(tmp1(1),cul,u,nb)
-c     call evalc_legacy(tmp1(1),cul,icul,u,nb)
       call chsign(tmp1(1),nb)
 
       if (ifbuoy) then
@@ -675,8 +672,6 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /scravg/ ux(lt),uy(lt),uz(lt)
-
       if (ad_step.eq.navg_step) then
          call rzero(ua,nb+1)
          call rzero(u2a,(nb+1)**2)
@@ -686,7 +681,7 @@ c-----------------------------------------------------------------------
 
       do j=0,nb
       do i=0,nb
-         u2a(i,j)=u2a(i,j)+u(i,1)*u(j,1)
+         u2a(i+j*(nb+1),0)=u2a(i+j*(nb+1),0)+u(i,1)*u(j,1)
       enddo
       enddo
 
@@ -716,9 +711,9 @@ c-----------------------------------------------------------------------
 
       do j=0,nb
       do i=0,nb
-         uuta(i,j)=uuta(i,j)+u(i,1)*ut(j,1)
-         utua(i,j)=utua(i,j)+u(j,1)*ut(i,1)
-         ut2a(i,j)=ut2a(i,j)+ut(j,1)*ut(i,1)
+         uuta(i+j*(nb+1),0)=uuta(i+j*(nb+1),0)+u(i,1)*ut(j,1)
+         utua(i+j*(nb+1),0)=utua(i+j*(nb+1),0)+u(j,1)*ut(i,1)
+         ut2a(i+j*(nb+1),0)=ut2a(i+j*(nb+1),0)+ut(j,1)*ut(i,1)
       enddo
       enddo
 

@@ -129,7 +129,7 @@ c-----------------------------------------------------------------------
       include 'MOR'
       include 'TSTEP'
 
-      common /ctkea/ cdiff(0:lb)
+      common /ctkea/ cdiff(0:lb),ccat(0:lb)
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
@@ -139,13 +139,8 @@ c-----------------------------------------------------------------------
          cdiff(i)=u(i,1)-uas(i)
       enddo
 
-      do j=0,nb
-      do i=0,nb
-         tke=tke+bu0(i,j)*cdiff(i)*cdiff(j)
-      enddo
-      enddo
-
-      tke=tke*.5
+      call mxm(bu0,nb+1,cdiff,nb+1,ccat,1)
+      tke=.5*vlsc2(ccat,cdiff,nb+1)
 
       if (nio.eq.0) write (6,*) time,tke,'tke'
 
