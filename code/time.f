@@ -61,19 +61,19 @@ c-----------------------------------------------------------------------
 
       do j=1,nb
       do i=1,nb
-         if (ifdebug) write (6,*) i,j,au(i,j),'au'
+         if (ifdebug) write (6,*) i,j,au(i+(j-1)*nb,1),'au'
       enddo
       enddo
 
       do j=1,nb
       do i=1,nb
-         if (ifdebug) write (6,*) i,j,bu(i,j),'bu'
+         if (ifdebug) write (6,*) i,j,bu(i+(j-1)*nb,1),'bu'
       enddo
       enddo
 
       do j=1,nb
       do i=1,nb
-         if (ifdebug) write (6,*) i,j,fluv(i,j),'LU'
+         if (ifdebug) write (6,*) i,j,fluv(i+(j-1)*nb,1),'LU'
       enddo
       enddo
 
