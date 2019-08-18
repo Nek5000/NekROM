@@ -281,8 +281,6 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'inside rom_init_params'
 
-      nb=lb
-
       ad_nsteps=nsteps
       ad_iostep=iostep
 
@@ -334,6 +332,8 @@ c-----------------------------------------------------------------------
       ifei=nint(param(175)).ne.0
 
       navg_step=nint(max(1.,param(176)))
+      nb=nint(param(177))
+      if (nb.eq.0) nb=lb
 
       ad_qstep=nint(param(180))+ad_iostep*max(1-nint(param(180)),0)
 
