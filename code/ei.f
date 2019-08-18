@@ -91,6 +91,8 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
 
+      common /ccres/ cdiff(0:lb)
+
       parameter (lt=lx1*ly1*lz1*lelt)
 
       if (eqn.eq.'POI') then
@@ -114,9 +116,13 @@ c-----------------------------------------------------------------------
       res=sqrt(res)
 
       eierr=0.
+
+      call sub3(cdiff,ua,uas,nb+1)
+      call mxm(bu0,nb+1,cdiff,nb+1,ctmp,1)
+
       do i=0,nb
       do j=0,nb
-         eierr=eierr+bu0(i,j)*(ua(i)-uas(i))*(ua(j)-uas(j))
+         eierr=eierr+bu0(1+i+(nb+1)*j)*(ua(i)-uas(i))*(ua(j)-uas(j))
       enddo
       enddo
 
@@ -443,7 +449,7 @@ c-----------------------------------------------------------------------
 
       l=1
       do i=1,nb
-         theta(l)=ut(i,1)
+         theta(l)=ut(i)
          l=l+1
       enddo
 
@@ -451,7 +457,7 @@ c-----------------------------------------------------------------------
       l=l+1
 
       do i=1,nb
-         theta(l)=-ut(i,1)
+         theta(l)=-ut(i)
          theta(l)=0.
          l=l+1
       enddo
@@ -474,7 +480,7 @@ c-----------------------------------------------------------------------
       n=lx1*ly1*lz1*nelv
 
       l=1
-      call set_betaj(betaj)
+      call set_betaj
       call mxm(utj,nb+1,betaj,6,theta(l),1)
 
       l=l+nb+1
@@ -501,7 +507,7 @@ c-----------------------------------------------------------------------
       n=lx1*ly1*lz1*nelv
 
       l=1
-      call set_betaj(betaj)
+      call set_betaj
       call mxm(utj,nb+1,betaj,6,theta(l),1)
 
       l=l+nb+1
@@ -518,8 +524,7 @@ c        call mxm(uutj,(nb+1)**2,alphaj,6,theta(l),1)
       if (ifrom(1)) then
          do j=0,nb
          do i=0,nb
-c           theta(l)=theta(l)+uuta(i,j)
-            theta(l)=theta(l)+utua(i,j)
+            theta(l)=theta(l)+utua(i+(nb+1)*j)
             l=l+1
          enddo
          enddo
@@ -558,7 +563,7 @@ c-----------------------------------------------------------------------
       call mxm(ut2j,(nb+1)**2,alphaj,6,theta(l),1)
       do j=0,nb
       do i=0,nb
-         theta(l)=theta(l)+u2a(i,j)
+         theta(l)=theta(l)+u2a(1+i+(nb+1)*j)
          l=l+1
       enddo
       enddo

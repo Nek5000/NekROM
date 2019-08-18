@@ -37,12 +37,12 @@ c-----------------------------------------------------------------------
       call add2s2(cavg,u,dt,nb+1)
 
       do i=0,nb
-         cvar(i)=cvar(i)+dt*(savg(i)-u(i,1))**2
+         cvar(i)=cvar(i)+dt*(savg(i)-u(i))**2
       enddo
 
       do i=0,nb
-         if (u(i,1).lt.cmin(i)) cmin(i)=u(i,1)
-         if (u(i,1).gt.cmax(i)) cmax(i)=u(i,1)
+         if (u(i).lt.cmin(i)) cmin(i)=u(i)
+         if (u(i).gt.cmax(i)) cmax(i)=u(i)
       enddo
 
       ! ctke is used to compute instantaneous TKE
@@ -63,7 +63,7 @@ c-----------------------------------------------------------------------
 
          if (nio.eq.0) then
             write (6,fmt1) istep,time,(cmax(i),i=0,nb),'cmax'
-            write (6,fmt1) istep,time,(u(i,1),i=0,nb),'coef'
+            write (6,fmt1) istep,time,(u(i),i=0,nb),'coef'
             write (6,fmt1) istep,time,(cmin(i),i=0,nb),'cmin'
             write (6,fmt2) istep,time,deltat,(cavg(i),i=0,nb),'cavg'
             write (6,fmt2) istep,time,deltat,(cvar(i),i=0,nb),'cvar'
@@ -120,8 +120,8 @@ c        call genbases
          nio = nid
 
          do i=0,nb
-            if (u(i,1).lt.cmin(i)) cmin(i)=u(i,1)
-            if (u(i,1).gt.cmax(i)) cmax(i)=u(i,1)
+            if (u(i).lt.cmin(i)) cmin(i)=u(i)
+            if (u(i).gt.cmax(i)) cmax(i)=u(i)
          enddo
 
          write (fmt1,'("(i7,", i0, "(1pe15.7),1x,a4)")') nb+2
@@ -135,7 +135,7 @@ c        call genbases
          ttmp = time
          itmp = istep
          do i=0,nb
-            s=-u(i,1)
+            s=-u(i)
             call opadds(t1,t2,t3,ub(1,i),vb(1,i),wb(1,i),s,n,2)
             err(i)=op_glsc2_wt(t1,t2,t3,t1,t2,t3,bm1)
             istep = i
@@ -147,7 +147,7 @@ c        call genbases
 
          if (nio.eq.0) then
             write (6,fmt1) istep,time,(cmax(i),i=0,nb),'cmax'
-            write (6,fmt1) istep,time,(u(i,1),i=0,nb),'coef'
+            write (6,fmt1) istep,time,(u(i),i=0,nb),'coef'
             write (6,fmt1) istep,time,(cmin(i),i=0,nb),'cmin'
             write (6,fmt2) istep,time,energy,(err(i),i=0,nb),'eerr'
          endif
@@ -195,8 +195,8 @@ c    $      us(1,1,i),us(1,2,i),us(1,ldim,i),ub,vb,wb)
          call add2(savg,utmp,nb+1)
 
          do j=0,nb
-            if (u(j,1).lt.smin(j)) smin(j)=utmp(j)
-            if (u(j,1).gt.smax(j)) smax(j)=utmp(j)
+            if (u(j).lt.smin(j)) smin(j)=utmp(j)
+            if (u(j).gt.smax(j)) smax(j)=utmp(j)
          enddo
 
          ! ctke_fom is used to compute mean TKE
@@ -299,7 +299,7 @@ c-----------------------------------------------------------------------
       time = energy
       call outpost(t1,t2,t3,pr,t,'err')
       do i=0,nb
-         s=-u(i,1)
+         s=-u(i)
          if (ifvort) then
             call add2s2(t1,ub(1,i),s,n)
             err(i)=glsc3(t1,t1,bm1,n)
@@ -490,7 +490,7 @@ c-----------------------------------------------------------------------
          itmp = istep
          do i=0,nb
 
-            s=-u(i,1)
+            s=-u(i)
             call opadds(t1,t2,t3,ub(1,i),vb(1,i),wb(1,i),s,n,2)
             ss = 0
 c           err(i)=op_glsc2_wt(t1,t2,t3,t1,t2,t3,bm1)
@@ -506,7 +506,7 @@ c           err(i)=op_glsc2_wt(t1,t2,t3,t1,t2,t3,bm1)
             endif
             err(i)=sqrt(ss)
 
-            s=-ut(i,1)
+            s=-ut(i)
             ss = 0
             if (ifpod(2)) then
                call add2s2(t4,tb(1,i),s,n)
@@ -529,9 +529,9 @@ c              err_t(i)=op_glsc2_wt(t4,zeros,zeros,t4,zeros,zeros,bm1)
          istep = itmp
 
          if (nio.eq.0) then
-            write (6,fmt1) istep,time,(u(i,1),i=0,nb),'coef'
+            write (6,fmt1) istep,time,(u(i),i=0,nb),'coef'
             write (6,fmt2) istep,time,energy,(err(i),i=0,nb),'erru'
-            write (6,fmt1) istep,time,(ut(i,1),i=0,nb),'coef'
+            write (6,fmt1) istep,time,(ut(i),i=0,nb),'coef'
             write (6,fmt2) istep,time,energy,(err_t(i),i=0,nb),
      $      'errt'
          endif

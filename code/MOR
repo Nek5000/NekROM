@@ -45,37 +45,34 @@ c     parameters and common blocks for MOR
 
       common /morbuoy/ bux,buy,buz
 
-      common /moruavg/ ua(0:lub),u2a(0:lub,0:lub),uas(0:lub),uvs(0:lub)
-      common /mortavg/ uta(0:ltb),uuta(0:lub,0:ltb),utua(0:ltb,0:lub),
-     $                 ut2a(0:ltb,0:ltb),tas(0:ltb),tvs(0:ltb)
+      common /moruavg/ ua(0:lub),u2a((lub+1)**2),uas(0:lub),uvs(0:lub)
+      common /mortavg/ uta(0:ltb),uuta((lub+1)*(ltb+1)),
+     $                 utua((ltb+1)*(lub+1)),
+     $                 ut2a((ltb+1)*(ltb+1)),tas(0:ltb),tvs(0:ltb)
 
       common /mormsk/ dmask(lx1,ly1,lz1,lelm,lmsk+1)
 
       parameter (lcglo=2*lub*(lub+1)*(lub+1))
       parameter (lcloc=lcglo/lpmin+1)
 
-      common /morvops/ au0(0:lub,0:lub),bu0(0:lub,0:lub),
-     $                 au(lub,lub),bu(lub,lub),
-     $                 cul((lcloc-1)*lmu+1),cultmp((lcloc-1)*lmu+1),
-     $                 icul(3,(lcloc-1)*lmu+1),
-     $                 icultmp(3,(lcloc-1)*lmu+1)
+      common /morvops/ au0((lub+1)**2),bu0((lub+1)**2),
+     $                 au(lub**2),bu(lub**2),
+     $                 cul((lcloc-1)*lmu+1)
 
-      common /mortops/ at0(0:ltb,0:ltb),bt0(0:ltb,0:ltb),
-     $                 at(ltb,ltb),bt(ltb,ltb),
-     $                 ctl((lcloc-1)*lmt+1),ctltmp((lcloc-1)*lmt+1),
-     $                 ictl(3,(lcloc-1)*lmt+1),
-     $                 ictltmp(3,(lcloc-1)*lmt+1)
+      common /mortops/ at0((ltb+1)**2),bt0((ltb+1)**2),
+     $                 at(ltb**2),bt(ltb**2),
+     $                 ctl((lcloc-1)*lmt+1)
 
-      common /morcpl/  but0(0:lub,0:ltb),buc(lub,0:ltb),cintp(1,0:1)
+      common /morcpl/  but0((lub+1)*(ltb+1)),buc(lub*(ltb+1)),cintp(1)
 
-      common /morvsol/ u(0:lub,3),uj(0:lub,6),
-     $                 u2(0:lub,0:lub),u2j(0:lub,0:lub,6)
+      common /morvsol/ u(0:(lub+1)*3-1),uj(0:lub,6),
+     $                 u2((lub+1)**2),u2j(0:lub,0:lub,6)
 
-      common /mortsol/ ut(0:ltb,3),utj(0:ltb,6),
+      common /mortsol/ ut(0:(ltb+1)*3-1),utj(0:ltb,6),
      $                 uutj(0:lub,0:ltb,6),utuj(0:ltb,0:lub,6),
-     $                 ut2(0:ltb,0:lub),ut2j(0:ltb,0:ltb,6)
+     $                 ut2((ltb+1)*(lub+1)),ut2j(0:ltb,0:ltb,6)
 
-      common /morrhs/ cvr(lub,3),ctr(lub,3),usa(0:lub),rg(lub),
+      common /morrhs/ cvr(lub*3),ctr(ltb*3),usa(0:lub),rg(lub),
      $                rf(lub),fu(lub,3),rq(ltb)
 
       common /morsig_diag/ siga_diag(0:lub),sigb_diag(0:lub),
@@ -91,8 +88,8 @@ c     parameters and common blocks for MOR
       common /morfld/ wm1(lx1*ly1*lz1*lelm)
       common /morqoi/ rnus,rdgx(0:lub),rdgy(0:lub),rdgz(0:lub)
 
-      common /mordrag/ fd1(ldim,0:lub),fd2(ldim,0:lub,0:lub),
-     $                 fd3(ldim,0:lub)
+      common /mordrag/ fd1(ldim*(lub+1)),fd2(ldim*(lub+1)**2),
+     $                 fd3(ldim*(lub+1))
       common /mordarray/ sobj(lx1,ly1,lz1,lelm),g(lx1,ly1,lz1,lelm)
       common /morpar/ ad_dt,ad_re,ad_pe,ad_alpha(3,3),ad_beta(4,3),
      $                tbeta,ad_ra
@@ -105,9 +102,10 @@ c     parameters and common blocks for MOR
      $                  isolve,ic1,ic2,jc1,jc2,kc1,kc2
 
       integer ipiv
-      common /morlu/ fluv(lub,lub),flut(lub,lub)
+      common /morlu/ fluv(lub**2),flut(lub**2)
       common /morilu/ irv(lub),icv(lub),irt(lub),ict(lub),ipiv(lub)
 
+      ! Constrained Optimization ! TODO: cleanup multi-dimensional arrays
       real helmu,invhelmu,helmt,invhelmt,qny,qns,
      $     ubarr0,tbarr0,boxtol
       integer ubarrseq,tbarrseq,barr_func
@@ -119,7 +117,7 @@ c     parameters and common blocks for MOR
       common /morbarrier/ ubarr0,tbarr0,ubarrseq,tbarrseq,
      $                    box_tol,barr_func
 
-      ! Error Indicator
+      ! Error Indicator ! TODO: cleanup multi-dimensional arrays
 
       common /eires/ xi(lx1*ly1*lz1*lelm,lres),theta(lres),
      $               sigma(lres,lres),alphaj(6),betaj(6),
@@ -130,6 +128,8 @@ c     parameters and common blocks for MOR
 
       common /eiresu/ xi_u(lx1*ly1*lz1*lelm,ldim,lres),theta_u(lres),
      $                sigma_u(lres,lres)
+
+      ! Flags
 
       logical ifl2,ifvort,ifstep,ifpart,ifavg0,
      $        ifcdrag,ifrms,ifread,ifforce,ifpod(0:ldimt1),

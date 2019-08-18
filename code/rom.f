@@ -239,8 +239,8 @@ c-----------------------------------------------------------------------
                call lap2d(a1,ub(1,i))
                call lap2d(a2,vb(1,i))
                if (ldim.eq.3) call lap2d(a3,wb(1,i))
-               call cint(fd1(1,i),ub(1,i),vb(1,i),wb(1,i))
-               call cint(fd3(1,i),a1,a2,a3)
+               call cint(fd1(1+ldim*i),ub(1,i),vb(1,i),wb(1,i))
+               call cint(fd3(1+ldim*i),a1,a2,a3)
             enddo
          endif
       endif
@@ -636,126 +636,6 @@ c     call cpart(ic1,ic2,jc1,jc2,kc1,kc2,ncloc,nb,np,nid+1) ! new indexing
       return
       end
 c-----------------------------------------------------------------------
-      subroutine setc_legacy(cl,icl,fname)
-
-      include 'SIZE'
-      include 'TOTAL'
-      include 'MOR'
-
-      parameter (lt=lx1*ly1*lz1*lelt)
-
-      real cux(lt),cuy(lt),cuz(lt)
-
-      common /scrcwk/ wk(lcloc),wk2(0:lub)
-
-      real cl(lcloc),icl(3,lcloc)
-
-      character*128 fname
-      character*128 fnlint
-
-      if (nio.eq.0) write (6,*) 'inside setc'
-
-      call nekgsync
-      conv_time=dnekclock()
-
-      call lints(fnlint,fname,128)
-
-      if (iffastc) then
-         jj=nb
-         ntot=nb*(nb+1)*(nb+2)/2
-      else
-         jj=0
-         ntot=nb*(nb+1)*(nb+1)
-      endif
-
-      ntp=ntot/np
-      mm=ntot-(ntot/np)*np
-
-      l=0
-      mid=0
-
-      n=lx1*ly1*lz1*nelv
-
-      if (nio.eq.0) write (6,*) 'file=',fnlint
-      if (ifread.and.ifcdrag)
-     $   call read_serial(fd2,(nb+1)**2,'qoi/fd2 ',wk2,nid)
-      if (ifread.and.nid.eq.0) open (unit=12,file=fnlint)
-
-      if (.not.ifread.and..not.ifaxis) then
-         do i=0,nb
-            call set_convect_new(c1v(1,i),c2v(1,i),c3v(1,i),
-     $                           ub(1,i),vb(1,i),wb(1,i))
-            if (ifield.eq.1) then
-               call intp_rstd_all(u1v(1,i),ub(1,i),nelv)
-               call intp_rstd_all(u2v(1,i),vb(1,i),nelv)
-               if (ldim.eq.3) call intp_rstd_all(u3v(1,i),wb(1,i),nelv)
-            else
-               call intp_rstd_all(u1v(1,i),tb(1,i),nelv)
-            endif
-         enddo
-      endif
-
-      do k=0,nb
-         if (nio.eq.0) write (6,*) 'k=',k
-         do j=min(k,jj),nb
-            if (.not.ifread) then
-               if (ifield.eq.1) then
-                  if (iffastc) then
-                     call ccu_new(cux,cuy,cuz,j,k)
-                  else
-                     call ccu(cux,cuy,cuz,k,j)
-                  endif
-               else
-                  call cct(cux,k,j)
-               endif
-            endif
-            do i=1,nb
-               l=l+1
-               if (.not.ifread) then
-                  if (ifield.eq.1) then
-                     cultmp(l)=op_glsc2_wt(
-     $                  ub(1,i),vb(1,i),wb(1,i),cux,cuy,cuz,ones)
-                  else
-                     cultmp(l)=glsc2(tb(1,i),cux,n)
-                  endif
-               endif
-               icultmp(1,l) = i
-               icultmp(2,l) = j
-               icultmp(3,l) = k
-               mcloc=ntp+max(mm-mid,0)/max(mm-mid,1)
-c              if (nio.eq.0) write (6,*) l,mcloc,'mcloc'
-               if (l.eq.mcloc) then
-                  if (ifread) then
-                     if (nid.eq.0) then
-                        read (12,*) (cultmp(kk),kk=1,mcloc)
-                     else
-                        call rzero(cultmp,mcloc)
-                     endif
-                  endif
-                  if (ifread) call gop(cultmp,wk,'+  ',mcloc)
-                  if (nid.eq.mid) then
-                     ncloc=mcloc
-                     call copy(cl,cultmp,ncloc)
-                     call icopy(icl,icultmp,ncloc*3)
-                  endif
-                  mid=mid+1
-                  l = 0
-               endif
-            enddo
-         enddo
-      enddo
-
-      if (ifread.and.nid.eq.0) close (unit=12)
-
-      call nekgsync
-      if (nio.eq.0) write (6,*) 'conv_time: ',dnekclock()-conv_time
-      if (nio.eq.0) write (6,*) 'ncloc=',ncloc
-
-      if (nio.eq.0) write (6,*) 'exiting setc'
-
-      return
-      end
-c-----------------------------------------------------------------------
       subroutine seta(a,a0,fname)
 
       include 'SIZE'
@@ -884,14 +764,14 @@ c-----------------------------------------------------------------------
                call pv2b(u,uic,vic,wic,ub,vb,wb)
             endif
             do i=0,nb
-               if (nio.eq.0) write (6,*) 'ut',ut(i,1)
+               if (nio.eq.0) write (6,*) 'ut',ut(i)
             enddo
             call opadd2(uic,vic,wic,ub,vb,wb)
          else
             call rzero(u,(nb+1)*3)
-            u(0,1)=1.
-            u(0,2)=1.
-            u(0,3)=1.
+            u((nb+1)*0)=1.
+            u((nb+1)*1)=1.
+            u((nb+1)*2)=1.
          endif
 
          if (rmode.eq.'ALL'.or.rmode.eq.'OFF')
@@ -902,7 +782,7 @@ c-----------------------------------------------------------------------
             call sub2(tic,tb,n)
             call ps2b(ut,tic,tb)
             do i=0,nb
-               if (nio.eq.0) write (6,*) 'ut',ut(i,1)
+               if (nio.eq.0) write (6,*) 'ut',ut(i)
             enddo
             call add2(tic,tb,n)
             if (rmode.eq.'All'.or.rmode.eq.'OFF')
@@ -1026,7 +906,7 @@ c-----------------------------------------------------------------------
          call dump_serial(ut,nb+1,'ops/tf ',nid)
       endif
       do i=0,nb
-         t1(i)=u2a(i,i)-ua(i)*ua(i)
+         t1(i)=u2a(i+i*(nb+1))-ua(i)*ua(i)
       enddo
 
       call dump_serial(t1,nb+1,'ops/uv ',nid)
@@ -1067,7 +947,7 @@ c     ad_ra=1.
       return
       end
 c-----------------------------------------------------------------------
-      subroutine setbut
+      subroutine setbut(b)
 
       include 'SIZE'
       include 'MOR'
@@ -1075,14 +955,16 @@ c-----------------------------------------------------------------------
 
       common /scrread/ tab((lb+1)**2)
 
+      real b(0:nb,0:nb)
+
       character*128 fname
 
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
          do j=0,nb
          do i=0,nb
-            but0(i+j*(nb+1),0)=op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),
+            b(i,j)=op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),
      $                            gx,gy,gz,tb(1,j))
-            if (nio.eq.0) write (6,*) i,j,but0(i+j*(nb+1),0),'but0'
+            if (nio.eq.0) write (6,*) i,j,b(i,j),'but0'
          enddo
          enddo
          call opcopy(wk1,wk2,wk3,gx,gy,gz)

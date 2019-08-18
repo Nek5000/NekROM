@@ -50,7 +50,7 @@ c-----------------------------------------------------------------------
       do j=0,nb
       do i=0,nb
          call col3(tbt,tb(1,i),tb(1,j),n)
-         call add2s2(tt,tbt,ut2a(i,j),n)
+         call add2s2(tt,tbt,ut2a(1+i+(nb+1)*j),n)
       enddo
       enddo
 
@@ -73,9 +73,10 @@ c-----------------------------------------------------------------------
       do j=0,nb
          if (nio.eq.0) write (6,*) 'reconu_rms:',j,'/',nb
          do i=0,nb
-            call admcol3(ux,ub(1,i),ub(1,j),u2a(i,j),n)
-            call admcol3(uy,vb(1,i),vb(1,j),u2a(i,j),n)
-            if (ldim.eq.3) call admcol3(uz,wb(1,i),wb(1,j),u2a(i,j),n)
+            call admcol3(ux,ub(1,i),ub(1,j),u2a(1+i+(nb+1)*j),n)
+            call admcol3(uy,vb(1,i),vb(1,j),u2a(1+i+(nb+1)*j),n)
+            if (ldim.eq.3)
+     $         call admcol3(uz,wb(1,i),wb(1,j),u2a(1+i+(nb+1)*j),n)
          enddo
       enddo
 
@@ -136,7 +137,7 @@ c-----------------------------------------------------------------------
       tke=0.
 
       do i=0,nb
-         cdiff(i)=u(i,1)-uas(i)
+         cdiff(i)=u(i)-uas(i)
       enddo
 
       call mxm(bu0,nb+1,cdiff,nb+1,ccat,1)
@@ -924,9 +925,10 @@ c-----------------------------------------------------------------------
          call opzero(ux1,uy1,uz1)
          do j=0,nb
          do i=0,nb
-            call admcol3(ux1,ub(1,i),tb(1,j),uuta(i,j),n)
-            call admcol3(uy1,vb(1,i),tb(1,j),uuta(i,j),n)
-            if (ldim.eq.3) call admcol3(uz1,wb(1,i),tb(1,j),uuta(i,j),n)
+            call admcol3(ux1,ub(1,i),tb(1,j),uuta(1+i+(nb+1)*j),n)
+            call admcol3(uy1,vb(1,i),tb(1,j),uuta(1+i+(nb+1)*j),n)
+            if (ldim.eq.3)
+     $         call admcol3(uz1,wb(1,i),tb(1,j),uuta(1+i+(nb+1)*j),n)
          enddo
          enddo
          call outpost(ux1,uy1,uz1,pr,tt,'tmn')

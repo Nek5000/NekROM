@@ -219,14 +219,14 @@ c-----------------------------------------------------------------------
             pdy3=0.
             call mxm(u,nb+1,ad_beta(2,count),3,tmp,1)
             do j=0,nb
-               pdx1=pdx1+fd1(1,j)*tmp(j)
-               pdy1=pdy1+fd1(2,j)*tmp(j)
+               pdx1=pdx1+fd1(1+ldim*j)*tmp(j)
+               pdy1=pdy1+fd1(2+ldim*j)*tmp(j)
                do i=0,nb
-                  pdx2=pdx2+fd2(1,i,j)*u(j,1)*u(i,1)
-                  pdy2=pdy2+fd2(2,i,j)*u(j,1)*u(i,1)
+                  pdx2=pdx2+fd2(1+ldim*i+ldim*(nb+1)*j)*u(j)*u(i)
+                  pdy2=pdy2+fd2(2+ldim*i+ldim*(nb+1)*j)*u(j)*u(i)
                enddo
-               pdx3=pdx3+fd3(1,j)*u(j,1)
-               pdy3=pdy3+fd3(2,j)*u(j,1)
+               pdx3=pdx3+fd3(1+ldim*j)*u(j)
+               pdy3=pdy3+fd3(2+ldim*j)*u(j)
             enddo
             pdx3=pdx3/ad_re
             pdy3=pdy3/ad_re
@@ -530,10 +530,10 @@ c-----------------------------------------------------------------------
 
          do j=0,nb
             do i=0,nb
-               tbulk_num=tbulk_num+tbn(i,j)*u(i,1)*ut(j,1)
+               tbulk_num=tbulk_num+tbn(i,j)*u(i)*ut(j)
             enddo
-            tbulk_den=tbulk_den+tbd(j)*u(j,1)
-            twall=twall+tsa(j)*ut(j,1)
+            tbulk_den=tbulk_den+tbd(j)*u(j)
+            twall=twall+tsa(j)*ut(j)
          enddo
 
          tbulk=tbulk_num/tbulk_den
