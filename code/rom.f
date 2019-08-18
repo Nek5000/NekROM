@@ -407,7 +407,7 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
       if (nio.eq.0) then
          write (6,*) 'rp_nb         ',nb
          write (6,*) 'rp_lub        ',lub
-         write (6,*) 'rp_lut        ',lut
+         write (6,*) 'rp_ltb        ',ltb
          write (6,*) ' '
          write (6,*) 'rp_ls         ',ls
          write (6,*) 'rp_lsu        ',lsu
