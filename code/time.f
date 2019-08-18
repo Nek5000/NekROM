@@ -137,7 +137,7 @@ c-----------------------------------------------------------------------
 
       if (ifdebug) call exitt0
 
-      call count_gal(num_galu,anum_galu,rhs(1),umax,umin,1e-12,nb)
+      call count_gal(num_galu,anum_galu,rhs(1),umax,umin,1e-16,nb)
 
       call shift3(u,rhs,nb+1)
 
@@ -342,7 +342,7 @@ c-----------------------------------------------------------------------
          if (ifdebug) write (6,*) i,rhs(i),'sol'
       enddo
 
-      call count_gal(num_galt,anum_galt,rhs(1),tmax,tmin,1e-12,nb)
+      call count_gal(num_galt,anum_galt,rhs(1),tmax,tmin,1e-16,nb)
 
       call shift3(ut,rhs,nb+1)
 
