@@ -432,15 +432,16 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine evalc(cu,cl,uu,n)
+      subroutine evalc(cu,cm,cl,uu)
 
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
 
-      real cu(n)
-      real uu(0:n)
+      real cu(nb)
+      real uu(0:nb)
       real cl(ic1:ic2,jc1:jc2,kc1:kc2)
+      real cm(ic1:ic2,jc1:jc2)
 
       common /scrc/ work(max(lub,ltb))
 
@@ -458,20 +459,12 @@ c-----------------------------------------------------------------------
       if (ifcintp) then
          call mxm(cintp,n,uu,n+1,cu,1)
       else
+         call rzero(cu,nb)
          if (ncloc.ne.0) then
-            l=1
-
-            call rzero(cu,n)
-
-            do k=kc1,kc2
-            do j=jc1,jc2
-            do i=ic1,ic2
-               cu(i)=cu(i)+cl(i,j,k)*uu(j)*u(k)
-            enddo
-            enddo
-            enddo
+            call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),u(kc1),(kc2-kc1+1),cm,1)
+            call mxm(cm,(ic2-ic1+1),u(jc1),(jc2-jc1+1),cu(ic1),1)
          endif
-         call gop(cu,work,'+  ',n)
+         call gop(cu,work,'+  ',nb)
       endif
 
       call nekgsync
@@ -506,7 +499,7 @@ c-----------------------------------------------------------------------
          rhs(i)=rhs(i)+s*at0(1+i)
       enddo
 
-      call evalc(tmp(1),ctl,ut,nb)
+      call evalc(tmp(1),ctmp,ctl,ut)
 
       call shift3(ctr,tmp(1),nb)
 
@@ -541,7 +534,7 @@ c-----------------------------------------------------------------------
          rhs(i)=rhs(i)+s*au0(1+i)
       enddo
 
-      call evalc(tmp1(1),cul,u,nb)
+      call evalc(tmp1(1),ctmp,cul,u)
       call chsign(tmp1(1),nb)
 
       if (ifbuoy) then
