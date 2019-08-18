@@ -461,8 +461,18 @@ c-----------------------------------------------------------------------
       else
          call rzero(cu,nb)
          if (ncloc.ne.0) then
-            call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),u(kc1),(kc2-kc1+1),cm,1)
-            call mxm(cm,(ic2-ic1+1),u(jc1),(jc2-jc1+1),cu(ic1),1)
+            if (nb.le.23) then
+               call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),u(kc1),(kc2-kc1+1),cm,1)
+               call mxm(cm,(ic2-ic1+1),u(jc1),(jc2-jc1+1),cu(ic1),1)
+            else
+               do k=kc1,kc2
+               do j=jc1,jc2
+               do i=ic1,ic2
+                  cu(i)=cu(i)+cl(i,j,k)*uu(j)*u(k,1)
+               enddo
+               enddo
+               enddo
+            endif
          endif
          call gop(cu,work,'+  ',nb)
       endif
