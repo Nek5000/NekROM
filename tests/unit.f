@@ -61,10 +61,9 @@ c-----------------------------------------------------------------------
       include 'INPUT'
       include 'MOR'
 
-      common /scrtest/ wk(lb+1)
+      common /scrtest/ wk(lb+1),u0(0:lb)
 
       logical iflag
-      real u0(0:nb)
 
       param(171) = 1.
       if (iflag) param(171) = 0.
