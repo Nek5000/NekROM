@@ -104,11 +104,9 @@ c-----------------------------------------------------------------------
       include 'INPUT'
       include 'MOR'
 
-      common /scrtest/ wk(lb+1,lb+1)
+      common /scrtest/ wk(lb+1,lb+1),aa(0:lb,0:lb)
 
       logical iflag
-
-      real aa(0:nb,0:nb)
 
       param(171) = 1.
       if (iflag) param(171) = 0.
@@ -182,11 +180,9 @@ c-----------------------------------------------------------------------
       include 'INPUT'
       include 'MOR'
 
-      common /scrtest/ wk(lb+1,lb+1)
+      common /scrtest/ wk(lb+1,lb+1),bb(0:lb,0:lb)
 
       logical iflag
-
-      real bb(0:nb,0:nb)
 
       param(171) = 1.
       if (iflag) param(171) = 0.
@@ -260,11 +256,9 @@ c-----------------------------------------------------------------------
       include 'INPUT'
       include 'MOR'
 
-      common /scrtest/ wk(lb+1,lb+1,lb+1)
+      common /scrtest/ wk(lb+1,lb+1,lb+1),cc(lcloc),cglob(lb,lb+1,lb+1)
 
       logical iflag
-
-      real cc(lcloc), cglob(nb,nb+1,nb+1)
 
       param(171) = 1.
       if (iflag) param(171) = 0.
