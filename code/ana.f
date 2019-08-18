@@ -320,58 +320,6 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine csparsity
-
-      include 'SIZE'
-      include 'MOR'
-      include 'TOTAL'
-
-      real tmp(1),tmpp(1)
-
-      if (nid.eq.0) open (unit=50,file='ops/cloc')
-
-      tmp(1)=ncloc
-      ncmax=glmax(tmp,1)
-
-      nlocmin = lcglo/np
-      npmin = np-lcglo+(lcglo/np)*np
-
-      eps=1.e-16
-
-      tmpp(1)=vlamax(clocal,ncloc)
-
-      tol=glamax(tmpp,1)
-
-      ec=eps*tol
-
-      nc=100
-
-      faci=eps**(1./real(nc))
-
-      do ie=1,nc
-         nnz=0
-         do i=0,np-1
-            mcloc = nlocmin + i / npmin
-            if (nid.eq.i) then
-               call copy(cultmp,cul,mcloc)
-            else
-               call rzero(cultmp,mcloc)
-            endif
-
-            call gop(cultmp,ctmp,'+  ',mcloc)
-
-            do j=1,mcloc
-               if (abs(cultmp(j)).gt.tol) nnz=nnz+1
-            enddo
-         enddo
-         tol=tol*faci
-         pnz=real(nnz)/real(nb*(nb+1)**2)
-         write (6,*) ie,tol,nnz,pnz,'nonzero'
-      enddo
-
-      return
-      end
-c-----------------------------------------------------------------------
       subroutine rom_sample(coef)
 c     This subroutine computes the sample mean and the sample variance
 
