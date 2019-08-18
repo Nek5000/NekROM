@@ -101,6 +101,14 @@ c-----------------------------------------------------------------------
       subroutine a0_unit(iflag)
       include 'SIZE'
       include 'MOR'
+      logical iflag
+
+      param(171) = 1.
+      if (iflag) param(171) = 0.
+      param(172) = 1.
+      param(173) = 0.
+
+      call rom_setup
       call a0_unit_helper(au0,iflag)
       return
       end
@@ -114,15 +122,6 @@ c-----------------------------------------------------------------------
       common /scrtest/ wk(lb+1,lb+1),aa(0:lb,0:lb)
 
       real a0(0:nb,0:nb)
-
-      logical iflag
-
-      param(171) = 1.
-      if (iflag) param(171) = 0.
-      param(172) = 1.
-      param(173) = 0.
-
-      call rom_setup
       call read_serial(aa,(nb+1)**2,'ops/au ',wk,nid)
 
       iexit=0
