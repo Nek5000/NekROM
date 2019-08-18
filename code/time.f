@@ -461,8 +461,9 @@ c-----------------------------------------------------------------------
       else
          call rzero(cu,nb)
          if (ncloc.ne.0) then
-            if (nb.le.23) then
-               call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),u(kc1),(kc2-kc1+1),cm,1)
+            if ((kc2-kc1).lt.64.and.((jc2-jc1).lt.64) then
+               call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),
+     $                  u(kc1),(kc2-kc1+1),cm,1)
                call mxm(cm,(ic2-ic1+1),u(jc1),(jc2-jc1+1),cu(ic1),1)
             else
                do k=kc1,kc2
