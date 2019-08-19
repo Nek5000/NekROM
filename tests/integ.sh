@@ -1,7 +1,7 @@
-if [[ $1 =~ COPT ]]; then; ifcopt=1; else; ifcopt=0; fi
-if [[ $1 =~ 1P ]]; then; if1p=1; else; if1p=0; fi
-if [[ $1 =~ 2P ]]; then; if2p=1; else; if2p=0; fi
-if [[ $1 =~ VN ]]; then; ifvn=1; else; ifvn=0; fi
+if [[ $1 =~ COPT ]]; then ifcopt=1; else ifcopt=0; fi
+if [[ $1 =~ 1P ]]; then if1p=1; else if1p=0; fi
+if [[ $1 =~ 2P ]]; then if2p=1; else if2p=0; fi
+if [[ $1 =~ VN ]]; then ifvn=1; else ifvn=0; fi
 
 if [[ $1 =~ _L2_ ]]; then
     ifl2='.TRUE.'
