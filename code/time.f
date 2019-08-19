@@ -23,6 +23,8 @@ c-----------------------------------------------------------------------
             copt_time=0.
             quasi_time=0.
             lnsrch_time=0.
+            compgf_time=0.
+            compf_time=0.
          endif
       endif
 
@@ -247,6 +249,8 @@ c-----------------------------------------------------------------------
          copt_time=0.
          quasi_time=0.
          lnsrch_time=0.
+         compgf_time=0.
+         compf_time=0.
          tcopt_count = 0
       endif
 

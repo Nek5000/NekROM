@@ -198,7 +198,7 @@ c-----------------------------------------------------------------------
          ifield=2
          call seta(at,at0,'ops/at ')
          call setb(bt,bt0,'ops/bt ')
-         call setc(ctl,ictl,'ops/ct ')
+         call setc(ctl,'ops/ct ')
       endif
       ifield=jfield
 
@@ -1014,6 +1014,8 @@ c-----------------------------------------------------------------------
          write (6,*) 'copt_time:   ',copt_time
          write (6,*) 'quasi_time:  ',quasi_time
          write (6,*) 'lnsrch_time: ',lnsrch_time
+         write (6,*) 'compf_time:  ',compf_time
+         write (6,*) 'compgf_time: ',compgf_time
          write (6,*) 'ucopt_active:',ucopt_count,
      $         '/',ad_step-1
          if (ifrom(2)) then
