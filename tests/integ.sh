@@ -35,9 +35,9 @@ if [[ $ifcopt == 1 ]]; then sed -i.bu 's/nb=20/nb=10/g' LMOR; fi
 if [[ $ifvn == 1 ]]; then sed -i.bu 's/lb=20/lb=50/g' LMOR; fi
 
 if [[ $if2p == 1 ]]; then
-    type mpirun
-    type mpiexec
-    mpiexec -np 2./nek5000 | tee test.log.1
+#   type mpirun
+#   type mpiexec
+    mpiexec -np 2 ./nek5000 | tee test.log.1
 else
     ./nek5000 | tee test.log.1
 fi
