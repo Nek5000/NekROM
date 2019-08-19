@@ -424,7 +424,7 @@ c-----------------------------------------------------------------------
          call axhelm(uu,s(1,1,j),ones,zeros,1,1)
          if (mdim.ge.2) call axhelm(vv,s(1,2,j),ones,zeros,1,2)
          if (mdim.eq.3) call axhelm(ww,s(1,3,j),ones,zeros,1,3)
-         do i=1,ms ! Form the Gramian, U=U_K^T A U_K using H^1_0 Norm
+         do i=j,ms ! Form the Gramian, U=U_K^T A U_K using H^1_0 Norm
             gram(i,j)=s1*glsc2(uu,s(1,1,i),n)
      $               +s2*glsc3(s(1,1,i),s(1,1,j),bm1,n)
             if (mdim.ge.2) then
@@ -435,6 +435,7 @@ c-----------------------------------------------------------------------
                gram(i,j)=gram(i,j)+s1*glsc2(ww,s(1,3,i),n)
      $                            +s2*glsc3(s(1,3,i),s(1,3,j),bm1,n)
             endif
+            if (i.ne.j) gram(j,i)=gram(i,j)
          enddo
          if (nio.eq.0) write(6,1) j,gram(1,j),'HLM'
       enddo
@@ -466,7 +467,7 @@ c-----------------------------------------------------------------------
          call axhelm(uu,s(1,1,j),ones,zeros,1,1)
          if (mdim.ge.2) call axhelm(vv,s(1,2,j),ones,zeros,1,2)
          if (mdim.eq.3) call axhelm(ww,s(1,3,j),ones,zeros,1,3)
-         do i=1,ms ! Form the Gramian, U=U_K^T A U_K using H^1_0 Norm
+         do i=j,ms ! Form the Gramian, U=U_K^T A U_K using H^1_0 Norm
             gram(i,j)=glsc2(uu,s(1,1,i),n)
             if (mdim.ge.2) then
                gram(i,j)=gram(i,j)+glsc2(vv,s(1,2,i),n)
@@ -474,6 +475,7 @@ c-----------------------------------------------------------------------
             if (mdim.eq.3) then
                gram(i,j)=gram(i,j)+glsc2(ww,s(1,3,i),n)
             endif
+            if (i.ne.j) gram(j,i)=gram(i,j)
          enddo
          if (nio.eq.0) write(6,1) j,gram(1,j),'H10'
       enddo
@@ -502,13 +504,14 @@ c-----------------------------------------------------------------------
       n=lx1*ly1*lz1*nelt
 
       do j=1,ms
-         do i=1,ms ! Form the Gramian, U=U_K^T A U_K using H^1_0 Norm
+         do i=j,ms ! Form the Gramian, U=U_K^T A U_K using H^1_0 Norm
             if (mdim.eq.1) then
                gram(i,j)=sip(s(1,1,i),s(1,1,j))
             else
                gram(i,j)=vip(s(1,1,i),s(1,2,i),s(1,ldim,i),
      $                       s(1,1,j),s(1,2,j),s(1,ldim,j))
             endif
+            if (i.ne.j) gram(j,i)=gram(i,j)
          enddo
          if (nio.eq.0) write(6,1) j,gram(1,j),'L2 '
       enddo
@@ -536,12 +539,13 @@ c-----------------------------------------------------------------------
       n=lx1*ly1*lz1*nelv
 
       do j=1,ms ! Form the Gramian, U=U_K^T A U_K using L2 Norm
-      do i=1,ms
+      do i=j,ms
          gram(i,j)=glsc3(s(1,1,i),s(1,1,j),bm1,n)
          if (mdim.ge.2)
      $      gram(i,j)=gram(i,j)+glsc3(s(1,2,i),s(1,2,j),bm1,n)
          if (mdim.ge.3)
      $      gram(i,j)=gram(i,j)+glsc3(s(1,3,i),s(1,3,j),bm1,n)
+         if (i.ne.j) gram(j,i)=gram(i,j)
       enddo
          if (nio.eq.0) write (6,1) j,gram(1,j)
       enddo
