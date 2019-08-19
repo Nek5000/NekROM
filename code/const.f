@@ -183,8 +183,10 @@ c-----------------------------------------------------------------------
                call copy(qgo,qngradf,nb) 
 
                ! update qn-gradf
+               tcompgf_time=dnekclock()
                call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par)
                call sub3(qny,qngradf,qgo,nb) 
+               compgf_time=compgf_time+dnekclock()-tcompgf_time
 
                ysk = vlsc2(qny,qns,nb)
 
@@ -400,17 +402,27 @@ c-----------------------------------------------------------------------
       integer countbc
       logical cond1,cond2,cond3
 
-      alphak = 1.0
+c     alphak = 1.0
       chekbc = 0
       counter = 0
       countbc = 0
 
+      tcompf_time=dnekclock()
       call comp_qnf(uu,rhs,helm,invhelm,fk,amax,amin,bpar) ! get old f
+      compf_time=compf_time+dnekclock()-tcompf_time
+
+      tcompgf_time=dnekclock()
       call comp_qngradf(uu,rhs,helm,Jfk,amax,amin,bpar)
+      compgf_time=compgf_time+dnekclock()-tcompgf_time
 
       call findminalpha(minalpha,s,uu,amax,amin)
 
       call copy(uuo,uu,nb)
+      if ((minalpha-1.0).gt.1e-10) then
+         alphak = 1.0
+      else
+         alphak = minalpha
+      endif
       do ii=1,nb
          uu(ii) = uu(ii) + alphak*s(ii)
       enddo
@@ -425,8 +437,13 @@ c-----------------------------------------------------------------------
          endif
       enddo
 
+      tcompf_time=dnekclock()
       call comp_qnf(uu,rhs,helm,invhelm,fk1,amax,amin,bpar) ! get new f
+      compf_time=compf_time+dnekclock()-tcompf_time
+
+      tcompgf_time=dnekclock()
       call comp_qngradf(uu,rhs,helm,Jfk1,amax,amin,bpar)
+      compgf_time=compgf_time+dnekclock()-tcompgf_time
 
       Jfks  = vlsc2(Jfk,s,nb)   
       Jfks1 = vlsc2(Jfk1,s,nb)   
@@ -453,8 +470,14 @@ c-----------------------------------------------------------------------
             endif
          enddo
 
+         tcompf_time=dnekclock()
          call comp_qnf(uu,rhs,helm,invhelm,fk1,amax,amin,bpar)
+         compf_time=compf_time+dnekclock()-tcompf_time
+
+         tcompgf_time=dnekclock()
          call comp_qngradf(uu,rhs,helm,Jfk1,amax,amin,bpar)
+         compgf_time=compgf_time+dnekclock()-tcompgf_time
+
          Jfks1 = vlsc2(Jfk1,s,nb)   
 
          cond1 = (fk1-(fk+sigmab*alphak*Jfks)).gt.1e-10
@@ -466,7 +489,8 @@ c        write(6,*)'cond1',cond1,fk1,(fk+sigmab*alphak*Jfks)
 c        write(6,*)'cond2',cond2,Jfks1,(0.9*Jfks)
          
          cond3 = (alphak-minalpha).lt.1e-10
-         if ((cond3.AND..not.cond1).OR.alphak.lt.1e-8) then
+c        if ((cond3.AND..not.cond1).OR.alphak.lt.1e-8) then
+         if ((.not.cond1).OR.alphak.lt.1e-8) then
             exit
          endif
       enddo
