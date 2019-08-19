@@ -592,8 +592,7 @@ c-----------------------------------------------------------------------
       save    icalld
       data    icalld /0/
       
-c     common /scrgvec/ eye(ls,ls),gc(ls,ls),wk(ls,ls),eigv(ls,ls)
-      common /scrgvec/ gc(ls,ls),wk(ls,ls),eigv(ls,ls)
+      common /scrgvec/ gc(ls,ls),wk(ls,ls)
 
       real gram(ls,ls),vec(ls,nb),val(ls)
 
@@ -606,21 +605,16 @@ c     common /scrgvec/ eye(ls,ls),gc(ls,ls),wk(ls,ls),eigv(ls,ls)
          icalld=1
       endif
 
-c     call rzero(eye,ls*ls)
-c     do j=1,ls
-c        eye(j,j) = 1.
-c     enddo
       call copy(gc,gram,ls*ls)
 
-c     call generalev(gc,eye,val,ls,wk)
       call regularev(gc,val,ls,wk)
-      call copy(eigv,gc,ls*ls)
+      call copy(wk,gc,ls*ls)
 
       call nekgsync
       eval_time=dnekclock()
 
       do l = 1,nb
-         call copy(vec(1,l),eigv(1,ls-l+1),ls) ! reverse order of eigv
+         call copy(vec(1,l),wk(1,ls-l+1),ls) ! reverse order of wk
       enddo
 
       do i=1,ns
@@ -788,7 +782,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine regularev(a,lam,n,w)
+      subroutine regularev(a,lam,n,wk)
 c
 c     Solve the eigenvalue problem  A x = lam x
 c
@@ -801,17 +795,12 @@ c     should be called.
       include 'SIZE'
       include 'PARALLEL'
 
-      real a(n,n),lam(n),w(n,n)
+      real a(n,n),lam(n),wk(n,n)
       real aa(100)
-
-      parameter (lbw=4*lx1*ly1*lz1*lelv)
-      common /bigw/ bw(lbw)
-
-      lw = n*n
 
       call copy(aa,a,100)
 
-      call dsyev('V','U',n,a,n,lam,bw,lbw,info)
+      call dsyev('V','U',n,a,n,lam,wk,n*n,info)
 
       if (info.ne.0) then
          if (nid.eq.0) then
