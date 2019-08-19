@@ -56,7 +56,9 @@ jobs:
   - env: TEST=B0_H10_UNIT
   - env: TEST=C0_H10_UNIT
   - stage: integration
-    env: TEST=CYL_L2_INTEG
+    env: TEST=CYL_L2_1P_INTEG
+  - env: TEST=CYL_L2_2P_INTEG
+  - env: TEST=CYL_L2_VN_INTEG
   - env: TEST=CYL_L2_COPT_INTEG
 
 after_success:

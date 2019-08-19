@@ -1,8 +1,7 @@
-if [[ $1 =~ COPT ]]; then
-    ifcopt=1
-else
-    ifcopt=0
-fi
+if [[ $1 =~ COPT ]]; then; ifcopt=1; else; ifcopt=0; fi
+if [[ $1 =~ 1P ]]; then; if1p=1; else; if1p=0; fi
+if [[ $1 =~ 2P ]]; then; if2p=1; else; if2p=0; fi
+if [[ $1 =~ VN ]]; then; ifvn=1; else; ifvn=0; fi
 
 if [[ $1 =~ _L2_ ]]; then
     ifl2='.TRUE.'
@@ -32,10 +31,16 @@ test
 .01
 Z
 
-./nek5000 | tee test.log.1
+if [[ $ifcopt == 1 ]]; then sed -i.bu 's/nb=20/nb=10/g' LMOR; fi
+if [[ $ifvn == 1 ]]; then sed -i.bu 's/lb=20/lb=50/g' LMOR; fi
+
+if [[ $if2p == 1 ]]; then
+    mpiexec -np 2./nek5000 | tee test.log.1
+else
+    ./nek5000 | tee test.log.1
+fi
 
 if [[ $ifcopt == 1 ]]; then
-   sed -i.bu 's/nb=20/nb=10/g' LMOR
    ../../tests/tcopt
 else
    ../../tests/tdragx
