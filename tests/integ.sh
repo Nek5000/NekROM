@@ -1,16 +1,3 @@
-if [ "$IPS" = "L2" ]; then
-    $MOR_DIR/bin/gops cyl_rect_l2
-    $MOR_DIR/bin/gbas cyl_rect_l2
-elif [ "$IPS" = "H10" ]; then
-    $MOR_DIR/bin/gops cyl_rect_h10
-    $MOR_DIR/bin/gbas cyl_rect_h10
-else
-    echo "inner-product space $IPS not supported..."
-    exit(1)
-fi
-
-mkdir ops
-
 $MOR_DIR/tests/test_template.sh rom_update
 
 ls ../../data/cyl_rect/cyl0.f* > file.list
