@@ -17,7 +17,7 @@ before_install:
   - sudo apt-get install -y libmpich-dev mpich
 
   # Install Julia
-  - wget https://julialang-s3.julialang.org/bin/linux/x64/1.0/julia-1.0.3-linux-x86_64.tar.gz
+  - wget -nv https://julialang-s3.julialang.org/bin/linux/x64/1.0/julia-1.0.3-linux-x86_64.tar.gz
   - tar xvzf julia-1.0.3-linux-x86_64.tar.gz
   - sudo ln -v -s $MOR_DIR/julia-1.0.3/bin/julia /usr/bin/julia
   - $MOR_DIR/tests/julia-init
