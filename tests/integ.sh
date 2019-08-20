@@ -1,6 +1,8 @@
+np=1
+
 if [[ $1 =~ COPT ]]; then ifcopt=1; else ifcopt=0; fi
-if [[ $1 =~ 1P ]]; then if1p=1; else if1p=0; fi
-if [[ $1 =~ 2P ]]; then if2p=1; else if2p=0; fi
+if [[ $1 =~ 1P ]]; then np=1; fi
+if [[ $1 =~ 2P ]]; then np=2; fi
 if [[ $1 =~ VN ]]; then ifvn=1; else ifvn=0; fi
 
 if [[ $1 =~ _L2_ ]]; then
@@ -34,12 +36,10 @@ Z
 if [[ $ifcopt == 1 ]]; then sed -i.bu 's/nb=20/nb=10/g' LMOR; fi
 if [[ $ifvn == 1 ]]; then sed -i.bu 's/lb=20/lb=50/g' LMOR; fi
 
-if [[ $if2p == 1 ]]; then
-#   type mpirun
-#   type mpiexec
+if [[ $np == 2 ]]; then
     mpiexec -np 2 ./nek5000 | tee test.log.1
 else
-    ./nek5000 | tee test.log.1
+    mpiexec -np 1 ./nek5000 | tee test.log.1
 fi
 
 if [[ $ifcopt == 1 ]]; then
