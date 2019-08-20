@@ -10,7 +10,7 @@ using DelimitedFiles
 using FFTW
 using Statistics
 
-run(pipeline(`grep dragx test.log.?`,`sed 's/dragx//g'`,"dragx.log"));
+run(pipeline(`grep dragx test.log`,`sed 's/dragx//g'`,"dragx.log"));
 data=readdlm("dragx.log");
 dragx=data[:,4];
 time=data[:,1];
