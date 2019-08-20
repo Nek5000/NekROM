@@ -15,6 +15,6 @@ Z
 sed -i.bu "s/lb=.*\)/lb=$LB)/g" LMOR
 sed -i.bu "s/^.*p177.*\$/$NB p177/g" LMOR
 
-mpiexec -np $NP ./nek5000 | tee test.log
+mpiexec -np $NP ./nek5000 > test.log
 
 ../$SCR
