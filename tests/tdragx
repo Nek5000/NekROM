@@ -1,11 +1,5 @@
 #!/usr/bin/env julia
 
-using Pkg
-
-Pkg.add("DelimitedFiles")
-Pkg.add("FFTW")
-Pkg.add("Statistics")
-
 using DelimitedFiles
 using FFTW
 using Statistics
