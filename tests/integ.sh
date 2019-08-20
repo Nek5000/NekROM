@@ -1,9 +1,12 @@
-if [[ $IPS == 'L2' ]]; then
+if [ "$IPS" = "L2" ]; then
     $MOR_DIR/bin/gops cyl_rect_l2
     $MOR_DIR/bin/gbas cyl_rect_l2
-else
+elif [ "$IPS" = "H10" ]; then
     $MOR_DIR/bin/gops cyl_rect_h10
     $MOR_DIR/bin/gbas cyl_rect_h10
+else
+    echo "inner-product space $IPS not supported..."
+    exit(1)
 fi
 
 mkdir ops

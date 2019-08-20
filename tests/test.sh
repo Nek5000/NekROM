@@ -11,8 +11,11 @@ echo `pwd`'/' >> SESSION.NAME
 
 $MOR_DIR/bin/gsnaps cyl_rect
 
-if [ "${TEST: -4}" = "UNIT" ]; then
-    bash $MOR_DIR/tests/unit.sh $TEST
-else
+if [ "$TYPE" = "UNIT" ]; then
+    bash $MOR_DIR/tests/unit.sh
+elif [ "$TYPE" = "INTEG" ]; then
     bash $MOR_DIR/tests/integ.sh
+else
+    echo "type $TYPE not supported..."
+    exit(1)
 fi
