@@ -317,7 +317,7 @@ c-----------------------------------------------------------------------
       call opadd2(vx,vy,vz,ux,uy,uz)
       call add2(pr,pp,lx2*ly2*lz2*nelv)
 
-      do idim=1,ldimt
+      do idim=1,1
          call add2(t(1,idim),tt(1,idim),lx1*ly1*lz1*nelt)
       enddo
 
