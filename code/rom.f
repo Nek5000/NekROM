@@ -490,10 +490,9 @@ c-----------------------------------------------------------------------
          nsu=1
          nsp=1
          nst=1
-         if (ifrom(0)) nsp=ls
-         if (ifrom(1)) nsu=ls
-         if (ifrom(2)) nst=ls
-
+         if (ifrom(0)) nsp=lsp
+         if (ifrom(1)) nsu=lsu
+         if (ifrom(2)) nst=lst
          call get_saved_fields(us0,ps,ts0,nsu,nsp,nst,timek,fname1)
 
          fname1='avg.list'
