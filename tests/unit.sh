@@ -1,4 +1,4 @@
-$MOR_DIR/tests/test_template.sh "$TEST_$IPS_$TYPE"
+$MOR_DIR/tests/test_template.sh "${TEST}_${IPS}_${TYPE}"
 
 ls ../../data/cyl_rect/cyl0.f* > file.list
 ls ../../data/cyl_rect/avgcyl0.f* > avg.list

@@ -47,9 +47,9 @@ jobs:
   - stage: unit
     env: TYPE=UNIT TEST=GRAMMIAN          IPS=L2
   - env: TYPE=UNIT TEST=INITIAL_CONDITION IPS=L2
-  - env: TYPE=UNIT TEST=A0_UNIT           IPS=L2
-  - env: TYPE=UNIT TEST=B0_UNIT           IPS=L2
-  - env: TYPE=UNIT TEST=C0_UNIT           IPS=L2
+  - env: TYPE=UNIT TEST=A0                IPS=L2
+  - env: TYPE=UNIT TEST=B0                IPS=L2
+  - env: TYPE=UNIT TEST=C0                IPS=L2
   - env: TYPE=UNIT TEST=GRAMMIAN          IPS=H10
   - env: TYPE=UNIT TEST=INITIAL_CONDITION IPS=H10
   - env: TYPE=UNIT TEST=A0                IPS=H10
