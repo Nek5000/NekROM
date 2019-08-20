@@ -56,10 +56,10 @@ jobs:
   - env: TEST=B0_H10_UNIT
   - env: TEST=C0_H10_UNIT
   - stage: integration
-    env: TEST=CYL_L2_1P_INTEG
-  - env: TEST=CYL_L2_2P_INTEG
-  - env: TEST=CYL_L2_VN_INTEG
-  - env: TEST=CYL_L2_COPT_INTEG
+    env: TEST=CYL_INTEG IPS=L2 NP=1 NB=20 LB=20 SCR=tdragx
+  - env: TEST=CYL_INTEG IPS=L2 NP=2 NB=20 LB=20 STB=tdragx
+  - env: TEST=CYL_INTEG IPS=L2 NP=1 NB=20 LB=50 STB=tdragx
+  - env: TEST=CYL_INTEG IPS=L2 NP=1 NB=10 LB=10 STB=tcopt
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)

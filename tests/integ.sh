@@ -1,23 +1,13 @@
-np=1
-
-if [[ $1 =~ COPT ]]; then ifcopt=1; else ifcopt=0; fi
-if [[ $1 =~ 1P ]]; then np=1; fi
-if [[ $1 =~ 2P ]]; then np=2; fi
-if [[ $1 =~ VN ]]; then ifvn=1; else ifvn=0; fi
-
-if [[ $1 =~ _L2_ ]]; then
-    ifl2='.TRUE.'
+if [[ $IPS == 'L2' ]]; then
     $MOR_DIR/bin/gops cyl_rect_l2
     $MOR_DIR/bin/gbas cyl_rect_l2
 else
-    ifl2='.FALSE.'
     $MOR_DIR/bin/gops cyl_rect_h10
     $MOR_DIR/bin/gbas cyl_rect_h10
 fi
 
 mkdir ops
 
-name="$(echo $1 | perl -pe 's/_(L2|H10)_/_/g')(${ifl2})"
 $MOR_DIR/tests/test_template.sh rom_update
 
 ls ../../data/cyl_rect/cyl0.f* > file.list
@@ -27,23 +17,14 @@ ls bas/bascyl0.f* > bas.list
 cp ../../data/cyl_rect/cyl0.f01000 r0.f00001
 
 $SOURCE_ROOT/bin/makenek test
-
 $SOURCE_ROOT/bin/genmap << Z
 test
 .01
 Z
 
-if [[ $ifcopt == 1 ]]; then sed -i.bu 's/nb=20/nb=10/g' LMOR; fi
-if [[ $ifvn == 1 ]]; then sed -i.bu 's/lb=20/lb=50/g' LMOR; fi
+sed -i.bu "s/lb=.*\)/lb=$LB)/g' LMOR
+sed -i.bu "s/^.*p177.*\$/$NB p177/g" LMOR
 
-if [[ $np == 2 ]]; then
-    mpiexec -np 2 ./nek5000 | tee test.log.1
-else
-    mpiexec -np 1 ./nek5000 | tee test.log.1
-fi
+mpiexec -np $NP ./nek5000 | tee test.log.$NP
 
-if [[ $ifcopt == 1 ]]; then
-   ../../tests/tcopt
-else
-   ../../tests/tdragx
-fi
+../$SCR
