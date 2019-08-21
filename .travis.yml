@@ -17,12 +17,10 @@ before_install:
   - sudo apt-get install -y libmpich-dev mpich
 
   # Install Julia
-  - wget https://julialang-s3.julialang.org/bin/linux/x64/1.0/julia-1.0.3-linux-x86_64.tar.gz
-  - tar -xvf julia-1.0.3-linux-x86_64.tar.gz
+  - wget -nv https://julialang-s3.julialang.org/bin/linux/x64/1.0/julia-1.0.3-linux-x86_64.tar.gz
+  - tar xvzf julia-1.0.3-linux-x86_64.tar.gz
   - sudo ln -v -s $MOR_DIR/julia-1.0.3/bin/julia /usr/bin/julia
-  - echo $(pwd)
-  - echo $PATH
-  - echo $HOME
+  - $MOR_DIR/tests/julia-init
 
   # Setup Nek5000
   - git clone --single-branch -b presolve-fix https://github.com/kent0/Nek5000
@@ -54,19 +52,21 @@ script: $MOR_DIR/tests/test.sh
 jobs:
   include:
   - stage: unit
-    env: TEST=GRAMMIAN_L2_UNIT
-  - env: TEST=INITIAL_CONDITION_L2_UNIT
-  - env: TEST=A0_L2_UNIT
-  - env: TEST=B0_L2_UNIT
-  - env: TEST=C0_L2_UNIT
-  - env: TEST=GRAMMIAN_H10_UNIT
-  - env: TEST=INITIAL_CONDITION_H10_UNIT
-  - env: TEST=A0_H10_UNIT
-  - env: TEST=B0_H10_UNIT
-  - env: TEST=C0_H10_UNIT
+    env: TYPE=UNIT TEST=GRAMMIAN          IPS=L2
+  - env: TYPE=UNIT TEST=INITIAL_CONDITION IPS=L2
+  - env: TYPE=UNIT TEST=A0                IPS=L2
+  - env: TYPE=UNIT TEST=B0                IPS=L2
+  - env: TYPE=UNIT TEST=C0                IPS=L2
+  - env: TYPE=UNIT TEST=GRAMMIAN          IPS=H10
+  - env: TYPE=UNIT TEST=INITIAL_CONDITION IPS=H10
+  - env: TYPE=UNIT TEST=A0                IPS=H10
+  - env: TYPE=UNIT TEST=B0                IPS=H10
+  - env: TYPE=UNIT TEST=C0                IPS=H10
   - stage: integration
-    env: TEST=CYL_L2_INTEG
-  - env: TEST=CYL_L2_COPT_INTEG
+    env: TYPE=INTEG TEST=CYL IPS=L2 NP=1 NB=20 LB=20 SCR=tdragx
+  - env: TYPE=INTEG TEST=CYL IPS=L2 NP=2 NB=20 LB=20 SCR=tdragx
+  - env: TYPE=INTEG TEST=CYL IPS=L2 NP=1 NB=20 LB=50 SCR=tdragx
+  - env: TYPE=INTEG TEST=CYL IPS=L2 NP=1 NB=10 LB=10 SCR=tcopt
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
