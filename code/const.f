@@ -263,8 +263,14 @@ c-----------------------------------------------------------------------
 
          call sub3(tmp1,uu,amax,nb)  
          call sub3(tmp2,amin,uu,nb)  
+
+         ! add perturbation 
+         call cadd(tmp1,-1e-2,nb)
+         call cadd(tmp2,-1e-2,nb)
+
          call vsq(tmp1,nb)
          call vsq(tmp2,nb)
+
          call invcol1(tmp1,nb)
          call invcol1(tmp2,nb)
          call sub3(tmp3,tmp2,tmp1,nb)
@@ -328,6 +334,10 @@ c-----------------------------------------------------------------------
       else 
          call sub3(tmp1,uu,amax,nb)  
          call sub3(tmp2,amin,uu,nb)  
+
+         ! add perturbation
+         call cadd(tmp1,-1e-2,nb)
+         call cadd(tmp2,-1e-2,nb)
    
          do i=1,nb
             tmp3(i) = 1./tmp1(i)
