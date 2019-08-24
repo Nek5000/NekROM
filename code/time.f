@@ -139,6 +139,13 @@ c-----------------------------------------------------------------------
 
       if (ifdebug) call exitt0
 
+      if (rfilter.eq.'EF ') then
+         if (rbf.gt.0) then
+            call pod_proj(rhs(1),rbf)
+         else if (rbf.lt.0) then
+         endif
+      endif
+
       call count_gal(num_galu,anum_galu,rhs(1),umax,umin,1e-16,nb)
 
       call shift3(u,rhs,nb+1)
