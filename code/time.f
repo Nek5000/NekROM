@@ -444,6 +444,7 @@ c-----------------------------------------------------------------------
 
       real cu(n)
       real uu(0:n)
+      real ucting(0:n)
       real cl(ic1:ic2,jc1:jc2,kc1:kc2)
 
       common /scrc/ work(max(lub,ltb))
@@ -466,14 +467,31 @@ c-----------------------------------------------------------------------
             l=1
 
             call rzero(cu,n)
+            
+            if (rfilter.eq.'STD'.or.rfilter.eq.'EF ') then
+               do k=kc1,kc2
+               do j=jc1,jc2
+               do i=ic1,ic2
+                  cu(i)=cu(i)+cl(i,j,k)*uu(j)*u(k,1)
+               enddo
+               enddo
+               enddo
+            else if (rfilter.eq.'LER') then
+               call copy(ucting,u(0,1),n+1)
 
-            do k=kc1,kc2
-            do j=jc1,jc2
-            do i=ic1,ic2
-               cu(i)=cu(i)+cl(i,j,k)*uu(j)*u(k,1)
-            enddo
-            enddo
-            enddo
+               if (rbf.lt.0) then
+               else if (rbf.gt.0) then
+                  call pod_proj(ucting,rbf)
+               endif
+
+               do k=kc1,kc2
+               do j=jc1,jc2
+               do i=ic1,ic2
+                  cu(i)=cu(i)+cl(i,j,k)*uu(j)*ucting(k)
+               enddo
+               enddo
+               enddo
+            endif
          endif
          call gop(cu,work,'+  ',n)
       endif

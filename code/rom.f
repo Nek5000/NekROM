@@ -388,6 +388,18 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
       tbarr0  =param(189)
       tbarrseq=param(190)
 
+      ! filter technique
+      np198=nint(param(198))
+      if (np198.eq.0) then
+         rfilter='STD'
+      else if (np198.eq.1) then
+         rfilter='LER'
+      else if (np198.eq.2) then
+         rfilter='EF '
+      else
+         call exitti('unsupported param(198), exiting...$',np198)
+      endif
+
       ! POD spatial filter
       rbf=nint(param(199))
 
