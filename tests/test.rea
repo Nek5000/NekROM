@@ -201,7 +201,7 @@
    0.00000     p197 MOR: != 0 -> disable 0th mode subtraction
    0.00000     p198 MOR: 0 -> No filter, 1 -> Leray ROM, 2 -> EF ROM
    0.00000     p199 MOR: > 0 -> POD proj, < 0 -> POD differential filter
-   0.00000     p200
+   0.00000     p200 MOR: radius of the differential filter
       4  Lines of passive scalar data follows2 CONDUCT; 2RHOCP
    1.00000       1.00000       1.00000       1.00000       1.00000    
    1.00000       1.00000       1.00000       1.00000    
