@@ -388,6 +388,9 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
       tbarr0  =param(189)
       tbarrseq=param(190)
 
+      ! POD spatial filter
+      rbf=nint(param(199))
+
       call compute_BDF_coef(ad_alpha,ad_beta)
 
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
@@ -441,6 +444,8 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
          write (6,*) 'ubarrseq       ',ubarrseq
          write (6,*) 'tbarr0         ',tbarr0
          write (6,*) 'tbarrseq       ',tbarrseq
+         write (6,*) ' '
+         write (6,*) 'rp_rbf         ',rbf
       endif
 
       if (nio.eq.0) write (6,*) 'exiting rom_init_params'

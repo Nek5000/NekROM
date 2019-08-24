@@ -169,3 +169,6 @@ c     parameters and common blocks for MOR
       common /morchar/ ips,eqn,rmode
 
       common /morid/ ones(lx1*ly1*lz1*lelm),zeros(lx1*ly1*lz1*lelm)
+
+      integer rbf 
+      common /morfilter/ rbf 

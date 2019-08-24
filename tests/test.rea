@@ -199,8 +199,8 @@
    0.00000     p195 MOR: != 0 -> buoyancy (set gx,gy,gz with mass)
    0.00000     p196 MOR: != 0 -> artificial viscosity
    0.00000     p197 MOR: != 0 -> disable 0th mode subtraction
-   0.00000     p198
-   0.00000     p199
+   0.00000     p198 MOR: 0 -> Leray ROM, 1 -> EF ROM
+   0.00000     p199 MOR: 0 -> POD proj, < 0 -> POD differential filter
    0.00000     p200
       4  Lines of passive scalar data follows2 CONDUCT; 2RHOCP
    1.00000       1.00000       1.00000       1.00000       1.00000    
