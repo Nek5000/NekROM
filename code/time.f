@@ -143,8 +143,11 @@ c-----------------------------------------------------------------------
          if (rbf.gt.0) then
             call pod_proj(rhs(1),rbf)
          else if (rbf.lt.0) then
+            call pod_df(rhs(1))
          endif
       endif
+
+
 
       call count_gal(num_galu,anum_galu,rhs(1),umax,umin,1e-16,nb)
 
@@ -487,8 +490,9 @@ c-----------------------------------------------------------------------
                call copy(ucting,u(0,1),n+1)
 
                if (rbf.lt.0) then
+                  call pod_df(ucting(1))
                else if (rbf.gt.0) then
-                  call pod_proj(ucting,rbf)
+                  call pod_proj(ucting(1),rbf)
                endif
 
                do k=kc1,kc2

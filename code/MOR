@@ -172,4 +172,4 @@ c     parameters and common blocks for MOR
 
       integer rbf 
       real rdft
-      common /morfilter/ rbf, rdft
+      common /morfilter/ rdft,rbf
