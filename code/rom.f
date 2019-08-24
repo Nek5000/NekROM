@@ -403,6 +403,9 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
       ! POD spatial filter
       rbf=nint(param(199))
 
+      ! POD radius of the filter for differential filter
+      rdft=param(200)
+
       call compute_BDF_coef(ad_alpha,ad_beta)
 
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
@@ -457,7 +460,9 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
          write (6,*) 'tbarr0         ',tbarr0
          write (6,*) 'tbarrseq       ',tbarrseq
          write (6,*) ' '
+         write (6,*) 'rp_rfilter     ',rfilter
          write (6,*) 'rp_rbf         ',rbf
+         write (6,*) 'rp_rdft        ',rdft
       endif
 
       if (nio.eq.0) write (6,*) 'exiting rom_init_params'
