@@ -147,8 +147,6 @@ c-----------------------------------------------------------------------
          endif
       endif
 
-
-
       call count_gal(num_galu,anum_galu,rhs(1),umax,umin,1e-16,nb)
 
       call shift3(u,rhs,nb+1)
@@ -454,6 +452,7 @@ c-----------------------------------------------------------------------
 
       real cu(nb)
       real uu(0:nb)
+      real ucting(0:nb)
       real cl(ic1:ic2,jc1:jc2,kc1:kc2)
       real cm(ic1:ic2,jc1:jc2)
 
@@ -476,17 +475,47 @@ c-----------------------------------------------------------------------
          call rzero(cu,nb)
          if (ncloc.ne.0) then
             if ((kc2-kc1).lt.64.and.(jc2-jc1).lt.64) then
-               call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),
-     $                  u(kc1),(kc2-kc1+1),cm,1)
-               call mxm(cm,(ic2-ic1+1),u(jc1),(jc2-jc1+1),cu(ic1),1)
+               if (rfilter.eq.'STD'.or.rfilter.eq.'EF ') then
+                  call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),
+     $                     u(kc1),(kc2-kc1+1),cm,1)
+                  call mxm(cm,(ic2-ic1+1),u(jc1),(jc2-jc1+1),cu(ic1),1)
+               else if (rfilter.eq.'LER') then
+                  call copy(ucting,u,nb+1)
+                  if (rbf.lt.0) then
+                     call pod_df(ucting(1))
+                  else if (rbf.gt.0) then
+                     call pod_proj(ucting(1),rbf)
+                  endif
+                  call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),
+     $                     u(kc1),(kc2-kc1+1),cm,1)
+                  call mxm(cm,(ic2-ic1+1),u(jc1),(jc2-jc1+1),cu(ic1),1)
+               endif
             else
-               do k=kc1,kc2
-               do j=jc1,jc2
-               do i=ic1,ic2
-                  cu(i)=cu(i)+cl(i,j,k)*uu(j)*u(k)
-               enddo
-               enddo
-               enddo
+               if (rfilter.eq.'STD'.or.rfilter.eq.'EF ') then
+                  do k=kc1,kc2
+                  do j=jc1,jc2
+                  do i=ic1,ic2
+                     cu(i)=cu(i)+cl(i,j,k)*uu(j)*u(k)
+                  enddo
+                  enddo
+                  enddo
+               else if (rfilter.eq.'LER') then
+                  call copy(ucting,u,nb+1)
+
+                  if (rbf.lt.0) then
+                     call pod_df(ucting(1))
+                  else if (rbf.gt.0) then
+                     call pod_proj(ucting(1),rbf)
+                  endif
+
+                  do k=kc1,kc2
+                  do j=jc1,jc2
+                  do i=ic1,ic2
+                     cu(i)=cu(i)+cl(i,j,k)*uu(j)*ucting(k)
+                  enddo
+                  enddo
+                  enddo
+               endif
             endif
          endif
          call gop(cu,work,'+  ',nb)
