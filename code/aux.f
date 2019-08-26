@@ -1279,11 +1279,11 @@ c-----------------------------------------------------------------------
       chekbc=0
 
       do ii=1,n
-         if ((amax(ii)-uu(ii)).ge.bctol.AND.(uu(ii)-amin(ii)).ge.bctol) 
+         if ((uu(ii)-amax(ii)).ge.bctol.OR.(amin(ii)-uu(ii)).ge.bctol) 
      $   then
-            cgal(ii) = cgal(ii) + 1
-         else
             chekbc=1
+         else
+            cgal(ii) = cgal(ii) + 1
          endif
       enddo
 

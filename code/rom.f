@@ -198,7 +198,7 @@ c-----------------------------------------------------------------------
          ifield=2
          call seta(at,at0,'ops/at ')
          call setb(bt,bt0,'ops/bt ')
-         call setc(ctl,ictl,'ops/ct ')
+         call setc(ctl,'ops/ct ')
       endif
 
       if (ifbuoy.and.ifrom(1).and.ifrom(2)) call setbut
@@ -393,6 +393,24 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
       tbarr0  =param(189)
       tbarrseq=param(190)
 
+      ! filter technique
+      np198=nint(param(198))
+      if (np198.eq.0) then
+         rfilter='STD'
+      else if (np198.eq.1) then
+         rfilter='LER'
+      else if (np198.eq.2) then
+         rfilter='EF '
+      else
+         call exitti('unsupported param(198), exiting...$',np198)
+      endif
+
+      ! POD spatial filter
+      rbf=nint(param(199))
+
+      ! POD radius of the filter for differential filter
+      rdft=param(200)
+
       call compute_BDF_coef(ad_alpha,ad_beta)
 
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
@@ -447,6 +465,10 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
          write (6,*) 'ubarrseq       ',ubarrseq
          write (6,*) 'tbarr0         ',tbarr0
          write (6,*) 'tbarrseq       ',tbarrseq
+         write (6,*) ' '
+         write (6,*) 'rp_rfilter     ',rfilter
+         write (6,*) 'rp_rbf         ',rbf
+         write (6,*) 'rp_rdft        ',rdft
       endif
 
       if (nio.eq.0) write (6,*) 'exiting rom_init_params'
@@ -887,6 +909,8 @@ c-----------------------------------------------------------------------
          write (6,*) 'copt_time:   ',copt_time
          write (6,*) 'quasi_time:  ',quasi_time
          write (6,*) 'lnsrch_time: ',lnsrch_time
+         write (6,*) 'compf_time:  ',compf_time
+         write (6,*) 'compgf_time: ',compgf_time
          write (6,*) 'ucopt_active:',ucopt_count,
      $         '/',ad_step-1
          if (ifrom(2)) then

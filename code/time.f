@@ -23,6 +23,8 @@ c-----------------------------------------------------------------------
             copt_time=0.
             quasi_time=0.
             lnsrch_time=0.
+            compgf_time=0.
+            compf_time=0.
          endif
       endif
 
@@ -137,7 +139,17 @@ c-----------------------------------------------------------------------
 
       if (ifdebug) call exitt0
 
-      call count_gal(num_galu,anum_galu,rhs(1),umax,umin,1e-12,nb)
+      if (rfilter.eq.'EF ') then
+         if (rbf.gt.0) then
+            call pod_proj(rhs(1),rbf)
+         else if (rbf.lt.0) then
+            call pod_df(rhs(1))
+         endif
+      endif
+
+
+
+      call count_gal(num_galu,anum_galu,rhs(1),umax,umin,1e-16,nb)
 
       call shift3(u,rhs,nb+1)
 
@@ -247,6 +259,8 @@ c-----------------------------------------------------------------------
          copt_time=0.
          quasi_time=0.
          lnsrch_time=0.
+         compgf_time=0.
+         compf_time=0.
          tcopt_count = 0
       endif
 
@@ -342,7 +356,7 @@ c-----------------------------------------------------------------------
          if (ifdebug) write (6,*) i,rhs(i),'sol'
       enddo
 
-      call count_gal(num_galt,anum_galt,rhs(1),tmax,tmin,1e-12,nb)
+      call count_gal(num_galt,anum_galt,rhs(1),tmax,tmin,1e-16,nb)
 
       call shift3(ut,rhs,nb+1)
 

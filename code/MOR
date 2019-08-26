@@ -143,12 +143,14 @@ c     parameters and common blocks for MOR
       real last_time,misc_time,lu_time,
      $     copt_time,quasi_time,lnsrch_time,
      $     ulast_time,tlast_time,postu_time,postt_time
+     $     compf_time,compgf_time
       common /mortime/ step_time,last_time,misc_time,evalc_time,
      $                 solve_time,lu_time,
      $                 copt_time,quasi_time,lnsrch_time,
      $                 tstep_time,tlast_time,tsolve_time,
      $                 ustep_time,ulast_time,
-     $                 postu_time,postt_time
+     $                 postu_time,postt_time,
+     $                 compf_time,compgf_time
 
       integer ucopt_count,tcopt_count
       real num_galu,num_galt,
@@ -162,7 +164,11 @@ c     parameters and common blocks for MOR
 
       common /mortest/ ul2(lub),uh10(lub)
 
-      character*3 ips,eqn,rmode
-      common /morchar/ ips,eqn,rmode
+      character*3 ips,eqn,rmode,rfilter
+      common /morchar/ ips,eqn,rmode,rfilter
 
       common /morid/ ones(lx1*ly1*lz1*lelm),zeros(lx1*ly1*lz1*lelm)
+
+      integer rbf 
+      real rdft
+      common /morfilter/ rdft,rbf
