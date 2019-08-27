@@ -2,7 +2,7 @@
 import numpy as np
 
 out_file = open("galnum.log","w")
-for line in open("test.log.1"):
+for line in open("test.log"):
     if "num_galu" in line:
         if 'anum_galu' not in line:
             out_file.write(line)
@@ -22,4 +22,3 @@ for i in range(len(galnum[:,0])):
     if (int(galnum[i,1]) != 1):
         icode+=1
 exit(icode)
-
