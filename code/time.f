@@ -14,31 +14,11 @@ c-----------------------------------------------------------------------
       ifdebug=.true.
       ifdebug=.false.
 
-      if (ad_step.eq.1) then
-         ustep_time = 0.
-         solve_time=0.
-         lu_time=0.
-         ucopt_count=0
-         if (.not.ifrom(2)) then
-            copt_time=0.
-            quasi_time=0.
-            lnsrch_time=0.
-            compgf_time=0.
-            compf_time=0.
-         endif
-      endif
-
       ulast_time = dnekclock()
 
       n=lx1*ly1*lz1*nelt
 
-      if (nb.eq.0) then
-         rhs(0)=1.
-         call shift3(u,rhs,nb+1)
-         return
-      endif
-
-      icount = min0(max(1,ad_step),3)
+      icount = min(max(1,ad_step),3)
 
       rhs(0)=1.
       call setr_v(rhs(1),icount)
@@ -146,8 +126,6 @@ c-----------------------------------------------------------------------
             call pod_df(rhs(1))
          endif
       endif
-
-
 
       call count_gal(num_galu,anum_galu,rhs(1),umax,umin,1e-16,nb)
 

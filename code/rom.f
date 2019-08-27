@@ -292,6 +292,16 @@ c-----------------------------------------------------------------------
       tbarr0=1e-1
       tbarrseq=5
 
+      ustep_time = 0.
+      solve_time=0.
+      lu_time=0.
+      ucopt_count=0
+      copt_time=0.
+      quasi_time=0.
+      lnsrch_time=0.
+      compgf_time=0.
+      compf_time=0.
+
       anum_galu=0.
       anum_galt=0.
 
