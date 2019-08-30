@@ -35,17 +35,20 @@ c-----------------------------------------------------------------------
       save    icalld
       data    icalld /0/
 
-      real dfops(nb,nb)
       real tmp(nb)
 
       if (icalld.eq.0) then
          call setdf(dfops,au,bu,rdft*rdft)
-         call dgetrf(nb,nb,dfops,lub,ipiv,info)
+         call dgetrf(nb,nb,dfops,nb,ipiv,info)
+         icalld=1
       endif
 
-      call mxm(bu,nb,uu,nb,tmp,1)
-      call dgetrs('N',nb,1,dfops,lub,ipiv,tmp,nb,info)
-      call copy(uu,tmp,nb)
+      if (rdft.le.1e-12) then
+      else
+         call mxm(bu,nb,uu,nb,tmp,1)
+         call dgetrs('N',nb,1,dfops,nb,ipiv,tmp,nb,info)
+         call copy(uu,tmp,nb)
+      endif
 
       return
       end
@@ -58,6 +61,7 @@ c-----------------------------------------------------------------------
 
       real flu(nb,nb),a(nb,nb),b(nb,nb)
       real ad_diff
+      
 
       call cmult2(flu,a,ad_diff,nb*nb)
       call add2(flu,b,nb*nb)
