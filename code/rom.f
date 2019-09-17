@@ -972,7 +972,7 @@ c-----------------------------------------------------------------------
       call invcol2(binv,bm1,n)
 
       ad_ra=sqrt(op_glsc2_wt(gx,gy,gz,gx,gy,gz,binv)/glsum(bm1,n))
-      write (6,*) ad_ra,'ad_ra'
+      if (nio.eq.0) write (6,*) ad_ra,'ad_ra'
       s=1./ad_ra
       call opcmult(gx,gy,gz,s)
 c     ad_ra=1.
