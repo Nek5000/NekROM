@@ -201,7 +201,7 @@ c-----------------------------------------------------------------------
          call setc(ctl,'ops/ct ')
       endif
 
-      if (ifbuoy.and.ifrom(1).and.ifrom(2)) call setbut
+      if (ifbuoy.and.ifrom(1).and.ifrom(2)) call setbut(but0)
 
       ifield=jfield
 
