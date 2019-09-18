@@ -986,7 +986,10 @@ c-----------------------------------------------------------------------
       include 'MOR'
       include 'AVG'
 
+      parameter (lt=lx1*ly1*lz1*lelt)
+
       common /scrread/ tab((lb+1)**2)
+      common /scruz/ wk1(lt),wk2(lt),wk3(lt)
 
       real b(0:nb,0:nb)
 
