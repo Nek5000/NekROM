@@ -1003,9 +1003,8 @@ c-----------------------------------------------------------------------
             if (nio.eq.0) write (6,*) i,j,b(i,j),'but0'
          enddo
          enddo
-         call opcopy(wk1,wk2,wk3,gx,gy,gz)
-         call outpost(wk1,wk2,wk3,pavg,tavg,'ggg')
-         call dump_serial(but0,(nb+1)**2,'ops/but ',nid)
+         call outpost(gx,gy,gz,pavg,tavg,'ggg')
+         call dump_serial(b,(nb+1)**2,'ops/but ',nid)
       else
          fname='ops/but '
          if (nio.eq.0) write (6,*) 'reading but...'
