@@ -95,6 +95,7 @@ c-----------------------------------------------------------------------
       call setbases
       call setops
       call setu
+
       call setf
 
       call setqoi
@@ -202,6 +203,7 @@ c-----------------------------------------------------------------------
       endif
 
       if (ifbuoy.and.ifrom(1).and.ifrom(2)) call setbut(but0)
+
 
       ifield=jfield
 
