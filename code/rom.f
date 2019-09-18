@@ -871,8 +871,6 @@ c-----------------------------------------------------------------------
       call rzero(rq,nb)
       call rzero(rg,nb)
 
-      call rzero(but0,(nb+1)**2)
-
       n=lx1*ly1*lz1*nelv
 
       if (ifforce.and.ifrom(1)) then ! assume fx,fy,fz has mass
