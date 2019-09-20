@@ -453,11 +453,11 @@ c-----------------------------------------------------------------------
       else
          call rzero(cu,nb)
          if (ncloc.ne.0) then
-            if ((kc2-kc1).lt.64.and.(jc2-jc1).lt.64) then
-               call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),
-     $                  u(kc1),(kc2-kc1+1),cm,1)
-               call mxm(cm,(ic2-ic1+1),u(jc1),(jc2-jc1+1),cu(ic1),1)
-            else
+c           if ((kc2-kc1).lt.64.and.(jc2-jc1).lt.64) then
+c              call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),
+c    $                  u(kc1),(kc2-kc1+1),cm,1)
+c              call mxm(cm,(ic2-ic1+1),u(jc1),(jc2-jc1+1),cu(ic1),1)
+c           else
                do k=kc1,kc2
                do j=jc1,jc2
                do i=ic1,ic2
@@ -465,7 +465,7 @@ c-----------------------------------------------------------------------
                enddo
                enddo
                enddo
-            endif
+c           endif
          endif
          call gop(cu,work,'+  ',nb)
       endif
