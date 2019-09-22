@@ -319,7 +319,7 @@ c-----------------------------------------------------------------------
             qwall(i)=ta/a
          enddo
       else if (inus.eq.3) then
-         tbn(0,0)=4.
+         tbn(0,0)=2.
          do j=0,nb
             call ctsurf3(tsa(j),tb(1,j))
          enddo
@@ -337,7 +337,7 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'TOTAL'
 
-      common /nusselt/ fpmask(lx1,ly1,lz1,lelt),ffmask(2*ldim,lelt),nuss
+      common /nusselt/ fpmask(lx1,ly1,lz1,lelt),ffmask(2*ldim,lelt)
 
       call savg(tsurf,a_surf,tt,1,'W  ')  ! tbar on wall
 
