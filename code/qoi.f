@@ -349,24 +349,18 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'TOTAL'
 
-      common /nusselt/ fpmask(lx1,ly1,lz1,lelt),ffmask(2*ldim,lelt),nuss
-
       real s(lx1,ly1,lz1,lelt)
 
       tsurf=0.
+      a=0.
       eps=1.e-3
 
-      call rzero(fpmask,lx1*ly1*lz1*nelt)
-      call rzero(ffmask,2*ldim*nelt)
-
-      a=0.
       do ie=1,nelt
       do ifc=1,2*ldim
          call facind(kx1,kx2,ky1,ky2,kz1,kz2,lx1,ly1,lz1,ifc)
          l=0
          ya=.5*(ym1(kx1,ky1,kz1,ie)+ym1(kx2,ky2,kz2,ie))
          if (ya.gt.(1.-eps).or.ya.lt.(-1.+eps)) then
-            ffmask(ifc,ie)=1.
             do iz=kz1,kz2
             do iy=ky1,ky2
             do ix=kx1,kx2
@@ -375,7 +369,6 @@ c-----------------------------------------------------------------------
                if (x.gt.(-1.5-eps).and.x.lt.(2.5+eps)) then
                   a=a+area(l,1,ifc,ie)
                   tsurf=tsurf+area(l,1,ifc,ie)*s(ix,iy,iz,ie)
-                  fpmask(ix,iy,iz,ie)=1.
                endif
             enddo
             enddo
