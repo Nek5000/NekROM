@@ -318,6 +318,15 @@ c-----------------------------------------------------------------------
             a=glsum(a,1)
             qwall(i)=ta/a
          enddo
+      else if (inus.eq.3) then
+         tbn(0,0)=4.
+         do j=0,nb
+            call ctsurf3(tsa(j),tb(1,j))
+         enddo
+
+         do i=0,nb
+            if (nio.eq.0) write (6,*) i,tsa(i),'tsa'
+         enddo
       endif
 
       return
@@ -328,7 +337,54 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'TOTAL'
 
+      common /nusselt/ fpmask(lx1,ly1,lz1,lelt),ffmask(2*ldim,lelt),nuss
+
       call savg(tsurf,a_surf,tt,1,'W  ')  ! tbar on wall
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine ctsurf3(tsurf,s)
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      common /nusselt/ fpmask(lx1,ly1,lz1,lelt),ffmask(2*ldim,lelt),nuss
+
+      real s(lx1,ly1,lz1,lelt)
+
+      tsurf=0.
+      eps=1.e-3
+
+      call rzero(fpmask,lx1*ly1*lz1*nelt)
+      call rzero(ffmask,2*ldim*nelt)
+
+      a=0.
+      do ie=1,nelt
+      do ifc=1,2*ldim
+         call facind(kx1,kx2,ky1,ky2,kz1,kz2,lx1,ly1,lz1,ifc)
+         l=0
+         ya=.5*(ym1(kx1,ky1,kz1,ie)+ym1(kx2,ky2,kz2,ie))
+         if (ya.gt.(1.-eps).or.ya.lt.(-1.+eps)) then
+            ffmask(ifc,ie)=1.
+            do iz=kz1,kz2
+            do iy=ky1,ky2
+            do ix=kx1,kx2
+               l=l+1
+               x=xm1(ix,iy,iz,ie)
+               if (x.gt.(-1.5-eps).and.x.lt.(2.5+eps)) then
+                  a=a+area(l,1,ifc,ie)
+                  tsurf=tsurf+area(l,1,ifc,ie)*s(ix,iy,iz,ie)
+                  fpmask(ix,iy,iz,ie)=1.
+               endif
+            enddo
+            enddo
+            enddo
+         endif
+      enddo
+      enddo
+
+      tsurf=tsurf/a
 
       return
       end
@@ -541,10 +597,17 @@ c-----------------------------------------------------------------------
          if (h.gt.0) h=qsurf/h
          rnus=diam*h/cond
 
-         if (nio.eq.0) write (6,1) istep,time,twall,tbulk,rnus
+         if (nio.eq.0) write (6,1) ad_step,time,twall,tbulk,rnus
       else if (inus.eq.2) then
          rnus=vlsc2(qwall,ut,nb+1)
          if (nio.eq.0) write (6,*) ad_step,time,rnus,'nus'
+      else if (inus.eq.3) then
+         tbulk=tbn(0,0)
+         twall=0.
+         do j=0,nb
+            twall=twall+tsa(j)*ut(j)
+         enddo
+         if (nio.eq.0) write (6,1) ad_step,time,twall,tbulk,rnus
       endif
 
     1 format (i10,1p1e16.8,1p2e14.6,1p1e16.8,' fluxes')
