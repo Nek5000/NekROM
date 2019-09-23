@@ -600,6 +600,10 @@ c-----------------------------------------------------------------------
          do j=0,nb
             twall=twall+tsa(j)*ut(j)
          enddo
+         h=(twall-tbulk)
+         qsurf=1.
+         if (h.gt.0) h=qsurf/h
+         rnus=2.*h
          if (nio.eq.0) write (6,1) ad_step,time,twall,tbulk,rnus
       endif
 
