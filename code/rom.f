@@ -200,6 +200,7 @@ c-----------------------------------------------------------------------
          call seta(at,at0,'ops/at ')
          call setb(bt,bt0,'ops/bt ')
          call setc(ctl,'ops/ct ')
+         call sets(st0,tb,'ops/ct ')
       endif
 
       if (ifbuoy.and.ifrom(1).and.ifrom(2)) call setbut(but0)
@@ -710,6 +711,69 @@ c-----------------------------------------------------------------------
          a(i,j)=a0(i,j)
       enddo
       enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine sets(s0,tt,fname)
+
+      include 'SIZE'
+      include 'TSTEP'
+      include 'INPUT'
+      include 'GEOM'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /scrread/ tab((lub+1)**2)
+      common /scrsets/ tx(lx1,ly1,lx1,lelt),
+     $                 ty(lx1,ly1,lx1,lelt),
+     $                 tz(lx1,ly1,lx1,lelt)
+
+      real s0(0:nb,0:nb),tt(lx1,ly1,lz1,lelt,0:nb)
+
+      character*128 fname
+
+      if (nio.eq.0) write (6,*) 'inside sets'
+
+      if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
+         if (nio.eq.0) write (6,*) 'reading s...'
+         call read_mat_serial(s0,nb+1,nb+1,fname,mb+1,nb+1,tab,nid)
+      else
+         if (nio.eq.0) write (6,*) 'forming s...'
+         do j=0,nb
+            call gradm1(tx,ty,tz,tt(1,1,1,1,j))
+            call outpost(tx,ty,tz,pb,tt(1,1,1,1,j),'gra')
+            if (nio.eq.0) write (6,*) 'sets: ',j,'/',nb
+            nio=-1
+            do i=0,nb
+               s=0.
+               do ie=1,nelt
+               do ifc=1,2*ldim
+                  if (cbc(ifc,ie,2).ne.'E  '.and.
+     $                cbc(ifc,ie,2).ne.'P  ') then
+                     call facind(kx1,kx2,ky1,ky2,kz1,kz2,
+     $                           lx1,ly1,lz1,ifc)
+                     l=0
+                     do iz=kz1,kz2
+                     do iy=ky1,ky2
+                     do ix=kx1,kx2
+                        l=l+1
+                        s=s+area(l,1,ifc,ie)*tt(ix,iy,iz,ie,i)*
+     $                     (unx(l,1,ifc,ie)*tx(ix,iy,iz,ie)
+     $                     +uny(l,1,ifc,ie)*ty(ix,iy,iz,ie)
+     $                     +unz(l,1,ifc,ie)*tz(ix,iy,iz,ie))
+                     enddo
+                     enddo
+                     enddo
+                  endif
+               enddo
+               enddo
+               s0(i,j)=glsum(s,1)
+            enddo
+            nio=nid
+         enddo
+      endif
 
       return
       end
