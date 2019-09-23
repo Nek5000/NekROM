@@ -601,9 +601,10 @@ c-----------------------------------------------------------------------
             twall=twall+tsa(j)*ut(j)
          enddo
          h=(twall-tbulk)
+         diam=2.
          qsurf=1.
          if (h.gt.0) h=qsurf/h
-         rnus=2.*h
+         rnus=ad_pe.*diam*h
          if (nio.eq.0) write (6,1) ad_step,time,twall,tbulk,rnus
       endif
 
