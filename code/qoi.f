@@ -604,7 +604,7 @@ c-----------------------------------------------------------------------
          diam=2.
          qsurf=1.
          if (h.gt.0) h=qsurf/h
-         rnus=ad_pe.*diam*h
+         rnus=ad_pe*diam*h
          if (nio.eq.0) write (6,1) ad_step,time,twall,tbulk,rnus
       endif
 
