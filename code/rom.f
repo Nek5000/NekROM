@@ -743,7 +743,7 @@ c-----------------------------------------------------------------------
          if (nio.eq.0) write (6,*) 'forming s...'
          do j=0,nb
             call gradm1(tx,ty,tz,tt(1,1,1,1,j))
-            call outpost(tx,ty,tz,pb,tt(1,1,1,1,j),'gra')
+c           call outpost(tx,ty,tz,pb,tt(1,1,1,1,j),'gra')
             if (nio.eq.0) write (6,*) 'sets: ',j,'/',nb
             nio=-1
             do i=0,nb
