@@ -459,13 +459,31 @@ c              call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),
 c    $                  u(kc1),(kc2-kc1+1),cm,1)
 c              call mxm(cm,(ic2-ic1+1),u(jc1),(jc2-jc1+1),cu(ic1),1)
 c           else
-               do k=kc1,kc2
-               do j=jc1,jc2
-               do i=ic1,ic2
-                  cu(i)=cu(i)+cl(i,j,k)*uu(j)*u(k)
-               enddo
-               enddo
-               enddo
+               if (rfilter.eq.'STD'.or.rfilter.eq.'EF ') then
+                  do k=kc1,kc2
+                  do j=jc1,jc2
+                  do i=ic1,ic2
+                     cu(i)=cu(i)+cl(i,j,k)*uu(j)*u(k)
+                  enddo
+                  enddo
+                  enddo
+               else if (rfilter.eq.'LER') then
+                  call copy(ucft,u,nb+1)
+
+                  if (rbf.lt.0) then
+                     call pod_df(ucft(1))
+                  else if (rbf.gt.0) then
+                     call pod_proj(ucft(1),rbf)
+                  endif
+
+                  do k=kc1,kc2
+                  do j=jc1,jc2
+                  do i=ic1,ic2
+                     cu(i)=cu(i)+cl(i,j,k)*uu(j)*ucft(k)
+                  enddo
+                  enddo
+                  enddo
+               endif
 c           endif
          endif
          call gop(cu,work,'+  ',nb)
