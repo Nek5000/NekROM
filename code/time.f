@@ -14,31 +14,11 @@ c-----------------------------------------------------------------------
       ifdebug=.true.
       ifdebug=.false.
 
-      if (ad_step.eq.1) then
-         ustep_time = 0.
-         solve_time=0.
-         lu_time=0.
-         ucopt_count=0
-         if (.not.ifrom(2)) then
-            copt_time=0.
-            quasi_time=0.
-            lnsrch_time=0.
-            compgf_time=0.
-            compf_time=0.
-         endif
-      endif
-
       ulast_time = dnekclock()
 
       n=lx1*ly1*lz1*nelt
 
-      if (nb.eq.0) then
-         rhs(0)=1.
-         call shift3(u,rhs,nb+1)
-         return
-      endif
-
-      icount = min0(max(1,ad_step),3)
+      icount = min(max(1,ad_step),3)
 
       rhs(0)=1.
       call setr_v(rhs(1),icount)
@@ -474,50 +454,19 @@ c-----------------------------------------------------------------------
       else
          call rzero(cu,nb)
          if (ncloc.ne.0) then
-            if ((kc2-kc1).lt.64.and.(jc2-jc1).lt.64) then
-               if (rfilter.eq.'STD'.or.rfilter.eq.'EF ') then
-                  call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),
-     $                     u(kc1),(kc2-kc1+1),cm,1)
-                  call mxm(cm,(ic2-ic1+1),u(jc1),(jc2-jc1+1),cu(ic1),1)
-               else if (rfilter.eq.'LER') then
-                  call copy(ucft,u,nb+1)
-                  if (rbf.lt.0) then
-                     call pod_df(ucft(1))
-                  else if (rbf.gt.0) then
-                     call pod_proj(ucft(1),rbf)
-                  endif
-                  call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),
-     $                     ucft(kc1),(kc2-kc1+1),cm,1)
-                  call mxm(cm,(ic2-ic1+1),u(jc1),
-     $                     (jc2-jc1+1),cu(ic1),1)
-               endif
-            else
-               if (rfilter.eq.'STD'.or.rfilter.eq.'EF ') then
-                  do k=kc1,kc2
-                  do j=jc1,jc2
-                  do i=ic1,ic2
-                     cu(i)=cu(i)+cl(i,j,k)*uu(j)*u(k)
-                  enddo
-                  enddo
-                  enddo
-               else if (rfilter.eq.'LER') then
-                  call copy(ucft,u,nb+1)
-
-                  if (rbf.lt.0) then
-                     call pod_df(ucft(1))
-                  else if (rbf.gt.0) then
-                     call pod_proj(ucft(1),rbf)
-                  endif
-
-                  do k=kc1,kc2
-                  do j=jc1,jc2
-                  do i=ic1,ic2
-                     cu(i)=cu(i)+cl(i,j,k)*uu(j)*ucft(k)
-                  enddo
-                  enddo
-                  enddo
-               endif
-            endif
+c           if ((kc2-kc1).lt.64.and.(jc2-jc1).lt.64) then
+c              call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),
+c    $                  u(kc1),(kc2-kc1+1),cm,1)
+c              call mxm(cm,(ic2-ic1+1),u(jc1),(jc2-jc1+1),cu(ic1),1)
+c           else
+               do k=kc1,kc2
+               do j=jc1,jc2
+               do i=ic1,ic2
+                  cu(i)=cu(i)+cl(i,j,k)*uu(j)*u(k)
+               enddo
+               enddo
+               enddo
+c           endif
          endif
          call gop(cu,work,'+  ',nb)
       endif
@@ -539,7 +488,7 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
 
-      common /scrrhs/ tmp(0:lb)
+      common /scrrhs/ tmp(0:lb),tmp2(0:lb)
 
       real rhs(nb)
 
@@ -555,6 +504,8 @@ c-----------------------------------------------------------------------
       enddo
 
       call evalc(tmp(1),ctmp,ctl,ut)
+      call mxm(st0,nb+1,ut,nb+1,tmp2,1)
+      call add2s2(tmp(1),tmp2(1),s,nb)
 
       call shift3(ctr,tmp(1),nb)
 

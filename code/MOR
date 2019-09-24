@@ -60,7 +60,8 @@ c     parameters and common blocks for MOR
 
       common /mortops/ at0((ltb+1)**2),bt0((ltb+1)**2),
      $                 at(ltb**2),bt(ltb**2),
-     $                 ctl((lcloc-1)*lmt+1)
+     $                 ctl((lcloc-1)*lmt+1),
+     $                 st0((ltb+1)**2)
 
       common /morcpl/  but0((lub+1)*(ltb+1)),buc(lub*(ltb+1)),cintp(1)
 

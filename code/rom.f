@@ -95,6 +95,7 @@ c-----------------------------------------------------------------------
       call setbases
       call setops
       call setu
+
       call setf
 
       call setqoi
@@ -199,9 +200,11 @@ c-----------------------------------------------------------------------
          call seta(at,at0,'ops/at ')
          call setb(bt,bt0,'ops/bt ')
          call setc(ctl,'ops/ct ')
+         call sets(st0,tb,'ops/ct ')
       endif
 
-      if (ifbuoy.and.ifrom(1).and.ifrom(2)) call setbut
+      if (ifbuoy.and.ifrom(1).and.ifrom(2)) call setbut(but0)
+
 
       ifield=jfield
 
@@ -292,6 +295,16 @@ c-----------------------------------------------------------------------
       tbarr0=1e-1
       tbarrseq=5
 
+      ustep_time = 0.
+      solve_time=0.
+      lu_time=0.
+      ucopt_count=0
+      copt_time=0.
+      quasi_time=0.
+      lnsrch_time=0.
+      compgf_time=0.
+      compf_time=0.
+
       anum_galu=0.
       anum_galt=0.
 
@@ -346,7 +359,7 @@ c-----------------------------------------------------------------------
       ifcdrag=.false.
       if (param(182).ne.0) ifcdrag=.true.
 
-      inus=min(max(nint(param(183)),0),2)
+      inus=min(max(nint(param(183)),0),3)
 
       iffastc=.false.
       if (param(191).ne.0) iffastc=.true.
@@ -702,6 +715,69 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine sets(s0,tt,fname)
+
+      include 'SIZE'
+      include 'TSTEP'
+      include 'INPUT'
+      include 'GEOM'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /scrread/ tab((lub+1)**2)
+      common /scrsets/ tx(lx1,ly1,lx1,lelt),
+     $                 ty(lx1,ly1,lx1,lelt),
+     $                 tz(lx1,ly1,lx1,lelt)
+
+      real s0(0:nb,0:nb),tt(lx1,ly1,lz1,lelt,0:nb)
+
+      character*128 fname
+
+      if (nio.eq.0) write (6,*) 'inside sets'
+
+      if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
+         if (nio.eq.0) write (6,*) 'reading s...'
+         call read_mat_serial(s0,nb+1,nb+1,fname,mb+1,nb+1,tab,nid)
+      else
+         if (nio.eq.0) write (6,*) 'forming s...'
+         do j=0,nb
+            call gradm1(tx,ty,tz,tt(1,1,1,1,j))
+            call outpost(tx,ty,tz,pb,tt(1,1,1,1,j),'gra')
+            if (nio.eq.0) write (6,*) 'sets: ',j,'/',nb
+            nio=-1
+            do i=0,nb
+               s=0.
+               do ie=1,nelt
+               do ifc=1,2*ldim
+                  if (cbc(ifc,ie,2).ne.'E  '.and.
+     $                cbc(ifc,ie,2).ne.'P  ') then
+                     call facind(kx1,kx2,ky1,ky2,kz1,kz2,
+     $                           lx1,ly1,lz1,ifc)
+                     l=0
+                     do iz=kz1,kz2
+                     do iy=ky1,ky2
+                     do ix=kx1,kx2
+                        l=l+1
+                        s=s+area(l,1,ifc,ie)*tt(ix,iy,iz,ie,i)*
+     $                     (unx(l,1,ifc,ie)*tx(ix,iy,iz,ie)
+     $                     +uny(l,1,ifc,ie)*ty(ix,iy,iz,ie)
+     $                     +unz(l,1,ifc,ie)*tz(ix,iy,iz,ie))
+                     enddo
+                     enddo
+                     enddo
+                  endif
+               enddo
+               enddo
+               s0(i,j)=glsum(s,1)
+            enddo
+            nio=nid
+         enddo
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine setb(b,b0,fname)
 
       include 'SIZE'
@@ -861,8 +937,6 @@ c-----------------------------------------------------------------------
       call rzero(rq,nb)
       call rzero(rg,nb)
 
-      call rzero(but0,(nb+1)**2)
-
       n=lx1*ly1*lz1*nelv
 
       if (ifforce.and.ifrom(1)) then ! assume fx,fy,fz has mass
@@ -962,7 +1036,7 @@ c-----------------------------------------------------------------------
       call invcol2(binv,bm1,n)
 
       ad_ra=sqrt(op_glsc2_wt(gx,gy,gz,gx,gy,gz,binv)/glsum(bm1,n))
-      write (6,*) ad_ra,'ad_ra'
+      if (nio.eq.0) write (6,*) ad_ra,'ad_ra'
       s=1./ad_ra
       call opcmult(gx,gy,gz,s)
 c     ad_ra=1.
@@ -976,7 +1050,10 @@ c-----------------------------------------------------------------------
       include 'MOR'
       include 'AVG'
 
+      parameter (lt=lx1*ly1*lz1*lelt)
+
       common /scrread/ tab((lb+1)**2)
+      common /scruz/ wk1(lt),wk2(lt),wk3(lt)
 
       real b(0:nb,0:nb)
 
@@ -990,9 +1067,8 @@ c-----------------------------------------------------------------------
             if (nio.eq.0) write (6,*) i,j,b(i,j),'but0'
          enddo
          enddo
-         call opcopy(wk1,wk2,wk3,gx,gy,gz)
-         call outpost(wk1,wk2,wk3,pavg,tavg,'ggg')
-         call dump_serial(but0,(nb+1)**2,'ops/but ',nid)
+         call outpost(gx,gy,gz,pavg,tavg,'ggg')
+         call dump_serial(b,(nb+1)**2,'ops/but ',nid)
       else
          fname='ops/but '
          if (nio.eq.0) write (6,*) 'reading but...'
