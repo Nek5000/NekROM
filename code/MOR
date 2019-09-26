@@ -176,5 +176,5 @@ c     parameters and common blocks for MOR
       common /morid/ ones(lx1*ly1*lz1*lelm),zeros(lx1*ly1*lz1*lelm)
 
       integer rbf 
-      real rdft
-      common /morfilter/ rdft,rbf
+      real rdft,dfops
+      common /morfilter/ rdft,rbf,dfops(lub,lub)
