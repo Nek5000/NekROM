@@ -55,10 +55,10 @@
                call chsign(qns,nb)
             else
                call copy(tmp(1,1),B_qn(1,1),nb*nb)
-               call dgetrf(nb,nb,tmp,lub,ipiv,info)
+               call dgetrf(nb,nb,tmp,nb,ipiv,info)
                call copy(qns,qngradf,nb)
                call chsign(qns,nb)
-               call dgetrs('N',nb,1,tmp,lub,ipiv,qns,nb,info)
+               call dgetrs('N',nb,1,tmp,nb,ipiv,qns,nb,info)
             endif
 
             tlnsrch_time=dnekclock()
@@ -168,12 +168,14 @@ c-----------------------------------------------------------------------
                if (j.eq.1) then
                   call copy(qns,qngradf,nb)
                   call chsign(qns,nb)
-                  call dgetrs('N',nb,1,invhelm,lub,ipiv,qns,nb,info)
+                  call dgetrs('N',nb,1,invhelm,nb,ipiv,qns,nb,info)
                endif
 
                tlnsrch_time=dnekclock()
                call backtrackr(uu,qns,rhs,helm,invhelm,1e-4,0.5,
      $                     amax,amin,par,chekbc,lncount)
+c              call lnsrch_new(uu,qns,rhs,helm,invhelm,1e-4,0.5,
+c    $                     amax,amin,par,chekbc,lncount)
                lnsrch_time=lnsrch_time+dnekclock()-tlnsrch_time
 
                ! store qns
@@ -264,7 +266,7 @@ c-----------------------------------------------------------------------
          call sub3(tmp1,uu,amax,nb)  
          call sub3(tmp2,amin,uu,nb)  
 
-         ! add perturbation 
+         ! add perturbation
          call cadd(tmp1,-1e-2,nb)
          call cadd(tmp2,-1e-2,nb)
 
@@ -315,7 +317,7 @@ c-----------------------------------------------------------------------
 
       ! 0.5*rhs'*inv(H)*rhs
       call copy(tmp5,rhs,nb)
-      call dgetrs('N',nb,1,invhelm,lub,ipiv,tmp5,nb,info)
+      call dgetrs('N',nb,1,invhelm,nb,ipiv,tmp5,nb,info)
       term3 = 0.5 * vlsc2(rhs,tmp5,nb)
 
       if (barr_func.eq.1) then ! use logarithmetic as barrier function
@@ -574,7 +576,7 @@ c-----------------------------------------------------------------------
       ! compute center
       ONE = 1.
       ZERO= 0.
-      call dgetrs('N',nb,1,invh0,lub,ipiv,qnsol,nb,info)
+      call dgetrs('N',nb,1,invh0,nb,ipiv,qnsol,nb,info)
 
       ! compute left product
       do i=1,qnstep
