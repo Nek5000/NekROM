@@ -503,8 +503,7 @@ c-----------------------------------------------------------------------
       enddo
 
       call evalc(tmp(1),ctmp,ctl,ut)
-      call mxm(st0,nb+1,ut,nb+1,tmp2,1)
-      call add2s2(tmp(1),tmp2(1),s,nb)
+      call add2(tmp(1),st0(1),nb)
 
       call shift3(ctr,tmp(1),nb)
 
