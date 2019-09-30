@@ -258,40 +258,11 @@ c-----------------------------------------------------------------------
       ttime=dnekclock()
       if (isolve.eq.0) then ! standard matrix inversion
          call dgetrs('N',nb,1,flut,nb,ipiv,rhs(1),nb,info)
-      else if (isolve.eq.1) then ! constrained solve
-         call BFGS_new(rhs(1),ut(1),helmt,invhelmt,tmax,tmin,tdis,
-     $   tbarr0,tbarrseq) 
-      else if (isolve.eq.2) then
-
-         call copy(rhstmp,rhs,nb+1)
-         call dgetrs('N',nb,1,flut,nb,ipiv,rhstmp(1),nb,info)
-
-         do ii=1,nb
-            if ((rhstmp(ii)-tmax(ii)).ge.box_tol) then
-               chekbc = 1
-            elseif ((tmin(ii)-rhstmp(ii)).ge.box_tol) then
-               chekbc = 1
-            endif
-         enddo
-
-         if (chekbc.eq.1) then
-            tcopt_count = tcopt_count + 1
-            call BFGS_new(rhs(1),ut(1),helmt,invhelmt,tmax,tmin,tdis,
-     $      tbarr0,tbarrseq) 
-         else
-            call copy(rhs,rhstmp,nb+1)
-         endif
-
-      else if (isolve.eq.3) then ! constrained solve
-         call BFGS(rhs(1),ut(1),helmt,invhelmt,tmax,tmin,tdis,
-     $   tbarr0,tbarrseq)
-      else if (isolve.eq.4) then
-
-         call hybrid_advance(rhs,ut(1),helmt,invhelmt,tmax,tmin,
-     $                       tdis,tbarr0,tbarrseq,tcopt_count)
-      else
-         call exitti('incorrect isolve specified...$',isolve)
+      else 
+         call constrained_POD(rhs,ut(1),helmt,invhelmt,tmax,tmin,tdis,
+     $                        tbarr0,tbarrseq,tcopt_count) 
       endif
+
       tsolve_time=tsolve_time+dnekclock()-ttime
 
       do i=0,nb
