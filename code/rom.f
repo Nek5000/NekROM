@@ -398,7 +398,9 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
       ifpart=.false.
       ifcintp=.false.
 
+
       ! constrained optimization parameter
+      icopt=nint(param(184))
       barr_func=param(185)
       box_tol=param(186)
 
@@ -474,6 +476,7 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
             write (6,*) 'rp_ifrom(',i,')   ',ifrom(i)
          enddo
          write (6,*) ' '
+         write (6,*) 'rp_icopt       ',icopt
          write (6,*) 'rp_barr_func   ',barr_func
          write (6,*) 'rp_box_tol     ',box_tol
          write (6,*) 'ubarr0         ',ubarr0

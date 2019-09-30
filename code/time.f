@@ -60,7 +60,7 @@ c-----------------------------------------------------------------------
       enddo
 
       ttime=dnekclock()
-      if (isolve.eq.0) then ! standard matrix inversion
+      if ((isolve.eq.0).or.(icopt.eq.2)) then ! standard matrix inversion
          if (.not.iffasth.or.ad_step.le.3) then
             call dgetrs('N',nb,1,fluv,nb,ipiv,rhs(1),nb,info)
          else
@@ -256,7 +256,7 @@ c-----------------------------------------------------------------------
       enddo
 
       ttime=dnekclock()
-      if (isolve.eq.0) then ! standard matrix inversion
+      if ((isolve.eq.0).or.(icopt.eq.1)) then ! standard matrix inversion
          call dgetrs('N',nb,1,flut,nb,ipiv,rhs(1),nb,info)
       else 
          call constrained_POD(rhs,ut(1),helmt,invhelmt,tmax,tmin,tdis,
