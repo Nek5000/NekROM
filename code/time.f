@@ -71,45 +71,9 @@ c-----------------------------------------------------------------------
             if (rhs(i).lt.umin(i)) rhs(i)=umin(i)+(rhs(i)-umin(i))*damp
             enddo
          endif
-      else if (isolve.eq.1) then ! constrained solve with inverse update
-         call BFGS_new(rhs(1),u(1),helmu,invhelmu,umax,umin,udis,
-     $   ubarr0,ubarrseq)
-      else if (isolve.eq.2) then ! constrained solve with inverse update
-                                 ! and mix with standard solver
-         call copy(rhstmp,rhs,nb+1)
-         call dgetrs('N',nb,1,fluv,nb,ipiv,rhstmp(1),nb,info)
-
-         do ii=1,nb
-            if ((rhstmp(ii)-umax(ii)).ge.box_tol) then
-               chekbc = 1
-            elseif ((umin(ii)-rhstmp(ii)).ge.box_tol) then
-               chekbc = 1
-            endif
-         enddo
-
-         if (chekbc.eq.1) then
-            ucopt_count = ucopt_count + 1
-            call BFGS_new(rhs(1),u(1),helmu,invhelmu,umax,umin,udis,
-     $      ubarr0,ubarrseq)
-         else
-            call copy(rhs,rhstmp,nb+1)
-         endif
-
-      else if (isolve.eq.3) then 
-         ! constrained solve with Hessian update
-         call BFGS(rhs(1),u(1),helmu,invhelmu,umax,umin,udis,
-     $   ubarr0,ubarrseq)
-      else if (isolve.eq.4) then 
-         ! constrained solve with Hessian update
-         ! and mix with standard solver
-         call hybrid_advance(rhs,u(1),helmu,invhelmu,umax,umin,
-     $                       udis,ubarr0,ubarrseq,ucopt_count)
-      else if (isolve.eq.5) then 
-         ! constrained solve with Hessian update
-         call BFGS(rhs(1),u(1),helmu,invhelmu,umax,umin,udis,
-     $   ubarr0,ubarrseq)
-      else   
-         call exitti('incorrect isolve specified...$',isolve)
+      else 
+         call constrained_POD(rhs,u(1),helmu,invhelmu,umax,umin,udis,
+     $                        ubarr0,ubarrseq,ucopt_count)
       endif
       solve_time=solve_time+dnekclock()-ttime
 
@@ -793,6 +757,74 @@ c-----------------------------------------------------------------------
      $   bpar,bstep)
       else
          call copy(rhs,rhstmp,nb+1)
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine constrained_POD(rhs,uu,helm,invhelm,amax,amin,
+     $                          adis,bpar,bstep,copt_count) 
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'  
+
+      real helm(nb,nb),invhelm(nb,nb)
+      real uu(nb),rhs(0:nb),rhstmp(0:nb)
+      real amax(nb),amin(nb),adis(nb)
+      real bpar
+      integer bstep,chekbc,copt_count
+
+      if (isolve.eq.1) then 
+
+         ! constrained solve with inverse update
+         call BFGS_new(rhs(1),uu(1),helm,invhelm,amax,amin,adis,
+     $   bpar,bstep)
+
+      else if (isolve.eq.2) then 
+                                 
+         ! constrained solve with inverse update
+         ! and mix with standard solver
+         call copy(rhstmp,rhs,nb+1)
+         call dgetrs('N',nb,1,invhelm,nb,ipiv,rhstmp(1),nb,info)
+
+         do ii=1,nb
+            if ((rhstmp(ii)-amax(ii)).ge.box_tol) then
+               chekbc = 1
+            elseif ((amin(ii)-rhstmp(ii)).ge.box_tol) then
+               chekbc = 1
+            endif
+         enddo
+
+         if (chekbc.eq.1) then
+            copt_count = copt_count + 1
+            call BFGS_new(rhs(1),uu(1),helm,invhelm,amax,amin,adis,
+     $      bpar,bstep)
+         else
+            call copy(rhs,rhstmp,nb+1)
+         endif
+
+      else if (isolve.eq.3) then 
+
+         ! constrained solve with Hessian update
+         call BFGS(rhs(1),uu(1),helm,invhelm,amax,amin,adis,
+     $   bpar,bstep)
+
+      else if (isolve.eq.4) then 
+
+         ! constrained solve with Hessian update
+         ! and mix with standard solver
+         call hybrid_advance(rhs,uu(1),helm,invhelm,amax,amin,
+     $                       adis,bpar,bstep,copt_count)
+
+      else if (isolve.eq.5) then 
+
+         ! constrained solve with Hessian update
+         call BFGS(rhs(1),uu(1),helm,invhelm,amax,amin,adis,
+     $   bpar,bstep)
+
+      else   
+         call exitti('incorrect isolve specified...$',isolve)
       endif
 
       return
