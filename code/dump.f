@@ -216,7 +216,7 @@ c        call dump_global(cul,ncloc,'ops/cu ',wk1,wk2,nid)
       if (ifrom(2)) then
          call dump_serial(at0,(nb+1)**2,'ops/at ',nid)
          call dump_serial(bt0,(nb+1)**2,'ops/bt ',nid)
-         call dump_serial(st0,(nb+1)**2,'ops/st ',nid)
+         call dump_serial(st0,nb+1,'ops/st ',nid)
 c        call dump_global(ctl,ncloc,'ops/ct ',wk1,wk2,nid)
       endif
 
