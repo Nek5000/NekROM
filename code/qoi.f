@@ -410,7 +410,7 @@ c-----------------------------------------------------------------------
       enddo
       enddo
 
-      tsurf=tsurf/a
+      tsurf=glsum(tsurf,1)/glsum(a,1)
 
       return
       end
