@@ -327,6 +327,35 @@ c-----------------------------------------------------------------------
          do i=0,nb
             if (nio.eq.0) write (6,*) i,tsa(i),'tsa'
          enddo
+      else if (inus.eq.4) then
+         do i=0,nb
+            call gradm1(tx,ty,tz,tb(1,i))
+
+            eps=1.e-3
+            ta=0.
+            a=0.
+            do ie=1,nelt
+            do ifc=1,ldim*2
+               call facind(kx1,kx2,ky1,ky2,kz1,kz2,lx1,ly1,lz1,ifc)
+               if (cbc(ifc,ie,2).eq.'t  ') then
+                  x1=xm1(kx1,ky1,kz1,ie)
+                  x2=xm1(kx2,ky2,kz2,ie)
+                  z1=zm1(kx1,ky1,kz1,ie)
+                  z2=zm1(kx2,ky2,kz2,ie)
+                  xa=.5*(x1+x2)
+                  za=.5*(z1+z2)
+                  if (ya.gt.(1.-eps)) then
+                     ta=ta+facint_v(ty,area,ifc,ie)
+                     a=a+facint_v(ones,area,ifc,ie)
+                  endif
+               endif
+            enddo
+            enddo
+
+            ta=glsum(ta,1)
+            a=glsum(a,1)
+            qwall(i)=ta/a
+         enddo
       endif
 
       return

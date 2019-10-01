@@ -361,7 +361,7 @@ c-----------------------------------------------------------------------
       ifcdrag=.false.
       if (param(182).ne.0) ifcdrag=.true.
 
-      inus=min(max(nint(param(183)),0),3)
+      inus=min(max(nint(param(183)),0),4)
 
       iffastc=.false.
       if (param(191).ne.0) iffastc=.true.
