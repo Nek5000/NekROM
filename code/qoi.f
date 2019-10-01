@@ -635,6 +635,9 @@ c-----------------------------------------------------------------------
          if (h.gt.0) h=qsurf/h
          rnus=ad_pe*diam*h
          if (nio.eq.0) write (6,1) ad_step,time,twall,tbulk,rnus
+      else if (inus.eq.4) then
+         rnus=vlsc2(qwall,ut,nb+1)
+         if (nio.eq.0) write (6,*) ad_step,time,rnus,'nus'
       endif
 
     1 format (i10,1p1e16.8,1p2e14.6,1p1e16.8,' fluxes')
