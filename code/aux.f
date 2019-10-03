@@ -1292,3 +1292,21 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine cdump
+
+      include 'SIZE'
+      include 'MOR'
+
+      complex ceval,cevec,work
+
+      common /ceigscr/ ceval(lb),cevec(lb*lb),work(lb*lb)
+
+      call gop(ctmp(nb+1),work,'+  ',nb*nb)
+
+      do i=1,nb*nb
+         if (nio.eq.0) write (6,*) ad_step,ctmp(nb+i),'ccc'
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
