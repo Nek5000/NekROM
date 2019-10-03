@@ -346,6 +346,8 @@ c-----------------------------------------------------------------------
          call exitti('unsupported param(173), exiting...$',np173)
       endif
 
+      ifrecon=(rmode.ne.'ON ')
+
       ifei=nint(param(175)).ne.0
 
       navg_step=nint(max(1.,param(176)))
