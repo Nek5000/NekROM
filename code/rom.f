@@ -206,7 +206,6 @@ c-----------------------------------------------------------------------
 
       if (ifbuoy.and.ifrom(1).and.ifrom(2)) call setbut(but0)
 
-
       ifield=jfield
 
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF') call dump_ops

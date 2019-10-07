@@ -8,7 +8,7 @@ c-----------------------------------------------------------------------
       real uu(nb)
       integer r1
 
-      call cfill(uu((nb-r1+1):nb),0.0,r1)
+      call rzero(uu(nb-r1+1),r1)
 
       return
       end
