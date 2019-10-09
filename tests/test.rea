@@ -172,7 +172,7 @@
    0.00000     p168
    0.00000     p169
    0.00000     p170 MOR: 0 -> std., 1 -> copt., 2 -> selective copt.
-   0.00000     p171 MOR: 0 -> L2 POD, else -> H10 POD
+   0.00000     p171 MOR: 0 -> L2 POD, 1 -> H10 POD, else -> HLM POD
    1.00000     p172 MOR: 0 -> mode 0 = IC, else -> mode 0 = average
    0.00000     p173 MOR: (0,1,2,3) -> ('ALL','OFF','ON ','ONB')
    0.00000     p174 MOR: < 0 -> temp, == 0 -> vel, > 0 -> vel + temp
@@ -192,8 +192,8 @@
    8.00000     p188 MOR: # of constrained barrier parameter loop for vel
    1.00000E-01 p189 MOR: constrained barrier initial parameter for temperature
    8.00000     p190 MOR: # of constrained barrier parameter loop for temp
-   0.00000     p191 MOR: != 0 -> fast c-evaluation
-   0.00000     p192
+   0.00000     p191 MOR: != 0 -> fast c evaluation
+   0.00000     p192 MOR: != 0 -> fast h evaluation
    0.00000     p193 MOR: != 0 -> forcing  (set fx,fy,fz with mass)
    0.00000     p194 MOR: != 0 -> source   (set qq with mass)
    0.00000     p195 MOR: != 0 -> buoyancy (set gx,gy,gz with mass)
