@@ -177,4 +177,4 @@ c     parameters and common blocks for MOR
 
       integer rbf 
       real rdft,dfops
-      common /morfilter/ rdft,rbf,dfops(lub,lub)
+      common /morfilter/ rdft,rbf,dfops(lub*lub)
