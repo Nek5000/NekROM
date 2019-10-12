@@ -851,24 +851,43 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
 
-      common /scrrhs/ rhs(0:lb),tmp2(0:lb),tmp3(0:lb),buinv(0:lb)
+      common /scrrhs/ rhs(0:lb),tmp2(0:lb),tmp3(0:lb)
+      common /invevf/ buinv(0:lb),btinv(0:lb)
+      common /screvf/ t1(0:lb),t2(0:lb),t3(0:lb),t4(0:lb)
 
-      real uu(nb),ff(nb)
+      real uu(1),ff(1)
 
-      call copy(tmp2(1),uu,nb)
-      tmp2(0)=1.
+      i=1
+      call copy(t1(1),uu(i),nb)
+      t1(0)=1.
 
-      call mxm(au0,nb+1,tmp2,nb+1,rhs,1)
+      if (ifrom(1)) then
+         call mxm(au0,nb+1,t1,nb+1,t2,1)
 
-      s=-1.0/ad_re
-      call cmult(rhs(1),s,nb)
+         s=-1.0/ad_re
+         call cmult(t2(1),s,nb)
 
-      call evalc2(ff,ctmp,cul,tmp2,tmp2)
-      call chsign(ff,nb)
+         call evalc2(t3(1),ctmp,cul,t1,t1)
+         call sub2(t2(1),t3(1),nb)
 
-      call add2(rhs(1),ff,nb)
+         call mxm(buinv,nb,t2(1),nb,ff(i),1)
+      endif
 
-      call mxm(buinv,nb,rhs(1),nb,ff,1)
+      if (ifrom(2)) then
+         i=nb+1
+         call copy(t4(1),uu(i),nb)
+         t1(0)=1.
+
+         call mxm(at0,nb+1,t4,nb+1,t2,1)
+
+         s=-1.0/ad_pe
+         call cmult(t2(1),s,nb)
+
+         call evalc2(t3(1),ctmp,ctl,t1,t4)
+         call sub2(t2(1),t3(1),nb)
+
+         call mxm(btinv,nb,t2(1),nb,ff(i),1)
+      endif
 
       return
       end
