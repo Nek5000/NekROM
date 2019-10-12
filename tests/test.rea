@@ -185,7 +185,7 @@
    0.00000     p181 MOR: != 0 -> compute tke
    1.00000     p182 MOR: != 0 -> compute drag
    0.00000     p183 MOR: != 0 -> compute nu
-   0.00000     p184
+   0.00000     p184 MOR: 0 -> copt on u & t, 1 -> copt on t, 2 -> copt on u
    2.00000     p185 MOR: barrier function: 1 for log, 2 for inverse
    1.00000E-12 p186 MOR: box tolerance
    1.00000E-01 p187 MOR: constrained barrier initial parameter for velocity

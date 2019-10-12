@@ -24,6 +24,7 @@ c-----------------------------------------------------------------------
       data    icalld /0/
 
       real tmp(nb)
+      real uu(nb)
 
       if (icalld.eq.0) then
          call setdf(dfops,au,bu,rdft*rdft)
@@ -47,10 +48,9 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
 
-      real flu(nb,nb),a(nb,nb),b(nb,nb)
+      real flu(nb*nb),a(nb*nb),b(nb*nb)
       real ad_diff
       
-
       call cmult2(flu,a,ad_diff,nb*nb)
       call add2(flu,b,nb*nb)
          
