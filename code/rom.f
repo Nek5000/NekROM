@@ -285,6 +285,8 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
+      character*3 chartmp
+
       real a(1),b(1)
 
       if (nio.eq.0) write (6,*) 'inside rom_init_params'
@@ -345,6 +347,14 @@ c-----------------------------------------------------------------------
          rmode='ONB'
       else
          call exitti('unsupported param(173), exiting...$',np173)
+      endif
+
+      if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
+         open (unit=10,file='ops/ips')
+         read (10,*) chartmp
+         close (unit=10)
+         if (chartmp.ne.ips)
+     $      call exitti('online ips does not match offline ips$',nb)
       endif
 
       ifrecon=(rmode.ne.'ON ')

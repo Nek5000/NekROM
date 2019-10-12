@@ -207,6 +207,10 @@ c-----------------------------------------------------------------------
       call nekgsync
       dops_time=dnekclock()
 
+      open (unit=10,file='ops/ips')
+      if (nio.eq.0) write (10,*) ips
+      close (unit=10)
+
       if (ifrom(1)) then
          call dump_serial(au0,(nb+1)**2,'ops/au ',nid)
          call dump_serial(bu0,(nb+1)**2,'ops/bu ',nid)
