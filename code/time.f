@@ -800,3 +800,76 @@ c-----------------------------------------------------------------------
 
       return
       end
+c-----------------------------------------------------------------------
+      subroutine evalc2(cu,cm,cl,uu,tt)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      real cu(nb)
+      real uu(0:nb)
+      real ut(0:nb)
+      real ucft(0:nb)
+      real cl(ic1:ic2,jc1:jc2,kc1:kc2)
+      real cm(ic1:ic2,jc1:jc2)
+
+      common /scrc/ work(max(lub,ltb))
+
+      integer icalld
+      save    icalld
+      data    icalld /0/
+
+      if (icalld.eq.0) then
+         evalc_time=0.
+         icalld=1
+      endif
+
+      stime=dnekclock()
+
+      call rzero(cu,nb)
+      if (ncloc.ne.0) then
+         do k=kc1,kc2
+         do j=jc1,jc2
+         do i=ic1,ic2
+            cu(i)=cu(i)+cl(i,j,k)*uu(j)*tt(k)
+         enddo
+         enddo
+         enddo
+         call gop(cu,work,'+  ',nb)
+      endif
+
+      call nekgsync
+
+      evalc_time=evalc_time+dnekclock()-stime
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine evf(tt,uu,ff)
+
+      include 'SIZE'
+      include 'MOR'
+
+      common /scrrhs/ rhs(0:lb),tmp2(0:lb),tmp3(0:lb),buinv(0:lb)
+
+      real uu(nb),ff(nb)
+
+      call copy(tmp2(1),uu,nb)
+      tmp2(0)=1.
+
+      call mxm(au0,nb+1,tmp2,nb+1,rhs,1)
+
+      s=-1.0/ad_re
+      call cmult(rhs(1),s,nb)
+
+      call evalc2(ff,ctmp,cul,tmp2,tmp2)
+      call chsign(ff,nb)
+
+      call add2(rhs(1),ff,nb)
+
+      call mxm(buinv,nb,rhs(1),nb,ff,1)
+
+      return
+      end
+c-----------------------------------------------------------------------

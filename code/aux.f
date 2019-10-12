@@ -1310,3 +1310,16 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine set_buinv
+
+      include 'SIZE'
+      include 'MOR'
+
+      common /scrrhs/ tmp1(0:lb),tmp2(0:lb),tmp3(0:lb),buinv(lb*lb)
+
+      call copy(buinv,bu,nb*nb)
+      call invmat(buinv,rtmp1,itmp1,itmp2,nb)
+
+      return
+      end
+c-----------------------------------------------------------------------

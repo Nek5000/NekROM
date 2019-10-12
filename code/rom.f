@@ -9,7 +9,7 @@ c-----------------------------------------------------------------------
       save    icalld
       data    icalld /0/
 
-      logical ifmult
+      logical ifmult,iftmp
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
@@ -43,6 +43,8 @@ c-----------------------------------------------------------------------
       else
          if (nio.eq.0) write (6,*) 'starting rom_step loop',ad_nsteps
          ad_step = 1
+         call set_buinv
+
          do i=1,ad_nsteps
             time=time+dt
             if (ifrom(2)) call rom_step_t
