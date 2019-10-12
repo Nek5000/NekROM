@@ -145,7 +145,6 @@ c     parameters and common blocks for MOR
      $                  iffasth,ifavisc,ifsource,ifei,ifsub0,ifrecon
      $                  iftneu
 
-
       real last_time,misc_time,lu_time,
      $     copt_time,quasi_time,lnsrch_time,
      $     ulast_time,tlast_time,postu_time,postt_time
@@ -165,13 +164,11 @@ c     parameters and common blocks for MOR
      $                  num_galu(lub),num_galt(lub),
      $                  anum_galu,anum_galt
 
-      real mtke
-      common /morstat/ mtke
-
       common /mortest/ ul2(lub),uh10(lub)
 
+      character*5 csolve
       character*3 ips,eqn,rmode,rfilter
-      common /morchar/ ips,eqn,rmode,rfilter
+      common /morchar/ ips,eqn,rmode,rfilter,csolve
 
       common /morid/ ones(lx1*ly1*lz1*lelm),zeros(lx1*ly1*lz1*lelm)
       common /morrk/ grk(lb*6)
