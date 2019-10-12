@@ -1054,7 +1054,6 @@ c-----------------------------------------------------------------------
       if (nio.eq.0) write (6,*) ad_ra,'ad_ra'
       s=1./ad_ra
       call opcmult(gx,gy,gz,s)
-c     ad_ra=1.
 
       return
       end
