@@ -809,7 +809,7 @@ c-----------------------------------------------------------------------
 
       real cu(nb)
       real uu(0:nb)
-      real ut(0:nb)
+      real tt(0:nb)
       real ucft(0:nb)
       real cl(ic1:ic2,jc1:jc2,kc1:kc2)
       real cm(ic1:ic2,jc1:jc2)
@@ -832,7 +832,7 @@ c-----------------------------------------------------------------------
          do k=kc1,kc2
          do j=jc1,jc2
          do i=ic1,ic2
-            cu(i)=cu(i)+cl(i,j,k)*uu(j)*tt(k)
+            cu(i)=cu(i)+cl(i,j,k)*tt(j)*uu(k)
          enddo
          enddo
          enddo
@@ -852,13 +852,12 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       common /scrrhs/ rhs(0:lb),tmp2(0:lb),tmp3(0:lb)
-      common /invevf/ buinv(0:lb),btinv(0:lb)
+      common /invevf/ buinv(lb*lb),btinv(lb*lb)
       common /screvf/ t1(0:lb),t2(0:lb),t3(0:lb),t4(0:lb)
 
       real uu(1),ff(1)
 
-      i=1
-      call copy(t1(1),uu(i),nb)
+      call copy(t1(1),uu(1),nb)
       t1(0)=1.
 
       if (ifrom(1)) then
@@ -870,13 +869,21 @@ c-----------------------------------------------------------------------
          call evalc2(t3(1),ctmp,cul,t1,t1)
          call sub2(t2(1),t3(1),nb)
 
-         call mxm(buinv,nb,t2(1),nb,ff(i),1)
+         if (ifbuoy) then
+            call copy(t3(1),uu(nb+1),nb)
+            t3(0)=1.
+            call mxm(but0,nb+1,t3,nb+1,t4,1)
+            call add2s2(t2(1),t4(1),ad_ra,nb)
+         else if (ifforce) then
+            call add2(t2(1),rg(1),nb)
+         endif
+
+         call mxm(buinv,nb,t2(1),nb,ff,1)
       endif
 
       if (ifrom(2)) then
-         i=nb+1
-         call copy(t4(1),uu(i),nb)
-         t1(0)=1.
+         call copy(t4(1),uu(nb+1),nb)
+         t4(0)=1.
 
          call mxm(at0,nb+1,t4,nb+1,t2,1)
 
@@ -886,7 +893,7 @@ c-----------------------------------------------------------------------
          call evalc2(t3(1),ctmp,ctl,t1,t4)
          call sub2(t2(1),t3(1),nb)
 
-         call mxm(btinv,nb,t2(1),nb,ff(i),1)
+         call mxm(btinv,nb,t2(1),nb,ff(nb+1),1)
       endif
 
       return

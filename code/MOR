@@ -171,7 +171,8 @@ c     parameters and common blocks for MOR
       common /morchar/ ips,eqn,rmode,rfilter,csolve
 
       common /morid/ ones(lx1*ly1*lz1*lelm),zeros(lx1*ly1*lz1*lelm)
-      common /morrk/ grk(lb*6)
+      common /morrk/ grk(lb*6*2),urki(lb*2),urko(lb*2),
+     $               rkt1(lb*2),rkt2(lb*2)
 
       integer rbf 
       real rdft,dfops

@@ -43,7 +43,7 @@ c-----------------------------------------------------------------------
       else
          if (nio.eq.0) write (6,*) 'starting rom_step loop',ad_nsteps
          ad_step = 1
-         call set_binv
+         call set_binv2
 
          do i=1,ad_nsteps
             time=time+dt
