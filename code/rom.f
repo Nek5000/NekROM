@@ -62,7 +62,7 @@ c        cts='rkck  '
             if (cts.eq.'bdfext') then
                call bdfext_step
                call post
-            if (cts.eq.'copt  ') then
+            else if (cts.eq.'copt  ') then
                if (ifrom(2)) call rom_step_t_legacy
                if (ifrom(1)) call rom_step_legacy
                call postu_legacy
