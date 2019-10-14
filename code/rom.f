@@ -365,6 +365,9 @@ c-----------------------------------------------------------------------
       nb=nint(param(177))
       if (nb.eq.0) nb=lb
 
+      rktol=param(179)
+      if (rktol.lt.0.) rktol=10.**rktol
+
       ad_qstep=nint(param(180))+ad_iostep*max(1-nint(param(180)),0)
 
       iftneu=(param(178).ne.0.and.param(174).ne.0)
