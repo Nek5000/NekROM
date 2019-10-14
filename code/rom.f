@@ -36,19 +36,12 @@ c-----------------------------------------------------------------------
          if (istep.gt.0) then
             if (ifrom(2)) call rom_step_t
             if (ifrom(1)) call rom_step
-            call postu
-            call postt
+            call post
             call reconv(vx,vy,vz,u) ! reconstruct velocity to be used in h-t
          endif
       else
          if (nio.eq.0) write (6,*) 'starting rom_step loop',ad_nsteps
          ad_step = 1
-
-c        tinit=time
-c        tfinal=ad_nsteps*ad_dt+time
-c        ndump=nint(1.*ad_nsteps/ad_iostep)
-c        idump=1
-c        tnext=(tfinal-time)/ndump+time
 
          cts='bdfext'
 c        cts='copt  '
@@ -57,16 +50,23 @@ c        cts='rkmp  '
 c        cts='rk4   '
 c        cts='rkck  '
 
+         if (cts.ne.'bdfext'.and.cts.ne.'copt  ') then
+            tinit=time
+            tfinal=ad_nsteps*ad_dt+time
+            ndump=nint(1.*ad_nsteps/ad_iostep)
+            idump=1
+            tnext=(tfinal-time)/ndump+time
+         endif
+
          do i=1,ad_nsteps
             if (cts.eq.'bdfext') then
                call bdfext_step
-               call postu
-               call postt
+               call post
             if (cts.eq.'copt  ') then
                if (ifrom(2)) call rom_step_t_legacy
                if (ifrom(1)) call rom_step_legacy
-               call postu
-               call postt
+               call postu_legacy
+               call postt_legacy
             else
                call rk_setup(cts)
                call copy(urki(1),u(1),nb)
