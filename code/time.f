@@ -16,6 +16,8 @@ c-----------------------------------------------------------------------
       rhs(0)=1.
 
       if (icount.le.2) then
+         if (ifrom(1)) call setr_v(rhs(1),icount)
+         if (ifrom(2)) call setr_t(rhs(1),icount)
          call rk4_setup
          call copy(urki(1),u(1),nb)
          if (ifrom(2)) call copy(urki(nb+1),ut(1),nb)
