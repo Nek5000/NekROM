@@ -204,3 +204,127 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine postu_legacy
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+      include 'AVG'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      common /scrrstep/ t1(lt),t2(lt),t3(lt),work(lt)
+      common /nekmpi/ nidd,npp,nekcomm,nekgroup,nekreal
+
+      save icalld
+      data icalld /0/
+
+      real vort(lt)
+
+      if (icalld.eq.0) then
+         postu_time=0.
+         icalld=1
+      endif
+
+      call nekgsync
+      tttime=dnekclock()
+
+      call setuavg(ua,u2a,u)
+      call setuj(uj,u2j,u)
+
+      if (mod(ad_step,ad_qstep).eq.0) then
+         if (ifctke) call ctke
+         if (ifcdrag) call cdrag
+         call cnuss
+c        call cubar
+      endif
+
+      if (mod(ad_step,ad_iostep).eq.0) then
+         if (nio.eq.0) then
+            if (ifrom(1)) then
+               do j=1,nb
+                  write(6,*) j,time,u(j),'romu'
+               enddo
+            endif
+         endif
+
+         if (rmode.ne.'ON ') then
+            idump=ad_step/ad_iostep
+            call reconv(vx,vy,vz,u)
+            call opcopy(t1,t2,t3,vx,vy,vz)
+
+            if (ifrom(2)) then
+               call recont(vort,ut)
+            else
+               call comp_vort3(vort,work1,work2,t1,t2,t3)
+            endif
+
+            ifto = .true. ! turn on temp in fld file
+            call outpost(vx,vy,vz,pavg,vort,'rom')
+         endif
+      endif
+
+      if (ad_step.eq.ad_nsteps) then
+         if (nio.eq.0) then
+            do j=1,nb
+               write(6,*)j,num_galu(j)/ad_nsteps,'num_galu'
+            enddo
+            write(6,*)anum_galu/ad_nsteps,'anum_galu'
+         endif
+      endif
+
+      call nekgsync
+      postu_time=postu_time+dnekclock()-tttime
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine postt_legacy
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+      include 'AVG'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      common /scrrstep/ t1(lt),t2(lt),t3(lt),work(lt)
+      common /nekmpi/ nidd,npp,nekcomm,nekgroup,nekreal
+
+      save icalld
+      data icalld /0/
+
+      if (icalld.eq.0) then
+         postt_time=0.
+         icalld=1
+      endif
+
+      call nekgsync
+      tttime=dnekclock()
+
+      call settavg(uta,uuta,utua,ut2a,u,ut)
+      call settj(utj,uutj,utuj,uj,ut)
+
+      if (mod(ad_step,ad_iostep).eq.0) then
+         if (ifrom(2)) then
+            if (nio.eq.0) then
+               do j=1,nb
+                  write(6,*) j,time,ut(j),'romt'
+               enddo
+            endif
+         endif
+      endif
+
+      if (ad_step.eq.ad_nsteps) then
+         if (nio.eq.0) then
+            do j=1,nb
+               write(6,*)j,num_galt(j)/ad_nsteps,'num_galt'
+            enddo
+            write(6,*)anum_galt/ad_nsteps,'anum_galt'
+         endif
+      endif
+
+      call nekgsync
+      postt_time=postt_time+dnekclock()-tttime
+
+      return
+      end
+c-----------------------------------------------------------------------
