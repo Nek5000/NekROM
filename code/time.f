@@ -20,6 +20,23 @@ c-----------------------------------------------------------------------
 
       icount = min(max(1,ad_step),3)
 
+      if (icount.le.2)
+         call rkck_setup
+         call copy(urki(1),u(1),nb)
+         if (ifrom(2)) call copy(urki(nb+1),ut(1),nb)
+         nrk=nb
+         if (ifrom(2)) nrk=nb*2
+
+         call rk_step(urko,rtmp1,urki,time,ad_dt,grk,rtmp2,nrk)
+
+         call copy(u(1),urko,nb)
+         if (ifrom(2)) call copy(ut(1),urko(nb+1),nb)
+         call copy(rhs(1),urko,nb)
+         rhs(0)=1.
+         call shift3(u,rhs,nb+1)
+         return
+      endif
+
       rhs(0)=1.
       call setr_v(rhs(1),icount)
 
