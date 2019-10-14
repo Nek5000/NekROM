@@ -117,6 +117,7 @@ c-----------------------------------------------------------------------
       if (nio.eq.0) write (6,*) 'exiting rom_setup'
       if (nio.eq.0) write (6,*) 'setup_time:', setup_end-setup_start
 
+
       return
       end
 c-----------------------------------------------------------------------
@@ -879,7 +880,7 @@ c-----------------------------------------------------------------------
                call pv2b(u,uic,vic,wic,ub,vb,wb)
             endif
             do i=0,nb
-               if (nio.eq.0) write (6,*) 'ut',ut(i)
+               if (nio.eq.0) write (6,*) 'u',u(i)
             enddo
             call opadd2(uic,vic,wic,ub,vb,wb)
          else
