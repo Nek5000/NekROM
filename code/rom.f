@@ -44,24 +44,31 @@ c-----------------------------------------------------------------------
          if (nio.eq.0) write (6,*) 'starting rom_step loop',ad_nsteps
          ad_step = 1
 
-         tinit=time
-         tfinal=ad_nsteps*ad_dt+time
-         ndump=nint(1.*ad_nsteps/ad_iostep)
-         idump=1
-         tnext=(tfinal-time)/ndump+time
+c        tinit=time
+c        tfinal=ad_nsteps*ad_dt+time
+c        ndump=nint(1.*ad_nsteps/ad_iostep)
+c        idump=1
+c        tnext=(tfinal-time)/ndump+time
+
+         cts='bdfext'
+c        cts='copt  '
+c        cts='rk1   '
+c        cts='rkmp  '
+c        cts='rk4   '
+c        cts='rkck  '
+
          do i=1,ad_nsteps
-
-            iftmp=.true.
-c           iftmp=.false.
-
-            call rkck_setup
-c           call rk4_setup
-            if (iftmp) then
-               if (ifrom(2)) call rom_step_t
-               if (ifrom(1)) call rom_step
+            if (cts.eq.'bdfext') then
+               call bdfext_step
+               call postu
+               call postt
+            if (cts.eq.'copt  ') then
+               if (ifrom(2)) call rom_step_t_legacy
+               if (ifrom(1)) call rom_step_legacy
                call postu
                call postt
             else
+               call rk_setup(cts)
                call copy(urki(1),u(1),nb)
                if (ifrom(2)) call copy(urki(nb+1),ut(1),nb)
 
@@ -74,15 +81,18 @@ c           call rk4_setup
                call mxm(bu,nb,rtmp1,nb,rtmp2,1)
                call mxm(rtmp2,1,rtmp1,nb,err,1)
                err=sqrt(err)
-               time=time+ad_dt
 
-               if (rktol.ne.0.) ad_dt=ad_dt*.9*((rktol*ad_dt)/err)**.2
+               if (nio.eq.0) write (6,1)
+     $            ad_step,time,ad_dt,err/ad_dt,err
+
+               if (rktol.ne.0.) then
+                  ttmp=ad_dt*.95*((rktol*ad_dt)/err)**.2
+                  ad_dt=min(2.*ad_dt,max(.5*ad_dt,ttmp))
+               endif
 
                write (6,*) ad_step,time,tnext,ad_dt,'time'
 
                if (time*(1.+1.e-12).gt.tnext) then
-                  if (nio.eq.0) write (6,1)
-     $               ad_step,time,ad_dt,err/ad_dt,err
                   idump=idump+1
                   tnext=(tfinal-tinit)*idump/ndump+tinit
 
@@ -90,20 +100,22 @@ c           call rk4_setup
                   call recont(t,ut)
 
                   ifto = .true. ! turn on temp in fld file
-                  call outpost(vx,vy,vz,pr,t,'rom')
+                  if (rmode.ne.'ON ')
+     $               call outpost(vx,vy,vz,pr,t,'rom')
                endif
 
                if (time+ad_dt.gt.(1.+1.e-12)*tnext) then
                   ttmp=ad_dt
                   ad_dt=tnext-time
-                  write (6,*) ad_step,ad_dt,ttmp,'dt change'
+                  write (6,3) ad_step,time,ad_dt,ttmp,tnext
                endif
 
                call copy(u(1),urko,nb)
                call copy(ut(1),urko(nb+1),nb)
+
+               if (time*(1.+1.e-14).gt.tfinal) goto 2
             endif
 
-            if (time*(1.+1.e-14).gt.tfinal) goto 2
             time=time+ad_dt
             ad_step=ad_step+1
          enddo
@@ -124,6 +136,7 @@ c           call rk4_setup
       if (.not.ifmult.or.nsteps.eq.istep) call final
 
     1 format(i8,1p4e13.5,' err')
+    3 format(i8,1p4e15.7,' modt')
 
       return
       end
