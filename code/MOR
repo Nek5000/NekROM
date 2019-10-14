@@ -157,7 +157,7 @@ c     parameters and common blocks for MOR
       real num_galu,num_galt
 
       common /morcount/ ucopt_count,tcopt_count,
-     $                  num_galu(lub),num_galt(lub),
+     $                  num_galu(lub),num_galt(ltb),
      $                  anum_galu,anum_galt
 
       common /mortest/ ul2(lub),uh10(lub)
