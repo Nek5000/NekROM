@@ -43,7 +43,6 @@ c-----------------------------------------------------------------------
       else
          if (nio.eq.0) write (6,*) 'starting rom_step loop',ad_nsteps
          ad_step = 1
-         call set_binv2
 
          tinit=time
          tfinal=ad_nsteps*ad_dt+time
@@ -268,6 +267,8 @@ c-----------------------------------------------------------------------
       if (ifbuoy.and.ifrom(1).and.ifrom(2)) call setbut(but0)
 
       ifield=jfield
+
+      call set_binv2
 
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF') call dump_ops
 
