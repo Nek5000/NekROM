@@ -150,7 +150,7 @@ c     parameters and common blocks for MOR
      $                 copt_time,quasi_time,lnsrch_time,
      $                 tstep_time,tlast_time,tsolve_time,
      $                 ustep_time,ulast_time,
-     $                 postu_time,postt_time,
+     $                 postu_time,postt_time,post_time
      $                 compf_time,compgf_time
 
       integer ucopt_count,tcopt_count
