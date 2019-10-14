@@ -5,7 +5,7 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
-      real rhs(0:lb),rhstmp(0:lb)
+      common /scrbdfext/ rhs(0:lb)
 
       ulast_time = dnekclock()
 
