@@ -45,18 +45,74 @@ c-----------------------------------------------------------------------
          ad_step = 1
          call set_binv2
 
+         tinit=time
+         tfinal=ad_nsteps*ad_dt+time
+         ndump=nint(1.*ad_nsteps/ad_iostep)
+         idump=1
+         tnext=(tfinal-time)/ndump+time
          do i=1,ad_nsteps
-            time=time+dt
-            if (ifrom(2)) call rom_step_t
-            if (ifrom(1)) call rom_step
-            if (mod(ad_step,ad_iostep).eq.0) call cdump
-            call postu
-            call postt
+
+            iftmp=.true.
+c           iftmp=.false.
+
+            call rkck_setup
+c           call rk4_setup
+            if (iftmp) then
+               if (ifrom(2)) call rom_step_t
+               if (ifrom(1)) call rom_step
+               call postu
+               call postt
+            else
+               call copy(urki(1),u(1),nb)
+               if (ifrom(2)) call copy(urki(nb+1),ut(1),nb)
+
+               nrk=nb
+               if (ifrom(2)) nrk=nb*2
+
+               call rk_step(urko,rtmp1,urki,
+     $            time,ad_dt,grk,rtmp2,nrk)
+
+               call mxm(bu,nb,rtmp1,nb,rtmp2,1)
+               call mxm(rtmp2,1,rtmp1,nb,err,1)
+               err=sqrt(err)
+               time=time+ad_dt
+
+               if (rktol.ne.0.) ad_dt=ad_dt*.9*((rktol*ad_dt)/err)**.2
+
+               write (6,*) ad_step,time,tnext,ad_dt,'time'
+
+               if (time*(1.+1.e-12).gt.tnext) then
+                  if (nio.eq.0) write (6,1)
+     $               ad_step,time,ad_dt,err/ad_dt,err
+                  idump=idump+1
+                  tnext=(tfinal-tinit)*idump/ndump+tinit
+
+                  call reconv(vx,vy,vz,u)
+                  call recont(t,ut)
+
+                  ifto = .true. ! turn on temp in fld file
+                  call outpost(vx,vy,vz,pr,t,'rom')
+               endif
+
+               if (time+ad_dt.gt.(1.+1.e-12)*tnext) then
+                  ttmp=ad_dt
+                  ad_dt=tnext-time
+                  write (6,*) ad_step,ad_dt,ttmp,'dt change'
+               endif
+
+               call copy(u(1),urko,nb)
+               call copy(ut(1),urko(nb+1),nb)
+            endif
+
+            if (time*(1.+1.e-14).gt.tfinal) goto 2
+            time=time+ad_dt
             ad_step=ad_step+1
          enddo
          icalld=0
       endif
       endif
+
+    2 continue
 
       if (ifei) call cres
 
@@ -67,6 +123,8 @@ c-----------------------------------------------------------------------
 
       if (ifmult.and.nio.eq.0) write (6,*) 'romd_time: ',dtime
       if (.not.ifmult.or.nsteps.eq.istep) call final
+
+    1 format(i8,1p4e13.5,' err')
 
       return
       end
