@@ -901,7 +901,7 @@ c-----------------------------------------------------------------------
                if (nio.eq.0) write (6,*) 'ut',ut(i)
             enddo
             call add2(tic,tb,n)
-            if (rmode.eq.'All'.or.rmode.eq.'OFF')
+            if (rmode.eq.'ALL'.or.rmode.eq.'OFF')
      $         call dump_serial(ut,nb+1,'ops/t0 ',nid)
          endif
          ifield=jfield
