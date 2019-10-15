@@ -105,10 +105,12 @@ c        cts='rkck  '
      $               call outpost(vx,vy,vz,pr,t,'rom')
                endif
 
+               if (cts.eq.'rkck') then
                if (time+ad_dt.gt.(1.+1.e-12)*tnext) then
                   ttmp=ad_dt
                   ad_dt=tnext-time
                   write (6,3) ad_step,time,ad_dt,ttmp,tnext
+               endif
                endif
 
                call copy(u(1),urko,nb)
