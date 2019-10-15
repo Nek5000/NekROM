@@ -419,7 +419,7 @@ c-----------------------------------------------------------------------
                   enddo
                   enddo
                endif
-c           endif
+            endif
          endif
          call gop(cu,work,'+  ',nb)
       endif
