@@ -5,7 +5,7 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
-      common /scrbdfext/ rhs(0:lb)
+      common /scrbdfext/ rhs(0:lb,2)
 
       ulast_time = dnekclock()
 
@@ -13,11 +13,12 @@ c-----------------------------------------------------------------------
 
       icount = min(max(1,ad_step),3)
 
-      rhs(0)=1.
+      rhs(0,1)=1.
+      rhs(0,2)=1.
 
       if (icount.le.2) then
-         if (ifrom(1)) call setr_v(rhs(1),icount)
-         if (ifrom(2)) call setr_t(rhs(1),icount)
+         if (ifrom(1)) call setr_v(rhs(1,1),icount)
+         if (ifrom(2)) call setr_t(rhs(1,2),icount)
          call rk4_setup
          call copy(urki(1),u(1),nb)
          if (ifrom(2)) call copy(urki(nb+1),ut(1),nb)
@@ -27,37 +28,18 @@ c-----------------------------------------------------------------------
          call rk_step(urko,rtmp1,urki,time,ad_dt,grk,rtmp2,nrk)
 
          if (ifrom(1)) then
-            call copy(rhs(1),urko,nb)
+            call copy(rhs(1,1),urko,nb)
             call shift3(u,rhs,nb+1)
          endif
          if (ifrom(2)) then
-            call copy(rhs(1),urko(nb+1),nb)
-            call shift3(ut,rhs,nb+1)
+            call copy(rhs(1,2),urko(nb+1),nb)
+            call shift3(ut,rhs(0,2),nb+1)
          endif
          return
       endif
 
-      if (ifrom(1)) then
-         call setr_v(rhs(1),icount)
-
-         if (ad_step.le.3) then
-            ttime=dnekclock()
-            call seth(fluv,au,bu,1./ad_re)
-            call dgetrf(nb,nb,fluv,nb,ipiv,info)
-            lu_time=lu_time+dnekclock()-ttime
-         endif
-
-         if (ad_step.eq.3) call dump_serial(fluv,nb*nb,'ops/hu ',nid)
-
-         ttime=dnekclock()
-         call dgetrs('N',nb,1,fluv,nb,ipiv,rhs(1),nb,info)
-         solve_time=solve_time+dnekclock()-ttime
-
-         call shift3(u,rhs,nb+1)
-      endif
-
       if (ifrom(2)) then
-         call setr_t(rhs(1),icount)
+         call setr_t(rhs(1,2),icount)
 
          if (ad_step.le.3) then
             ttime=dnekclock()
@@ -69,11 +51,29 @@ c-----------------------------------------------------------------------
          if (ad_step.eq.3) call dump_serial(flut,nb*nb,'ops/ht ',nid)
 
          ttime=dnekclock()
-         call dgetrs('N',nb,1,flut,nb,ipiv,rhs(1),nb,info)
+         call dgetrs('N',nb,1,flut,nb,ipiv,rhs(1,2),nb,info)
          tsolve_time=tsolve_time+dnekclock()-ttime
-
-         call shift3(ut,rhs,nb+1)
       endif
+
+      if (ifrom(1)) then
+         call setr_v(rhs(1,1),icount)
+
+         if (ad_step.le.3) then
+            ttime=dnekclock()
+            call seth(fluv,au,bu,1./ad_re)
+            call dgetrf(nb,nb,fluv,nb,ipiv,info)
+            lu_time=lu_time+dnekclock()-ttime
+         endif
+
+         if (ad_step.eq.3) call dump_serial(fluv,nb*nb,'ops/hu ',nid)
+
+         ttime=dnekclock()
+         call dgetrs('N',nb,1,fluv,nb,ipiv,rhs(1,1),nb,info)
+         solve_time=solve_time+dnekclock()-ttime
+      endif
+
+      if (ifrom(2)) call shift3(ut,rhs(0,2),nb+1)
+      if (ifrom(1)) call shift3(u,rhs,nb+1)
 
       ustep_time=ustep_time+dnekclock()-ulast_time
 
@@ -303,7 +303,7 @@ c-----------------------------------------------------------------------
       enddo
 
       call evalc(tmp(1),ctmp,ctl,ut)
-      call add2(tmp(1),st0(1),nb)
+c     call add2(tmp(1),st0(1),nb)
 
       call shift3(ctr,tmp(1),nb)
 
