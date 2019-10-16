@@ -522,7 +522,7 @@ c-----------------------------------------------------------------------
 
       n  = lx1*ly1*lz1*nelt
       if (ifpod(1)) then
-         if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
+         if (rmode.eq.'ON '.or.rmode.eq.'ONB'.or.rmode.eq.'CP ') then
             call read_serial(umin,nb,'ops/umin ',wk,nid)
             call read_serial(umax,nb,'ops/umax ',wk,nid)
          else
@@ -557,7 +557,7 @@ c-----------------------------------------------------------------------
       endif   
 
       if (ifpod(2)) then
-         if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
+         if (rmode.eq.'ON '.or.rmode.eq.'ONB'.or.rmode.eq.'CP ') then
             call read_serial(tmin,nb,'ops/tmin ',wk,nid)
             call read_serial(tmax,nb,'ops/tmax ',wk,nid)
          else

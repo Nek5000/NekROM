@@ -18,7 +18,7 @@ c-----------------------------------------------------------------------
 
       ifrecon=.true.
 
-      if (rmode.eq.'ONB') then
+      if (rmode.eq.'ONB'.or.rmode.eq.'CP ') then
          call loadbases
       else if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
          n=lx1*ly1*lz1*nelt
