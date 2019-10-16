@@ -20,57 +20,22 @@ c-----------------------------------------------------------------------
 
       icount = min(max(1,ad_step),3)
 
+      if (ad_step.le.3) then
+         call seth(hinv,au,bu,1./ad_re)
+         if (ad_step.eq.3) call dump_serial(hinv,nb*nb,'ops/hu ',nid)
+
+         call diag(hinv,wt,rhs,nb)
+      endif
+
       rhs(0)=1.
       call setr_v(rhs(1),icount)
 
-      do i=0,nb
-         if (ifdebug) write (6,*) i,u(i),'sol'
-      enddo
-
-      do i=0,nb
-         if (ifdebug) write (6,*) i,rhs(i),'rhs'
-      enddo
-
-      ttime=dnekclock()
-      call seth(fluv,au,bu,1./ad_re)
-      if (ad_step.eq.3) call dump_serial(fluv,nb*nb,'ops/hu ',nid)
-      if (ad_step.le.3) then
-         call copy(helmu,fluv,nb*nb)
-         call dgetrf(nb,nb,fluv,nb,ipiv,info)
-         call copy(invhelmu,fluv,nb*nb)
-      endif
-      lu_time=lu_time+dnekclock()-ttime
-
-      do j=1,nb
-      do i=1,nb
-         if (ifdebug) write (6,*) i,j,au(i+(j-1)*nb),'au'
-      enddo
-      enddo
-
-      do j=1,nb
-      do i=1,nb
-         if (ifdebug) write (6,*) i,j,bu(i+(j-1)*nb),'bu'
-      enddo
-      enddo
-
-      do j=1,nb
-      do i=1,nb
-         if (ifdebug) write (6,*) i,j,fluv(i+(j-1)*nb),'LU'
-      enddo
-      enddo
-
       ttime=dnekclock()
       if ((isolve.eq.0).or.(icopt.eq.2)) then ! standard matrix inversion
-         if (.not.iffasth.or.ad_step.le.3) then
-            call dgetrs('N',nb,1,fluv,nb,ipiv,rhs(1),nb,info)
-         else
-            eps=.20
-            damp=1.-eps*ad_dt
-            do i=1,nb
-            if (rhs(i).gt.umax(i)) rhs(i)=umax(i)+(rhs(i)-umax(i))*damp
-            if (rhs(i).lt.umin(i)) rhs(i)=umin(i)+(rhs(i)-umin(i))*damp
-            enddo
-         endif
+         call mxm(wt,nb,rhs(1),nb,rhstmp(1),1)
+         call mxm(hinv,nb,rhstmp(1),nb,rhs(1),1)
+         call mxm(rhs(1),1,wt,nb,rhstmp(1),nb)
+         call copy(rhs(1),rhstmp(1),nb)
       else 
          call constrained_POD(rhs,u(1),helmu,invhelmu,umax,umin,udis,
      $                        ubarr0,ubarrseq,ucopt_count)
