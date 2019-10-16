@@ -55,7 +55,7 @@ c     parameters and common blocks for MOR
       parameter (lcglo=2*lub*(lub+1)*(lub+1))
       parameter (lcloc=lcglo/lpmin+1)
 
-      common /morfops/ hlm(lb**2,2),wh(lb**2,2),wht(lb**2,2)
+      common /morfops/ hinv(lb**2,2),wt(lb**2,2)
 
       common /morvops/ au0((lub+1)**2),bu0((lub+1)**2),
      $                 au(lub**2),bu(lub**2),cul((lcloc-1)*lmu+1)
