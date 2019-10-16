@@ -262,24 +262,24 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       if (nio.eq.0) write (6,*) 'begin update setup'
-         call nekgsync
-         proj_time=dnekclock()
 
-         if (ifpod(1)) then
-            do i=1,ns
-               call mxm(wt,nb,uk(1,i),nb,ukp(1,i),1)
-            enddo
-         endif
+      call nekgsync
+      proj_time=dnekclock()
 
-         if (ifpod(2)) then
-            do i=1,ns
-               call mxm(wt,nb,tk(1,i),nb,tkp(1,i),1)
-            enddo
-         endif
-
-         call nekgsync
-         if (nio.eq.0) write (6,*) 'proj_time:',dnekclock()-proj_time
+      if (ifpod(1)) then
+         do i=1,ns
+            call mxm(wt,nb,uk(1,i),nb,ukp(1,i),1)
+         enddo
       endif
+
+      if (ifpod(2)) then
+         do i=1,ns
+            call mxm(wt,nb,tk(1,i),nb,tkp(1,i),1)
+         enddo
+      endif
+
+      call nekgsync
+      if (nio.eq.0) write (6,*) 'proj_time:',dnekclock()-proj_time
 
       call hyperpar
 
