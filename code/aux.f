@@ -530,8 +530,8 @@ c-----------------------------------------------------------------------
             call cfill(umax,-1.e9,nb)
             do j=1,ns
             do i=1,nb
-               if (uk(i,j).lt.umin(i)) umin(i)=uk(i,j)
-               if (uk(i,j).gt.umax(i)) umax(i)=uk(i,j)
+               if (ukp(i,j).lt.umin(i)) umin(i)=uk(i,j)
+               if (ukp(i,j).gt.umax(i)) umax(i)=uk(i,j)
             enddo
             enddo
             do j=1,nb                    ! compute hyper-parameter
@@ -565,8 +565,8 @@ c-----------------------------------------------------------------------
             call cfill(tmax,-1.e9,nb)
             do j=1,ns
             do i=1,nb
-               if (tk(i,j).lt.tmin(i)) tmin(i)=tk(i,j)
-               if (tk(i,j).gt.tmax(i)) tmax(i)=tk(i,j)
+               if (tkp(i,j).lt.tmin(i)) tmin(i)=tk(i,j)
+               if (tkp(i,j).gt.tmax(i)) tmax(i)=tk(i,j)
             enddo
             enddo
             do j=1,nb                    ! compute hyper-parameter
