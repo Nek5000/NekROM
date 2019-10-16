@@ -178,3 +178,8 @@ c     parameters and common blocks for MOR
       integer rbf 
       real rdft,dfops
       common /morfilter/ rdft,rbf,dfops(lub*lub)
+
+      ! Tensor Decomposition 
+      real cua,cub,cuc,cp_w
+      common /cp_decomp/ cua(lub*ltr),cub((lub+1)*ltr),cuc((lub+1)*ltr),
+     $                   cp_w(ltr)

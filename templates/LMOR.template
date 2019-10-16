@@ -7,6 +7,7 @@
       parameter (ls=100)    ! max number of snapshots
       parameter (lb=20)     ! max number of basis
       parameter (lelm=lelt) ! number of local elements
+      parameter (ltr=400)   ! max number of tensor rank
 
       parameter (lk=1)   ! largest wave number for pdrag calculation
       parameter (lmsk=1) ! number of partitions
