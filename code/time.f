@@ -72,8 +72,9 @@ c-----------------------------------------------------------------------
             enddo
          endif
       else 
-         call constrained_POD(rhs,u(1),helmu,invhelmu,umax,umin,udis,
-     $                        ubarr0,ubarrseq,ucopt_count)
+         call mxm(u,nb+1,ad_alpha(1,icount),icount,rhstmp,1)
+         call constrained_POD(rhs,rhstmp(1),helmu,invhelmu,umax,umin,
+     $                        udis,ubarr0,ubarrseq,ucopt_count)
       endif
       solve_time=solve_time+dnekclock()-ttime
 
@@ -259,8 +260,9 @@ c-----------------------------------------------------------------------
       if ((isolve.eq.0).or.(icopt.eq.1)) then ! standard matrix inversion
          call dgetrs('N',nb,1,flut,nb,ipiv,rhs(1),nb,info)
       else 
-         call constrained_POD(rhs,ut(1),helmt,invhelmt,tmax,tmin,tdis,
-     $                        tbarr0,tbarrseq,tcopt_count) 
+         call mxm(ut,nb+1,ad_alpha(1,icount),icount,rhstmp,1)
+         call constrained_POD(rhs,rhstmp(1),helmt,invhelmt,tmax,tmin,
+                              tdis,tbarr0,tbarrseq,tcopt_count)
       endif
 
       tsolve_time=tsolve_time+dnekclock()-ttime
