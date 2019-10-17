@@ -4,7 +4,7 @@ c-----------------------------------------------------------------------
       common /rk_btab/ a(6,6),b(6),c(6),d(6),bd(6)
       common /rk_ivar/ ns
 
-      real k(nb,6),wk(n)
+      real k(n,6),wk(n)
       real u(n),un(n),ue(n)
 
       call evf(t,u,k(1,1))
