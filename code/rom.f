@@ -49,7 +49,7 @@ c-----------------------------------------------------------------------
             time=time+dt
             if (ifrom(2)) call rom_step_t
             if (ifrom(1)) call rom_step
-            if (mod(ad_step,ad_iostep).eq.0) call cdump
+c           if (mod(ad_step,ad_iostep).eq.0) call cdump
             call postu
             call postt
             ad_step=ad_step+1
@@ -132,7 +132,7 @@ c-----------------------------------------------------------------------
       call nekgsync
       asnap_time=dnekclock()
 
-      if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
+      if (rmode.eq.'ON '.or.rmode.eq.'ONB'.or.rmode.eq.'CP ') then
          if (ifrom(1)) then
             call read_serial(uas,nb+1,'ops/uas ',t1,nid)
             call read_serial(uvs,nb+1,'ops/uvs ',t1,nid)
@@ -237,7 +237,7 @@ c-----------------------------------------------------------------------
       call cubar_setup
 
       if (ifcdrag) then
-         if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
+         if (rmode.eq.'ON '.or.rmode.eq.'ONB'.or.rmode.eq.'CP ') then
             call read_serial(fd1,ldim*(nb+1),'qoi/fd1 ',wk,nid)
             call read_serial(fd3,ldim*(nb+1),'qoi/fd3 ',wk,nid)
          else
@@ -388,6 +388,8 @@ c-----------------------------------------------------------------------
          rmode='ON '
       else if (np173.eq.3) then
          rmode='ONB'
+      else if (np173.eq.4) then
+         rmode='CP '
       else
          call exitti('unsupported param(173), exiting...$',np173)
       endif
@@ -688,6 +690,56 @@ c     call cpart(ic1,ic2,jc1,jc2,kc1,kc2,ncloc,nb,np,nid+1) ! new indexing
          enddo
          enddo
          enddo
+      else if (rmode.eq.'CP ') then
+         ! read in the cp decomposition
+         if (nid.eq.0) open (unit=100,file='./ops/lambda')
+         do kk=1,ltr
+            cel=0.
+            read(100,*) cel 
+            cp_w(kk) = cel
+         enddo
+         call rzero(cua,lub*ltr)
+         if (nid.eq.0) open (unit=100,file='./ops/cua')
+         do kk=1,ltr
+         do i=1,nb
+            cel=0.
+            read(100,*) cel 
+            cua(i+(kk-1)*lub) = cel
+         enddo
+         enddo
+         call rzero(cub,(lub+1)*ltr)
+         if (nid.eq.0) open (unit=100,file='./ops/cub')
+         do kk=1,ltr
+         do i=1,nb+1
+            cel=0.
+            read(100,*) cel 
+            cub(i+(kk-1)*(lub+1)) = cel
+         enddo
+         enddo
+         call rzero(cuc,(lub+1)*ltr)
+         if (nid.eq.0) open (unit=100,file='./ops/cuc')
+         do kk=1,ltr
+         do i=1,nb+1
+            cel=0.
+            read(100,*) cel 
+            cuc(i+(kk-1)*(lub+1)) = cel
+         enddo
+         enddo
+
+         ! debug purpose
+         ! forming the tensor
+c        do kk=1,ltr
+c        do k=1,nb+1
+c        do j=1,nb+1
+c        do i=1,nb
+c           cl(i+(j-1)*(nb)+(k-1)*(nb+1)*(nb)) = 
+c    $      cl(i+(j-1)*(nb)+(k-1)*(nb+1)*(nb)) + 
+c    $      cp_w(kk)*cua(i+(kk-1)*lub)
+c    $      * cub(j+(kk-1)*(lub+1))*cuc(k+(kk-1)*(lub+1))
+c        enddo
+c        enddo
+c        enddo
+c        enddo
       else
          if (.not.ifaxis) then
             do i=0,nb
@@ -753,7 +805,7 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelt
 
-      if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
+      if (rmode.eq.'ON '.or.rmode.eq.'ONB'.or.rmode.eq.'CP ') then
          if (nio.eq.0) write (6,*) 'reading a...'
          call read_mat_serial(a0,nb+1,nb+1,fname,mb+1,nb+1,wk1,nid)
       else
@@ -803,7 +855,7 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'inside sets'
 
-      if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
+      if (rmode.eq.'ON '.or.rmode.eq.'ONB'.or.rmode.eq.'CP ') then
          if (nio.eq.0) write (6,*) 'reading s...'
          call read_mat_serial(s0,nb+1,nb+1,fname,mb+1,nb+1,tab,nid)
       else
@@ -855,7 +907,7 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'inside setb'
 
-      if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
+      if (rmode.eq.'ON '.or.rmode.eq.'ONB'.or.rmode.eq.'CP ') then
          if (nio.eq.0) write (6,*) 'reading b...'
          call read_mat_serial(b0,nb+1,nb+1,fname,mb+1,nb+1,tab,nid)
       else

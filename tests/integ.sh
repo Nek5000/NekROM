@@ -13,7 +13,7 @@ test
 Z
 
 sed -i.bu "s/lb=.*)/lb=$LB)/g" LMOR
-if [[ "$SCR" == "tbox" ]]; then sed -i.bu "s/^.*p170.*\$/1 p170/g" LMOR; fi
+if [[ "$SCR" == "tbox" ]]; then sed -i.bu "s/^.*p170.*\$/1 p170/g" test.rea; fi
 
 sed -i.bu "s/^.*p177.*\$/$NB p177/g" LMOR
 sed -i.bu "s/^.*p177.*\$/$NB p177/g" LMOR

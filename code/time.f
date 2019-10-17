@@ -37,8 +37,9 @@ c-----------------------------------------------------------------------
          call mxm(rhs(1),1,wt,nb,rhstmp(1),nb)
          call copy(rhs(1),rhstmp(1),nb)
       else 
-         call constrained_POD(rhs,u(1),helmu,invhelmu,umax,umin,udis,
-     $                        ubarr0,ubarrseq,ucopt_count)
+         call mxm(u,nb+1,ad_alpha(1,icount),icount,rhstmp,1)
+         call constrained_POD(rhs,rhstmp(1),helmu,invhelmu,umax,umin,
+     $                        udis,ubarr0,ubarrseq,ucopt_count)
       endif
       solve_time=solve_time+dnekclock()-ttime
 
@@ -224,8 +225,9 @@ c-----------------------------------------------------------------------
       if ((isolve.eq.0).or.(icopt.eq.1)) then ! standard matrix inversion
          call dgetrs('N',nb,1,flut,nb,ipiv,rhs(1),nb,info)
       else 
-         call constrained_POD(rhs,ut(1),helmt,invhelmt,tmax,tmin,tdis,
-     $                        tbarr0,tbarrseq,tcopt_count) 
+         call mxm(ut,nb+1,ad_alpha(1,icount),icount,rhstmp,1)
+         call constrained_POD(rhs,rhstmp(1),helmt,invhelmt,tmax,tmin,
+     $                        tdis,tbarr0,tbarrseq,tcopt_count)
       endif
 
       tsolve_time=tsolve_time+dnekclock()-ttime
@@ -335,6 +337,8 @@ c-----------------------------------------------------------------------
       real ucft(0:nb)
       real cl(ic1:ic2,jc1:jc2,kc1:kc2)
       real cm(ic1:ic2,jc1:jc2)
+      real bcu(1:ltr)
+      real cuu(1:ltr)
 
       common /scrc/ work(max(lub,ltb))
 
@@ -351,6 +355,30 @@ c-----------------------------------------------------------------------
 
       if (ifcintp) then
          call mxm(cintp,n,uu,n+1,cu,1)
+      else if (rmode.eq.'CP ') then
+         call rzero(cu,nb)
+         do kk=1,ltr
+            bcu(kk) = vlsc2(uu,cub(1+(kk-1)*(lub+1)),nb+1)
+            cuu(kk) = vlsc2(u,cuc(1+(kk-1)*(lub+1)),nb+1)
+         enddo
+         do kk=1,ltr
+            do i=1,nb
+               cu(i)=cu(i)+cp_w(kk)*cua(i+(kk-1)*(lub))*bcu(kk)*cuu(kk)
+            enddo
+         enddo
+
+         ! debug checking
+c        do kk=1,ltr
+c           do k=1,nb+1
+c           do j=1,nb+1
+c           do i=1,nb
+c              cu(i)=cu(i)+cp_w(kk)*cua(i+(kk-1)*(lub))
+c    $         *cub(j+(kk-1)*(lub+1))*uu(j-1)
+c    $         *cuc(k+(kk-1)*(lub+1))*u(k-1)
+c           enddo
+c           enddo
+c           enddo
+c        enddo
       else
          call rzero(cu,nb)
          if (ncloc.ne.0) then
