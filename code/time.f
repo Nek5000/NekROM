@@ -23,8 +23,8 @@ c-----------------------------------------------------------------------
       if (ad_step.le.3) then
          call seth(hinv,au,bu,1./ad_re)
          if (ad_step.eq.3) call dump_serial(hinv,nb*nb,'ops/hu ',nid)
-
          call diag(hinv,wt,rhs,nb)
+         call update_k
       endif
 
       rhs(0)=1.
