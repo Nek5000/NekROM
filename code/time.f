@@ -262,7 +262,7 @@ c-----------------------------------------------------------------------
       else 
          call mxm(ut,nb+1,ad_alpha(1,icount),icount,rhstmp,1)
          call constrained_POD(rhs,rhstmp(1),helmt,invhelmt,tmax,tmin,
-                              tdis,tbarr0,tbarrseq,tcopt_count)
+     $                        tdis,tbarr0,tbarrseq,tcopt_count)
       endif
 
       tsolve_time=tsolve_time+dnekclock()-ttime
