@@ -180,7 +180,7 @@
    0.00000     p176 MOR: initial step number of averaging
    0.00000     p177 MOR: nb
    0.00000     p178 MOR: !0 = -> inhomogenous BC for temperature (gn)
-   0.00000     p179
+   0.00000     p179 MOR: tolerance for adaptive rk
   10.00000     p180 MOR: qoi dump freq. 0 -> IOSTEP
    0.00000     p181 MOR: != 0 -> compute tke
    1.00000     p182 MOR: != 0 -> compute drag

@@ -1310,3 +1310,19 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine set_binv2
+
+      include 'SIZE'
+      include 'MOR'
+
+      common /invevf/ buinv(lb*lb),btinv(lb*lb)
+
+      call copy(buinv,bu,nb*nb)
+      call invmat(buinv,rtmp1,itmp1,itmp2,nb)
+
+      call copy(btinv,bt,nb*nb)
+      call invmat(btinv,rtmp1,itmp1,itmp2,nb)
+
+      return
+      end
+c-----------------------------------------------------------------------

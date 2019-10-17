@@ -415,11 +415,11 @@ c        enddo
       else
          call rzero(cu,nb)
          if (ncloc.ne.0) then
-c           if ((kc2-kc1).lt.64.and.(jc2-jc1).lt.64) then
-c              call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),
-c    $                  u(kc1),(kc2-kc1+1),cm,1)
-c              call mxm(cm,(ic2-ic1+1),u(jc1),(jc2-jc1+1),cu(ic1),1)
-c           else
+            if ((kc2-kc1).lt.64.and.(jc2-jc1).lt.64) then
+               call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),
+     $                  u(kc1),(kc2-kc1+1),cm,1)
+               call mxm(cm,(ic2-ic1+1),uu(jc1),(jc2-jc1+1),cu(ic1),1)
+            else
                if (rfilter.eq.'STD'.or.rfilter.eq.'EF ') then
                   do k=kc1,kc2
                   do j=jc1,jc2
@@ -445,7 +445,7 @@ c           else
                   enddo
                   enddo
                endif
-c           endif
+            endif
          endif
          call gop(cu,work,'+  ',nb)
       endif
@@ -826,3 +826,102 @@ c-----------------------------------------------------------------------
 
       return
       end
+c-----------------------------------------------------------------------
+      subroutine evalc2(cu,cm,cl,uu,tt)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      real cu(nb)
+      real uu(0:nb)
+      real tt(0:nb)
+      real ucft(0:nb)
+      real cl(ic1:ic2,jc1:jc2,kc1:kc2)
+      real cm(ic1:ic2,jc1:jc2)
+
+      common /scrc/ work(max(lub,ltb))
+
+      integer icalld
+      save    icalld
+      data    icalld /0/
+
+      if (icalld.eq.0) then
+         evalc_time=0.
+         icalld=1
+      endif
+
+      stime=dnekclock()
+
+      call rzero(cu,nb)
+      if (ncloc.ne.0) then
+         do k=kc1,kc2
+         do j=jc1,jc2
+         do i=ic1,ic2
+            cu(i)=cu(i)+cl(i,j,k)*tt(j)*uu(k)
+         enddo
+         enddo
+         enddo
+         call gop(cu,work,'+  ',nb)
+      endif
+
+      call nekgsync
+
+      evalc_time=evalc_time+dnekclock()-stime
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine evf(tt,uu,ff)
+
+      include 'SIZE'
+      include 'MOR'
+
+      common /scrrhs/ rhs(0:lb),tmp2(0:lb),tmp3(0:lb)
+      common /invevf/ buinv(lb*lb),btinv(lb*lb)
+      common /screvf/ t1(0:lb),t2(0:lb),t3(0:lb),t4(0:lb)
+
+      real uu(1),ff(1)
+
+      call copy(t1(1),uu(1),nb)
+      t1(0)=1.
+
+      if (ifrom(1)) then
+         call mxm(au0,nb+1,t1,nb+1,t2,1)
+
+         s=-1.0/ad_re
+         call cmult(t2(1),s,nb)
+
+         call evalc2(t3(1),ctmp,cul,t1,t1)
+         call sub2(t2(1),t3(1),nb)
+
+         if (ifbuoy) then
+            call copy(t3(1),uu(nb+1),nb)
+            t3(0)=1.
+            call mxm(but0,nb+1,t3,nb+1,t4,1)
+            call add2s2(t2(1),t4(1),ad_ra,nb)
+         else if (ifforce) then
+            call add2(t2(1),rg(1),nb)
+         endif
+
+         call mxm(buinv,nb,t2(1),nb,ff,1)
+      endif
+
+      if (ifrom(2)) then
+         call copy(t4(1),uu(nb+1),nb)
+         t4(0)=1.
+
+         call mxm(at0,nb+1,t4,nb+1,t2,1)
+
+         s=-1.0/ad_pe
+         call cmult(t2(1),s,nb)
+
+         call evalc2(t3(1),ctmp,ctl,t1,t4)
+         call sub2(t2(1),t3(1),nb)
+
+         call mxm(btinv,nb,t2(1),nb,ff(nb+1),1)
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------

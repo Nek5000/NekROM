@@ -9,7 +9,7 @@ c-----------------------------------------------------------------------
       save    icalld
       data    icalld /0/
 
-      logical ifmult
+      logical ifmult,iftmp
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
@@ -43,6 +43,8 @@ c-----------------------------------------------------------------------
       else
          if (nio.eq.0) write (6,*) 'starting rom_step loop',ad_nsteps
          ad_step = 1
+         call set_binv2
+
          do i=1,ad_nsteps
             time=time+dt
             if (ifrom(2)) call rom_step_t
@@ -114,6 +116,7 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'exiting rom_setup'
       if (nio.eq.0) write (6,*) 'setup_time:', setup_end-setup_start
+
 
       return
       end
@@ -283,6 +286,8 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
+      character*3 chartmp
+
       real a(1),b(1)
 
       if (nio.eq.0) write (6,*) 'inside rom_init_params'
@@ -347,6 +352,14 @@ c-----------------------------------------------------------------------
          call exitti('unsupported param(173), exiting...$',np173)
       endif
 
+      if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
+         open (unit=10,file='ops/ips')
+         read (10,*) chartmp
+         close (unit=10)
+         if (chartmp.ne.ips)
+     $      call exitti('online ips does not match offline ips$',nb)
+      endif
+
       ifrecon=(rmode.ne.'ON ')
 
       ifei=nint(param(175)).ne.0
@@ -354,6 +367,9 @@ c-----------------------------------------------------------------------
       navg_step=nint(max(1.,param(176)))
       nb=nint(param(177))
       if (nb.eq.0) nb=lb
+
+      rktol=param(179)
+      if (rktol.lt.0.) rktol=10.**rktol
 
       ad_qstep=nint(param(180))+ad_iostep*max(1-nint(param(180)),0)
 
@@ -916,7 +932,7 @@ c-----------------------------------------------------------------------
                call pv2b(u,uic,vic,wic,ub,vb,wb)
             endif
             do i=0,nb
-               if (nio.eq.0) write (6,*) 'ut',ut(i)
+               if (nio.eq.0) write (6,*) 'u',u(i)
             enddo
             call opadd2(uic,vic,wic,ub,vb,wb)
          else
@@ -937,7 +953,7 @@ c-----------------------------------------------------------------------
                if (nio.eq.0) write (6,*) 'ut',ut(i)
             enddo
             call add2(tic,tb,n)
-            if (rmode.eq.'All'.or.rmode.eq.'OFF')
+            if (rmode.eq.'ALL'.or.rmode.eq.'OFF')
      $         call dump_serial(ut,nb+1,'ops/t0 ',nid)
          endif
          ifield=jfield
@@ -1094,7 +1110,6 @@ c-----------------------------------------------------------------------
       if (nio.eq.0) write (6,*) ad_ra,'ad_ra'
       s=1./ad_ra
       call opcmult(gx,gy,gz,s)
-c     ad_ra=1.
 
       return
       end

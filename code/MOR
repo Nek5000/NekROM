@@ -86,7 +86,7 @@ c     parameters and common blocks for MOR
 
       common /mortmp/ ctmp((lub*(lub+1)*(lub+1))/lpmin+1)
       common /moritmp/ itmp1(lub),itmp2(lub)
-      common /morrtmp/ rtmp1(lub,lub)
+      common /morrtmp/ rtmp1(lub,lub),rtmp2(lb,lb),rtmp3(lb,lb)
 
       common /morfld/ wm1(lx1*ly1*lz1*lelm)
       common /morqoi/ rnus,rdgx(0:lub),rdgy(0:lub),rdgz(0:lub)
@@ -95,7 +95,7 @@ c     parameters and common blocks for MOR
      $                 fd3(ldim*(lub+1))
       common /mordarray/ sobj(lx1,ly1,lz1,lelm),g(lx1,ly1,lz1,lelm)
       common /morpar/ ad_dt,ad_re,ad_pe,ad_alpha(3,3),ad_beta(4,3),
-     $                tbeta,ad_ra
+     $                tbeta,ad_ra,rktol
 
       integer ad_nsteps,ad_iostep,ad_step,ad_qstep
       common /moripar/ ad_nsteps,ad_iostep,ad_step,ad_qstep,inus,
@@ -145,7 +145,6 @@ c     parameters and common blocks for MOR
      $                  iffasth,ifavisc,ifsource,ifei,ifsub0,ifrecon
      $                  iftneu
 
-
       real last_time,misc_time,lu_time,
      $     copt_time,quasi_time,lnsrch_time,
      $     ulast_time,tlast_time,postu_time,postt_time
@@ -165,15 +164,15 @@ c     parameters and common blocks for MOR
      $                  num_galu(lub),num_galt(lub),
      $                  anum_galu,anum_galt
 
-      real mtke
-      common /morstat/ mtke
-
       common /mortest/ ul2(lub),uh10(lub)
 
+      character*5 csolve
       character*3 ips,eqn,rmode,rfilter
-      common /morchar/ ips,eqn,rmode,rfilter
+      common /morchar/ ips,eqn,rmode,rfilter,csolve
 
       common /morid/ ones(lx1*ly1*lz1*lelm),zeros(lx1*ly1*lz1*lelm)
+      common /morrk/ grk(lb*6*2),urki(lb*2),urko(lb*2),
+     $               rkt1(lb*2),rkt2(lb*2)
 
       integer rbf 
       real rdft,dfops
