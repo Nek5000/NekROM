@@ -49,7 +49,7 @@ c-----------------------------------------------------------------------
             time=time+dt
             if (ifrom(2)) call rom_step_t
             if (ifrom(1)) call rom_step
-            if (mod(ad_step,ad_iostep).eq.0) call cdump
+c           if (mod(ad_step,ad_iostep).eq.0) call cdump
             call postu
             call postt
             ad_step=ad_step+1
