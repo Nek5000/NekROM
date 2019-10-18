@@ -1326,3 +1326,55 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine trace
+
+      include 'SIZE'
+      include 'TSTEP'
+      include 'INPUT'
+      include 'SOLN'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /scrtr/ ux(lt),uy(lt),uz(lt)
+
+      if (istep.eq.0) then
+         call rom_init_params
+         call rom_init_fields
+         call loadbases
+      endif
+
+      if ((istep+1).gt.lcs) then
+         if (nio.eq.0) write (6,*) 'WARNING: lcs <= nsteps'
+      else
+         if (ifheat) then
+            n=lx1*ly1*lz1*nelt
+            call sub3(ux,t,tb,n)
+            call ps2b(tk(0,istep),ux,uy,uz,ub,vb,wb)
+         endif
+         if (ifflow) then
+            call opsub3(ux,uy,uz,vx,vy,vz,ub,vb,wb)
+            call pv2b(uk(0,istep+1),ux,uy,uz,ub,vb,wb)
+         endif
+      endif
+
+      if (istep.eq.nsteps) then
+         if (ifflow) then
+            open (unit=10,file='ops/utrace')
+            do i=1,min(lcs,nsteps+1)
+               write (10,*) (uk(j,i),j=0,nb)
+            enddo
+            close (unit=10)
+         endif
+         if (ifheat) then
+            open (unit=10,file='ops/ttrace')
+            do i=1,min(lcs,nsteps+1)
+               write (10,*) (tk(j,i),j=0,nb)
+            enddo
+            close (unit=10)
+         endif
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
