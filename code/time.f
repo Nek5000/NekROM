@@ -16,6 +16,13 @@ c-----------------------------------------------------------------------
       rhs(0,1)=1.
       rhs(0,2)=1.
 
+      if (ntr.gt.0) then
+         do i=1,ntr
+            if (ifrom(1)) u(i)=uk(i,ad_step)
+            if (ifrom(2)) ut(i)=tk(i,ad_step)
+         enddo
+      endif
+
       if (icount.le.2) then
          if (ifrom(1)) call setr_v(rhs(1,1),icount)
          if (ifrom(2)) call setr_t(rhs(1,2),icount)
@@ -377,12 +384,6 @@ c-----------------------------------------------------------------------
       common /scrrhs/ tmp1(0:lb),tmp2(0:lb)
 
       real rhs(nb)
-
-      if (ntr.gt.0) then
-         do i=1,ntr
-            u(i)=uk(i,ad_step+1)
-         enddo
-      endif
 
       call mxm(u,nb+1,ad_beta(2,icount),3,tmp1,1)
       call mxm(bu,nb,tmp1(1),nb,rhs,1)
