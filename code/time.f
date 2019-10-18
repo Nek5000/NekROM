@@ -5,7 +5,7 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
-      common /scrbdfext/ rhs(0:lb,2)
+      common /scrbdfext/ rhs(0:lb,2),rhstmp(0:lb)
 
       ulast_time = dnekclock()
 
@@ -39,23 +39,26 @@ c-----------------------------------------------------------------------
       endif
 
       if (ifrom(2)) then
-         call setr_t(rhs(1,2),icount)
-
          if (ad_step.le.3) then
             ttime=dnekclock()
-            call seth(flut,at,bt,1./ad_pe)
-            if (ad_step.eq.3) call dump_serial(flut,nb*nb,'ops/ht ',nid)
-            call dgetrf(nb,nb,flut,nb,ipiv,info)
+            call seth(hlm(1,2),at,bt,1./ad_pe)
+            if (ad_step.eq.3)
+     $         call dump_serial(hlm(1,2),nb*nb,'ops/ht ',nid)
+            call copy(hinv(1,2),hlm(1,2),nb*nb)
+            call invmat(hinv(1,2),rtmp1,itmp1,itmp2,nb)
             lu_time=lu_time+dnekclock()-ttime
          endif
 
+         call setr_t(rhstmp,icount)
+
          ttime=dnekclock()
-         if (.true) then
-            call dgetrs('N',nb,1,flut,nb,ipiv,rhs(1,2),nb,info)
+         if (isolve.eq.0) then
+            call mxm(hinv(1,2),nb,rhstmp,nb,rhs(1,2),1)
          else
             call mxm(ut,nb+1,ad_alpha(1,icount),icount,rhstmp,1)
-            call constrained_POD(rhs(1,2),rhstmp(1),hlm,tmax,tmin,
-     $                           tdis,tbarr0,tbarrseq,tcopt_count)
+            call constrained_POD(rhs(1,2),rhstmp(1),hlm(1,2),hinv(1,2),
+     $                           tmax,tmin,tdis,
+     $                           tbarr0,tbarrseq,tcopt_count)
          endif
          tsolve_time=tsolve_time+dnekclock()-ttime
       endif
@@ -63,20 +66,21 @@ c-----------------------------------------------------------------------
       if (ifrom(1)) then
          if (ad_step.le.3) then
             ttime=dnekclock()
-            call seth(fluv,au,bu,1./ad_re)
-            if (ad_step.eq.3) call dump_serial(fluv,nb*nb,'ops/hu ',nid)
-            call dgetrf(nb,nb,fluv,nb,ipiv,info)
+            call seth(hlm,au,bu,1./ad_re)
+            if (ad_step.eq.3) call dump_serial(hlm,nb*nb,'ops/hu ',nid)
+            call copy(hinv,hlm,nb*nb)
+            call invmat(hinv,rtmp1,itmp1,itmp2,nb)
             lu_time=lu_time+dnekclock()-ttime
          endif
 
-         call setr_v(rhs(1,1),icount)
+         call setr_v(rhstmp,icount)
 
          ttime=dnekclock()
-         if (.true) then
-            call dgetrs('N',nb,1,fluv,nb,ipiv,rhs(1,1),nb,info)
+         if (isolve.eq.0) then
+            call mxm(hinv,nb,rhstmp,nb,rhs(1,1),1)
          else
             call mxm(ut,nb+1,ad_alpha(1,icount),icount,rhstmp,1)
-            call constrained_POD(rhs(1,2),rhstmp(1),hlm,umax,umin,
+            call constrained_POD(rhs(1,1),rhstmp(1),hlm,hinv,umax,umin,
      $                           udis,ubarr0,ubarrseq,ucopt_count)
          endif
          solve_time=solve_time+dnekclock()-ttime
