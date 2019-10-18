@@ -57,7 +57,7 @@ c     if (icount.le.2) then
             call mxm(hinv(1,2),nb,rhstmp,nb,rhs(1,2),1)
          else
             call mxm(ut,nb+1,ad_alpha(1,icount),icount,rhstmp,1)
-            call constrained_POD(rhs(1,2),rhstmp(1),hlm(1,2),hinv(1,2),
+            call constrained_POD(rhs(0,2),rhstmp(1),hlm(1,2),hinv(1,2),
      $                           tmax,tmin,tdis,
      $                           tbarr0,tbarrseq,tcopt_count)
          endif
@@ -81,7 +81,7 @@ c     if (icount.le.2) then
             call mxm(hinv,nb,rhstmp,nb,rhs(1,1),1)
          else
             call mxm(ut,nb+1,ad_alpha(1,icount),icount,rhstmp,1)
-            call constrained_POD(rhs(1,1),rhstmp(1),hlm,hinv,umax,umin,
+            call constrained_POD(rhs(0,1),rhstmp(1),hlm,hinv,umax,umin,
      $                           udis,ubarr0,ubarrseq,ucopt_count)
          endif
          solve_time=solve_time+dnekclock()-ttime
