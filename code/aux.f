@@ -1338,6 +1338,8 @@ c-----------------------------------------------------------------------
 
       common /scrtr/ ux(lt),uy(lt),uz(lt)
 
+      character*127 fmat
+
       if (istep.eq.0) then
          call rom_init_params
          call rom_init_fields
@@ -1358,24 +1360,28 @@ c-----------------------------------------------------------------------
          endif
       endif
 
-      if (nio.eq.0) then
       if (istep.eq.nsteps) then
+      if (nio.eq.0) then
+         call blank(fmat,127)
+         write (fmat,2) nb+1
          if (ifflow) then
             open (unit=10,file='ops/utrace')
             do i=1,min(lcs,nsteps+1)
-               write (10,*) (uk(j,i),j=0,nb)
+               write (10,fmat) (uk(j,i),j=0,nb)
             enddo
             close (unit=10)
          endif
          if (ifheat) then
             open (unit=10,file='ops/ttrace')
             do i=1,min(lcs,nsteps+1)
-               write (10,*) (tk(j,i),j=0,nb)
+               write (10,fmat) (tk(j,i),j=0,nb)
             enddo
             close (unit=10)
          endif
       endif
       endif
+
+    2 format ('(1p',i4,'e25.17)')
 
       return
       end
