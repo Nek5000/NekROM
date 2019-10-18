@@ -1386,3 +1386,24 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine set_trace
+
+      include 'SIZE'
+      include 'MOR'
+
+      open (unit=10,file='ops/utrace')
+
+      if (nio.eq.0) write (6,*) 'inside set_trace'
+
+      do i=1,min(ad_nsteps,lcs)
+         read (10,*) (uk(j,i),j=0,nb)
+         do j=0,nb
+            write (6,*) i,j,uk(j,i),'utrace'
+         enddo
+      enddo
+
+      close (unit=10)
+
+      return
+      end
+c-----------------------------------------------------------------------

@@ -104,6 +104,8 @@ c-----------------------------------------------------------------------
       call setqoi
       call setmisc
       if (ifei) call set_sigma
+      ntr=1
+      if (ntr.gt.0) call set_trace
 
       if (nio.eq.0) write (6,*) 'end range setup'
 
@@ -401,6 +403,7 @@ c-----------------------------------------------------------------------
          ifpod(i)=.false.
          ifrom(i)=.false.
       enddo
+
       ifpod(1)=param(174).ge.0.
       ifpod(2)=(ifheat.and.param(174).ne.0.)
 c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
@@ -418,6 +421,7 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
       ifpart=.false.
       ifcintp=.false.
 
+      ntr=0
 
       ! constrained optimization parameter
       icopt=nint(param(184))

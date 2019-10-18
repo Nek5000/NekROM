@@ -35,8 +35,13 @@ c-----------------------------------------------------------------------
       call seth(fluv,au,bu,1./ad_re)
       if (ad_step.eq.3) call dump_serial(fluv,nb*nb,'ops/hu ',nid)
       if (ad_step.le.3) then
+         do j=1,nb-ntr
+         do i=1,nb-ntr
+            fluv(i+(j-1)*(nb-ntr))=fluv(i+ntr+(j+ntr-1)*nb)
+         enddo
+         enddo
          call copy(helmu,fluv,nb*nb)
-         call dgetrf(nb,nb,fluv,nb,ipiv,info)
+         call dgetrf(nb-ntr,nb-ntr,fluv,nb-ntr,ipiv,info)
          call copy(invhelmu,fluv,nb*nb)
       endif
       lu_time=lu_time+dnekclock()-ttime
@@ -62,7 +67,8 @@ c-----------------------------------------------------------------------
       ttime=dnekclock()
       if ((isolve.eq.0).or.(icopt.eq.2)) then ! standard matrix inversion
          if (.not.iffasth.or.ad_step.le.3) then
-            call dgetrs('N',nb,1,fluv,nb,ipiv,rhs(1),nb,info)
+            call dgetrs(
+     $         'N',nb-ntr,1,fluv,nb-ntr,ipiv,rhs(1+ntr),nb,info)
          else
             eps=.20
             damp=1.-eps*ad_dt
@@ -508,6 +514,12 @@ c-----------------------------------------------------------------------
       common /scrrhs/ tmp1(0:lb),tmp2(0:lb)
 
       real rhs(nb)
+
+      if (ntr.gt.0) then
+         do i=1,ntr
+            u(i)=uk(i,ad_step+1)
+         enddo
+      endif
 
       call mxm(u,nb+1,ad_beta(2,icount),3,tmp1,1)
       call mxm(bu,nb,tmp1(1),nb,rhs,1)
