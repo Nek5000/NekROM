@@ -16,7 +16,8 @@ c-----------------------------------------------------------------------
       rhs(0,1)=1.
       rhs(0,2)=1.
 
-      if (icount.le.2) then
+c     if (icount.le.2) then
+      if (.false.) then
          if (ifrom(1)) call setr_v(rhs(1,1),icount)
          if (ifrom(2)) call setr_t(rhs(1,2),icount)
          call rk4_setup
