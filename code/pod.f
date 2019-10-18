@@ -161,7 +161,7 @@ c-----------------------------------------------------------------------
       n=lx1*ly1*lz1*nelt
 
       coef(0) = 1.
-      if (nio.eq.0) write (6,1) coef(0),coef(0),1.
+      if (nio.eq.0) write (6,1) 0,coef(0),coef(0),1.
 
       jfield=ifield
       ifield=1
@@ -170,14 +170,14 @@ c-----------------------------------------------------------------------
          ww=vip(uub(1,i),vvb(1,i),wwb(1,i),uub(1,i),vvb(1,i),wwb(1,i))
          vv=vip(uub(1,i),vvb(1,i),wwb(1,i),ux,uy,uz)
          coef(i) = vv/ww
-         if (nio.eq.0) write (6,1) coef(i),vv,ww,ips
+         if (nio.eq.0) write (6,1) i,coef(i),vv,ww,ips
       enddo
 
       ifield=jfield
 
       if (nio.eq.0) write (6,*) 'exiting pv2b'
 
-    1 format('coef',1p3e16.8,1x,a3)
+    1 format('coef',i8,1p3e16.8,1x,a3)
 
       return
       end
@@ -343,7 +343,6 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'
       include 'MASS'
-
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
