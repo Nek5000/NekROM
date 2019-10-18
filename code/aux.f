@@ -1358,6 +1358,7 @@ c-----------------------------------------------------------------------
          endif
       endif
 
+      if (nio.eq.0) then
       if (istep.eq.nsteps) then
          if (ifflow) then
             open (unit=10,file='ops/utrace')
@@ -1373,6 +1374,7 @@ c-----------------------------------------------------------------------
             enddo
             close (unit=10)
          endif
+      endif
       endif
 
       return
