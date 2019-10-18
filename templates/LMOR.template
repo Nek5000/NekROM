@@ -5,6 +5,8 @@
       parameter (lmt=1)   ! 0 -> disable temperature allocation
 
       parameter (ls=100)    ! max number of snapshots
+      parameter (lcs=100)   ! max number of coefficient set
+
       parameter (lb=20)     ! max number of basis
       parameter (lelm=lelt) ! number of local elements
       parameter (ltr=400)   ! max number of tensor rank
@@ -15,9 +17,9 @@
 
       ! Auxiliary
 
-      parameter (lsu=(ls-1)*lmu+1) ! size of velocity snapshots allocation
-      parameter (lsp=(ls-1)*lmp+1) ! size of pressure snapshots allocation
-      parameter (lst=(ls-1)*lmt+1) ! size of temperature snapshots allocation
+      parameter (lsu=(lcs-1)*lmu+1) ! size of velocity snapshots allocation
+      parameter (lsp=(lcs-1)*lmp+1) ! size of pressure snapshots allocation
+      parameter (lst=(lcs-1)*lmt+1) ! size of temperature snapshots allocation
 
       parameter (lub=(lb-1)*lmu+1) ! size of velocity basis allocation
       parameter (lpb=(lb-1)*lmp+1) ! size of pressure basis allocation
