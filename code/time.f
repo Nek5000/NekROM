@@ -1,18 +1,11 @@
 c-----------------------------------------------------------------------
-      subroutine rom_step
+      subroutine bdfext_step
 
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
 
-      real rhs(0:lb),rhstmp(0:lb)
-      logical ifdebug
-      integer chekbc
-
-      chekbc=0
-
-      ifdebug=.true.
-      ifdebug=.false.
+      common /scrbdfext/ rhs(0:lb,2),rhstmp(0:lb)
 
       ulast_time = dnekclock()
 
@@ -20,94 +13,99 @@ c-----------------------------------------------------------------------
 
       icount = min(max(1,ad_step),3)
 
-      rhs(0)=1.
-      call setr_v(rhs(1),icount)
+      rhs(0,1)=1.
+      rhs(0,2)=1.
 
-      do i=0,nb
-         if (ifdebug) write (6,*) i,u(i),'sol'
-      enddo
+      if (icount.le.2) then
+         if (ifrom(1)) call setr_v(rhs(1,1),icount)
+         if (ifrom(2)) call setr_t(rhs(1,2),icount)
+         call rk4_setup
+         call copy(urki(1),u(1),nb)
+         if (ifrom(2)) call copy(urki(nb+1),ut(1),nb)
+         nrk=nb
+         if (ifrom(2)) nrk=nb*2
 
-      do i=0,nb
-         if (ifdebug) write (6,*) i,rhs(i),'rhs'
-      enddo
+         call rk_step(urko,rtmp1,urki,time,ad_dt,grk,rtmp2,nrk)
 
-      ttime=dnekclock()
-      call seth(fluv,au,bu,1./ad_re)
-      if (ad_step.eq.3) call dump_serial(fluv,nb*nb,'ops/hu ',nid)
-      if (ad_step.le.3) then
-         do j=1,nb-ntr
-         do i=1,nb-ntr
-            fluv(i+(j-1)*(nb-ntr))=fluv(i+ntr+(j+ntr-1)*nb)
-         enddo
-         enddo
-         call copy(helmu,fluv,nb*nb)
-         call dgetrf(nb-ntr,nb-ntr,fluv,nb-ntr,ipiv,info)
-         call copy(invhelmu,fluv,nb*nb)
+         if (ifrom(1)) then
+            call copy(rhs(1,1),urko,nb)
+            call shift3(u,rhs,nb+1)
+         endif
+         if (ifrom(2)) then
+            call copy(rhs(1,2),urko(nb+1),nb)
+            call shift3(ut,rhs(0,2),nb+1)
+         endif
+         return
       endif
-      lu_time=lu_time+dnekclock()-ttime
 
-      do j=1,nb
-      do i=1,nb
-         if (ifdebug) write (6,*) i,j,au(i+(j-1)*nb),'au'
-      enddo
-      enddo
-
-      do j=1,nb
-      do i=1,nb
-         if (ifdebug) write (6,*) i,j,bu(i+(j-1)*nb),'bu'
-      enddo
-      enddo
-
-      do j=1,nb
-      do i=1,nb
-         if (ifdebug) write (6,*) i,j,fluv(i+(j-1)*nb),'LU'
-      enddo
-      enddo
-
-      ttime=dnekclock()
-      if ((isolve.eq.0).or.(icopt.eq.2)) then ! standard matrix inversion
-         if (.not.iffasth.or.ad_step.le.3) then
-            call dgetrs(
-     $         'N',nb-ntr,1,fluv,nb-ntr,ipiv,rhs(1+ntr),nb,info)
-         else
-            eps=.20
-            damp=1.-eps*ad_dt
-            do i=1,nb
-            if (rhs(i).gt.umax(i)) rhs(i)=umax(i)+(rhs(i)-umax(i))*damp
-            if (rhs(i).lt.umin(i)) rhs(i)=umin(i)+(rhs(i)-umin(i))*damp
+      if (ifrom(2)) then
+         if (ad_step.le.3) then
+            ttime=dnekclock()
+            call seth(hlm(1,2),at,bt,1./ad_pe)
+            if (ad_step.eq.3)
+     $         call dump_serial(hlm(1,2),nb*nb,'ops/ht ',nid)
+            do j=1,nb-ntr
+            do i=1,nb-ntr
+               hlm(i+(j-1)*(nb-ntr),2)=hlm(i+ntr+(j+ntr-1)*nb,2)
             enddo
+            enddo
+
+            call copy(hinv(1,2),hlm(1,2),(nb-ntr)**2)
+            call invmat(hinv(1,2),rtmp1,itmp1,itmp2,nb-ntr)
+            lu_time=lu_time+dnekclock()-ttime
          endif
-      else 
-         call mxm(u,nb+1,ad_alpha(1,icount),icount,rhstmp,1)
-         call constrained_POD(rhs,rhstmp(1),helmu,invhelmu,umax,umin,
-     $                        udis,ubarr0,ubarrseq,ucopt_count)
-      endif
-      solve_time=solve_time+dnekclock()-ttime
 
-      do i=0,nb
-         if (ifdebug) write (6,*) i,rhs(i),'sol'
-      enddo
+         call setr_t(rhstmp,icount)
 
-      if (ifdebug) call exitt0
-
-      if (rfilter.eq.'EF ') then
-         if (rbf.gt.0) then
-            call pod_proj(rhs(1),rbf)
-         else if (rbf.lt.0) then
-            call pod_df(rhs(1))
+         ttime=dnekclock()
+         if (isolve.eq.0) then
+            call mxm(hinv(1,2),nb-ntr,rhstmp(ntr),nb-ntr,rhs(1,2),1)
+         else
+            call mxm(ut,nb+1,ad_alpha(1,icount),icount,rhstmp,1)
+            call constrained_POD(rhs(1+ntr,2),rhstmp(1+ntr),hlm(1,2),
+     $                           hinv(1,2),tmax,tmin,tdis,
+     $                           tbarr0,tbarrseq,tcopt_count)
          endif
+         tsolve_time=tsolve_time+dnekclock()-ttime
       endif
 
-      call count_gal(num_galu,anum_galu,rhs(1),umax,umin,1e-16,nb)
+      if (ifrom(1)) then
+         if (ad_step.le.3) then
+            ttime=dnekclock()
+            call seth(hlm,au,bu,1./ad_re)
+            if (ad_step.eq.3) call dump_serial(hlm,nb*nb,'ops/hu ',nid)
+            do j=1,nb-ntr
+            do i=1,nb-ntr
+               hlm(i+(j-1)*(nb-ntr),1)=hlm(i+ntr+(j+ntr-1)*nb,1)
+            enddo
+            enddo
+            call copy(hinv,hlm,nb*nb)
+            call invmat(hinv,rtmp1,itmp1,itmp2,nb)
+            lu_time=lu_time+dnekclock()-ttime
+         endif
 
-      call shift3(u,rhs,nb+1)
+         call setr_v(rhstmp,icount)
+
+         ttime=dnekclock()
+         if (isolve.eq.0) then
+            call mxm(hinv,nb-ntr,rhstmp(ntr),nb-ntr,rhs(1+ntr,1),1)
+         else
+            call mxm(u,nb+1,ad_alpha(1,icount),icount,rhstmp,1)
+            call constrained_POD(rhs(1+ntr,1),rhstmp(1+ntr),hlm,hinv,
+     $         umax,umin,udis,ubarr0,ubarrseq,ucopt_count)
+         endif
+         solve_time=solve_time+dnekclock()-ttime
+      endif
+
+      if (ifrom(2)) call shift3(ut,rhs(0,2),nb+1)
+      if (ifrom(1)) call shift3(u,rhs,nb+1)
 
       ustep_time=ustep_time+dnekclock()-ulast_time
 
       return
       end
 c-----------------------------------------------------------------------
-      subroutine postu
+      subroutine post
 
       include 'SIZE'
       include 'TOTAL'
@@ -124,15 +122,22 @@ c-----------------------------------------------------------------------
       real vort(lt)
 
       if (icalld.eq.0) then
-         postu_time=0.
+         post_time=0.
          icalld=1
       endif
 
       call nekgsync
       tttime=dnekclock()
 
-      call setuavg(ua,u2a,u)
-      call setuj(uj,u2j,u)
+      if (ifrom(1)) then
+         call setuavg(ua,u2a,u)
+         call setuj(uj,u2j,u)
+      endif
+
+      if (ifrom(2)) then
+         call settavg(uta,uuta,utua,ut2a,u,ut)
+         call settj(utj,uutj,utuj,uj,ut)
+      endif
 
       if (mod(ad_step,ad_qstep).eq.0) then
          if (ifctke) call ctke
@@ -146,6 +151,11 @@ c        call cubar
             if (ifrom(1)) then
                do j=1,nb
                   write(6,*) j,time,u(j),'romu'
+               enddo
+            endif
+            if (ifrom(2)) then
+               do j=1,nb
+                  write(6,*) j,time,ut(j),'romt'
                enddo
             endif
          endif
@@ -168,170 +178,23 @@ c        call cubar
 
       if (ad_step.eq.ad_nsteps) then
          if (nio.eq.0) then
-            do j=1,nb
-               write(6,*)j,num_galu(j)/ad_nsteps,'num_galu'
-            enddo
-            write(6,*)anum_galu/ad_nsteps,'anum_galu'
+            if (ifrom(1)) then
+               do j=1,nb
+                  write (6,*) j,num_galu(j)/ad_nsteps,'num_galu'
+               enddo
+               write (6,*) anum_galu/ad_nsteps,'anum_galu'
+            endif
+            if (ifrom(2)) then
+               do j=1,nb
+                  write(6,*)j,num_galt(j)/ad_nsteps,'num_galt'
+               enddo
+               write(6,*)anum_galt/ad_nsteps,'anum_galt'
+            endif
          endif
       endif
 
       call nekgsync
       postu_time=postu_time+dnekclock()-tttime
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine rom_step_t
-
-      include 'SIZE'
-      include 'TOTAL'
-      include 'MOR'
-      include 'AVG'
-
-      parameter (lt=lx1*ly1*lz1*lelt)
-
-      real rhs(0:lb),rhstmp(0:lb)
-      logical ifdebug
-      integer chekbc
-
-      common /scrrstep/ t1(lt),t2(lt),t3(lt),work(lt)
-
-      common /nekmpi/ nidd,npp,nekcomm,nekgroup,nekreal
-
-      chekbc = 0
-
-      ifdebug=.true.
-      ifdebug=.false.
-
-      if (ad_step.eq.1) then
-         tstep_time = 0.
-         copt_time=0.
-         quasi_time=0.
-         lnsrch_time=0.
-         compgf_time=0.
-         compf_time=0.
-         tcopt_count = 0
-      endif
-
-      if (nb.eq.0) then
-         rhs(0)=1.
-         call shift3(ut,rhs,nb+1)
-         return
-      endif
-
-      tlast_time = dnekclock()
-
-      n=lx1*ly1*lz1*nelt
-
-      icount = min0(ad_step,3)
-
-      rhs(0)=1.
-      call setr_t(rhs(1),icount)
-
-      do i=0,nb
-         if (ifdebug) write (6,*) i,ut(i),'sol'
-      enddo
-
-      do i=0,nb
-         if (ifdebug) write (6,*) i,rhs(i),'rhs'
-      enddo
-
-      call seth(flut,at,bt,1./ad_pe)
-      if (ad_step.eq.3) call dump_serial(flut,nb*nb,'ops/ht ',nid)
-      if (ad_step.le.3) then
-         call copy(helmt,flut,nb*nb)
-         call dgetrf(nb,nb,flut,nb,ipiv,info)
-         call copy(invhelmt,flut,nb*nb)
-      endif
-
-      do j=1,nb
-      do i=1,nb
-         if (ifdebug) write (6,*) i,j,at(i+(j-1)*nb),'at'
-      enddo
-      enddo
-
-      do j=1,nb
-      do i=1,nb
-         if (ifdebug) write (6,*) i,j,bt(i+(j-1)*nb),'bt'
-      enddo
-      enddo
-
-      do j=1,nb
-      do i=1,nb
-         if (ifdebug) write (6,*) i,j,flut(i+(j-1)*nb),'LU'
-      enddo
-      enddo
-
-      ttime=dnekclock()
-      if ((isolve.eq.0).or.(icopt.eq.1)) then ! standard matrix inversion
-         call dgetrs('N',nb,1,flut,nb,ipiv,rhs(1),nb,info)
-      else 
-         call mxm(ut,nb+1,ad_alpha(1,icount),icount,rhstmp,1)
-         call constrained_POD(rhs,rhstmp(1),helmt,invhelmt,tmax,tmin,
-     $                        tdis,tbarr0,tbarrseq,tcopt_count)
-      endif
-
-      tsolve_time=tsolve_time+dnekclock()-ttime
-
-      do i=0,nb
-         if (ifdebug) write (6,*) i,rhs(i),'sol'
-      enddo
-
-      call count_gal(num_galt,anum_galt,rhs(1),tmax,tmin,1e-16,nb)
-
-      call shift3(ut,rhs,nb+1)
-
-      tstep_time=tstep_time+dnekclock()-tlast_time
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine postt
-
-      include 'SIZE'
-      include 'TOTAL'
-      include 'MOR'
-      include 'AVG'
-
-      parameter (lt=lx1*ly1*lz1*lelt)
-      common /scrrstep/ t1(lt),t2(lt),t3(lt),work(lt)
-      common /nekmpi/ nidd,npp,nekcomm,nekgroup,nekreal
-
-      save icalld
-      data icalld /0/
-
-      if (icalld.eq.0) then
-         postt_time=0.
-         icalld=1
-      endif
-
-      call nekgsync
-      tttime=dnekclock()
-
-      call settavg(uta,uuta,utua,ut2a,u,ut)
-      call settj(utj,uutj,utuj,uj,ut)
-
-      if (mod(ad_step,ad_iostep).eq.0) then
-         if (ifrom(2)) then
-            if (nio.eq.0) then
-               do j=1,nb
-                  write(6,*) j,time,ut(j),'romt'
-               enddo
-            endif
-         endif
-      endif
-
-      if (ad_step.eq.ad_nsteps) then
-         if (nio.eq.0) then
-            do j=1,nb
-               write(6,*)j,num_galt(j)/ad_nsteps,'num_galt'
-            enddo
-            write(6,*)anum_galt/ad_nsteps,'anum_galt'
-         endif
-      endif
-
-      call nekgsync
-      postt_time=postt_time+dnekclock()-tttime
 
       return
       end
@@ -491,7 +354,7 @@ c-----------------------------------------------------------------------
       enddo
 
       call evalc(tmp(1),ctmp,ctl,ut)
-      call add2(tmp(1),st0(1),nb)
+c     call add2(tmp(1),st0(1),nb)
 
       call shift3(ctr,tmp(1),nb)
 

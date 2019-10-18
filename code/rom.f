@@ -34,29 +34,99 @@ c-----------------------------------------------------------------------
          if (ifflow) call exitti(
      $   'error: running rom_update with ifflow = .true.$',nelv)
          if (istep.gt.0) then
-            if (ifrom(2)) call rom_step_t
-            if (ifrom(1)) call rom_step
-            call postu
-            call postt
+            if (ifrom(2)) call rom_step_t_legacy
+            if (ifrom(1)) call rom_step_legacy
+            call postu_legacy
+            call postt_legacy
             call reconv(vx,vy,vz,u) ! reconstruct velocity to be used in h-t
          endif
       else
          if (nio.eq.0) write (6,*) 'starting rom_step loop',ad_nsteps
          ad_step = 1
-         call set_binv2
+
+         cts='bdfext'
+c        cts='copt  '
+c        cts='rk1   '
+c        cts='rkmp  '
+c        cts='rk4   '
+c        cts='rkck  '
+
+         if (cts.ne.'bdfext'.and.cts.ne.'copt  ') then
+            tinit=time
+            tfinal=ad_nsteps*ad_dt+time
+            ndump=nint(1.*ad_nsteps/ad_iostep)
+            idump=1
+            tnext=(tfinal-time)/ndump+time
+         endif
 
          do i=1,ad_nsteps
-            time=time+dt
-            if (ifrom(2)) call rom_step_t
-            if (ifrom(1)) call rom_step
-c           if (mod(ad_step,ad_iostep).eq.0) call cdump
-            call postu
-            call postt
+            if (cts.eq.'bdfext') then
+               call bdfext_step
+               call post
+            else if (cts.eq.'copt  ') then
+               if (ifrom(2)) call rom_step_t_legacy
+               if (ifrom(1)) call rom_step_legacy
+               call postu_legacy
+               call postt_legacy
+            else
+               call rk_setup(cts)
+               call copy(urki(1),u(1),nb)
+               if (ifrom(2)) call copy(urki(nb+1),ut(1),nb)
+
+               nrk=nb
+               if (ifrom(2)) nrk=nb*2
+
+               call rk_step(urko,rtmp1,urki,
+     $            time,ad_dt,grk,rtmp2,nrk)
+
+               call mxm(bu,nb,rtmp1,nb,rtmp2,1)
+               call mxm(rtmp2,1,rtmp1,nb,err,1)
+               err=sqrt(err)
+
+               if (nio.eq.0) write (6,1)
+     $            ad_step,time,ad_dt,err/ad_dt,err
+
+               if (rktol.ne.0.) then
+                  ttmp=ad_dt*.95*((rktol*ad_dt)/err)**.2
+                  ad_dt=min(2.*ad_dt,max(.5*ad_dt,ttmp))
+               endif
+
+               write (6,*) ad_step,time,tnext,ad_dt,'time'
+
+               if (time*(1.+1.e-12).gt.tnext) then
+                  idump=idump+1
+                  tnext=(tfinal-tinit)*idump/ndump+tinit
+
+                  call reconv(vx,vy,vz,u)
+                  call recont(t,ut)
+
+                  ifto = .true. ! turn on temp in fld file
+                  if (rmode.ne.'ON ')
+     $               call outpost(vx,vy,vz,pr,t,'rom')
+               endif
+
+               if (cts.eq.'rkck'.and.rktol.ne.0.) then
+               if (time+ad_dt.gt.(1.+1.e-12)*tnext) then
+                  ttmp=ad_dt
+                  ad_dt=tnext-time
+                  write (6,3) ad_step,time,ad_dt,ttmp,tnext
+               endif
+               endif
+
+               call copy(u(1),urko,nb)
+               call copy(ut(1),urko(nb+1),nb)
+
+               if (time*(1.+1.e-14).gt.tfinal) goto 2
+            endif
+
+            time=time+ad_dt
             ad_step=ad_step+1
          enddo
          icalld=0
       endif
       endif
+
+    2 continue
 
       if (ifei) call cres
 
@@ -67,6 +137,9 @@ c           if (mod(ad_step,ad_iostep).eq.0) call cdump
 
       if (ifmult.and.nio.eq.0) write (6,*) 'romd_time: ',dtime
       if (.not.ifmult.or.nsteps.eq.istep) call final
+
+    1 format(i8,1p4e13.5,' err')
+    3 format(i8,1p4e15.7,' modt')
 
       return
       end
@@ -212,6 +285,8 @@ c-----------------------------------------------------------------------
       if (ifbuoy.and.ifrom(1).and.ifrom(2)) call setbut(but0)
 
       ifield=jfield
+
+      call set_binv2
 
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF') call dump_ops
 

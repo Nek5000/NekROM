@@ -46,7 +46,7 @@ before_script:
   - export CC=mpicc
   - export FFLAGS="-w -mcmodel=medium -fprofile-arcs -ftest-coverage"
   - export USR_LFLAGS+="-mcmodel=medium"
-  - export USR='aux.o ana.o conv.o const.o dump.o ei.o lapack.o pod.o filter.o qoi.o rom.o read.o time.o unit.o'
+  - export USR='aux.o ana.o conv.o const.o dump.o ei.o lapack.o pod.o filter.o qoi.o rom.o read.o time.o unit.o rk.o legacy.o'
 
 script: $MOR_DIR/tests/test.sh
 jobs:

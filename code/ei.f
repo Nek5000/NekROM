@@ -50,10 +50,10 @@ c-----------------------------------------------------------------------
          if (ifflow) call exitti(
      $   'error: running rom_update with ifflow = .true.$',nelv)
          if (istep.gt.0) then
-            if (ifrom(2)) call rom_step_t
-            if (ifrom(1)) call rom_step
-            call postu
-            call postt
+            if (ifrom(2)) call rom_step_t_legacy
+            if (ifrom(1)) call rom_step_legacy
+            call postu_legacy
+            call postt_legacy
             call reconv(vx,vy,vz,u) ! reconstruct velocity to be used in h-t
          endif
       else
@@ -61,10 +61,10 @@ c-----------------------------------------------------------------------
          ad_step = 1
          do i=1,ad_nsteps
             time=time+dt
-            if (ifrom(2)) call rom_step_t
-            if (ifrom(1)) call rom_step
-            call postu
-            call postt
+            if (ifrom(2)) call rom_step_t_legacy
+            if (ifrom(1)) call rom_step_legacy
+            call postu_legacy
+            call postt_legacy
             ad_step=ad_step+1
          enddo
          icalld=0
