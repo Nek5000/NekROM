@@ -34,6 +34,25 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine rk_setup(crk)
+
+      character*6 crk
+
+      if (crk.eq.'rk1   ') then
+         call rk1_setup
+      else if (crk.eq.'rkmp  ') then
+         call rkmp_setup
+      else if (crk.eq.'rk4   ') then
+         call rk4_setup
+      else if (crk.eq.'rkck  ') then
+         call rkck_setup
+      else
+         call exitti('unsupported rk scheme$',1)
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine rk1_setup
 
       common /rk_btab/ a(6,6),b(6),c(6),d(6),bd(6)

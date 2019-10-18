@@ -104,13 +104,11 @@ c     parameters and common blocks for MOR
       common /morivars/ i0,j0,k0,i1,j1,k1,ns,navg,ncloc,npr,npart,
      $                  isolve,ic1,ic2,jc1,jc2,kc1,kc2
 
-      integer ipiv
       common /morlu/ fluv(lub**2),flut(lub**2)
       common /morilu/ irv(lub),icv(lub),irt(lub),ict(lub),ipiv(lub)
 
       ! Constrained Optimization ! TODO: cleanup multi-dimensional arrays
-      real helmu,invhelmu,helmt,invhelmt,qny,qns,
-     $     ubarr0,tbarr0,boxtol
+      real invhelmu,invhelmt
       integer ubarrseq,tbarrseq,barr_func,icopt
       common /moropt/ helmu(lub,lub),invhelmu(lub,lub),
      $               helmt(ltb,ltb),invhelmt(ltb,ltb),icopt
@@ -145,37 +143,34 @@ c     parameters and common blocks for MOR
      $                  iffasth,ifavisc,ifsource,ifei,ifsub0,ifrecon
      $                  iftneu
 
-      real last_time,misc_time,lu_time,
-     $     copt_time,quasi_time,lnsrch_time,
-     $     ulast_time,tlast_time,postu_time,postt_time
-     $     compf_time,compgf_time
+      real last_time,misc_time,lu_time,lnsrch_time
+
       common /mortime/ step_time,last_time,misc_time,evalc_time,
      $                 solve_time,lu_time,
      $                 copt_time,quasi_time,lnsrch_time,
      $                 tstep_time,tlast_time,tsolve_time,
      $                 ustep_time,ulast_time,
-     $                 postu_time,postt_time,
+     $                 postu_time,postt_time,post_time
      $                 compf_time,compgf_time
 
       integer ucopt_count,tcopt_count
-      real num_galu,num_galt,
-     $     anum_galu,anum_galt
+      real num_galu,num_galt
+
       common /morcount/ ucopt_count,tcopt_count,
-     $                  num_galu(lub),num_galt(lub),
+     $                  num_galu(lub),num_galt(ltb),
      $                  anum_galu,anum_galt
 
       common /mortest/ ul2(lub),uh10(lub)
 
-      character*5 csolve
+      character*6 cts
       character*3 ips,eqn,rmode,rfilter
-      common /morchar/ ips,eqn,rmode,rfilter,csolve
+      common /morchar/ ips,eqn,rmode,rfilter,cts
 
       common /morid/ ones(lx1*ly1*lz1*lelm),zeros(lx1*ly1*lz1*lelm)
       common /morrk/ grk(lb*6*2),urki(lb*2),urko(lb*2),
      $               rkt1(lb*2),rkt2(lb*2)
 
       integer rbf 
-      real rdft,dfops
       common /morfilter/ rdft,dfops(lub*lub)
       common /morifilt/  rbf
 
