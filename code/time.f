@@ -123,11 +123,13 @@ c-----------------------------------------------------------------------
       if (ifrom(1)) then
          call setuavg(ua,u2a,u)
          call setuj(uj,u2j,u)
+         call count_gal(num_galu,anum_galu,u(1),umax,umin,1e-16,nb)
       endif
 
       if (ifrom(2)) then
          call settavg(uta,uuta,utua,ut2a,u,ut)
          call settj(utj,uutj,utuj,uj,ut)
+         call count_gal(num_galu,anum_galu,ut(1),tmax,tmin,1e-16,nb)
       endif
 
       if (mod(ad_step,ad_qstep).eq.0) then
