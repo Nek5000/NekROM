@@ -697,23 +697,21 @@ C--------------------------------------------------------------------
       return
       end
 C--------------------------------------------------------------------
-      subroutine invmat(a,wk,iwk1,iwk2,n)
+      subroutine invmat(a,b,c,iwk,n)
 
-      real a(n,n)
-      real wk1(n,n)
-      integer iwk1(n),iwk2(n)
+      real a(n,n),b(n,n),c(n,n)
+      integer iwk1(n)
 
-      call copy(wk,a,n*n)
       call rzero(a,n*n)
 
       do i=1,n
          a(i,i)=1.
       enddo
 
-      call lu(wk,n,n,iwk1,iwk2)
-      do i=1,n
-         call solve(a(1,i),wk,1,n,n,iwk1,iwk2)
-      enddo
+      call copy(b,c,n*n)
+
+      call dgetrf(n,n,b,n,iwk,info)
+      call dgetrs('N',n,n,b,n,iwk,a,n,info)
 
       return
       end
@@ -1317,11 +1315,8 @@ c-----------------------------------------------------------------------
 
       common /invevf/ buinv(lb*lb),btinv(lb*lb)
 
-      call copy(buinv,bu,nb*nb)
-      call invmat(buinv,rtmp1,itmp1,itmp2,nb)
-
-      call copy(btinv,bt,nb*nb)
-      call invmat(btinv,rtmp1,itmp1,itmp2,nb)
+      call invmat(buinv,rtmp1,bu,itmp1,nb)
+      call invmat(btinv,rtmp1,bt,itmp1,nb)
 
       return
       end

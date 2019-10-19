@@ -45,21 +45,21 @@ c     if (icount.le.2) then
             call seth(hlm(1,2),at,bt,1./ad_pe)
             if (ad_step.eq.3)
      $         call dump_serial(hlm(1,2),nb*nb,'ops/ht ',nid)
-            call copy(hinv(1,2),hlm(1,2),nb*nb)
-            call invmat(hinv(1,2),rtmp1,itmp1,itmp2,nb)
+            call invmat(hinv(1,2),hlu(1,2),hlm(1,2),ihlu(1,2),nb)
             lu_time=lu_time+dnekclock()-ttime
          endif
 
-         call setr_t(rhstmp,icount)
+         call setr_t(rhs(1,2),icount)
 
          ttime=dnekclock()
          if (isolve.eq.0) then
-            call mxm(hinv(1,2),nb,rhstmp,nb,rhs(1,2),1)
+            call mxm(hinv(1,2),nb,rhs(1,2),nb,rhstmp,1)
+            call copy(rhs(1,2),rhstmp,nb)
          else
             call mxm(ut,nb+1,ad_alpha(1,icount),icount,rhstmp,1)
-            call constrained_POD(rhs(0,2),rhstmp(1),hlm(1,2),hinv(1,2),
-     $                           tmax,tmin,tdis,
-     $                           tbarr0,tbarrseq,tcopt_count)
+            call icopy(ipiv,ihlu(1,2),nb)
+            call constrained_POD(rhs(0,2),rhstmp(1),hlm(1,2),hlu(1,2),
+     $         tmax,tmin,tdis,tbarr0,tbarrseq,tcopt_count)
          endif
          tsolve_time=tsolve_time+dnekclock()-ttime
       endif
@@ -69,21 +69,20 @@ c     if (icount.le.2) then
             ttime=dnekclock()
             call seth(hlm,au,bu,1./ad_re)
             if (ad_step.eq.3) call dump_serial(hlm,nb*nb,'ops/hu ',nid)
-            call copy(hinv,hlm,nb*nb)
-            call copy(invhelmu,hinv,nb*nb)
-            call dgetrf(nb,nb,invhelmu,nb,ipiv,info)
-            call invmat(hinv,rtmp1,itmp1,itmp2,nb)
+            call invmat(hinv,hlu,hlm,ihlu,nb)
             lu_time=lu_time+dnekclock()-ttime
          endif
 
-         call setr_v(rhstmp,icount)
+         call setr_v(rhs(1,1),icount)
 
          ttime=dnekclock()
          if (isolve.eq.0) then
-            call mxm(hinv,nb,rhstmp,nb,rhs(1,1),1)
+            call mxm(hinv,nb,rhs(1,1),nb,rhstmp,1)
+            call copy(rhs(1,1),rhstmp,nb)
          else
             call mxm(u,nb+1,ad_alpha(1,icount),icount,rhstmp,1)
-            call constrained_POD(rhs(0,1),rhstmp(1),hlm,invhelmu,
+            call icopy(ipiv,ihlu,nb)
+            call constrained_POD(rhs(0,1),rhstmp(1),hlm,hlu,
      $         umax,umin,udis,ubarr0,ubarrseq,ucopt_count)
          endif
          solve_time=solve_time+dnekclock()-ttime
