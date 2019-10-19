@@ -1391,8 +1391,8 @@ c-----------------------------------------------------------------------
       if (nio.eq.0) write (6,*) 'inside set_trace'
 
       do i=1,min(ad_nsteps,lcs)
-         read (10,*) (uk(j,i),j=0,nb)
-         do j=0,nb
+         read (10,*) (uk(j,i),j=0,ntr)
+         do j=0,ntr
             write (6,*) i,j,uk(j,i),'utrace'
          enddo
       enddo
