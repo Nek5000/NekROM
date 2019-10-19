@@ -646,7 +646,22 @@ c-----------------------------------------------------------------------
          endif
 
          if (ifavg0) then
+            idc_u=0
+            idc_t=0
+            do ie=1,nelt
+            do ifc=1,2*ldim
+               if (cbc(ifc,ie,1).eq.'W  '.or.
+     $             cbc(ifc,ie,1).eq.'V  '.or.
+     $             cbc(ifc,ie,1).eq.'v  ') idc_u=idc_u+1
+               if (cbc(ifc,ie,2).eq.'T  '.or.
+     $             cbc(ifc,ie,2).eq.'t  ') idc_t=idc_t+1
+            enddo
+            enddo
+            idc_u=iglsum(idc_u,1)
+            idc_t=iglsum(idc_t,1)
             call copy_sol(ub,vb,wb,pb,tb,uavg,vavg,wavg,pavg,tavg)
+c           if (idc_u.gt.0) call opzero(ub,vb,wb)
+c           if (idc_t.gt.0) call rzero(tb,n)
          endif
 
          iftmp=ifxyo
