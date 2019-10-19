@@ -70,6 +70,8 @@ c     if (icount.le.2) then
             call seth(hlm,au,bu,1./ad_re)
             if (ad_step.eq.3) call dump_serial(hlm,nb*nb,'ops/hu ',nid)
             call copy(hinv,hlm,nb*nb)
+            call copy(invhelmu,hinv,nb*nb)
+            call dgetrf(nb,nb,invhelmu,nb,ipiv,info)
             call invmat(hinv,rtmp1,itmp1,itmp2,nb)
             lu_time=lu_time+dnekclock()-ttime
          endif
@@ -81,8 +83,8 @@ c     if (icount.le.2) then
             call mxm(hinv,nb,rhstmp,nb,rhs(1,1),1)
          else
             call mxm(ut,nb+1,ad_alpha(1,icount),icount,rhstmp,1)
-            call constrained_POD(rhs(0,1),rhstmp(1),hlm,hinv,umax,umin,
-     $                           udis,ubarr0,ubarrseq,ucopt_count)
+            call constrained_POD(rhs(0,1),rhstmp(1),hlm,invhelmu,
+     $         umax,umin,udis,ubarr0,ubarrseq,ucopt_count)
          endif
          solve_time=solve_time+dnekclock()-ttime
       endif
