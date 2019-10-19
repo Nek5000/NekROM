@@ -82,7 +82,7 @@ c     if (icount.le.2) then
          if (isolve.eq.0) then
             call mxm(hinv,nb,rhstmp,nb,rhs(1,1),1)
          else
-            call mxm(ut,nb+1,ad_alpha(1,icount),icount,rhstmp,1)
+            call mxm(u,nb+1,ad_alpha(1,icount),icount,rhstmp,1)
             call constrained_POD(rhs(0,1),rhstmp(1),hlm,invhelmu,
      $         umax,umin,udis,ubarr0,ubarrseq,ucopt_count)
          endif
