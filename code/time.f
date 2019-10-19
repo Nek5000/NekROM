@@ -16,14 +16,8 @@ c-----------------------------------------------------------------------
       rhs(0,1)=1.
       rhs(0,2)=1.
 
-      if (ntr.gt.0) then
-         do i=1,ntr
-            if (ifrom(1)) u(i)=uk(i,ad_step)
-            if (ifrom(2)) ut(i)=tk(i,ad_step)
-         enddo
-      endif
-
-      if (icount.le.2) then
+c     if (icount.le.2) then
+      if (.false.) then
          if (ifrom(1)) call setr_v(rhs(1,1),icount)
          if (ifrom(2)) call setr_t(rhs(1,2),icount)
          call rk4_setup
@@ -57,21 +51,21 @@ c-----------------------------------------------------------------------
             enddo
             enddo
 
-            call copy(hinv(1,2),hlm(1,2),(nb-ntr)**2)
-            call invmat(hinv(1,2),rtmp1,itmp1,itmp2,nb-ntr)
+            call invmat(hinv(1,2),hlu(1,2),hlm(1,2),ihlu(1,2),nb-ntr)
             lu_time=lu_time+dnekclock()-ttime
          endif
 
-         call setr_t(rhstmp,icount)
+         call setr_t(rhs(1,2),icount)
 
          ttime=dnekclock()
          if (isolve.eq.0) then
-            call mxm(hinv(1,2),nb-ntr,rhstmp(ntr),nb-ntr,rhs(1,2),1)
+            call mxm(hinv(1,2),nb,rhs(1,2),nb,rhstmp,1)
+            call copy(rhs(1,2),rhstmp,nb)
          else
             call mxm(ut,nb+1,ad_alpha(1,icount),icount,rhstmp,1)
-            call constrained_POD(rhs(1+ntr,2),rhstmp(1+ntr),hlm(1,2),
-     $                           hinv(1,2),tmax,tmin,tdis,
-     $                           tbarr0,tbarrseq,tcopt_count)
+            call icopy(ipiv,ihlu(1,2),nb)
+            call constrained_POD(rhs(0,2),rhstmp(1),hlm(1,2),hlu(1,2),
+     $         tmax,tmin,tdis,tbarr0,tbarrseq,tcopt_count)
          endif
          tsolve_time=tsolve_time+dnekclock()-ttime
       endif
@@ -86,22 +80,30 @@ c-----------------------------------------------------------------------
                hlm(i+(j-1)*(nb-ntr),1)=hlm(i+ntr+(j+ntr-1)*nb,1)
             enddo
             enddo
-            call copy(hinv,hlm,nb*nb)
-            call invmat(hinv,rtmp1,itmp1,itmp2,nb)
+            call invmat(hinv,hlu,hlm,ihlu,nb-ntr)
             lu_time=lu_time+dnekclock()-ttime
          endif
 
-         call setr_v(rhstmp,icount)
+         call setr_v(rhs(1,1),icount)
 
          ttime=dnekclock()
          if (isolve.eq.0) then
-            call mxm(hinv,nb-ntr,rhstmp(ntr),nb-ntr,rhs(1+ntr,1),1)
+            call mxm(hinv,nb-ntr,rhs(1+ntr,1),nb-ntr,rhstmp,1)
+            call copy(rhs(1+ntr,1),rhstmp,nb-ntr)
          else
             call mxm(u,nb+1,ad_alpha(1,icount),icount,rhstmp,1)
-            call constrained_POD(rhs(1+ntr,1),rhstmp(1+ntr),hlm,hinv,
+            call icopy(ipiv,ihlu,nb)
+            call constrained_POD(rhs(0,1),rhstmp(1),hlm,hlu,
      $         umax,umin,udis,ubarr0,ubarrseq,ucopt_count)
          endif
          solve_time=solve_time+dnekclock()-ttime
+      endif
+
+      if (ntr.gt.0) then
+         do i=1,ntr
+            if (ifrom(1)) rhs(i,1)=uk(i,ad_step+1)
+            if (ifrom(2)) rhs(i,2)=tk(i,ad_step+1)
+         enddo
       endif
 
       if (ifrom(2)) call shift3(ut,rhs(0,2),nb+1)
@@ -139,11 +141,13 @@ c-----------------------------------------------------------------------
       if (ifrom(1)) then
          call setuavg(ua,u2a,u)
          call setuj(uj,u2j,u)
+         call count_gal(num_galu,anum_galu,u(1),umax,umin,1e-16,nb)
       endif
 
       if (ifrom(2)) then
          call settavg(uta,uuta,utua,ut2a,u,ut)
          call settj(utj,uutj,utuj,uj,ut)
+         call count_gal(num_galu,anum_galu,ut(1),tmax,tmin,1e-16,nb)
       endif
 
       if (mod(ad_step,ad_qstep).eq.0) then
@@ -182,6 +186,8 @@ c        call cubar
             call outpost(vx,vy,vz,pavg,vort,'rom')
          endif
       endif
+
+      call exitt0
 
       if (ad_step.eq.ad_nsteps) then
          if (nio.eq.0) then
