@@ -146,6 +146,39 @@ c        cts='rkck  '
       return
       end
 c-----------------------------------------------------------------------
+      subroutine offline_mode ! offline-wrapper for MOR
+
+      include 'SIZE'
+      include 'INPUT'
+
+      param(173)=1.
+      call rom_update
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine online_mode ! online-wrapper for MOR
+
+      include 'SIZE'
+      include 'INPUT'
+
+      param(173)=2.
+      call rom_update
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine recon_mode ! reconstruction online-wrapper for MOR
+
+      include 'SIZE'
+      include 'INPUT'
+
+      param(173)=3.
+      call rom_update
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine rom_setup
 
       include 'SIZE'
