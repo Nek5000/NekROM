@@ -702,16 +702,18 @@ C--------------------------------------------------------------------
       real a(n,n),b(n,n),c(n,n)
       integer iwk1(n)
 
-      call rzero(a,n*n)
+      if (n.gt.0) then
+         call rzero(a,n*n)
 
-      do i=1,n
-         a(i,i)=1.
-      enddo
+         do i=1,n
+            a(i,i)=1.
+         enddo
 
-      call copy(b,c,n*n)
+         call copy(b,c,n*n)
 
-      call dgetrf(n,n,b,n,iwk,info)
-      call dgetrs('N',n,n,b,n,iwk,a,n,info)
+         call dgetrf(n,n,b,n,iwk,info)
+         call dgetrs('N',n,n,b,n,iwk,a,n,info)
+      endif
 
       return
       end
