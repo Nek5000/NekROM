@@ -1338,22 +1338,23 @@ c-----------------------------------------------------------------------
       character*127 fmat
 
       if (istep.eq.0) then
-         call rom_init_params
-         call rom_init_fields
-         call loadbases
-      endif
-
-      if ((istep+1).gt.lcs) then
-         if (nio.eq.0) write (6,*) 'WARNING: lcs <= nsteps'
+         call rom_setup
+c        call rom_init_params
+c        call rom_init_fields
+c        call loadbases
       else
-         if (ifheat) then
-            n=lx1*ly1*lz1*nelt
-            call sub3(ux,t,tb,n)
-            call ps2b(tk(0,istep),ux,uy,uz,ub,vb,wb)
-         endif
-         if (ifflow) then
-            call opsub3(ux,uy,uz,vx,vy,vz,ub,vb,wb)
-            call pv2b(uk(0,istep+1),ux,uy,uz,ub,vb,wb)
+         if ((istep+1).gt.lcs) then
+            if (nio.eq.0) write (6,*) 'WARNING: lcs <= nsteps'
+         else
+            if (ifheat) then
+               n=lx1*ly1*lz1*nelt
+               call sub3(ux,t,tb,n)
+               call ps2b(tk(0,istep),ux,uy,uz,ub,vb,wb)
+            endif
+            if (ifflow) then
+               call opsub3(ux,uy,uz,vx,vy,vz,ub,vb,wb)
+               call pv2b(uk(0,istep),ux,uy,uz,ub,vb,wb)
+            endif
          endif
       endif
 
