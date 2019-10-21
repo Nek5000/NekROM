@@ -1342,7 +1342,7 @@ c-----------------------------------------------------------------------
          call rom_init_fields
          call loadbases
       else
-         if ((istep+1).gt.lcs) then
+         if (istep.gt.lcs) then
             if (nio.eq.0) write (6,*) 'WARNING: lcs <= nsteps'
          else
             if (ifheat) then
