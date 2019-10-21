@@ -36,8 +36,6 @@ c-----------------------------------------------------------------------
          if (istep.gt.0) then
             if (ifrom(2)) call rom_step_t_legacy
             if (ifrom(1)) call rom_step_legacy
-            write (6,*) 'ssss'
-            call exitt0
             call postu_legacy
             call postt_legacy
             call reconv(vx,vy,vz,u) ! reconstruct velocity to be used in h-t

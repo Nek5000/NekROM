@@ -187,17 +187,17 @@ c        call cubar
          endif
       endif
 
-      call reconv(vx,vy,vz,uk)
-      call outpost(vx,vy,vz,pavg,vort,'rom')
+c     call reconv(vx,vy,vz,uk)
+c     call outpost(vx,vy,vz,pavg,vort,'rom')
 
-      do i=0,nb
-         write (6,*) u(i),uk(i,istep),'u'
-      enddo
+c     do i=0,nb
+c        write (6,*) u(i),uk(i,ad_step),'u'
+c     enddo
 
-      if (ad_step.eq.2) then
-         write (6,*) 'rrr'
-         call exitt0
-      endif
+c     if (ad_step.eq.2) then
+c        write (6,*) 'rrr'
+c        call exitt0
+c     endif
 
       if (ad_step.eq.ad_nsteps) then
          if (nio.eq.0) then
