@@ -6,6 +6,7 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       real rhs(0:lb),rhstmp(0:lb)
+      real utmp1(0:lb), utmp2(0:lb)
       logical ifdebug
       integer chekbc
 
@@ -37,9 +38,12 @@ c-----------------------------------------------------------------------
          call mxm(rhs(1),1,wt,nb,rhstmp(1),nb)
          call copy(rhs(1),rhstmp(1),nb)
       else 
-         call mxm(u,nb+1,ad_alpha(1,icount),icount,rhstmp,1)
-         call constrained_POD(rhs,rhstmp(1),helmu,invhelmu,umax,umin,
-     $                        udis,ubarr0,ubarrseq,ucopt_count)
+         call mxm(u,nb+1,ad_alpha(1,icount),icount,utmp1,1)
+         call mxm(wt,nb,utmp1(1),nb,utmp2(1),1)
+         call mxm(wt,nb,rhs(1),nb,rhstmp(1),1)
+         call constrained_POD(rhstmp,utmp2(1),hinv,upmax,upmin,
+     $                        updis,ubarr0,ubarrseq,ucopt_count)
+         call mxm(rhstmp(1),1,wt,nb,rhs(1),nb)
       endif
       solve_time=solve_time+dnekclock()-ttime
 
@@ -57,7 +61,7 @@ c-----------------------------------------------------------------------
          endif
       endif
 
-      call count_gal(num_galu,anum_galu,rhs(1),umax,umin,1e-16,nb)
+      call count_gal(num_galu,anum_galu,rhstmp(1),upmax,upmin,1e-16,nb)
 
       call shift3(u,rhs,nb+1)
 
@@ -226,7 +230,7 @@ c-----------------------------------------------------------------------
          call dgetrs('N',nb,1,flut,nb,ipiv,rhs(1),nb,info)
       else 
          call mxm(ut,nb+1,ad_alpha(1,icount),icount,rhstmp,1)
-         call constrained_POD(rhs,rhstmp(1),helmt,invhelmt,tmax,tmin,
+         call constrained_POD(rhs,rhstmp(1),invhelmt,tmax,tmin,
      $                        tdis,tbarr0,tbarrseq,tcopt_count)
       endif
 
@@ -726,7 +730,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine constrained_POD(rhs,uu,helm,invhelm,amax,amin,
+      subroutine constrained_POD(rhs,uu,invhelm,amax,amin,
      $                          adis,bpar,bstep,copt_count) 
 
       include 'SIZE'
@@ -738,6 +742,11 @@ c-----------------------------------------------------------------------
       real amax(nb),amin(nb),adis(nb)
       real bpar
       integer bstep,chekbc,copt_count
+
+      call rzero(helm,nb*nb)
+      do jj=1,nb
+         helm(jj,jj) = 1/invhelm(jj,jj)
+      enddo
 
       if (isolve.eq.1) then 
 

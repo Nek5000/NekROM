@@ -135,6 +135,7 @@ c-----------------------------------------------------------------------
       real sk(nb,nb),yk(nb,nb)
       real qnf,ngf,ysk
       real bpar,par
+      real tmp(nb)
       real norm_s,norm_step,norm_uo
 
       ! parameter for barrier function
@@ -147,6 +148,7 @@ c-----------------------------------------------------------------------
 
       par = bpar 
       par_step = bstep 
+
 
       ! BFGS method with barrier function starts
       tcopt_time=dnekclock()
@@ -166,9 +168,10 @@ c-----------------------------------------------------------------------
 
             if (isolve.eq.1.OR.isolve.eq.2) then
                if (j.eq.1) then
-                  call copy(qns,qngradf,nb)
-                  call chsign(qns,nb)
-                  call dgetrs('N',nb,1,invhelm,nb,ipiv,qns,nb,info)
+                  call copy(tmp,qngradf,nb)
+                  call chsign(tmp,nb)
+                  call mxm(invhelm,nb,tmp,nb,qns,1)
+c                 call dgetrs('N',nb,1,invhelm,nb,ipiv,qns,nb,info)
                endif
 
                tlnsrch_time=dnekclock()
@@ -316,8 +319,9 @@ c-----------------------------------------------------------------------
       term2 = vlsc2(uu,rhs,nb) ! coef'*rhs
 
       ! 0.5*rhs'*inv(H)*rhs
-      call copy(tmp5,rhs,nb)
-      call dgetrs('N',nb,1,invhelm,nb,ipiv,tmp5,nb,info)
+c     call copy(tmp5,rhs,nb)
+      call mxm(invhelm,nb,rhs,nb,tmp5,1)
+c     call dgetrs('N',nb,1,invhelm,nb,ipiv,tmp5,nb,info)
       term3 = 0.5 * vlsc2(rhs,tmp5,nb)
 
       if (barr_func.eq.1) then ! use logarithmetic as barrier function
@@ -559,12 +563,13 @@ c-----------------------------------------------------------------------
       real invh0(nb,nb)
       real sk(nb,nb),yk(nb,nb),qnd(nb),qnsol(nb)
       real qnrho(nb),qnalpha(nb),qnbeta(nb)
+      real tmp(nb)
       real qnfact(nb)
       real work(nb)
       integer qnstep
 
-      call copy(qnsol,qnd,nb)
-      call chsign(qnsol,nb)
+      call copy(tmp,qnd,nb)
+      call chsign(tmp,nb)
 
       ! compute right product
       do i=qnstep,1,-1
@@ -576,7 +581,8 @@ c-----------------------------------------------------------------------
       ! compute center
       ONE = 1.
       ZERO= 0.
-      call dgetrs('N',nb,1,invh0,nb,ipiv,qnsol,nb,info)
+      call mxm(invh0,nb,tmp,nb,qnsol,1)
+c     call dgetrs('N',nb,1,invh0,nb,ipiv,qnsol,nb,info)
 
       ! compute left product
       do i=1,qnstep

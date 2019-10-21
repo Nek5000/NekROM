@@ -281,7 +281,84 @@ c-----------------------------------------------------------------------
       call nekgsync
       if (nio.eq.0) write (6,*) 'proj_time:',dnekclock()-proj_time
 
-      call hyperpar
+c     call hyperpar
+      call update_hyper
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine update_hyper
+
+      include 'SIZE'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real ep
+      real wk(nb)
+
+      call nekgsync
+      hpar_time=dnekclock()
+
+      ! eps is the free parameter
+      ! 1e-2 is used in the paper
+      ep = 1.e-2
+
+      n  = lx1*ly1*lz1*nelt
+      if (ifpod(1)) then
+         call cfill(upmin,1.e9,nb)
+         call cfill(upmax,-1.e9,nb)
+         do j=1,ns
+         do i=1,nb
+            if (ukp(i,j).lt.upmin(i)) upmin(i)=ukp(i,j)
+            if (ukp(i,j).gt.upmax(i)) upmax(i)=ukp(i,j)
+         enddo
+         enddo
+         do j=1,nb                    ! compute hyper-parameter
+            d= upmax(j)-upmin(j)
+            upmin(j) = upmin(j) - ep * d
+            upmax(j) = upmax(j) + ep * d
+            if (nio.eq.0) write (6,*) j,upmin(j),upmax(j)
+         enddo
+
+         ! compute distance between umax and umin
+         call sub3(updis,upmax,upmin,nb)
+
+         if (nio.eq.0) then
+            do i=1,nb
+               write (6,*) i,updis(i)
+            enddo
+         endif
+      endif   
+
+      if (ifpod(2)) then
+         call cfill(tpmin,1.e9,nb)
+         call cfill(tpmax,-1.e9,nb)
+         do j=1,ns
+         do i=1,nb
+            if (tkp(i,j).lt.tpmin(i)) tpmin(i)=tkp(i,j)
+            if (tkp(i,j).gt.tpmax(i)) tpmax(i)=tkp(i,j)
+         enddo
+         enddo
+         do j=1,nb                    ! compute hyper-parameter
+            d= tpmax(j)-tpmin(j)
+            tpmin(j) = tpmin(j) - ep * d
+            tpmax(j) = tpmax(j) + ep * d
+            if (nio.eq.0) write (6,*) j,tpmin(j),tpmax(j)
+         enddo
+
+         ! compute distance between tmax and tmin
+         call sub3(tpdis,tpmax,tpmin,nb)
+         if (nio.eq.0) then
+            do i=1,nb
+               write (6,*) i,tpdis(i)
+            enddo
+         endif
+
+      endif   
+
+      call nekgsync
+      if (nio.eq.0) write (6,*) 'hpar_time',dnekclock()-hpar_time
 
       return
       end

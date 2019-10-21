@@ -118,7 +118,9 @@ c     parameters and common blocks for MOR
       common /moropt/ helmu(lub,lub),invhelmu(lub,lub),
      $               helmt(ltb,ltb),invhelmt(ltb,ltb),icopt
       common /morhyperpar/ umin(lub),umax(lub),udis(lub),
-     $                     tmin(ltb),tmax(ltb),tdis(ltb)
+     $                     tmin(ltb),tmax(ltb),tdis(ltb),
+     $                     upmin(lub),upmax(lub),updis(lub),
+     $                     tpmin(ltb),tpmax(ltb),tpdis(ltb)
       common /morqn/ qns(lub),qny(lub)
       common /morbarrier/ ubarr0,tbarr0,ubarrseq,tbarrseq,
      $                    box_tol,barr_func
