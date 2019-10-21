@@ -1338,7 +1338,9 @@ c-----------------------------------------------------------------------
       character*127 fmat
 
       if (istep.eq.0) then
-         call rom_setup
+         call rom_init_params
+         call rom_init_fields
+         call loadbases
       else
          if ((istep+1).gt.lcs) then
             if (nio.eq.0) write (6,*) 'WARNING: lcs <= nsteps'
