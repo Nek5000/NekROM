@@ -1339,9 +1339,6 @@ c-----------------------------------------------------------------------
 
       if (istep.eq.0) then
          call rom_setup
-c        call rom_init_params
-c        call rom_init_fields
-c        call loadbases
       else
          if ((istep+1).gt.lcs) then
             if (nio.eq.0) write (6,*) 'WARNING: lcs <= nsteps'
@@ -1364,14 +1361,14 @@ c        call loadbases
          write (fmat,2) nb+1
          if (ifflow) then
             open (unit=10,file='ops/utrace')
-            do i=1,min(lcs,nsteps+1)
+            do i=1,min(lcs,nsteps)
                write (10,fmat) (uk(j,i),j=0,nb)
             enddo
             close (unit=10)
          endif
          if (ifheat) then
             open (unit=10,file='ops/ttrace')
-            do i=1,min(lcs,nsteps+1)
+            do i=1,min(lcs,nsteps)
                write (10,fmat) (tk(j,i),j=0,nb)
             enddo
             close (unit=10)
