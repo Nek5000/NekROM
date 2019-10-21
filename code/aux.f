@@ -1329,6 +1329,7 @@ c-----------------------------------------------------------------------
       include 'TSTEP'
       include 'INPUT'
       include 'SOLN'
+      include 'MASS'
       include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
@@ -1367,6 +1368,14 @@ c-----------------------------------------------------------------------
                write (10,fmat) (uk(j,i),j=0,nb)
             enddo
             close (unit=10)
+            call reconv(ux,uy,uz,uk(0,istep))
+            call outpost(vx,vy,vz,pr,t,'err')
+            call outpost(ux,uy,uz,pr,t,'err')
+            call opsub2(ux,uy,uz,vx,vy,vz)
+            call outpost(ux,uy,uz,pr,t,'err')
+            err=sqrt(op_glsc2_wt(ux,uy,uz,ux,uy,uz,bm1))
+            ul2=sqrt(op_glsc2_wt(vx,vy,vz,vx,vy,vz,bm1))
+            if (nio.eq.0) write (6,*) err,ul2,err/ul2,'err'
          endif
          if (ifheat) then
             open (unit=10,file='ops/ttrace')
