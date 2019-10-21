@@ -101,8 +101,8 @@ c     if (icount.le.2) then
 
       if (ntr.gt.0) then
          do i=1,ntr
-            if (ifrom(1)) rhs(i,1)=uk(i,ad_step+1)
-            if (ifrom(2)) rhs(i,2)=tk(i,ad_step+1)
+            if (ifrom(1)) rhs(i,1)=uk(i,ad_step)
+            if (ifrom(2)) rhs(i,2)=tk(i,ad_step)
          enddo
       endif
 
