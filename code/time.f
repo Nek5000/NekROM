@@ -156,6 +156,7 @@ c        call cubar
          endif
 
          if (rmode.ne.'ON ') then
+            jstep=istep
             call reconv(vx,vy,vz,u)
             call opcopy(t1,t2,t3,vx,vy,vz)
 
@@ -165,8 +166,11 @@ c        call cubar
                call comp_vort3(vort,work1,work2,t1,t2,t3)
             endif
 
+            istep=ad_step
+
             ifto = .true. ! turn on temp in fld file
             call outpost(vx,vy,vz,pavg,vort,'rom')
+            istep=jstep
          endif
       endif
 
