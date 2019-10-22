@@ -540,7 +540,7 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
 
       if (nplay.ne.0) then
          nplay=max(nplay,0)
-         ifplay=.true..
+         ifplay=.true.
       else
          ifplay=.false.
       endif
