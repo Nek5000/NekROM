@@ -181,7 +181,7 @@ c        call cubar
          if (nplay.ne.nb) then
             do j=nplay+1,nb
             do i=nplay+1,nb
-               err=err+rtmp1(i)*bu(i+(j-1)*nb)*rtmp1(j)
+               err=err+rtmp1(i,1)*bu(i+(j-1)*nb)*rtmp1(j,1)
                sl2=sl2+u(i)*bu(i+(j-1)*nb)*u(j)
             enddo
             enddo
