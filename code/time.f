@@ -159,7 +159,7 @@ c-----------------------------------------------------------------------
 c        call cubar
       endif
 
-      if (ntr.gt.0) then
+      if (ntr.gt.0.and.mod(ad_step,10).eq.0) then
          do j=1,nb
             if (nio.eq.0) write (6,2) ad_step,time,j,u(j),uk(j,ad_step)
          enddo
