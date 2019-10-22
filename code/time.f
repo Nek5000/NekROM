@@ -178,7 +178,6 @@ c        call cubar
          endif
 
          if (rmode.ne.'ON ') then
-            idump=ad_step/ad_iostep
             call reconv(vx,vy,vz,u)
             call opcopy(t1,t2,t3,vx,vy,vz)
 
@@ -192,18 +191,6 @@ c        call cubar
             call outpost(vx,vy,vz,pavg,vort,'rom')
          endif
       endif
-
-c     call reconv(vx,vy,vz,uk)
-c     call outpost(vx,vy,vz,pavg,vort,'rom')
-
-c     do i=0,nb
-c        write (6,*) u(i),uk(i,ad_step),'u'
-c     enddo
-
-c     if (ad_step.eq.2) then
-c        write (6,*) 'rrr'
-c        call exitt0
-c     endif
 
       if (ad_step.eq.ad_nsteps) then
          if (nio.eq.0) then
