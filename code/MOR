@@ -135,15 +135,15 @@ c     parameters and common blocks for MOR
 
       ! Flags
 
-      logical ifl2,ifvort,ifstep,ifpart,ifavg0,ifplay
+      logical ifl2,ifvort,ifstep,ifpart,ifavg0,ifplay,
      $        ifcdrag,ifrms,ifread,ifforce,ifpod(0:ldimt1),
      $        ifbuoy,ifrom(0:ldimt1),ifcintp,iffastc,ifcnuss,ifctke,
-     $        iffasth,ifavisc,ifsource,ifei,ifsub0,ifrecon,iftneu,
+     $        iffasth,ifavisc,ifsource,ifei,ifsub0,ifrecon,iftneu
 
-      common /morflags/ ifl2,ifvort,ifstep,ifavg0,ifplay
+      common /morflags/ ifl2,ifvort,ifstep,ifavg0,ifplay,
      $                  ifcdrag,ifrms,ifread,ifforce,ifpod,
      $                  ifbuoy,ifrom,ifcintp,iffastc,ifcnuss,ifctke,
-     $                  iffasth,ifavisc,ifsource,ifei,ifsub0,ifrecon
+     $                  iffasth,ifavisc,ifsource,ifei,ifsub0,ifrecon,
      $                  iftneu
 
       real last_time,misc_time,lu_time,lnsrch_time
