@@ -186,7 +186,7 @@ c-----------------------------------------------------------------------
       include 'MOR'
       include 'AVG'
 
-      logical iftmp
+      logical iftmp,ifexist
 
       if (nio.eq.0) write (6,*) 'inside rom_setup'
 
@@ -200,8 +200,15 @@ c-----------------------------------------------------------------------
       call rom_init_params
       call rom_init_fields
 
-      call setgram
-      call setevec
+      inquire (file='ops/evec',exist=ifexist)
+      if (ifexist) then
+         do i=1,ns
+            read (10,*) (evec(i,j,1),j=1,nb)
+         enddo
+      else
+         call setgram
+         call setevec
+      endif
 
       call setbases
       call setops
