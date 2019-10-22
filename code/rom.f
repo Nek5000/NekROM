@@ -68,6 +68,7 @@ c        cts='rkck  '
                if (ifrom(1)) call rom_step_legacy
                call postu_legacy
                call postt_legacy
+               time=time+ad_dt
             else
                call rk_setup(cts)
                call copy(urki(1),u(1),nb)
@@ -82,6 +83,8 @@ c        cts='rkck  '
                call mxm(bu,nb,rtmp1,nb,rtmp2,1)
                call mxm(rtmp2,1,rtmp1,nb,err,1)
                err=sqrt(err)
+
+               time=time+ad_dt
 
                if (nio.eq.0) write (6,1)
      $            ad_step,time,ad_dt,err/ad_dt,err
@@ -119,7 +122,6 @@ c        cts='rkck  '
                if (time*(1.+1.e-14).gt.tfinal) goto 2
             endif
 
-            time=time+ad_dt
             ad_step=ad_step+1
          enddo
          icalld=0
@@ -140,6 +142,39 @@ c        cts='rkck  '
 
     1 format(i8,1p4e13.5,' err')
     3 format(i8,1p4e15.7,' modt')
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine offline_mode ! offline-wrapper for MOR
+
+      include 'SIZE'
+      include 'INPUT'
+
+      param(173)=1.
+      call rom_update
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine online_mode ! online-wrapper for MOR
+
+      include 'SIZE'
+      include 'INPUT'
+
+      param(173)=2.
+      call rom_update
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine recon_mode ! reconstruction online-wrapper for MOR
+
+      include 'SIZE'
+      include 'INPUT'
+
+      param(173)=3.
+      call rom_update
 
       return
       end
