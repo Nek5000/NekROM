@@ -156,7 +156,6 @@ c        call cubar
          endif
 
          if (rmode.ne.'ON ') then
-            idump=ad_step/ad_iostep
             call reconv(vx,vy,vz,u)
             call opcopy(t1,t2,t3,vx,vy,vz)
 
