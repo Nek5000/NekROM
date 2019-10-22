@@ -163,12 +163,37 @@ c        call cubar
          do j=1,nb
             if (nio.eq.0) write (6,2) ad_step,time,j,u(j),uk(j,ad_step)
          enddo
+
          call sub3(rtmp1,u(1),uk(1,ad_step),nb)
          call mxm(bu,nb,rtmp1,nb,rtmp2,1)
-         call mxm(bu0,nb+1,u,nb+1,rtmp3,1)
          err=vlsc2(rtmp2,rtmp1,nb)
+
+         call mxm(bu0,nb+1,u,nb+1,rtmp3,1)
          sl2=vlsc2(rtmp3,u,nb+1)
-         if (nio.eq.0) write (6,1) ad_step,time,err,sl2,nplay,nb
+
+         rerr=err/sl2
+
+         if (nio.eq.0) write (6,1)
+     $      ad_step,time,err,sl2,rerr,nplay,nb,' errf'
+
+         err=0.
+         sl2=0.
+         if (nplay.ne.nb) then
+            do j=nplay+1,nb
+            do i=nplay+1,nb
+               err=err+rtmp1(i)*bu(i+(j-1)*nb)*rtmp1(j)
+               sl2=sl2+u(i)*bu(i+(j-1)*nb)*u(j)
+            enddo
+            enddo
+            err=sqrt(err)
+            sl2=sqrt(sl2)
+         endif
+
+         rerr=0.
+         if (sl2.ne.0.) rerr=err/sl2
+
+         if (nio.eq.0) write (6,1)
+     $      ad_step,time,err,sl2,rerr,nplay,nb,' err2'
       endif
 
       if (mod(ad_step,ad_iostep).eq.0) then
@@ -223,8 +248,8 @@ c        call cubar
       call nekgsync
       postu_time=postu_time+dnekclock()-tttime
 
-    1 format(i8,1p3e13.5,2i5,' tr_err')
-    2 format(i8,1p1e13.5,i5,1p2e13.5,' tr_romu')
+    1 format(i8,1p4e13.5,2i5,a)
+    2 format(i8,1p1e13.5,i5,1p2e13.5,' play_romu')
 
       return
       end
