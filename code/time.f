@@ -160,9 +160,15 @@ c        call cubar
       if (mod(ad_step,ad_iostep).eq.0) then
          if (nio.eq.0) then
             if (ifrom(1)) then
+            if (ntr.gt.0) then
+               do j=1,nb
+                  write(6,*) j,time,u(j),uk(j,ad_step),'romu'
+               enddo
+            else
                do j=1,nb
                   write(6,*) j,time,u(j),'romu'
                enddo
+            endif
             endif
             if (ifrom(2)) then
                do j=1,nb
