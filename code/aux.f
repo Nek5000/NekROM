@@ -1399,10 +1399,11 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
 
-      open (unit=10,file='ops/utrace')
-
       if (nio.eq.0) write (6,*) 'inside set_trace'
 
+      open (unit=10,file='ops/utrace')
+
+      if (nio.eq.0) write (6,*) ad_nsteps,lcs,nb
       do i=1,min(ad_nsteps,lcs)
          read (10,*) (uk(j,i),j=0,nb)
       enddo

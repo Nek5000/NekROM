@@ -221,7 +221,7 @@ c-----------------------------------------------------------------------
       call setqoi
       call setmisc
       if (ifei) call set_sigma
-      if (nplay.gt.0) call set_trace
+      if (ifplay) call set_trace
 
       if (nio.eq.0) write (6,*) 'end range setup'
 
@@ -537,6 +537,13 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
       ifcintp=.false.
 
       nplay=nint(param(196))
+
+      if (nplay.ne.0) then
+         nplay=max(nplay,0)
+         ifplay=.true..
+      else
+         ifplay=.false.
+      endif
 
       ! constrained optimization parameter
       icopt=nint(param(184))
