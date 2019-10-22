@@ -159,18 +159,23 @@ c-----------------------------------------------------------------------
 c        call cubar
       endif
 
+      if (ntr.gt.0) then
+         do j=1,nb
+            if (nio.eq.0) write (6,2) ad_step,time,j,u(j),uk(j,ad_step)
+         enddo
+         call sub3(rtmp1,u(1),uk(1,ad_step),nb)
+         call mxm(bu,nb,rtmp1,nb,rtmp2,1)
+         call mxm(bu0,nb+1,u,nb+1,rtmp3,1)
+         err=vlsc2(rtmp2,rtmp1,nb)
+         sl2=vlsc2(rtmp3,u,nb+1)
+         if (nio.eq.0) write (6,1) ad_step,time,err,sl2,ntr,nb
+      endif
+
       if (mod(ad_step,ad_iostep).eq.0) then
          if (ifrom(1)) then
-            if (ntr.gt.0) then
-               do j=1,nb
-                  if (nio.eq.0) write (6,*)
-     $               j,time,u(j),uk(j,ad_step),'romu'
-               enddo
-            else
-               do j=1,nb
-                  if (nio.eq.0) write (6,*) j,time,u(j),'romu'
-               enddo
-            endif
+            do j=1,nb
+               if (nio.eq.0) write (6,*) j,time,u(j),'romu'
+            enddo
          endif
 
          if (ifrom(2)) then
@@ -217,6 +222,9 @@ c        call cubar
 
       call nekgsync
       postu_time=postu_time+dnekclock()-tttime
+
+    1 format(i8,1p3e13.5,2i5,' tr_err')
+    2 format(i8,1p1e13.5,i5,1p2e13.5,' tr_romu')
 
       return
       end
