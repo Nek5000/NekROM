@@ -45,13 +45,13 @@ c     if (icount.le.2) then
             call seth(hlm(1,2),at,bt,1./ad_pe)
             if (ad_step.eq.3)
      $         call dump_serial(hlm(1,2),nb*nb,'ops/ht ',nid)
-            do j=1,nb-ntr
-            do i=1,nb-ntr
-               hlm(i+(j-1)*(nb-ntr),2)=hlm(i+ntr+(j+ntr-1)*nb,2)
+            do j=1,nb-nplay
+            do i=1,nb-nplay
+               hlm(i+(j-1)*(nb-nplay),2)=hlm(i+nplay+(j+nplay-1)*nb,2)
             enddo
             enddo
 
-            call invmat(hinv(1,2),hlu(1,2),hlm(1,2),ihlu(1,2),nb-ntr)
+            call invmat(hinv(1,2),hlu(1,2),hlm(1,2),ihlu(1,2),nb-nplay)
             lu_time=lu_time+dnekclock()-ttime
          endif
 
@@ -75,12 +75,12 @@ c     if (icount.le.2) then
             ttime=dnekclock()
             call seth(hlm,au,bu,1./ad_re)
             if (ad_step.eq.3) call dump_serial(hlm,nb*nb,'ops/hu ',nid)
-            do j=1,nb-ntr
-            do i=1,nb-ntr
-               hlm(i+(j-1)*(nb-ntr),1)=hlm(i+ntr+(j+ntr-1)*nb,1)
+            do j=1,nb-nplay
+            do i=1,nb-nplay
+               hlm(i+(j-1)*(nb-nplay),1)=hlm(i+nplay+(j+nplay-1)*nb,1)
             enddo
             enddo
-            call invmat(hinv,hlu,hlm,ihlu,nb-ntr)
+            call invmat(hinv,hlu,hlm,ihlu,nb-nplay)
             lu_time=lu_time+dnekclock()-ttime
          endif
 
@@ -88,8 +88,8 @@ c     if (icount.le.2) then
 
          ttime=dnekclock()
          if (isolve.eq.0) then
-            call mxm(hinv,nb-ntr,rhs(1+ntr,1),nb-ntr,rhstmp,1)
-            call copy(rhs(1+ntr,1),rhstmp,nb-ntr)
+            call mxm(hinv,nb-nplay,rhs(1+nplay,1),nb-nplay,rhstmp,1)
+            call copy(rhs(1+nplay,1),rhstmp,nb-nplay)
          else
             call mxm(u,nb+1,ad_alpha(1,icount),icount,rhstmp,1)
             call icopy(ipiv,ihlu,nb)
@@ -99,8 +99,8 @@ c     if (icount.le.2) then
          solve_time=solve_time+dnekclock()-ttime
       endif
 
-      if (ntr.gt.0) then
-         do i=1,ntr
+      if (nplay.gt.0) then
+         do i=1,nplay
             if (ifrom(1)) rhs(i,1)=uk(i,ad_step)
             if (ifrom(2)) rhs(i,2)=tk(i,ad_step)
          enddo
@@ -159,7 +159,7 @@ c-----------------------------------------------------------------------
 c        call cubar
       endif
 
-      if (ntr.gt.0.and.mod(ad_step,10).eq.0) then
+      if (nplay.gt.0.and.mod(ad_step,10).eq.0) then
          do j=1,nb
             if (nio.eq.0) write (6,2) ad_step,time,j,u(j),uk(j,ad_step)
          enddo
@@ -168,7 +168,7 @@ c        call cubar
          call mxm(bu0,nb+1,u,nb+1,rtmp3,1)
          err=vlsc2(rtmp2,rtmp1,nb)
          sl2=vlsc2(rtmp3,u,nb+1)
-         if (nio.eq.0) write (6,1) ad_step,time,err,sl2,ntr,nb
+         if (nio.eq.0) write (6,1) ad_step,time,err,sl2,nplay,nb
       endif
 
       if (mod(ad_step,ad_iostep).eq.0) then

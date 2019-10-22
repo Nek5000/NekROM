@@ -197,7 +197,7 @@
    0.00000     p193 MOR: != 0 -> forcing  (set fx,fy,fz with mass)
    0.00000     p194 MOR: != 0 -> source   (set qq with mass)
    0.00000     p195 MOR: != 0 -> buoyancy (set gx,gy,gz with mass)
-   0.00000     p196 MOR: != 0 -> artificial viscosity
+   0.00000     p196 MOR: nplay
    0.00000     p197 MOR: != 0 -> disable 0th mode subtraction
    0.00000     p198 MOR: 0 -> No filter, 1 -> Leray ROM, 2 -> EF ROM
    0.00000     p199 MOR: > 0 -> POD proj, < 0 -> POD differential filter

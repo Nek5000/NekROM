@@ -221,8 +221,8 @@ c-----------------------------------------------------------------------
       call setqoi
       call setmisc
       if (ifei) call set_sigma
-      ntr=0
-      if (ntr.gt.0) call set_trace
+      nplay=0
+      if (nplay.gt.0) call set_trace
 
       if (nio.eq.0) write (6,*) 'end range setup'
 
@@ -510,9 +510,7 @@ c-----------------------------------------------------------------------
       if (param(192).ne.0.and.ips.eq.'HLM') iffasth=.true.
 
       ifcintp=.false.
-
       ifavisc=.false.
-      if (param(196).ne.0.) ifavisc=.true.
 
       ifsub0=.true.
       if (param(197).ne.0.) ifsub0=.false.
@@ -539,7 +537,7 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
       ifpart=.false.
       ifcintp=.false.
 
-      ntr=0
+      nplay=nint(param(196))
 
       ! constrained optimization parameter
       icopt=nint(param(184))
