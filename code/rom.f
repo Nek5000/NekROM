@@ -605,7 +605,7 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
          write (6,*) 'rp_inus       ',inus
          write (6,*) 'rp_iffastc    ',iffastc
          write (6,*) 'rp_iffasth    ',iffasth
-         write (6,*) 'rp_ifavisc    ',ifavisc
+         write (6,*) 'rp_nplay      ',nplay
          write (6,*) 'rp_ifei       ',ifei      
          write (6,*) ' '
          write (6,*) 'rp_ifforce    ',ifforce
