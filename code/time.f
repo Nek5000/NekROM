@@ -164,17 +164,17 @@ c        call cubar
             if (ifrom(1)) then
             if (ntr.gt.0) then
                do j=1,nb
-                  write(6,*) j,time,u(j),uk(j,ad_step),'romu'
+                  write (6,*) j,time,u(j),uk(j,ad_step),'romu'
                enddo
             else
                do j=1,nb
-                  write(6,*) j,time,u(j),'romu'
+                  write (6,*) j,time,u(j),'romu'
                enddo
             endif
             endif
             if (ifrom(2)) then
                do j=1,nb
-                  write(6,*) j,time,ut(j),'romt'
+                  write (6,*) j,time,ut(j),'romt'
                enddo
             endif
          endif
@@ -208,9 +208,9 @@ c        call cubar
             endif
             if (ifrom(2)) then
                do j=1,nb
-                  write(6,*)j,num_galt(j)/ad_nsteps,'num_galt'
+                  write (6,*) j,num_galt(j)/ad_nsteps,'num_galt'
                enddo
-               write(6,*)anum_galt/ad_nsteps,'anum_galt'
+               write (6,*) anum_galt/ad_nsteps,'anum_galt'
             endif
          endif
       endif
