@@ -221,7 +221,7 @@ c-----------------------------------------------------------------------
       call setqoi
       call setmisc
       if (ifei) call set_sigma
-      ntr=nb!-1
+      ntr=0
       if (ntr.gt.0) call set_trace
 
       if (nio.eq.0) write (6,*) 'end range setup'
