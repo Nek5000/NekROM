@@ -298,15 +298,14 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
 
+      real uu(nb),rhs(nb)
+      real helm(nb),invhelm(nb)
+      real amax(nb),amin(nb)
+      real qnf,bpar
       real tmp1(nb),tmp2(nb),tmp3(nb)
       real tmp4(nb),tmp5(nb),tmp6(nb)
-      real term1,term2,term3,term4
       real bar1,bar2 
-      real uu(nb),rhs(nb)
-      real amax(nb),amin(nb)
-      real helm(nb),invhelm(nb)
-      real qnf
-      real bpar
+      real term1,term2,term3,term4
 
       ! evaluate quasi-newton f
 
