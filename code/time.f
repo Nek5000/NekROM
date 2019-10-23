@@ -730,8 +730,8 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine constrained_POD(rhs,uu,amax,amin,
-     $                          adis,bpar,bstep,copt_count) 
+      subroutine constrained_POD(rhs,uu,amax,amin,adis,
+     $                          bpar,bstep,copt_count) 
 
       include 'SIZE'
       include 'TOTAL'
@@ -740,8 +740,8 @@ c-----------------------------------------------------------------------
       common /scrcopt/ helm(lb,2),invhelm(lb,2)
 
       real uu(nb),rhs(0:nb),rhstmp(0:nb)
-      real invhelm
       real amax(nb),amin(nb),adis(nb)
+      real invhelm
       real bpar
       integer bstep,chekbc,copt_count
 
@@ -762,17 +762,14 @@ c-----------------------------------------------------------------------
       endif
 
       if (isolve.eq.1) then 
-
-         ! constrained solve with inverse update
+         ! constrained solver with inverse update
          call BFGS_new(rhs(1),uu(1),helm,invhelm,amax,amin,adis,
      $   bpar,bstep)
 
       else if (isolve.eq.2) then 
-                                 
-         ! constrained solve with inverse update
-         ! and mix with standard solver
+         ! mix constrained solver with inverse update
          call copy(rhstmp,rhs,nb+1)
-         call dgetrs('N',nb,1,invhelm,nb,ipiv,rhstmp(1),nb,info)
+         call col2(rhstmp(1),invhelm,nb)
 
          do ii=1,nb
             if ((rhstmp(ii)-amax(ii)).ge.box_tol) then
@@ -791,21 +788,17 @@ c-----------------------------------------------------------------------
          endif
 
       else if (isolve.eq.3) then 
-
-         ! constrained solve with Hessian update
+         ! constrained solver with Hessian update
          call BFGS(rhs(1),uu(1),helm,invhelm,amax,amin,adis,
      $   bpar,bstep)
 
       else if (isolve.eq.4) then 
-
-         ! constrained solve with Hessian update
-         ! and mix with standard solver
+         ! mix constrained solver with Hessian update
          call hybrid_advance(rhs,uu(1),helm,invhelm,amax,amin,
      $                       adis,bpar,bstep,copt_count)
 
       else if (isolve.eq.5) then 
-
-         ! constrained solve with Hessian update
+         ! constrained solver with Hessian update
          call BFGS(rhs(1),uu(1),helm,invhelm,amax,amin,adis,
      $   bpar,bstep)
 
