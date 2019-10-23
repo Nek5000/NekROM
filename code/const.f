@@ -251,8 +251,8 @@ c-----------------------------------------------------------------------
          call sub3(tmp2,uu,amin,nb)  
    
          ! add perturbation 
-         call cadd(tmp1,-1e-1,nb)
-         call cadd(tmp2,1e-1,nb)
+         call cadd(tmp1,-1e-2,nb)
+         call cadd(tmp2,1e-2,nb)
    
          call invcol1(tmp1,nb)
          call invcol1(tmp2,nb)
@@ -271,8 +271,8 @@ c-----------------------------------------------------------------------
          call sub3(tmp2,amin,uu,nb)  
 
          ! add perturbation
-         call cadd(tmp1,-1e-1,nb)
-         call cadd(tmp2,-1e-1,nb)
+         call cadd(tmp1,-1e-2,nb)
+         call cadd(tmp2,-1e-2,nb)
 
          call vsq(tmp1,nb)
          call vsq(tmp2,nb)
@@ -322,8 +322,8 @@ c-----------------------------------------------------------------------
          call sub3(tmp2,uu,amin,nb)  
    
          ! add perturbation
-         call cadd(tmp1,1e-1,nb)
-         call cadd(tmp2,1e-1,nb)
+         call cadd(tmp1,1e-2,nb)
+         call cadd(tmp2,1e-2,nb)
    
          do i=1,nb
             tmp3(i) = log(tmp1(i))
@@ -334,8 +334,8 @@ c-----------------------------------------------------------------------
          call sub3(tmp2,amin,uu,nb)  
 
          ! add perturbation
-         call cadd(tmp1,-1e-1,nb)
-         call cadd(tmp2,-1e-1,nb)
+         call cadd(tmp1,-1e-2,nb)
+         call cadd(tmp2,-1e-2,nb)
    
          do i=1,nb
             tmp3(i) = 1./tmp1(i)
