@@ -128,19 +128,21 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
+      real vv(nb),rhs(nb)
       real helm(nb),invhelm(nb)
-      real qgo(nb),qngradf(nb)
-      real uu(nb),vv(nb),rhs(nb)
       real amax(nb),amin(nb),adis(nb)
+
       real sk(nb,nb),yk(nb,nb)
+      real qgo(nb),qngradf(nb)
+      real tmp(nb),uu(nb)
       real qnf,ngf,ysk
       real bpar,par
-      real tmp(nb)
       real norm_s,norm_step,norm_uo
 
       ! parameter for barrier function
       integer par_step,jmax,bstep,chekbc
       integer uHcount,lncount
+      real tlncount
 
       call copy(uu,vv,nb)
 
@@ -156,6 +158,7 @@ c-----------------------------------------------------------------------
 
          chekbc = 0
          uHcount = 0
+         tlncount = 0.
 
          ! use helm from BDF3/EXT3 as intial approximation
          call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par)
@@ -170,15 +173,13 @@ c-----------------------------------------------------------------------
                if (j.eq.1) then
                   call copy(qns,qngradf,nb)
                   call chsign(qns,nb)
-c                 call chsign(tmp,nb)
-c                 call mxm(invhelm,nb,tmp,nb,qns,1)
                   call col2(qns,invhelm,nb)
-c                 call dgetrs('N',nb,1,invhelm,nb,ipiv,qns,nb,info)
                endif
 
                tlnsrch_time=dnekclock()
                call backtrackr(uu,qns,rhs,helm,invhelm,1e-4,0.5,
      $                     amax,amin,par,chekbc,lncount)
+               tlncount = tlncount + lncount
 c              call lnsrch_new(uu,qns,rhs,helm,invhelm,1e-4,0.5,
 c    $                     amax,amin,par,chekbc,lncount)
                lnsrch_time=lnsrch_time+dnekclock()-tlnsrch_time
@@ -215,13 +216,12 @@ c    $                     amax,amin,par,chekbc,lncount)
                exit
             endif
 
-         ! update solution
          enddo
          quasi_time=quasi_time+dnekclock()-tquasi_time
 
          if (mod(ad_step,ad_iostep).eq.0) then
             if (nio.eq.0) write (6,*) 'lnconst_ana'
-            call cpod_ana(uu,par,j,uHcount,lncount,ngf,norm_step
+            call cpod_ana(uu,par,j,uHcount,tlncount,ngf,norm_step
      $      ,norm_s,ysk)
          endif
          par = par*0.1
@@ -512,22 +512,23 @@ c        if ((cond3.AND..not.cond1).OR.alphak.lt.1e-8) then
       return
       end
 c-----------------------------------------------------------------------
-      subroutine cpod_ana(uu,par,qstep,uhcount,lncount,ngf,qndf,norm_s,
-     $   ysk)
+      subroutine cpod_ana(uu,par,qstep,uhcount,tlncount,
+     $                    ngf,qndf,norm_s,ysk)
 
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
 
       real uu(nb)
-      real par
+      real par,tlncount
       real ngf,qndf,norm_s,ysk
       integer qstep 
-      integer uhcount,lncount
+      integer uhcount
 
       if (nio.eq.0) then
-         write (6,2)'ad_step:',ad_step,ad_iostep,par,qstep,uhcount,
-     $            lncount,ngf,qndf,norm_s,ysk
+         write (6,2)'ad_step:',ad_step,ad_iostep,par,
+     $            qstep,uhcount,tlncount,
+     $            ngf,qndf,norm_s,ysk
          if (ad_step.eq.ad_nsteps) then
             do j=1,nb
                write(6,*) j,uu(j),'final'
@@ -538,7 +539,7 @@ c-----------------------------------------------------------------------
             enddo
          endif
       endif
-    2 format (a8,i6,i4,1p1e16.8,i3,i3,i3,1p4e16.8)  
+    2 format (a8,i6,i4,1p1e16.8,i3,i3,0pF8.4,1p4e16.8)  
       return
       end
 c-----------------------------------------------------------------------
