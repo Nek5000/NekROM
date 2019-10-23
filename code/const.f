@@ -316,13 +316,7 @@ c-----------------------------------------------------------------------
 
       ! evaluate quasi-newton f
 
-      ONE = 1.
-      ZERO= 0.
-
-      call copy(tmp6,uu,nb)
-      call col2(tmp6,helm,nb)
-c     call dgemv('N',nb,nb,ONE,helm,nb,uu,1,ZERO,tmp6,1) ! H*coef
-      term1 = 0.5 * vlsc2(tmp6,uu,nb) ! coef'*H*coef
+      term1 = 0.5 * vlsc3(uu,helm,uu,nb)
 
       term2 = vlsc2(uu,rhs,nb) ! coef'*rhs
 
