@@ -261,11 +261,8 @@ c-----------------------------------------------------------------------
          mpar = -1.0*bpar
          call add3s12(s,rhs,tmp3,-1.0,mpar,nb)
    
-         ONE = 1.
-         ZERO= 0.
          call copy(tmp4,uu,nb)
          call col2(tmp4,helm,nb)
-c        call dgemv('N',nb,nb,ONE,helm,nb,uu,1,ZERO,tmp4,1)
          call add2(s,tmp4,nb)
 
       else ! use inverse function as barrier function
@@ -287,11 +284,8 @@ c        call dgemv('N',nb,nb,ONE,helm,nb,uu,1,ZERO,tmp4,1)
          mpar = -1.0*bpar
          call add3s12(s,rhs,tmp3,-1.0,mpar,nb)
    
-         ONE = 1.
-         ZERO= 0.
          call copy(tmp4,uu,nb)
          call col2(tmp4,helm,nb)
-c        call dgemv('N',nb,nb,ONE,helm,nb,uu,1,ZERO,tmp4,1)
          call add2(s,tmp4,nb)
 
       endif
@@ -562,9 +556,7 @@ c-----------------------------------------------------------------------
       real work(nb)
       integer qnstep
 
-c     call copy(tmp,qnd,nb)
       call copy(qnsol,qnd,nb)
-c     call chsign(tmp,nb)
       call chsign(qnsol,nb)
 
       ! compute right product
@@ -575,11 +567,7 @@ c     call chsign(tmp,nb)
       enddo
 
       ! compute center
-      ONE = 1.
-      ZERO= 0.
-c     call mxm(invh0,nb,tmp,nb,qnsol,1)
       call col2(qnsol,invh0,nb)
-c     call dgetrs('N',nb,1,invh0,nb,ipiv,qnsol,nb,info)
 
       ! compute left product
       do i=1,qnstep
