@@ -498,11 +498,6 @@ c     alphak = 1.0
          cond1 = (fk1-(fk+sigmab*alphak*Jfks)).gt.1e-10
          cond2 = (Jfks1-(0.9*Jfks)).lt.1e-10
 
-c        cond1 = fk1.gt.(fk+sigmab*alphak*Jfks)
-c        cond2 = Jfks1.lt.(0.9*Jfks)
-c        write(6,*)'cond1',cond1,fk1,(fk+sigmab*alphak*Jfks)
-c        write(6,*)'cond2',cond2,Jfks1,(0.9*Jfks)
-         
          cond3 = (alphak-minalpha).lt.1e-10
 c        if ((cond3.AND..not.cond1).OR.alphak.lt.1e-8) then
          if ((.not.cond1).OR.alphak.lt.1e-8) then
