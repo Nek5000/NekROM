@@ -128,7 +128,7 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
-      real helm(nb,nb),invhelm(nb,nb)
+      real helm(nb),invhelm(nb)
       real qgo(nb),qngradf(nb)
       real uu(nb),vv(nb),rhs(nb)
       real amax(nb),amin(nb),adis(nb)
@@ -168,9 +168,11 @@ c-----------------------------------------------------------------------
 
             if (isolve.eq.1.OR.isolve.eq.2) then
                if (j.eq.1) then
-                  call copy(tmp,qngradf,nb)
-                  call chsign(tmp,nb)
-                  call mxm(invhelm,nb,tmp,nb,qns,1)
+                  call copy(qns,qngradf,nb)
+                  call chsign(qns,nb)
+c                 call chsign(tmp,nb)
+c                 call mxm(invhelm,nb,tmp,nb,qns,1)
+                  call col2(qns,invhelm,nb)
 c                 call dgetrs('N',nb,1,invhelm,nb,ipiv,qns,nb,info)
                endif
 
@@ -237,7 +239,7 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
 
-      real helm(nb,nb)
+      real helm(nb)
       real uu(nb),rhs(nb),s(nb)
       real amax(nb),amin(nb) 
       real tmp1(nb),tmp2(nb),tmp3(nb),tmp4(nb)
@@ -249,8 +251,8 @@ c-----------------------------------------------------------------------
          call sub3(tmp2,uu,amin,nb)  
    
          ! add perturbation 
-         call cadd(tmp1,-1e-2,nb)
-         call cadd(tmp2,1e-2,nb)
+         call cadd(tmp1,-1e-1,nb)
+         call cadd(tmp2,1e-1,nb)
    
          call invcol1(tmp1,nb)
          call invcol1(tmp2,nb)
@@ -261,7 +263,9 @@ c-----------------------------------------------------------------------
    
          ONE = 1.
          ZERO= 0.
-         call dgemv('N',nb,nb,ONE,helm,nb,uu,1,ZERO,tmp4,1)
+         call copy(tmp4,uu,nb)
+         call col2(tmp4,helm,nb)
+c        call dgemv('N',nb,nb,ONE,helm,nb,uu,1,ZERO,tmp4,1)
          call add2(s,tmp4,nb)
 
       else ! use inverse function as barrier function
@@ -270,8 +274,8 @@ c-----------------------------------------------------------------------
          call sub3(tmp2,amin,uu,nb)  
 
          ! add perturbation
-         call cadd(tmp1,-1e-2,nb)
-         call cadd(tmp2,-1e-2,nb)
+         call cadd(tmp1,-1e-1,nb)
+         call cadd(tmp2,-1e-1,nb)
 
          call vsq(tmp1,nb)
          call vsq(tmp2,nb)
@@ -285,7 +289,9 @@ c-----------------------------------------------------------------------
    
          ONE = 1.
          ZERO= 0.
-         call dgemv('N',nb,nb,ONE,helm,nb,uu,1,ZERO,tmp4,1)
+         call copy(tmp4,uu,nb)
+         call col2(tmp4,helm,nb)
+c        call dgemv('N',nb,nb,ONE,helm,nb,uu,1,ZERO,tmp4,1)
          call add2(s,tmp4,nb)
 
       endif
@@ -302,9 +308,9 @@ c-----------------------------------------------------------------------
       real tmp4(nb),tmp5(nb),tmp6(nb)
       real term1,term2,term3,term4
       real bar1,bar2 
-      real uu(nb), rhs(nb)
-      real amax(nb), amin(nb)
-      real helm(nb,nb), invhelm(nb,nb)
+      real uu(nb),rhs(nb)
+      real amax(nb),amin(nb)
+      real helm(nb),invhelm(nb)
       real qnf
       real bpar
 
@@ -313,14 +319,17 @@ c-----------------------------------------------------------------------
       ONE = 1.
       ZERO= 0.
 
-      call dgemv('N',nb,nb,ONE,helm,nb,uu,1,ZERO,tmp6,1) ! H*coef
+      call copy(tmp6,uu,nb)
+      call col2(tmp6,helm,nb)
+c     call dgemv('N',nb,nb,ONE,helm,nb,uu,1,ZERO,tmp6,1) ! H*coef
       term1 = 0.5 * vlsc2(tmp6,uu,nb) ! coef'*H*coef
 
       term2 = vlsc2(uu,rhs,nb) ! coef'*rhs
 
       ! 0.5*rhs'*inv(H)*rhs
-c     call copy(tmp5,rhs,nb)
-      call mxm(invhelm,nb,rhs,nb,tmp5,1)
+      call copy(tmp5,rhs,nb)
+      call col2(tmp5,invhelm,nb)
+c     call mxm(invhelm,nb,rhs,nb,tmp5,1)
 c     call dgetrs('N',nb,1,invhelm,nb,ipiv,tmp5,nb,info)
       term3 = 0.5 * vlsc2(rhs,tmp5,nb)
 
@@ -330,8 +339,8 @@ c     call dgetrs('N',nb,1,invhelm,nb,ipiv,tmp5,nb,info)
          call sub3(tmp2,uu,amin,nb)  
    
          ! add perturbation
-         call cadd(tmp1,1e-2,nb)
-         call cadd(tmp2,1e-2,nb)
+         call cadd(tmp1,1e-1,nb)
+         call cadd(tmp2,1e-1,nb)
    
          do i=1,nb
             tmp3(i) = log(tmp1(i))
@@ -342,8 +351,8 @@ c     call dgetrs('N',nb,1,invhelm,nb,ipiv,tmp5,nb,info)
          call sub3(tmp2,amin,uu,nb)  
 
          ! add perturbation
-         call cadd(tmp1,-1e-2,nb)
-         call cadd(tmp2,-1e-2,nb)
+         call cadd(tmp1,-1e-1,nb)
+         call cadd(tmp2,-1e-1,nb)
    
          do i=1,nb
             tmp3(i) = 1./tmp1(i)
@@ -406,7 +415,7 @@ c-----------------------------------------------------------------------
 
       real rhs(nb),s(nb)
       real uuo(nb),uu(nb)
-      real helm(nb,nb),invhelm(nb,nb)
+      real helm(nb),invhelm(nb)
       real Jfk(nb),Jfk1(nb)
       real amax(nb),amin(nb)
       real fk,fk1
@@ -560,7 +569,7 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'            
 
-      real invh0(nb,nb)
+      real invh0(nb)
       real sk(nb,nb),yk(nb,nb),qnd(nb),qnsol(nb)
       real qnrho(nb),qnalpha(nb),qnbeta(nb)
       real tmp(nb)
@@ -568,8 +577,10 @@ c-----------------------------------------------------------------------
       real work(nb)
       integer qnstep
 
-      call copy(tmp,qnd,nb)
-      call chsign(tmp,nb)
+c     call copy(tmp,qnd,nb)
+      call copy(qnsol,qnd,nb)
+c     call chsign(tmp,nb)
+      call chsign(qnsol,nb)
 
       ! compute right product
       do i=qnstep,1,-1
@@ -581,7 +592,8 @@ c-----------------------------------------------------------------------
       ! compute center
       ONE = 1.
       ZERO= 0.
-      call mxm(invh0,nb,tmp,nb,qnsol,1)
+c     call mxm(invh0,nb,tmp,nb,qnsol,1)
+      call col2(qnsol,invh0,nb)
 c     call dgetrs('N',nb,1,invh0,nb,ipiv,qnsol,nb,info)
 
       ! compute left product
