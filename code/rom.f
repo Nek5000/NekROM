@@ -428,6 +428,7 @@ c-----------------------------------------------------------------------
       lnsrch_time=0.
       compgf_time=0.
       compf_time=0.
+      invhm_time=0.
 
       anum_galu=0.
       anum_galt=0.
@@ -1175,6 +1176,7 @@ c-----------------------------------------------------------------------
          write (6,*) 'lnsrch_time: ',lnsrch_time
          write (6,*) 'compf_time:  ',compf_time
          write (6,*) 'compgf_time: ',compgf_time
+         write (6,*) 'invhm_time:  ',invhm_time
          write (6,*) 'ucopt_active:',ucopt_count,
      $         '/',ad_step-1
          if (ifrom(2)) then

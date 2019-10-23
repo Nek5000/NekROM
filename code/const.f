@@ -179,10 +179,8 @@ c-----------------------------------------------------------------------
                tlnsrch_time=dnekclock()
                call backtrackr(uu,qns,rhs,helm,invhelm,1e-4,0.5,
      $                     amax,amin,par,chekbc,lncount)
-               tlncount = tlncount + lncount
-c              call lnsrch_new(uu,qns,rhs,helm,invhelm,1e-4,0.5,
-c    $                     amax,amin,par,chekbc,lncount)
                lnsrch_time=lnsrch_time+dnekclock()-tlnsrch_time
+               tlncount = tlncount + lncount
 
                ! store qns
                call copy(sk(1,j),qns,nb)
@@ -208,7 +206,9 @@ c    $                     amax,amin,par,chekbc,lncount)
 
                ! store qny 
                call copy(yk(1,j),qny,nb)
+               tinvhm_time=dnekclock()
                call invH_multiply(qns,invhelm,sk,yk,qngradf,j)
+               invhm_time=invhm_time+dnekclock()-tinvhm_time
             endif
 
             if (ngf .lt. 1e-6 .OR. ysk .lt. 1e-6 .OR. norm_step .lt.
@@ -549,13 +549,14 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'            
 
-      real invh0(nb)
-      real sk(nb,nb),yk(nb,nb),qnd(nb),qnsol(nb)
+      real qnsol(nb),invh0(nb)
+      real sk(nb,nb),yk(nb,nb),qnd(nb)
+      integer qnstep
+
       real qnrho(nb),qnalpha(nb),qnbeta(nb)
       real tmp(nb)
       real qnfact(nb)
       real work(nb)
-      integer qnstep
 
       call copy(qnsol,qnd,nb)
       call chsign(qnsol,nb)
