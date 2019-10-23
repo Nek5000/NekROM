@@ -368,6 +368,9 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
 
+      logical ifexist
+      real wk((lb+1)*ns)
+
       if (nio.eq.0) write (6,*) 'begin range setup'
 
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
@@ -377,20 +380,26 @@ c-----------------------------------------------------------------------
          if (ifpod(1)) call pv2k(uk,us0,ub,vb,wb)
          if (ifpod(2)) call ps2k(tk,ts0,tb)
 
-         if (ifpod(1)) then
-            do i=1,ns
-               call copy(ukp(0,i),uk(0,i),nb+1)
-            enddo
-         endif
-
-         if (ifpod(2)) then
-            do i=1,ns
-               call copy(tkp(0,i),tk(0,i),nb+1)
-            enddo
-         endif
-
          call nekgsync
          if (nio.eq.0) write (6,*) 'proj_time:',dnekclock()-proj_time
+      else if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
+         inquire (file='ops/uk',exist=ifexist)
+         if (ifexist) call read_serial(uk,(lb+1)*ns,'ops/uk ',wk,nid)
+
+         inquire (file='ops/tk',exist=ifexist)
+         if (ifexist) call read_serial(tk,(lb+1)*ns,'ops/tk ',wk,nid)
+      endif
+
+      if (ifpod(1)) then
+         do i=1,ns
+            call copy(ukp(0,i),uk(0,i),nb+1)
+         enddo
+      endif
+
+      if (ifpod(2)) then
+         do i=1,ns
+            call copy(tkp(0,i),tk(0,i),nb+1)
+         enddo
       endif
 
       call asnap
