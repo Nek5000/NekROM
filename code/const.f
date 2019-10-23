@@ -327,11 +327,7 @@ c     call dgemv('N',nb,nb,ONE,helm,nb,uu,1,ZERO,tmp6,1) ! H*coef
       term2 = vlsc2(uu,rhs,nb) ! coef'*rhs
 
       ! 0.5*rhs'*inv(H)*rhs
-      call copy(tmp5,rhs,nb)
-      call col2(tmp5,invhelm,nb)
-c     call mxm(invhelm,nb,rhs,nb,tmp5,1)
-c     call dgetrs('N',nb,1,invhelm,nb,ipiv,tmp5,nb,info)
-      term3 = 0.5 * vlsc2(rhs,tmp5,nb)
+      term3 = 0.5 * vlsc3(rhs,invhelm,rhs,nb)
 
       if (barr_func.eq.1) then ! use logarithmetic as barrier function
          ! barrier term
