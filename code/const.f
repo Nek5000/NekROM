@@ -110,7 +110,7 @@
          if (mod(ad_step,ad_iostep).eq.0) then
             if (nio.eq.0) write (6,*) 'lnconst_ana'
             call cpod_ana(uu,par,j,uHcount,lncount,ngf,norm_step
-     $                   ,norm_s,ysk)
+     $                   ,ysk)
          endif
          par = par*0.1
 
@@ -222,7 +222,7 @@ c-----------------------------------------------------------------------
          if (mod(ad_step,ad_iostep).eq.0) then
             if (nio.eq.0) write (6,*) 'lnconst_ana'
             call cpod_ana(uu,par,j,uHcount,tlncount,ngf,norm_step
-     $      ,norm_s,ysk)
+     $      ,ysk)
          endif
          par = par*0.1
 
@@ -512,7 +512,7 @@ c        if ((cond3.AND..not.cond1).OR.alphak.lt.1e-8) then
       end
 c-----------------------------------------------------------------------
       subroutine cpod_ana(uu,par,qstep,uhcount,tlncount,
-     $                    ngf,qndf,norm_s,ysk)
+     $                    ngf,qndf,ysk)
 
       include 'SIZE'
       include 'TOTAL'
@@ -520,14 +520,17 @@ c-----------------------------------------------------------------------
 
       real uu(nb)
       real par,tlncount
-      real ngf,qndf,norm_s,ysk
+      real ngf,qndf,ysk
       integer qstep 
       integer uhcount
+      character*5 chartmp
 
       if (nio.eq.0) then
-         write (6,2)'ad_step:',ad_step,ad_iostep,par,
+         if (ifrom(1)) chartmp='ucopt'
+         if (ifrom(2)) chartmp='tcopt'
+         write (6,2)'ad_step:',ad_step,chartmp,par,
      $            qstep,uhcount,tlncount,
-     $            ngf,qndf,norm_s,ysk
+     $            ngf,qndf,ysk
          if (ad_step.eq.ad_nsteps) then
             do j=1,nb
                write(6,*) j,uu(j),'final'
@@ -538,7 +541,7 @@ c-----------------------------------------------------------------------
             enddo
          endif
       endif
-    2 format (a8,i6,i4,1p1e16.8,i3,i3,0pF8.4,1p4e16.8)  
+    2 format (a8,i6,1x,a5,1p1e16.8,i3,i3,0pF8.4,1p4e16.8)  
       return
       end
 c-----------------------------------------------------------------------
