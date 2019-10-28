@@ -15,4 +15,3 @@ $(OBJDIR)/rom.o    :$(MOR_DIR)/code/rom.f    MOR LMOR;  $(FC) -c $(FL2) $< -o $@
 $(OBJDIR)/time.o   :$(MOR_DIR)/code/time.f   MOR LMOR;  $(FC) -c $(FL2) $< -o $@
 
 $(OBJDIR)/unit.o   :$(MOR_DIR)/tests/unit.f  MOR LMOR;  $(FC) -c $(FL2) $< -o $@
-$(OBJDIR)/integ.o  :$(MOR_DIR)/tests/integ.f MOR LMOR;  $(FC) -c $(FL2) $< -o $@
