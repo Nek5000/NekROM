@@ -129,7 +129,7 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       real vv(nb),rhs(nb)
-      real helm(nb),invhelm(nb)
+      real helm(nb,nb),invhelm(nb,nb)
       real amax(nb),amin(nb),adis(nb)
 
       real sk(nb,nb),yk(nb,nb)
@@ -239,7 +239,7 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
 
-      real helm(nb)
+      real helm(nb,nb)
       real uu(nb),rhs(nb),s(nb)
       real amax(nb),amin(nb) 
       real tmp1(nb),tmp2(nb),tmp3(nb),tmp4(nb)
@@ -299,7 +299,7 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       real uu(nb),rhs(nb)
-      real helm(nb),invhelm(nb)
+      real helm(nb,nb),invhelm(nb,nb)
       real amax(nb),amin(nb)
       real qnf,bpar
       real tmp1(nb),tmp2(nb),tmp3(nb)
@@ -398,7 +398,7 @@ c-----------------------------------------------------------------------
 
       real rhs(nb),s(nb)
       real uuo(nb),uu(nb)
-      real helm(nb),invhelm(nb)
+      real helm(nb,nb),invhelm(nb,nb)
       real Jfk(nb),Jfk1(nb)
       real amax(nb),amin(nb)
       real fk,fk1

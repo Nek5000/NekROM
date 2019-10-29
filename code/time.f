@@ -41,7 +41,7 @@ c-----------------------------------------------------------------------
          call mxm(u,nb+1,ad_alpha(1,icount),icount,utmp1,1)
          call mxm(wt,nb,utmp1(1),nb,utmp2(1),1)
          call mxm(wt,nb,rhs(1),nb,rhstmp(1),1)
-         call constrained_POD(rhstmp,utmp2(1),upmax,upmin,
+         call constrained_POD(rhstmp,hinv,hinv,utmp2(1),upmax,upmin,
      $                        updis,ubarr0,ubarrseq,ucopt_count)
          call mxm(rhstmp(1),1,wt,nb,rhs(1),nb)
       endif
@@ -230,7 +230,7 @@ c-----------------------------------------------------------------------
          call dgetrs('N',nb,1,flut,nb,ipiv,rhs(1),nb,info)
       else 
          call mxm(ut,nb+1,ad_alpha(1,icount),icount,rhstmp,1)
-         call constrained_POD(rhs,rhstmp(1),tmax,tmin,
+         call constrained_POD(rhs,hinv,hinv,rhstmp(1),tmax,tmin,
      $                        tdis,tbarr0,tbarrseq,tcopt_count)
       endif
 
@@ -730,34 +730,51 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine constrained_POD(rhs,uu,amax,amin,adis,
+      subroutine constrained_POD(rhs,hh,invhh,uu,amax,amin,adis,
      $                          bpar,bstep,copt_count) 
 
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'  
 
-      common /scrcopt/ helm(lb,2),invhelm(lb,2)
+      common /scrcopt/ helm(lb**2,2),invhelm(lb**2,2)
 
       real uu(nb),rhs(0:nb),rhstmp(0:nb)
       real amax(nb),amin(nb),adis(nb)
-      real invhelm
+      real invhelm,hh(nb**2,2),invhh(nb**2,2)
       real bpar
+      real tmp(nb),vv(nb)
       integer bstep,chekbc,copt_count
+      logical ifdiag
+      integer checkdiag
 
+      call rone(tmp,nb)
+      call mxm(invhh,nb,tmp,nb,vv,1)
+      checkdiag = 0
+
+      do ii=1,nb
+         if (abs(vv(ii)-invhh(ii,1)).ge.1e-10) then
+            checkdiag=checkdiag+1
+         endif
+      enddo
+      if (checkdiag==0) ifdiag=.true.
 
       if (ifpod(1)) then 
-         if (abs(helm(1,1)-(1./hinv(1,1))).ge.1e-10) then
+         if (abs(helm(1,1)-(1./hh(1,1))).ge.1e-10) then
             write(6,*) ad_step,'ad_step'
-            do jj=1,lb
-               helm(jj,1) = 1/hinv(jj+(jj-1)*lb,1)
-            enddo
+            if (ifdiag) then 
+               do jj=1,lb
+                  helm(jj,1) = 1/hh(jj+(jj-1)*lb,1)
+               enddo
+            endif
          endif
-         if (abs(invhelm(1,1)-(hinv(1,1))).ge.1e-10) then
+         if (abs(invhelm(1,1)-(invhh(1,1))).ge.1e-10) then
             write(6,*) ad_step,'ad_step'
-            do jj=1,lb
-               invhelm(jj,1) = hinv(jj+(jj-1)*lb,1)
-            enddo
+            if (ifdiag) then
+               do jj=1,lb
+                  invhelm(jj,1) = invhh(jj+(jj-1)*lb,1)
+               enddo
+            endif
          endif
       endif
 
