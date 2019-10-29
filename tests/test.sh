@@ -26,9 +26,9 @@ fi
 mkdir ops
 
 if [ "$TYPE" = "UNIT" ]; then
-    $MOR_DIR/tests/unit.sh
+    bash $MOR_DIR/tests/unit.sh
 elif [ "$TYPE" = "INTEG" ]; then
-    $MOR_DIR/tests/integ.sh
+    bash $MOR_DIR/tests/integ.sh
 else
     echo "type $TYPE not supported..."
     exit 1
