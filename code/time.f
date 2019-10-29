@@ -774,7 +774,7 @@ c-----------------------------------------------------------------------
       if (isolve.eq.1) then 
          ! constrained solver with inverse update
          call BFGS_new(rhs(1),uu(1),helm,invhelm,amax,amin,adis,
-     $   bpar,bstep,ifdiag)
+     $   bpar,bstep,box_tol,ifdiag)
 
       else if (isolve.eq.2) then 
          ! mix constrained solver with inverse update
@@ -790,7 +790,7 @@ c-----------------------------------------------------------------------
          if (chekbc.eq.1) then
             copt_count = copt_count + 1
             call BFGS_new(rhs(1),uu(1),helm,invhelm,amax,amin,adis,
-     $      bpar,bstep,ifdiag)
+     $      bpar,bstep,box_tol,ifdiag)
          else
             call copy(rhs,rhstmp,nb+1)
          endif

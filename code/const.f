@@ -125,7 +125,7 @@
       end
 c-----------------------------------------------------------------------
       subroutine BFGS_new(rhs,vv,helm,invhelm,amax,amin,adis,
-     $   bpar,bstep,ifdiag)
+     $   bpar,bstep,tol_box,ifdiag)
 
       include 'SIZE'
       include 'TOTAL'
@@ -139,7 +139,7 @@ c-----------------------------------------------------------------------
       real qgo(nb),qngradf(nb)
       real tmp(nb),uu(nb)
       real qnf,ngf,ysk
-      real bpar,par
+      real bpar,par,tol_box
       real norm_s,norm_step,norm_uo
 
       ! parameter for barrier function
@@ -187,7 +187,8 @@ c-----------------------------------------------------------------------
 
                tlnsrch_time=dnekclock()
                call backtrackr(uu,qns,rhs,helm,invhelm,1e-4,0.5,
-     $                     amax,amin,par,chekbc,lncount,ifdiag)
+     $                     amax,amin,par,chekbc,lncount,
+     $                     tol_box,ifdiag)
                lnsrch_time=lnsrch_time+dnekclock()-tlnsrch_time
                tlncount = tlncount + lncount
 
@@ -421,7 +422,7 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine backtrackr(uu,s,rhs,helm,invhelm,sigmab,facb,
-     $            amax,amin,bpar,chekbc,counter,ifdiag)
+     $            amax,amin,bpar,chekbc,counter,tol_box,ifdiag)
 
       include 'SIZE'
       include 'MOR'
@@ -435,16 +436,14 @@ c-----------------------------------------------------------------------
       real fk,fk1
       real Jfks,Jfks1
       real sigmab,facb,alphak
-      real bpar,minalpha
+      real bpar,minalpha,tol_box
 
       integer chekbc,counter
-      integer countbc
       logical cond1,cond2,cond3,ifdiag
 
 c     alphak = 1.0
       chekbc = 0
       counter = 0
-      countbc = 0
 
       tcompf_time=dnekclock()
       call comp_qnf(uu,rhs,helm,invhelm,fk,amax,amin,bpar,ifdiag) ! get old f
@@ -457,24 +456,16 @@ c     alphak = 1.0
       call findminalpha(minalpha,s,uu,amax,amin)
 
       call copy(uuo,uu,nb)
+
       if ((minalpha-1.0).gt.1e-10) then
          alphak = 1.0
       else
          alphak = minalpha
       endif
-      do ii=1,nb
-         uu(ii) = uu(ii) + alphak*s(ii)
-      enddo
 
-      do ii=1,nb
-         if ((uu(ii)-amax(ii)).ge.box_tol) then
-            chekbc = 1
-            countbc = countbc + 1
-         elseif ((amin(ii)-uu(ii)).ge.box_tol) then
-            chekbc = 1
-            countbc = countbc + 1
-         endif
-      enddo
+      call add2s2(uu,s,alphak,nb)
+
+      call check_box(chekbc,uu,amax,amin,tol_box,nb)
 
       tcompf_time=dnekclock()
       call comp_qnf(uu,rhs,helm,invhelm,fk1,amax,amin,bpar,ifdiag) ! get new f
@@ -492,22 +483,13 @@ c     alphak = 1.0
 
       do while (cond1.OR.(chekbc.eq.1))
          counter = counter + 1
+
          alphak = alphak * facb
-         do ii=1,nb
-            uu(ii) = uuo(ii) + alphak*s(ii)
-         enddo
+
+         call add3s2(uu,uuo,s,1.0,alphak,nb)
 
          chekbc = 0
-         countbc = 0
-         do ii=1,nb
-            if ((uu(ii)-amax(ii)).ge.box_tol) then
-               chekbc = 1
-               countbc = countbc + 1
-            elseif ((amin(ii)-uu(ii)).ge.box_tol) then
-               chekbc = 1
-               countbc = countbc + 1
-            endif
-         enddo
+         call check_box(chekbc,uu,amax,amin,tol_box,nb)
 
          tcompf_time=dnekclock()
          call comp_qnf(uu,rhs,helm,invhelm,fk1,amax,amin,bpar,ifdiag)
