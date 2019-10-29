@@ -744,22 +744,13 @@ c-----------------------------------------------------------------------
       real hh(lb**2,2),invhh(lb**2,2)
       real uu(nb),amax(nb),amin(nb),adis(nb)
       real bpar,invhelm
-      real tmp(nb),vv(nb),rhstmp(0:nb)
+      real tmp(nb),rhstmp(0:nb)
 
       integer bstep,chekbc,copt_count
       logical ifdiag
       integer checkdiag
 
-      call rone(tmp,nb)
-      call mxm(invhh,nb,tmp,nb,vv,1)
-      checkdiag = 0
-
-      do ii=1,nb
-         if (abs(vv(ii)-invhh(ii+(ii-1)*nb,1)).ge.1e-10) then
-            checkdiag=checkdiag+1
-         endif
-      enddo
-      if (checkdiag==0) ifdiag=.true.
+      call check_diag(checkdiag,ifdiag,invhh,nb)
 
       if (ifpod(1)) then 
          if (abs(helm(1,1)-(1./hh(1,1))).ge.1e-10) then
@@ -926,6 +917,27 @@ c-----------------------------------------------------------------------
 
          call mxm(btinv,nb,t2(1),nb,ff(nb+1),1)
       endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine check_diag(checkdiag,ifdiag,aa,n)
+
+      real aa(n,n)
+      real vv(n),tmp(n)
+      integer checkdiag
+      logical ifdiag
+
+      call rone(tmp,n)
+      call mxm(aa,n,tmp,n,vv,1)
+      checkdiag = 0
+
+      do ii=1,nb
+         if (abs(vv(ii)-aa(ii,ii)).ge.1e-10) then
+            checkdiag=checkdiag+1
+         endif
+      enddo
+      if (checkdiag==0) ifdiag=.true.
 
       return
       end
