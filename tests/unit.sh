@@ -17,4 +17,4 @@ test
 Z
 fold_end genmap
  
-./nek5000
+./nek5000 | tee logfile
