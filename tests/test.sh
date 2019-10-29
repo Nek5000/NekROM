@@ -10,7 +10,7 @@ cp $MOR_DIR/tests/test.usr .
 echo 'test'     > SESSION.NAME
 echo `pwd`'/' >> SESSION.NAME
 
-$MOR_DIR/bin/gsnaps cyl_rect
+fold_start gsnaps "Get Snapshots"; $MOR_DIR/bin/gsnaps cyl_rect; fold_end gsnaps
 
 if [ "$IPS" = "L2" ]; then
     fold_start gops "Get operators"; $MOR_DIR/bin/gops cyl_rect_l2; fold_end gops
@@ -23,7 +23,7 @@ else
     exit 1
 fi
 
-mkdir ops
+mkdir ops &> /dev/null
 
 if [ "$TYPE" = "UNIT" ]; then
     bash $MOR_DIR/tests/unit.sh
