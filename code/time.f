@@ -694,7 +694,7 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine hybrid_advance(rhs,uu,helm,invhelm,amax,amin,
-     $                          adis,bpar,bstep,copt_count) 
+     $                          adis,bpar,bstep,copt_count,ifdiag) 
 
       include 'SIZE'
       include 'TOTAL'
@@ -705,6 +705,7 @@ c-----------------------------------------------------------------------
       real amax(nb),amin(nb),adis(nb)
       real bpar
       integer bstep,chekbc,copt_count
+      logical ifdiag
 
       chekbc=0
 
@@ -722,7 +723,7 @@ c-----------------------------------------------------------------------
       if (chekbc.eq.1) then
          copt_count = copt_count + 1
          call BFGS(rhs(1),uu,helm,invhelm,amax,amin,adis,
-     $   bpar,bstep)
+     $   bpar,bstep,ifdiag)
       else
          call copy(rhs,rhstmp,nb+1)
       endif
@@ -800,7 +801,7 @@ c-----------------------------------------------------------------------
          if (chekbc.eq.1) then
             copt_count = copt_count + 1
             call BFGS_new(rhs(1),uu(1),helm,invhelm,amax,amin,adis,
-     $      bpar,bstep)
+     $      bpar,bstep,ifdiag)
          else
             call copy(rhs,rhstmp,nb+1)
          endif
@@ -808,17 +809,17 @@ c-----------------------------------------------------------------------
       else if (isolve.eq.3) then 
          ! constrained solver with Hessian update
          call BFGS(rhs(1),uu(1),helm,invhelm,amax,amin,adis,
-     $   bpar,bstep)
+     $   bpar,bstep,ifdiag)
 
       else if (isolve.eq.4) then 
          ! mix constrained solver with Hessian update
          call hybrid_advance(rhs,uu(1),helm,invhelm,amax,amin,
-     $                       adis,bpar,bstep,copt_count)
+     $                       adis,bpar,bstep,copt_count,ifdiag)
 
       else if (isolve.eq.5) then 
          ! constrained solver with Hessian update
          call BFGS(rhs(1),uu(1),helm,invhelm,amax,amin,adis,
-     $   bpar,bstep)
+     $   bpar,bstep,ifdiag)
 
       else   
          call exitti('incorrect isolve specified...$',isolve)

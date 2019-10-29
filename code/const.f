@@ -1,4 +1,5 @@
-      subroutine BFGS(rhs,vv,helm,invhelm,amax,amin,adis,bpar,bstep)
+      subroutine BFGS(rhs,vv,helm,invhelm,amax,amin,adis,
+     $   bpar,bstep,ifdiag)
 
       include 'SIZE'
       include 'TOTAL'
@@ -19,6 +20,7 @@
       ! parameter for barrier function
       integer par_step,jmax,bstep,chekbc
       integer uHcount,lncount
+      logical ifdiag
 
       call copy(uu,vv,nb)
 
@@ -36,7 +38,7 @@
 
          ! use helm from BDF3/EXT3 as intial approximation
          call copy(B_qn(1,1),helm(1,1),nb*nb)
-         call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par)
+         call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par,ifdiag)
 
          if (isolve.eq.5) then
             call copy(invB_qn(1,1),invhelm(1,1),nb*nb)
@@ -72,7 +74,7 @@
             ! store old qn-gradf
             call copy(qgo,qngradf,nb) 
             ! update qn-gradf
-            call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par)
+            call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par,ifdiag)
             call sub3(qny,qngradf,qgo,nb) 
 
             ! compute curvature condition
@@ -185,7 +187,7 @@ c-----------------------------------------------------------------------
 
                tlnsrch_time=dnekclock()
                call backtrackr(uu,qns,rhs,helm,invhelm,1e-4,0.5,
-     $                     amax,amin,par,chekbc,lncount)
+     $                     amax,amin,par,chekbc,lncount,ifdiag)
                lnsrch_time=lnsrch_time+dnekclock()-tlnsrch_time
                tlncount = tlncount + lncount
 
@@ -306,7 +308,8 @@ c-----------------------------------------------------------------------
       return 
       end
 c-----------------------------------------------------------------------
-      subroutine comp_qnf(uu,rhs,helm,invhelm,qnf,amax,amin,bpar)
+      subroutine comp_qnf(uu,rhs,helm,invhelm,qnf,amax,amin,bpar,
+     $   ifdiag)
       
       include 'SIZE'
       include 'MOR'
@@ -320,17 +323,25 @@ c-----------------------------------------------------------------------
       real bar1,bar2 
       real term1,term2,term3,term4
 
+      logical ifdiag
+
       ! evaluate quasi-newton f
-c     call copy(tmp5,rhs,nb)
-c      call mxm(invhelm,nb,rhs,nb,tmp5,1)
-c     call dgetrs('N',nb,1,invhelm,nb,ipiv,tmp5,nb,info)
-
-      term1 = 0.5 * vlsc3(uu,helm,uu,nb)
-
-      term2 = vlsc2(uu,rhs,nb) ! coef'*rhs
-
-      ! 0.5*rhs'*inv(H)*rhs
-      term3 = 0.5 * vlsc3(rhs,invhelm,rhs,nb)
+      if (ifdiag) then
+         ! 0.5*coef'*H*coef
+         term1 = 0.5 * vlsc3(uu,helm,uu,nb)
+         term2 = vlsc2(uu,rhs,nb) ! coef'*rhs
+         ! 0.5*rhs'*inv(H)*rhs
+         term3 = 0.5 * vlsc3(rhs,invhelm,rhs,nb)
+      else 
+         ! 0.5*coef'*H*coef
+         call mxm(helm,nb,uu,nb,tmp6,1)
+         term1 = 0.5 * vlsc2(tmp6,uu,nb)
+         term2 = vlsc2(uu,rhs,nb) ! coef'*rhs
+         ! 0.5*rhs'*inv(H)*rhs
+         call copy(tmp5,rhs,nb)
+         call dgetrs('N',nb,1,invhelm,nb,ipiv,tmp5,nb,info)
+         term3 = 0.5 * vlsc2(rhs,tmp5,nb)
+      endif
 
       if (barr_func.eq.1) then ! use logarithmetic as barrier function
          ! barrier term
@@ -432,7 +443,7 @@ c     alphak = 1.0
       countbc = 0
 
       tcompf_time=dnekclock()
-      call comp_qnf(uu,rhs,helm,invhelm,fk,amax,amin,bpar) ! get old f
+      call comp_qnf(uu,rhs,helm,invhelm,fk,amax,amin,bpar,ifdiag) ! get old f
       compf_time=compf_time+dnekclock()-tcompf_time
 
       tcompgf_time=dnekclock()
@@ -462,7 +473,7 @@ c     alphak = 1.0
       enddo
 
       tcompf_time=dnekclock()
-      call comp_qnf(uu,rhs,helm,invhelm,fk1,amax,amin,bpar) ! get new f
+      call comp_qnf(uu,rhs,helm,invhelm,fk1,amax,amin,bpar,ifdiag) ! get new f
       compf_time=compf_time+dnekclock()-tcompf_time
 
       tcompgf_time=dnekclock()
@@ -495,7 +506,7 @@ c     alphak = 1.0
          enddo
 
          tcompf_time=dnekclock()
-         call comp_qnf(uu,rhs,helm,invhelm,fk1,amax,amin,bpar)
+         call comp_qnf(uu,rhs,helm,invhelm,fk1,amax,amin,bpar,ifdiag)
          compf_time=compf_time+dnekclock()-tcompf_time
 
          tcompgf_time=dnekclock()
