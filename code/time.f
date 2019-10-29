@@ -765,7 +765,7 @@ c-----------------------------------------------------------------------
             write(6,*) ad_step,'ad_step'
             if (ifdiag) then 
                do jj=1,nb
-                  helm(jj,1) = 1/hh(jj+(jj-1)*lb,1)
+                  helm(jj,1) = 1/hh(jj+(jj-1)*nb,1)
                enddo
             endif
          endif
@@ -773,7 +773,7 @@ c-----------------------------------------------------------------------
             write(6,*) ad_step,'ad_step'
             if (ifdiag) then
                do jj=1,nb
-                  invhelm(jj,1) = invhh(jj+(jj-1)*lb,1)
+                  invhelm(jj,1) = invhh(jj+(jj-1)*nb,1)
                enddo
             endif
          endif
