@@ -788,7 +788,11 @@ c-----------------------------------------------------------------------
       else if (isolve.eq.2) then 
          ! mix constrained solver with inverse update
          call copy(rhstmp,rhs,nb+1)
-         call col2(rhstmp(1),invhelm,nb)
+         if (ifdiag) then
+            call col2(rhstmp(1),invhelm,nb)
+         else
+            call dgetrs('N',nb,1,invhelm,nb,ipiv,rhstmp(1),nb,info)
+         endif
 
          do ii=1,nb
             if ((rhstmp(ii)-amax(ii)).ge.box_tol) then
