@@ -5,3 +5,6 @@ fold_start() {
 fold_end() {
   echo -e "\ntravis_fold:end:$1\r"
 }
+
+export -f fold_start
+export -f fold_end
