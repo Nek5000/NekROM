@@ -785,13 +785,7 @@ c-----------------------------------------------------------------------
             call dgetrs('N',nb,1,invhelm,nb,ipiv,rhstmp(1),nb,info)
          endif
 
-         do ii=1,nb
-            if ((rhstmp(ii)-amax(ii)).ge.box_tol) then
-               chekbc = 1
-            elseif ((amin(ii)-rhstmp(ii)).ge.box_tol) then
-               chekbc = 1
-            endif
-         enddo
+         call check_box(chekbc,rhstmp,amax,amin,box_tol,nb)
 
          if (chekbc.eq.1) then
             copt_count = copt_count + 1
@@ -938,6 +932,25 @@ c-----------------------------------------------------------------------
          endif
       enddo
       if (checkdiag==0) ifdiag=.true.
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine check_box(chekbc,uu,amax,amin,tol_box,n)
+
+      real uu(n)
+      real amax(n),amin(n)
+      integer chekbc
+
+      chekbc=0
+
+      do ii=1,n
+         if ((uu(ii)-amax(ii)).ge.tol_box) then
+            chekbc = 1
+         elseif ((amin(ii)-uu(ii)).ge.tol_box) then
+            chekbc = 1
+         endif
+      enddo
 
       return
       end
