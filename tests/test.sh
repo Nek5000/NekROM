@@ -1,4 +1,5 @@
 cd $MOR_DIR/tests
+source travis_fn
 mkdir t
 cd t
 $MOR_DIR/bin/linkm
