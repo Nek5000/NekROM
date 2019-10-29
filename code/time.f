@@ -735,15 +735,16 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'
       include 'TOTAL'
-      include 'MOR'  
+      include 'MOR'
 
       common /scrcopt/ helm(lb**2,2),invhelm(lb**2,2)
 
-      real uu(nb),rhs(0:nb),rhstmp(0:nb)
-      real amax(nb),amin(nb),adis(nb)
-      real invhelm,hh(nb**2,2),invhh(nb**2,2)
-      real bpar
-      real tmp(nb),vv(nb)
+      real rhs(0:nb)
+      real hh(lb**2,2),invhh(lb**2,2)
+      real uu(nb),amax(nb),amin(nb),adis(nb)
+      real bpar,invhelm
+      real tmp(nb),vv(nb),rhstmp(0:nb)
+
       integer bstep,chekbc,copt_count
       logical ifdiag
       integer checkdiag
@@ -753,7 +754,7 @@ c-----------------------------------------------------------------------
       checkdiag = 0
 
       do ii=1,nb
-         if (abs(vv(ii)-invhh(ii,1)).ge.1e-10) then
+         if (abs(vv(ii)-invhh(ii+(ii-1)*nb,1)).ge.1e-10) then
             checkdiag=checkdiag+1
          endif
       enddo
@@ -763,7 +764,7 @@ c-----------------------------------------------------------------------
          if (abs(helm(1,1)-(1./hh(1,1))).ge.1e-10) then
             write(6,*) ad_step,'ad_step'
             if (ifdiag) then 
-               do jj=1,lb
+               do jj=1,nb
                   helm(jj,1) = 1/hh(jj+(jj-1)*lb,1)
                enddo
             endif
@@ -771,7 +772,7 @@ c-----------------------------------------------------------------------
          if (abs(invhelm(1,1)-(invhh(1,1))).ge.1e-10) then
             write(6,*) ad_step,'ad_step'
             if (ifdiag) then
-               do jj=1,lb
+               do jj=1,nb
                   invhelm(jj,1) = invhh(jj+(jj-1)*lb,1)
                enddo
             endif
