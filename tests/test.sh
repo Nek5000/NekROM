@@ -12,11 +12,11 @@ echo `pwd`'/' >> SESSION.NAME
 $MOR_DIR/bin/gsnaps cyl_rect
 
 if [ "$IPS" = "L2" ]; then
-    $MOR_DIR/bin/gops cyl_rect_l2
-    $MOR_DIR/bin/gbas cyl_rect_l2
+    fold_start gops "Get operators"; $MOR_DIR/bin/gops cyl_rect_l2; fold_end gops
+    fold_start gbas "Get basis";     $MOR_DIR/bin/gbas cyl_rect_l2; fold_end gbas
 elif [ "$IPS" = "H10" ]; then
-    $MOR_DIR/bin/gops cyl_rect_h10
-    $MOR_DIR/bin/gbas cyl_rect_h10
+    fold_start gops "Get operators"; $MOR_DIR/bin/gops cyl_rect_h10; fold_end gops
+    fold_start gbas "Get basis";     $MOR_DIR/bin/gbas cyl_rect_h10; fold_end gbas
 else
     echo "inner-product space $IPS not supported..."
     exit 1

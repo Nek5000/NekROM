@@ -6,10 +6,15 @@ ls bas/bascyl0.f* > bas.list
 
 cp ../../data/cyl_rect/cyl0.f01000 r0.f00001
 
+fold_start makenek Makenek
 $SOURCE_ROOT/bin/makenek test
+fold_end makenek
+
+fold_start genmap Genmap
 $SOURCE_ROOT/bin/genmap << Z
 test
 .01
 Z
-
-./nek5000
+fold_end genmap
+ 
+fold_start logfile Logfile; ./nek5000; fold_end logfile
