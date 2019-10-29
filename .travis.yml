@@ -11,8 +11,9 @@ sudo: required
 
 addons:
   artifacts:
-    s3_region: "us-east-2"
-    paths: tests/logfile
+    s3_region: us-east-2
+    paths:
+      - $(tests/t/*.fail.log)
 
 before_install:
   - cd bin; source setup; cd -
