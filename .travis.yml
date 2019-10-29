@@ -11,6 +11,7 @@ sudo: required
 
 before_install:
   - cd bin; source setup; cd -
+  - source tests/travis_fn
 
   # Install MPICH
   - sudo apt-get update -qq
