@@ -217,7 +217,7 @@ c-----------------------------------------------------------------------
                ! store qny 
                call copy(yk(1,j),qny,nb)
                tinvhm_time=dnekclock()
-               call invH_multiply(qns,invhelm,sk,yk,qngradf,j)
+               call invH_multiply(qns,invhelm,sk,yk,qngradf,j,ifdiag)
                invhm_time=invhm_time+dnekclock()-tinvhm_time
             endif
 
@@ -299,8 +299,12 @@ c-----------------------------------------------------------------------
          mpar = -1.0*bpar
          call add3s12(s,rhs,tmp3,-1.0,mpar,nb)
    
-         call copy(tmp4,uu,nb)
-         call col2(tmp4,helm,nb)
+         if (ifdiag) then 
+            call copy(tmp4,uu,nb)
+            call col2(tmp4,helm,nb)
+         else
+            call mxm(helm,nb,uu,nb,tmp4,1)   
+         endif
          call add2(s,tmp4,nb)
 
       endif
@@ -572,7 +576,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine invH_multiply(qnsol,invh0,sk,yk,qnd,qnstep)
+      subroutine invH_multiply(qnsol,invh0,sk,yk,qnd,qnstep,ifdiag)
 
       include 'SIZE'
       include 'TOTAL'
@@ -586,6 +590,7 @@ c-----------------------------------------------------------------------
       real tmp(nb)
       real qnfact(nb)
       real work(nb)
+      logical ifdiag
 
       call copy(qnsol,qnd,nb)
       call chsign(qnsol,nb)
@@ -598,7 +603,13 @@ c-----------------------------------------------------------------------
       enddo
 
       ! compute center
-      call col2(qnsol,invh0,nb)
+      if (ifdiag) then
+         call col2(qnsol,invh0,nb)
+      else
+         ONE = 1.
+         ZERO= 0.
+         call dgetrs('N',nb,1,invh0,nb,ipiv,qnsol,nb,info)
+      endif
 
       ! compute left product
       do i=1,qnstep
