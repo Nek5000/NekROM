@@ -17,4 +17,8 @@ test
 Z
 fold_end genmap
  
-if ! ./nek5000 | tee logfile; then cp logfile fail.log; fi
+./nek5000 | tee logfile
+iexit=$?
+
+if ! iexit; then cp logfile fail.log; fi
+exit iexit
