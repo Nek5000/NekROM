@@ -17,6 +17,4 @@ test
 Z
 fold_end genmap
  
-if ! ./nek5000 | tee logfile; then
-    cp logfile $(git rev-parse --short HEAD).${TEST}_${IPS}_${TYPE}.fail.log
-fi
+if ! ./nek5000 | tee logfile; then cp logfile fail.log; fi
