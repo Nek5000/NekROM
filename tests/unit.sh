@@ -20,5 +20,5 @@ fold_end genmap
 ./nek5000 | tee logfile
 iexit=$?
 
-if ! iexit; then cp logfile fail.log; fi
-exit iexit
+if [ "$iexit" != "0" ]; then cp logfile fail.log; fi
+exit $iexit

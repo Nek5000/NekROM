@@ -28,6 +28,6 @@ tail drag.log
 
 ../$SCR
 iexit=$?
-if ! iexit; then cp logfile fail.log; fi
+if [ "$iexit" != "0" ]; then cp logfile fail.log; fi
 
-exit iexit
+exit $iexit
