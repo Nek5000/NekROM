@@ -27,3 +27,7 @@ head drag.log
 tail drag.log
 
 ../$SCR
+iexit=$?
+if ! iexit; then cp logfile fail.log; fi
+
+exit iexit
