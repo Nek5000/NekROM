@@ -27,7 +27,7 @@ head drag.log
 tail drag.log
 
 ../$SCR
-iexit=$?
+iexit=${PIPESTATUS[0]}
 if [ "$iexit" != "0" ]; then cp logfile fail.log; fi
 
 exit $iexit

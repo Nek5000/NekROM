@@ -18,7 +18,7 @@ Z
 fold_end genmap
  
 ./nek5000 | tee logfile
-iexit=$?
+iexit=${PIPESTATUS[0]}
 
 if [ "$iexit" != "0" ]; then cp logfile fail.log; fi
 exit $iexit
