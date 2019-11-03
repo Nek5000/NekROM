@@ -112,7 +112,7 @@ c     parameters and common blocks for MOR
       common /morilu/ irv(lub),icv(lub),irt(lub),ict(lub),ipiv(lub)
 
       ! Constrained Optimization ! TODO: cleanup multi-dimensional arrays
-      real helmu,invhelmu,helmt,invhelmt,qny,qns,
+      real helmu,invhelmu,helmt,invhelmt,
      $     ubarr0,tbarr0,boxtol
       integer ubarrseq,tbarrseq,barr_func,icopt
       common /moropt/ helmu(lub,lub),invhelmu(lub,lub),
@@ -122,7 +122,6 @@ c     parameters and common blocks for MOR
      $                     tmin(ltb),tmax(ltb),tdis(ltb),
      $                     upmin(lub),upmax(lub),updis(lub),
      $                     tpmin(ltb),tpmax(ltb),tpdis(ltb)
-      common /morqn/ qns(lub),qny(lub)
       common /morbarrier/ ubarr0,tbarr0,box_tol,barr_func
       common /moribarrier/ ubarrseq,tbarrseq
 

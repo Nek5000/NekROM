@@ -7,6 +7,7 @@
 
       real helm(nb,nb),invhelm(nb,nb),B_qn(nb,nb)
       real qgo(nb),qngradf(nb)
+      real qns(nb),qny(nb)
       real uu(nb),vv(nb),rhs(nb)
       real amax(nb),amin(nb),adis(nb)
       real tmp(nb,nb)
@@ -19,7 +20,7 @@
 
       ! parameter for barrier function
       integer par_step,jmax,bstep,chekbc
-      integer uHcount,lncount
+      integer lncount
       logical ifdiag
 
       call copy(uu,vv,nb)
@@ -34,11 +35,10 @@
       do k=1,par_step
 
          chekbc = 0
-         uHcount = 0
 
          ! use helm from BDF3/EXT3 as intial approximation
          call copy(B_qn(1,1),helm(1,1),nb*nb)
-         call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par,ifdiag)
+         call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par,ifdiag,nb)
 
          if (isolve.eq.5) then
             call copy(invB_qn(1,1),invhelm(1,1),nb*nb)
@@ -74,13 +74,13 @@
             ! store old qn-gradf
             call copy(qgo,qngradf,nb) 
             ! update qn-gradf
-            call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par,ifdiag)
+            call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par,
+     $      ifdiag,nb)
             call sub3(qny,qngradf,qgo,nb) 
 
             ! compute curvature condition
             ysk = vlsc2(qny,qns,nb)
 
-            uHcount = uHcount + 1
             if (isolve.eq.5) then
                call invHessian_update(invB_qn,qns,qny,nb)
             else
@@ -111,7 +111,7 @@
 
          if (mod(ad_step,ad_iostep).eq.0) then
             if (nio.eq.0) write (6,*) 'lnconst_ana'
-            call cpod_ana(uu,par,j,uHcount,lncount,ngf,norm_step
+            call cpod_ana(uu,par,j,lncount,ngf,norm_step
      $                   ,ysk)
          endif
          par = par*0.1
@@ -137,6 +137,7 @@ c-----------------------------------------------------------------------
 
       real sk(nb,nb),yk(nb,nb)
       real qgo(nb),qngradf(nb)
+      real qns(nb),qny(nb)
       real tmp(nb),uu(nb)
       real qnf,ngf,ysk
       real bpar,par,tol_box
@@ -154,7 +155,6 @@ c-----------------------------------------------------------------------
 
       par = bpar 
       par_step = bstep 
-
 
       ! BFGS method with barrier function starts
       tcopt_time=dnekclock()
@@ -215,6 +215,7 @@ c-----------------------------------------------------------------------
 
                ! store qny 
                call copy(yk(1,j),qny,nb)
+
                tinvhm_time=dnekclock()
                call invH_multiply(qns,invhelm,sk,yk,qngradf,j,ifdiag,nb)
                invhm_time=invhm_time+dnekclock()-tinvhm_time
