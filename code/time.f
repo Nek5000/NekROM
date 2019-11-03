@@ -740,8 +740,9 @@ c-----------------------------------------------------------------------
 
       common /scrcopt/ helm(lb**2,2),invhelm(lb**2,2)
 
+
       real rhs(0:nb)
-      real hh(lb**2,2),invhh(lb**2,2)
+      real hh(nb**2),invhh(nb**2)
       real uu(nb),amax(nb),amin(nb),adis(nb)
       real bpar,invhelm
       real tmp(nb),rhstmp(0:nb)
@@ -753,24 +754,24 @@ c-----------------------------------------------------------------------
       call check_diag(checkdiag,ifdiag,invhh,nb)
 
       if (ifpod(1)) then 
-         if (abs(helm(1,1)-(1./hh(1,1))).ge.1e-10) then
+         if (abs(helm(1,1)-(1./hh(1))).ge.1e-10) then
             write(6,*) ad_step,'ad_step'
             if (ifdiag) then 
                do jj=1,nb
-                  helm(jj,1) = 1/hh(jj+(jj-1)*nb,1)
+                  helm(jj,1) = 1/hh(jj+(jj-1)*nb)
                enddo
             else 
-               call copy(helm(1,1),hh(1,1),nb*nb)
+               call copy(helm(1,1),hh(1),nb*nb)
             endif
          endif
-         if (abs(invhelm(1,1)-(invhh(1,1))).ge.1e-10) then
+         if (abs(invhelm(1,1)-(invhh(1))).ge.1e-10) then
             write(6,*) ad_step,'ad_step'
             if (ifdiag) then
                do jj=1,nb
-                  invhelm(jj,1) = invhh(jj+(jj-1)*nb,1)
+                  invhelm(jj,1) = invhh(jj+(jj-1)*nb)
                enddo
             else 
-               call copy(invhelm(1,1),invhh(1,1),nb*nb)
+               call copy(invhelm(1,1),invhh(1),nb*nb)
             endif
          endif
       endif
