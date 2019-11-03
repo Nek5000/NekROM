@@ -778,7 +778,7 @@ c-----------------------------------------------------------------------
 
       if (isolve.eq.1) then 
          ! constrained solver with inverse update
-         call BFGS_new(rhs(1),uu(1),helm,invhelm,amax,amin,adis,
+         call IPM(rhs(1),uu(1),helm,invhelm,amax,amin,adis,
      $   bpar,bstep,box_tol,ifdiag)
 
       else if (isolve.eq.2) then 
@@ -794,26 +794,11 @@ c-----------------------------------------------------------------------
 
          if (chekbc.eq.1) then
             copt_count = copt_count + 1
-            call BFGS_new(rhs(1),uu(1),helm,invhelm,amax,amin,adis,
+            call IPM(rhs(1),uu(1),helm,invhelm,amax,amin,adis,
      $      bpar,bstep,box_tol,ifdiag)
          else
             call copy(rhs,rhstmp,nb+1)
          endif
-
-      else if (isolve.eq.3) then 
-         ! constrained solver with Hessian update
-         call BFGS(rhs(1),uu(1),helm,invhelm,amax,amin,adis,
-     $   bpar,bstep,ifdiag)
-
-      else if (isolve.eq.4) then 
-         ! mix constrained solver with Hessian update
-         call hybrid_advance(rhs,uu(1),helm,invhelm,amax,amin,
-     $                       adis,bpar,bstep,copt_count,ifdiag)
-
-      else if (isolve.eq.5) then 
-         ! constrained solver with Hessian update
-         call BFGS(rhs(1),uu(1),helm,invhelm,amax,amin,adis,
-     $   bpar,bstep,ifdiag)
 
       else   
          call exitti('incorrect isolve specified...$',isolve)

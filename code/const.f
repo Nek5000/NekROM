@@ -124,8 +124,10 @@
       return
       end
 c-----------------------------------------------------------------------
-      subroutine BFGS_new(rhs,vv,helm,invhelm,amax,amin,adis,
+      subroutine IPM(rhs,vv,helm,invhelm,amax,amin,adis,
      $   bpar,bstep,tol_box,ifdiag)
+
+      ! Interrior-point method (IPM)
 
       include 'SIZE'
       include 'TOTAL'
