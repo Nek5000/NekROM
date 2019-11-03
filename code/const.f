@@ -144,8 +144,7 @@ c-----------------------------------------------------------------------
 
       ! parameter for barrier function
       integer par_step,jmax,bstep,chekbc
-      integer uHcount,lncount
-      real tlncount
+      integer lncount,tlncount
 
       logical ifdiag
 
@@ -162,8 +161,7 @@ c-----------------------------------------------------------------------
       do k=1,par_step
 
          chekbc = 0
-         uHcount = 0
-         tlncount = 0.
+         tlncount = 0
 
          ! use helm from BDF3/EXT3 as intial approximation
          call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par,ifdiag,nb)
@@ -218,7 +216,7 @@ c-----------------------------------------------------------------------
                ! store qny 
                call copy(yk(1,j),qny,nb)
                tinvhm_time=dnekclock()
-               call invH_multiply(qns,invhelm,sk,yk,qngradf,j,ifdiag)
+               call invH_multiply(qns,invhelm,sk,yk,qngradf,j,ifdiag,nb)
                invhm_time=invhm_time+dnekclock()-tinvhm_time
             endif
 
@@ -232,7 +230,7 @@ c-----------------------------------------------------------------------
 
          if (mod(ad_step,ad_iostep).eq.0) then
             if (nio.eq.0) write (6,*) 'lnconst_ana'
-            call cpod_ana(uu,par,j,uHcount,tlncount,ngf,norm_step
+            call cpod_ana(uu,par,j,tlncount,ngf,norm_step
      $      ,ysk)
          endif
          par = par*0.1
@@ -517,7 +515,7 @@ c        if ((cond3.AND..not.cond1).OR.alphak.lt.1e-8) then
       return
       end
 c-----------------------------------------------------------------------
-      subroutine cpod_ana(uu,par,qstep,uhcount,tlncount,
+      subroutine cpod_ana(uu,par,qstep,tlncount,
      $                    ngf,qndf,ysk)
 
       include 'SIZE'
@@ -525,17 +523,16 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       real uu(nb)
-      real par,tlncount
+      real par
       real ngf,qndf,ysk
-      integer qstep 
-      integer uhcount
+      integer qstep,tlncount
       character*5 chartmp
 
       if (nio.eq.0) then
          if (ifrom(1)) chartmp='ucopt'
          if (ifrom(2)) chartmp='tcopt'
          write (6,2)'ad_step:',ad_step,chartmp,par,
-     $            qstep,uhcount,tlncount,
+     $            qstep,tlncount,
      $            ngf,qndf,ysk
          if (ad_step.eq.ad_nsteps) then
             do j=1,nb
@@ -547,19 +544,18 @@ c-----------------------------------------------------------------------
             enddo
          endif
       endif
-    2 format (a8,i6,1x,a5,1p1e16.8,i3,i3,0pF8.4,1p4e16.8)  
+    2 format (a8,i6,1x,a5,1p1e16.8,i3,i3,1p4e16.8)  
       return
       end
 c-----------------------------------------------------------------------
-      subroutine invH_multiply(qnsol,invh0,sk,yk,qnd,qnstep,ifdiag)
+      subroutine invH_multiply(qnsol,invh0,sk,yk,qnd,qnstep,ifdiag,nb)
 
       include 'SIZE'
       include 'TOTAL'
-      include 'MOR'            
 
       real qnsol(nb),invh0(nb)
       real sk(nb,nb),yk(nb,nb),qnd(nb)
-      integer qnstep
+      integer qnstep,nb
 
       real qnrho(nb),qnalpha(nb),qnbeta(nb)
       real tmp(nb)
