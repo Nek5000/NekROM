@@ -759,6 +759,8 @@ c-----------------------------------------------------------------------
                do jj=1,nb
                   helm(jj,1) = 1/hh(jj+(jj-1)*nb,1)
                enddo
+            else 
+               call copy(helm(1,1),hh(1,1),nb*nb)
             endif
          endif
          if (abs(invhelm(1,1)-(invhh(1,1))).ge.1e-10) then
@@ -767,6 +769,8 @@ c-----------------------------------------------------------------------
                do jj=1,nb
                   invhelm(jj,1) = invhh(jj+(jj-1)*nb,1)
                enddo
+            else 
+               call copy(invhelm(1,1),invhh(1,1),nb*nb)
             endif
          endif
       endif
