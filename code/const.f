@@ -417,10 +417,11 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine backtrackr(uu,s,rhs,helm,invhelm,sigmab,facb,
-     $            amax,amin,bpar,chekbc,counter,tol_box,ifdiag,nb)
+     $            amax,amin,bpar,chekbc,counter,tol_box,ifdiag)
 
       include 'SIZE'
       include 'TOTAL'
+      include 'MOR'
 
       real rhs(nb),s(nb)
       real uuo(nb),uu(nb)
