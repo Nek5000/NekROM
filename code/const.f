@@ -65,7 +65,7 @@
 
             tlnsrch_time=dnekclock()
             call backtrackr(uu,qns,rhs,helm,invhelm,1e-4,0.5,
-     $                  amax,amin,par,chekbc,lncount)
+     $                  amax,amin,par,chekbc,lncount,nb)
             lnsrch_time=lnsrch_time+dnekclock()-tlnsrch_time
 
             norm_s = vlamax(qns,nb)
@@ -166,7 +166,7 @@ c-----------------------------------------------------------------------
          tlncount = 0.
 
          ! use helm from BDF3/EXT3 as intial approximation
-         call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par,ifdiag)
+         call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par,ifdiag,nb)
 
          norm_uo = vlamax(uu,nb)
 
@@ -188,7 +188,7 @@ c-----------------------------------------------------------------------
                tlnsrch_time=dnekclock()
                call backtrackr(uu,qns,rhs,helm,invhelm,1e-4,0.5,
      $                     amax,amin,par,chekbc,lncount,
-     $                     tol_box,ifdiag)
+     $                     tol_box,ifdiag,nb)
                lnsrch_time=lnsrch_time+dnekclock()-tlnsrch_time
                tlncount = tlncount + lncount
 
@@ -201,7 +201,7 @@ c-----------------------------------------------------------------------
                ! update qn-gradf
                tcompgf_time=dnekclock()
                call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,
-     $         par,ifdiag)
+     $         par,ifdiag,nb)
                call sub3(qny,qngradf,qgo,nb) 
                compgf_time=compgf_time+dnekclock()-tcompgf_time
 
@@ -245,17 +245,15 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine comp_qngradf(uu,rhs,helm,s,amax,amin,bpar,ifdiag)
+      subroutine comp_qngradf(uu,rhs,helm,s,amax,amin,bpar,ifdiag,nb)
       
-      include 'SIZE'
-      include 'MOR'
-
       real helm(nb,nb)
       real uu(nb),rhs(nb),s(nb)
       real amax(nb),amin(nb) 
       real tmp1(nb),tmp2(nb),tmp3(nb),tmp4(nb)
       real bpar,mpar,pert
       logical ifdiag
+      integer nb
 
       if (barr_func.eq.1) then ! use logarithmic as barrier function
 
@@ -314,11 +312,8 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine comp_qnf(uu,rhs,helm,invhelm,qnf,amax,amin,bpar,
-     $   ifdiag)
+     $   ifdiag,nb)
       
-      include 'SIZE'
-      include 'MOR'
-
       real uu(nb),rhs(nb)
       real helm(nb,nb),invhelm(nb,nb)
       real amax(nb),amin(nb)
@@ -327,6 +322,7 @@ c-----------------------------------------------------------------------
       real tmp4(nb),tmp5(nb),tmp6(nb)
       real bar1,bar2 
       real term1,term2,term3,term4
+      integer nb
 
       logical ifdiag
 
@@ -422,10 +418,9 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine backtrackr(uu,s,rhs,helm,invhelm,sigmab,facb,
-     $            amax,amin,bpar,chekbc,counter,tol_box,ifdiag)
+     $            amax,amin,bpar,chekbc,counter,tol_box,ifdiag,nb)
 
       include 'SIZE'
-      include 'MOR'
       include 'TOTAL'
 
       real rhs(nb),s(nb)
@@ -438,22 +433,21 @@ c-----------------------------------------------------------------------
       real sigmab,facb,alphak
       real bpar,minalpha,tol_box
 
-      integer chekbc,counter
+      integer chekbc,counter,nb
       logical cond1,cond2,cond3,ifdiag
 
 c     alphak = 1.0
-      chekbc = 0
       counter = 0
 
       tcompf_time=dnekclock()
-      call comp_qnf(uu,rhs,helm,invhelm,fk,amax,amin,bpar,ifdiag) ! get old f
+      call comp_qnf(uu,rhs,helm,invhelm,fk,amax,amin,bpar,ifdiag,nb) ! get old f
       compf_time=compf_time+dnekclock()-tcompf_time
 
       tcompgf_time=dnekclock()
-      call comp_qngradf(uu,rhs,helm,Jfk,amax,amin,bpar,ifdiag)
+      call comp_qngradf(uu,rhs,helm,Jfk,amax,amin,bpar,ifdiag,nb)
       compgf_time=compgf_time+dnekclock()-tcompgf_time
 
-      call findminalpha(minalpha,s,uu,amax,amin)
+      call findminalpha(minalpha,s,uu,amax,amin,nb)
 
       call copy(uuo,uu,nb)
 
@@ -468,11 +462,11 @@ c     alphak = 1.0
       call check_box(chekbc,uu,amax,amin,tol_box,nb)
 
       tcompf_time=dnekclock()
-      call comp_qnf(uu,rhs,helm,invhelm,fk1,amax,amin,bpar,ifdiag) ! get new f
+      call comp_qnf(uu,rhs,helm,invhelm,fk1,amax,amin,bpar,ifdiag,nb) ! get new f
       compf_time=compf_time+dnekclock()-tcompf_time
 
       tcompgf_time=dnekclock()
-      call comp_qngradf(uu,rhs,helm,Jfk1,amax,amin,bpar,ifdiag)
+      call comp_qngradf(uu,rhs,helm,Jfk1,amax,amin,bpar,ifdiag,nb)
       compgf_time=compgf_time+dnekclock()-tcompgf_time
 
       Jfks  = vlsc2(Jfk,s,nb)   
@@ -488,15 +482,14 @@ c     alphak = 1.0
 
          call add3s2(uu,uuo,s,1.0,alphak,nb)
 
-         chekbc = 0
          call check_box(chekbc,uu,amax,amin,tol_box,nb)
 
          tcompf_time=dnekclock()
-         call comp_qnf(uu,rhs,helm,invhelm,fk1,amax,amin,bpar,ifdiag)
+         call comp_qnf(uu,rhs,helm,invhelm,fk1,amax,amin,bpar,ifdiag,nb)
          compf_time=compf_time+dnekclock()-tcompf_time
 
          tcompgf_time=dnekclock()
-         call comp_qngradf(uu,rhs,helm,Jfk1,amax,amin,bpar,ifdiag)
+         call comp_qngradf(uu,rhs,helm,Jfk1,amax,amin,bpar,ifdiag,nb)
          compgf_time=compgf_time+dnekclock()-tcompgf_time
 
          Jfks1 = vlsc2(Jfk1,s,nb)   
@@ -603,15 +596,12 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine findminalpha(minalpha,s,uu,amax,amin)
-
-      include 'SIZE'
-      include 'TOTAL'
-      include 'MOR'
+      subroutine findminalpha(minalpha,s,uu,amax,amin,nb)
 
       real minalpha
       real s(nb),uu(nb),amax(nb),amin(nb)
       real alphai(nb)
+      integer nb
 
       do ii=1,nb
          if (s(ii).le.1e-10) then
