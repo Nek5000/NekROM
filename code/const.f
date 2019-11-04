@@ -1,5 +1,5 @@
-      subroutine IPM(rhs,vv,helm,invhelm,amax,amin,adis,
-     $   bpar,bstep,tol_box,ifdiag)
+      subroutine IPM(rhs,vv,helm,invhelm,amax,amin,adis,bpar,bstep,
+     $               tol_box,ifdiag)
 
       ! Interrior-point method (IPM)
 

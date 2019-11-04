@@ -693,21 +693,20 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine hybrid_advance(rhs,uu,helm,invhelm,amax,amin,
-     $                          adis,bpar,bstep,copt_count,ifdiag) 
+      subroutine hybrid_advance(rhs,helm,invhelm,uu,amax,amin,adis,
+     $                        bpar,bstep,copt_count,tol_box,ifdiag,nb)
 
       include 'SIZE'
       include 'TOTAL'
-      include 'MOR'  
 
+      real rhs(0:nb)
       real helm(nb,nb),invhelm(nb,nb)
-      real uu(nb),rhs(0:nb),rhstmp(0:nb)
-      real amax(nb),amin(nb),adis(nb)
-      real bpar
-      integer bstep,chekbc,copt_count
+      real uu(nb),amax(nb),amin(nb),adis(nb)
+      real bpar,tol_box
+      integer bstep,chekbc,copt_count,nb
       logical ifdiag
 
-      chekbc=0
+      real rhstmp(0:nb)
 
       call copy(rhstmp,rhs,nb+1)
       if (ifdiag) then
@@ -716,12 +715,12 @@ c-----------------------------------------------------------------------
          call dgetrs('N',nb,1,invhelm,nb,ipiv,rhstmp(1),nb,info)
       endif
 
-      call check_box(chekbc,rhstmp(1),amax,amin,box_tol,nb)
+      call check_box(chekbc,rhstmp(1),amax,amin,tol_box,nb)
 
       if (chekbc.eq.1) then
          copt_count = copt_count + 1
          call IPM(rhs(1),uu,helm,invhelm,amax,amin,adis,
-     $   bpar,bstep,box_tol,ifdiag)
+     $   bpar,bstep,tol_box,ifdiag)
       else
          call copy(rhs,rhstmp,nb+1)
       endif
@@ -780,8 +779,8 @@ c-----------------------------------------------------------------------
 
       else if (isolve.eq.2) then 
          ! mix constrained solver with inverse update
-         call hybrid_advance(rhs,uu,helm,invhelm,amax,amin,
-     $   adis,bpar,bstep,copt_count,ifdiag)
+         call hybrid_advance(rhs,helm,invhelm,uu,amax,amin,
+     $   adis,bpar,bstep,copt_count,box_tol,ifdiag,nb)
       else   
          call exitti('incorrect isolve specified...$',isolve)
       endif
