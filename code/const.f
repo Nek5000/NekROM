@@ -1,129 +1,3 @@
-      subroutine BFGS(rhs,vv,helm,invhelm,amax,amin,adis,
-     $   bpar,bstep,ifdiag)
-
-      include 'SIZE'
-      include 'TOTAL'
-      include 'MOR'
-
-      real helm(nb,nb),invhelm(nb,nb),B_qn(nb,nb)
-      real qgo(nb),qngradf(nb)
-      real qns(nb),qny(nb)
-      real uu(nb),vv(nb),rhs(nb)
-      real amax(nb),amin(nb),adis(nb)
-      real tmp(nb,nb)
-      real ngf,ysk
-      real bpar,par
-      real norm_s,norm_step,norm_uo
-
-      real invB_qn(nb,nb)
-      real copt_work(nb*nb)
-
-      ! parameter for barrier function
-      integer par_step,jmax,bstep,chekbc
-      integer lncount
-      logical ifdiag
-
-      call copy(uu,vv,nb)
-
-      jmax = 0
-
-      par = bpar 
-      par_step = bstep 
-
-      ! BFGS method with barrier function starts
-      tcopt_time=dnekclock()
-      do k=1,par_step
-
-         chekbc = 0
-
-         ! use helm from BDF3/EXT3 as intial approximation
-         call copy(B_qn(1,1),helm(1,1),nb*nb)
-         call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par,ifdiag,nb)
-
-         if (isolve.eq.5) then
-            call copy(invB_qn(1,1),invhelm(1,1),nb*nb)
-            call dgetri(nb,invB_qn,nb,ipiv,copt_work,nb*nb,info)
-         endif
-         norm_uo = vlamax(uu,nb)
-
-         ! compute quasi-Newton step
-         tquasi_time=dnekclock()
-         do j=1,100
-
-            if (isolve.eq.5) then
-               ONE = 1.
-               ZERO = 0.
-               call dgemv('N',nb,nb,ONE,invB_qn,nb,qngradf,1,ZERO,qns,1)
-               call chsign(qns,nb)
-            else
-               call copy(tmp(1,1),B_qn(1,1),nb*nb)
-               call dgetrf(nb,nb,tmp,nb,ipiv,info)
-               call copy(qns,qngradf,nb)
-               call chsign(qns,nb)
-               call dgetrs('N',nb,1,tmp,nb,ipiv,qns,nb,info)
-            endif
-
-            tlnsrch_time=dnekclock()
-            call backtrackr(uu,qns,rhs,helm,invhelm,1e-4,0.5,
-     $                  amax,amin,par,chekbc,lncount,nb)
-            lnsrch_time=lnsrch_time+dnekclock()-tlnsrch_time
-
-            norm_s = vlamax(qns,nb)
-            norm_step = norm_s/norm_uo
-
-            ! store old qn-gradf
-            call copy(qgo,qngradf,nb) 
-            ! update qn-gradf
-            call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par,
-     $      ifdiag,nb)
-            call sub3(qny,qngradf,qgo,nb) 
-
-            ! compute curvature condition
-            ysk = vlsc2(qny,qns,nb)
-
-            if (isolve.eq.5) then
-               call invHessian_update(invB_qn,qns,qny,nb)
-            else
-               call Hessian_update(B_qn,qns,qny,nb)
-            endif
-
-            ! compute norm of gradf
-            ngf = vlamax(qngradf,nb)
-
-            ! reset chekbc 
-            chekbc = 0
-            
-            jmax = max(j,jmax)
-
-            if (ngf .lt. 1e-6 .OR. ysk .lt. 1e-6 .OR. norm_step .lt.
-     $      1e-6  ) then 
-               if (ysk .lt. 1e-10) then 
-                  if (nio.eq.0) then
-                  ! curvature condition not satisfied
-                  write(6,*)'WARNING:decrease barrseq or increase barr0'
-                  endif
-               endif
-               exit
-            endif
-
-         enddo
-         quasi_time=quasi_time+dnekclock()-tquasi_time
-
-         if (mod(ad_step,ad_iostep).eq.0) then
-            if (nio.eq.0) write (6,*) 'lnconst_ana'
-            call cpod_ana(uu,par,j,lncount,ngf,norm_step
-     $                   ,ysk)
-         endif
-         par = par*0.1
-
-      enddo
-      copt_time=copt_time+dnekclock()-tcopt_time
-
-      call copy(rhs,uu,nb)
-
-      return
-      end
-c-----------------------------------------------------------------------
       subroutine IPM(rhs,vv,helm,invhelm,amax,amin,adis,
      $   bpar,bstep,tol_box,ifdiag)
 
@@ -174,7 +48,7 @@ c-----------------------------------------------------------------------
          tquasi_time=dnekclock()
          do j=1,nb
 
-            if (isolve.eq.1.OR.isolve.eq.2) then
+            if (isolve.eq.1.OR.isolve.eq.2.OR.isolve.eq.3) then
                if (j.eq.1) then
                   call copy(qns,qngradf,nb)
                   call chsign(qns,nb)
@@ -659,6 +533,132 @@ c-----------------------------------------------------------------------
       call sub2(B(1,1),w3(1,1),nb*nb)
       call sub2(B(1,1),w4(1,1),nb*nb)
       call add2(B(1,1),ss(1,1),nb*nb)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine BFGS(rhs,vv,helm,invhelm,amax,amin,adis,
+     $   bpar,bstep,ifdiag)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      real helm(nb,nb),invhelm(nb,nb),B_qn(nb,nb)
+      real qgo(nb),qngradf(nb)
+      real qns(nb),qny(nb)
+      real uu(nb),vv(nb),rhs(nb)
+      real amax(nb),amin(nb),adis(nb)
+      real tmp(nb,nb)
+      real ngf,ysk
+      real bpar,par
+      real norm_s,norm_step,norm_uo
+
+      real invB_qn(nb,nb)
+      real copt_work(nb*nb)
+
+      ! parameter for barrier function
+      integer par_step,jmax,bstep,chekbc
+      integer lncount
+      logical ifdiag
+
+      call copy(uu,vv,nb)
+
+      jmax = 0
+
+      par = bpar 
+      par_step = bstep 
+
+      ! BFGS method with barrier function starts
+      tcopt_time=dnekclock()
+      do k=1,par_step
+
+         chekbc = 0
+
+         ! use helm from BDF3/EXT3 as intial approximation
+         call copy(B_qn(1,1),helm(1,1),nb*nb)
+         call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par,ifdiag,nb)
+
+         if (isolve.eq.5) then
+            call copy(invB_qn(1,1),invhelm(1,1),nb*nb)
+            call dgetri(nb,invB_qn,nb,ipiv,copt_work,nb*nb,info)
+         endif
+         norm_uo = vlamax(uu,nb)
+
+         ! compute quasi-Newton step
+         tquasi_time=dnekclock()
+         do j=1,100
+
+            if (isolve.eq.5) then
+               ONE = 1.
+               ZERO = 0.
+               call dgemv('N',nb,nb,ONE,invB_qn,nb,qngradf,1,ZERO,qns,1)
+               call chsign(qns,nb)
+            else
+               call copy(tmp(1,1),B_qn(1,1),nb*nb)
+               call dgetrf(nb,nb,tmp,nb,ipiv,info)
+               call copy(qns,qngradf,nb)
+               call chsign(qns,nb)
+               call dgetrs('N',nb,1,tmp,nb,ipiv,qns,nb,info)
+            endif
+
+            tlnsrch_time=dnekclock()
+            call backtrackr(uu,qns,rhs,helm,invhelm,1e-4,0.5,
+     $                  amax,amin,par,chekbc,lncount,nb)
+            lnsrch_time=lnsrch_time+dnekclock()-tlnsrch_time
+
+            norm_s = vlamax(qns,nb)
+            norm_step = norm_s/norm_uo
+
+            ! store old qn-gradf
+            call copy(qgo,qngradf,nb) 
+            ! update qn-gradf
+            call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par,
+     $      ifdiag,nb)
+            call sub3(qny,qngradf,qgo,nb) 
+
+            ! compute curvature condition
+            ysk = vlsc2(qny,qns,nb)
+
+            if (isolve.eq.5) then
+               call invHessian_update(invB_qn,qns,qny,nb)
+            else
+               call Hessian_update(B_qn,qns,qny,nb)
+            endif
+
+            ! compute norm of gradf
+            ngf = vlamax(qngradf,nb)
+
+            ! reset chekbc 
+            chekbc = 0
+            
+            jmax = max(j,jmax)
+
+            if (ngf .lt. 1e-6 .OR. ysk .lt. 1e-6 .OR. norm_step .lt.
+     $      1e-6  ) then 
+               if (ysk .lt. 1e-10) then 
+                  if (nio.eq.0) then
+                  ! curvature condition not satisfied
+                  write(6,*)'WARNING:decrease barrseq or increase barr0'
+                  endif
+               endif
+               exit
+            endif
+
+         enddo
+         quasi_time=quasi_time+dnekclock()-tquasi_time
+
+         if (mod(ad_step,ad_iostep).eq.0) then
+            if (nio.eq.0) write (6,*) 'lnconst_ana'
+            call cpod_ana(uu,par,j,lncount,ngf,norm_step
+     $                   ,ysk)
+         endif
+         par = par*0.1
+
+      enddo
+      copt_time=copt_time+dnekclock()-tcopt_time
+
+      call copy(rhs,uu,nb)
 
       return
       end
