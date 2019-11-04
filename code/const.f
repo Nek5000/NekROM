@@ -48,7 +48,7 @@
          tquasi_time=dnekclock()
          do j=1,nb
 
-            if (isolve.eq.1.OR.isolve.eq.2.OR.isolve.eq.3) then
+            if (isolve.eq.1.OR.isolve.eq.2) then
                if (j.eq.1) then
                   call copy(qns,qngradf,nb)
                   call chsign(qns,nb)

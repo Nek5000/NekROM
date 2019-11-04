@@ -710,20 +710,18 @@ c-----------------------------------------------------------------------
       chekbc=0
 
       call copy(rhstmp,rhs,nb+1)
-      call dgetrs('N',nb,1,invhelm,lub,ipiv,rhstmp(1),nb,info)
+      if (ifdiag) then
+         call col2(rhstmp(1),invhelm,nb)
+      else
+         call dgetrs('N',nb,1,invhelm,nb,ipiv,rhstmp(1),nb,info)
+      endif
 
-      do ii=1,nb
-         if ((rhstmp(ii)-amax(ii)).ge.box_tol) then
-            chekbc = 1
-         elseif ((amin(ii)-rhstmp(ii)).ge.box_tol) then
-            chekbc = 1
-         endif
-      enddo
+      call check_box(chekbc,rhstmp(1),amax,amin,box_tol,nb)
 
       if (chekbc.eq.1) then
          copt_count = copt_count + 1
-         call BFGS(rhs(1),uu,helm,invhelm,amax,amin,adis,
-     $   bpar,bstep,ifdiag)
+         call IPM(rhs(1),uu,helm,invhelm,amax,amin,adis,
+     $   bpar,bstep,box_tol,ifdiag)
       else
          call copy(rhs,rhstmp,nb+1)
       endif
@@ -739,7 +737,6 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       common /scrcopt/ helm(lb**2,2),invhelm(lb**2,2)
-
 
       real rhs(0:nb)
       real hh(nb**2),invhh(nb**2)
@@ -778,28 +775,13 @@ c-----------------------------------------------------------------------
 
       if (isolve.eq.1) then 
          ! constrained solver with inverse update
-         call IPM(rhs(1),uu(1),helm,invhelm,amax,amin,adis,
+         call IPM(rhs(1),uu,helm,invhelm,amax,amin,adis,
      $   bpar,bstep,box_tol,ifdiag)
 
       else if (isolve.eq.2) then 
          ! mix constrained solver with inverse update
-         call copy(rhstmp,rhs,nb+1)
-         if (ifdiag) then
-            call col2(rhstmp(1),invhelm,nb)
-         else
-            call dgetrs('N',nb,1,invhelm,nb,ipiv,rhstmp(1),nb,info)
-         endif
-
-         call check_box(chekbc,rhstmp,amax,amin,box_tol,nb)
-
-         if (chekbc.eq.1) then
-            copt_count = copt_count + 1
-            call IPM(rhs(1),uu(1),helm,invhelm,amax,amin,adis,
-     $      bpar,bstep,box_tol,ifdiag)
-         else
-            call copy(rhs,rhstmp,nb+1)
-         endif
-
+         call hybrid_advance(rhs,uu,helm,invhelm,amax,amin,
+     $   adis,bpar,bstep,copt_count,ifdiag)
       else   
          call exitti('incorrect isolve specified...$',isolve)
       endif
