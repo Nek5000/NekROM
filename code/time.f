@@ -106,9 +106,6 @@ c     if (icount.le.2) then
          call setr_v(rhs(1,1),icount)
       endif
 
-      rhs(0)=1.
-      call setr_v(rhs(1),icount)
-
       ttime=dnekclock()
       if ((isolve.eq.0).or.(icopt.eq.2)) then ! standard matrix inversion
          call mxm(wt,nb,rhs(1),nb,rhstmp(1),1)
