@@ -375,10 +375,120 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine update_k
+
+      include 'SIZE'
+      include 'MOR'
+
+      if (nio.eq.0) write (6,*) 'begin update setup'
+
+      call nekgsync
+      proj_time=dnekclock()
+
+      if (ifpod(1)) then
+         do i=1,ns
+            call mxm(wt,nb,uk(1,i),nb,ukp(1,i),1)
+         enddo
+      endif
+
+      if (ifpod(2)) then
+         do i=1,ns
+            call mxm(wt,nb,tk(1,i),nb,tkp(1,i),1)
+         enddo
+      endif
+
+      call nekgsync
+      if (nio.eq.0) write (6,*) 'proj_time:',dnekclock()-proj_time
+
+c     call hyperpar
+      call update_hyper
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine update_hyper
+
+      include 'SIZE'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real ep
+      real wk(nb)
+
+      call nekgsync
+      hpar_time=dnekclock()
+
+      ! eps is the free parameter
+      ! 1e-2 is used in the paper
+      ep = 1.e-2
+
+      n  = lx1*ly1*lz1*nelt
+      if (ifpod(1)) then
+         call cfill(upmin,1.e9,nb)
+         call cfill(upmax,-1.e9,nb)
+         do j=1,ns
+         do i=1,nb
+            if (ukp(i,j).lt.upmin(i)) upmin(i)=ukp(i,j)
+            if (ukp(i,j).gt.upmax(i)) upmax(i)=ukp(i,j)
+         enddo
+         enddo
+         do j=1,nb                    ! compute hyper-parameter
+            d= upmax(j)-upmin(j)
+            upmin(j) = upmin(j) - ep * d
+            upmax(j) = upmax(j) + ep * d
+            if (nio.eq.0) write (6,*) j,upmin(j),upmax(j)
+         enddo
+
+         ! compute distance between umax and umin
+         call sub3(updis,upmax,upmin,nb)
+
+         if (nio.eq.0) then
+            do i=1,nb
+               write (6,*) i,updis(i)
+            enddo
+         endif
+      endif   
+
+      if (ifpod(2)) then
+         call cfill(tpmin,1.e9,nb)
+         call cfill(tpmax,-1.e9,nb)
+         do j=1,ns
+         do i=1,nb
+            if (tkp(i,j).lt.tpmin(i)) tpmin(i)=tkp(i,j)
+            if (tkp(i,j).gt.tpmax(i)) tpmax(i)=tkp(i,j)
+         enddo
+         enddo
+         do j=1,nb                    ! compute hyper-parameter
+            d= tpmax(j)-tpmin(j)
+            tpmin(j) = tpmin(j) - ep * d
+            tpmax(j) = tpmax(j) + ep * d
+            if (nio.eq.0) write (6,*) j,tpmin(j),tpmax(j)
+         enddo
+
+         ! compute distance between tmax and tmin
+         call sub3(tpdis,tpmax,tpmin,nb)
+         if (nio.eq.0) then
+            do i=1,nb
+               write (6,*) i,tpdis(i)
+            enddo
+         endif
+
+      endif   
+
+      call nekgsync
+      if (nio.eq.0) write (6,*) 'hpar_time',dnekclock()-hpar_time
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine setmisc
 
       include 'SIZE'
       include 'MOR'
+
+      logical ifexist
+      real wk((lb+1)*ns)
 
       if (nio.eq.0) write (6,*) 'begin range setup'
 
@@ -391,6 +501,24 @@ c-----------------------------------------------------------------------
 
          call nekgsync
          if (nio.eq.0) write (6,*) 'proj_time:',dnekclock()-proj_time
+      else if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
+         inquire (file='ops/uk',exist=ifexist)
+         if (ifexist) call read_serial(uk,(lb+1)*ns,'ops/uk ',wk,nid)
+
+         inquire (file='ops/tk',exist=ifexist)
+         if (ifexist) call read_serial(tk,(lb+1)*ns,'ops/tk ',wk,nid)
+      endif
+
+      if (ifpod(1)) then
+         do i=1,ns
+            call copy(ukp(0,i),uk(0,i),nb+1)
+         enddo
+      endif
+
+      if (ifpod(2)) then
+         do i=1,ns
+            call copy(tkp(0,i),tk(0,i),nb+1)
+         enddo
       endif
 
       call asnap
@@ -428,6 +556,7 @@ c-----------------------------------------------------------------------
       lnsrch_time=0.
       compgf_time=0.
       compf_time=0.
+      invhm_time=0.
 
       anum_galu=0.
       anum_galt=0.
@@ -1198,6 +1327,7 @@ c-----------------------------------------------------------------------
          write (6,*) 'lnsrch_time: ',lnsrch_time
          write (6,*) 'compf_time:  ',compf_time
          write (6,*) 'compgf_time: ',compgf_time
+         write (6,*) 'invhm_time:  ',invhm_time
          write (6,*) 'ucopt_active:',ucopt_count,
      $         '/',ad_step-1
          if (ifrom(2)) then

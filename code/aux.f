@@ -530,8 +530,8 @@ c-----------------------------------------------------------------------
             call cfill(umax,-1.e9,nb)
             do j=1,ns
             do i=1,nb
-               if (uk(i,j).lt.umin(i)) umin(i)=uk(i,j)
-               if (uk(i,j).gt.umax(i)) umax(i)=uk(i,j)
+               if (ukp(i,j).lt.umin(i)) umin(i)=uk(i,j)
+               if (ukp(i,j).gt.umax(i)) umax(i)=uk(i,j)
             enddo
             enddo
             do j=1,nb                    ! compute hyper-parameter
@@ -565,8 +565,8 @@ c-----------------------------------------------------------------------
             call cfill(tmax,-1.e9,nb)
             do j=1,ns
             do i=1,nb
-               if (tk(i,j).lt.tmin(i)) tmin(i)=tk(i,j)
-               if (tk(i,j).gt.tmax(i)) tmax(i)=tk(i,j)
+               if (tkp(i,j).lt.tmin(i)) tmin(i)=tk(i,j)
+               if (tkp(i,j).gt.tmax(i)) tmax(i)=tk(i,j)
             enddo
             enddo
             do j=1,nb                    ! compute hyper-parameter
@@ -1409,6 +1409,27 @@ c-----------------------------------------------------------------------
       enddo
 
       close (unit=10)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine diag(h,wt,wk,n)
+
+      real h(n,n),wt(n,n),wk(n)
+
+      call regularev(h,wk,n,wt)
+
+      do j=1,n
+      do i=1,n
+         wt(i,j)=h(j,i)
+      enddo
+      enddo
+
+      call rzero(h,n*n)
+
+      do i=1,n
+         h(i,i)=1./wk(i)
+      enddo
 
       return
       end

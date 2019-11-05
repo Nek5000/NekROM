@@ -30,6 +30,7 @@ c     parameters and common blocks for MOR
       common /mortbt/ tbt(lx1*ly1*lz1*lelm,0:ltb)
 
       common /morcoef/ uk(0:lub,lsu),tk(0:ltb,lst),timek(lcs)
+      common /morcoef2/ ukp(0:lub,lsu),tkp(0:ltb,lst)
 
       common /morusnap/ us0(lx1*ly1*lz1*lelm,ldim,lsu)
       common /morpsnap/ ps(lx2*ly2*lz2*lelm,lsp)
@@ -55,7 +56,8 @@ c     parameters and common blocks for MOR
       parameter (lcglo=2*lub*(lub+1)*(lub+1))
       parameter (lcloc=lcglo/lpmin+1)
 
-      common /morfops/ hlm(lb**2,2),hinv(lb**2,2),hlu(lb**2,2)
+      common /morfops/ hlm(lb**2,2),hinv(lb**2,2),hlu(lb**2,2),
+     $                 wt(lb**2,2)
       common /morifops/ ihlu(lb,2)
 
       common /morvops/ au0((lub+1)**2),bu0((lub+1)**2),
@@ -68,7 +70,7 @@ c     parameters and common blocks for MOR
 
       common /morbc/ gn(lx1,ly1,lz1,lelt)
 
-      common /morcpl/  but0((lub+1)*(ltb+1)),buc(lub*(ltb+1)),cintp(1)
+      common /morcpl/ but0((lub+1)*(ltb+1)),buc(lub*(ltb+1)),cintp(1)
 
       common /morvsol/ u(0:(lub+1)*3-1),uj(0:lub,6),
      $                 u2((lub+1)**2),u2j(0:lub,0:lub,6)
@@ -111,15 +113,18 @@ c     parameters and common blocks for MOR
       common /morilu/ irv(lub),icv(lub),irt(lub),ict(lub),ipiv(lub)
 
       ! Constrained Optimization ! TODO: cleanup multi-dimensional arrays
+
       real invhelmu,invhelmt
       integer ubarrseq,tbarrseq,barr_func,icopt
       common /moropt/ helmu(lub,lub),invhelmu(lub,lub),
-     $               helmt(ltb,ltb),invhelmt(ltb,ltb),icopt
+     $               helmt(ltb,ltb),invhelmt(ltb,ltb)
+      common /moriopt/ icopt
       common /morhyperpar/ umin(lub),umax(lub),udis(lub),
-     $                     tmin(ltb),tmax(ltb),tdis(ltb)
-      common /morqn/ qns(lub),qny(lub)
-      common /morbarrier/ ubarr0,tbarr0,ubarrseq,tbarrseq,
-     $                    box_tol,barr_func
+     $                     tmin(ltb),tmax(ltb),tdis(ltb),
+     $                     upmin(lub),upmax(lub),updis(lub),
+     $                     tpmin(ltb),tpmax(ltb),tpdis(ltb)
+      common /morbarrier/ ubarr0,tbarr0,box_tol,barr_func
+      common /moribarrier/ ubarrseq,tbarrseq
 
       ! Error Indicator ! TODO: cleanup multi-dimensional arrays
 
@@ -138,15 +143,18 @@ c     parameters and common blocks for MOR
       logical ifl2,ifvort,ifstep,ifpart,ifavg0,ifplay,
      $        ifcdrag,ifrms,ifread,ifforce,ifpod(0:ldimt1),
      $        ifbuoy,ifrom(0:ldimt1),ifcintp,iffastc,ifcnuss,ifctke,
-     $        iffasth,ifavisc,ifsource,ifei,ifsub0,ifrecon,iftneu
+     $        iffasth,ifavisc,ifsource,ifei,ifsub0,ifrecon,iftneu,ifdecpl
 
       common /morflags/ ifl2,ifvort,ifstep,ifavg0,ifplay,
      $                  ifcdrag,ifrms,ifread,ifforce,ifpod,
      $                  ifbuoy,ifrom,ifcintp,iffastc,ifcnuss,ifctke,
      $                  iffasth,ifavisc,ifsource,ifei,ifsub0,ifrecon,
-     $                  iftneu
+     $                  iftneu,ifdecpl
 
-      real last_time,misc_time,lu_time,lnsrch_time
+      real last_time,misc_time,lu_time,
+     $     copt_time,quasi_time,lnsrch_time,
+     $     ulast_time,tlast_time,postu_time,postt_time
+     $     compf_time,compgf_time,invhm_time
 
       common /mortime/ step_time,last_time,misc_time,evalc_time,
      $                 solve_time,lu_time,
@@ -154,7 +162,7 @@ c     parameters and common blocks for MOR
      $                 tstep_time,tlast_time,tsolve_time,
      $                 ustep_time,ulast_time,
      $                 postu_time,postt_time,post_time
-     $                 compf_time,compgf_time
+     $                 compf_time,compgf_time,invhm_time
 
       integer ucopt_count,tcopt_count
       real num_galu,num_galt

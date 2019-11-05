@@ -5,7 +5,15 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
-      common /scrbdfext/ rhs(0:lb,2),rhstmp(0:lb)
+      common /scrbdfext/ rhs(0:lb,2),rhstmp(0:lb),utmp1(0:lb),utmp2(0:lb)
+
+      logical ifdebug
+      integer chekbc
+
+      chekbc=0
+
+      ifdebug=.true.
+      ifdebug=.false.
 
       ulast_time = dnekclock()
 
@@ -80,11 +88,41 @@ c     if (icount.le.2) then
                hlm(i+(j-1)*(nb-nplay),1)=hlm(i+nplay+(j+nplay-1)*nb,1)
             enddo
             enddo
-            call invmat(hinv,hlu,hlm,ihlu,nb-nplay)
+            if (ifdecpl) then
+               call copy(hinv,hlm,nb-nplay)
+               call diag(hinv,wt,rhs(1,1),nb)
+            else
+               call invmat(hinv,hlu,hlm,ihlu,nb-nplay)
+               call rzero(wt,(nb-nplay)**2)
+               do i=1,nb-nplay
+                  wt(i+(nb-nplay)*(i-1))=1.
+               enddo
+            endif
             lu_time=lu_time+dnekclock()-ttime
+            call update_k
          endif
 
          call setr_v(rhs(1,1),icount)
+      if (ad_step.le.3) then
+         call diag(hinv,wt,rhs,nb)
+      endif
+
+      rhs(0)=1.
+      call setr_v(rhs(1),icount)
+
+      ttime=dnekclock()
+      if ((isolve.eq.0).or.(icopt.eq.2)) then ! standard matrix inversion
+         call mxm(wt,nb,rhs(1),nb,rhstmp(1),1)
+         call mxm(hinv,nb,rhstmp(1),nb,rhs(1),1)
+         call mxm(rhs(1),1,wt,nb,rhstmp(1),nb)
+         call copy(rhs(1),rhstmp(1),nb)
+      else 
+         call mxm(u,nb+1,ad_alpha(1,icount),icount,utmp1,1)
+         call mxm(wt,nb,utmp1(1),nb,utmp2(1),1)
+         call mxm(wt,nb,rhs(1),nb,rhstmp(1),1)
+         call constrained_POD(rhstmp,hinv,hinv,utmp2(1),upmax,upmin,
+     $                        updis,ubarr0,ubarrseq,ucopt_count)
+         call mxm(rhstmp(1),1,wt,nb,rhs(1),nb)
 
          ttime=dnekclock()
          if (isolve.eq.0) then
@@ -648,36 +686,34 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine hybrid_advance(rhs,uu,helm,invhelm,amax,amin,
-     $                          adis,bpar,bstep,copt_count) 
+      subroutine hybrid_advance(rhs,helm,invhelm,uu,amax,amin,adis,
+     $                        bpar,bstep,copt_count,tol_box,ifdiag,nb)
 
       include 'SIZE'
       include 'TOTAL'
-      include 'MOR'  
 
+      real rhs(0:nb)
       real helm(nb,nb),invhelm(nb,nb)
-      real uu(nb),rhs(0:nb),rhstmp(0:nb)
-      real amax(nb),amin(nb),adis(nb)
-      real bpar
-      integer bstep,chekbc,copt_count
+      real uu(nb),amax(nb),amin(nb),adis(nb)
+      real bpar,tol_box
+      integer bstep,chekbc,copt_count,nb
+      logical ifdiag
 
-      chekbc=0
+      real rhstmp(0:nb)
 
       call copy(rhstmp,rhs,nb+1)
-      call dgetrs('N',nb,1,invhelm,lub,ipiv,rhstmp(1),nb,info)
+      if (ifdiag) then
+         call col2(rhstmp(1),invhelm,nb)
+      else
+         call dgetrs('N',nb,1,invhelm,nb,ipiv,rhstmp(1),nb,info)
+      endif
 
-      do ii=1,nb
-         if ((rhstmp(ii)-amax(ii)).ge.box_tol) then
-            chekbc = 1
-         elseif ((amin(ii)-rhstmp(ii)).ge.box_tol) then
-            chekbc = 1
-         endif
-      enddo
+      call check_box(chekbc,rhstmp(1),amax,amin,tol_box,nb)
 
       if (chekbc.eq.1) then
          copt_count = copt_count + 1
-         call BFGS(rhs(1),uu,helm,invhelm,amax,amin,adis,
-     $   bpar,bstep)
+         call IPM(rhs(1),uu,helm,invhelm,amax,amin,adis,
+     $   bpar,bstep,tol_box,ifdiag)
       else
          call copy(rhs,rhstmp,nb+1)
       endif
@@ -685,67 +721,59 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine constrained_POD(rhs,uu,helm,invhelm,amax,amin,
-     $                          adis,bpar,bstep,copt_count) 
+      subroutine constrained_POD(rhs,hh,invhh,uu,amax,amin,adis,
+     $                          bpar,bstep,copt_count) 
 
       include 'SIZE'
       include 'TOTAL'
-      include 'MOR'  
+      include 'MOR'
 
-      real helm(nb,nb),invhelm(nb,nb)
-      real uu(nb),rhs(0:nb),rhstmp(0:nb)
-      real amax(nb),amin(nb),adis(nb)
-      real bpar
+      common /scrcopt/ helm(lb**2,2),invhelm(lb**2,2)
+
+      real rhs(0:nb)
+      real hh(nb**2),invhh(nb**2)
+      real uu(nb),amax(nb),amin(nb),adis(nb)
+      real bpar,invhelm
+      real tmp(nb),rhstmp(0:nb)
+
       integer bstep,chekbc,copt_count
+      logical ifdiag
+      integer checkdiag
+
+      call check_diag(checkdiag,ifdiag,invhh,nb)
+
+      if (ifpod(1)) then 
+         if (abs(helm(1,1)-(1./hh(1))).ge.1e-10) then
+            write(6,*) ad_step,'ad_step'
+            if (ifdiag) then 
+               do jj=1,nb
+                  helm(jj,1) = 1/hh(jj+(jj-1)*nb)
+               enddo
+            else 
+               call copy(helm(1,1),hh(1),nb*nb)
+            endif
+         endif
+         if (abs(invhelm(1,1)-(invhh(1))).ge.1e-10) then
+            write(6,*) ad_step,'ad_step'
+            if (ifdiag) then
+               do jj=1,nb
+                  invhelm(jj,1) = invhh(jj+(jj-1)*nb)
+               enddo
+            else 
+               call copy(invhelm(1,1),invhh(1),nb*nb)
+            endif
+         endif
+      endif
 
       if (isolve.eq.1) then 
-
-         ! constrained solve with inverse update
-         call BFGS_new(rhs(1),uu(1),helm,invhelm,amax,amin,adis,
-     $   bpar,bstep)
+         ! constrained solver with inverse update
+         call IPM(rhs(1),uu,helm,invhelm,amax,amin,adis,
+     $   bpar,bstep,box_tol,ifdiag)
 
       else if (isolve.eq.2) then 
-                                 
-         ! constrained solve with inverse update
-         ! and mix with standard solver
-         call copy(rhstmp,rhs,nb+1)
-         call dgetrs('N',nb,1,invhelm,nb,ipiv,rhstmp(1),nb,info)
-
-         do ii=1,nb
-            if ((rhstmp(ii)-amax(ii)).ge.box_tol) then
-               chekbc = 1
-            elseif ((amin(ii)-rhstmp(ii)).ge.box_tol) then
-               chekbc = 1
-            endif
-         enddo
-
-         if (chekbc.eq.1) then
-            copt_count = copt_count + 1
-            call BFGS_new(rhs(1),uu(1),helm,invhelm,amax,amin,adis,
-     $      bpar,bstep)
-         else
-            call copy(rhs,rhstmp,nb+1)
-         endif
-
-      else if (isolve.eq.3) then 
-
-         ! constrained solve with Hessian update
-         call BFGS(rhs(1),uu(1),helm,invhelm,amax,amin,adis,
-     $   bpar,bstep)
-
-      else if (isolve.eq.4) then 
-
-         ! constrained solve with Hessian update
-         ! and mix with standard solver
-         call hybrid_advance(rhs,uu(1),helm,invhelm,amax,amin,
-     $                       adis,bpar,bstep,copt_count)
-
-      else if (isolve.eq.5) then 
-
-         ! constrained solve with Hessian update
-         call BFGS(rhs(1),uu(1),helm,invhelm,amax,amin,adis,
-     $   bpar,bstep)
-
+         ! mix constrained solver with inverse update
+         call hybrid_advance(rhs,helm,invhelm,uu,amax,amin,
+     $   adis,bpar,bstep,copt_count,box_tol,ifdiag,nb)
       else   
          call exitti('incorrect isolve specified...$',isolve)
       endif
@@ -847,6 +875,46 @@ c-----------------------------------------------------------------------
 
          call mxm(btinv,nb,t2(1),nb,ff(nb+1),1)
       endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine check_diag(checkdiag,ifdiag,aa,n)
+
+      real aa(n,n)
+      real vv(n),tmp(n)
+      integer checkdiag
+      logical ifdiag
+
+      call rone(tmp,n)
+      call mxm(aa,n,tmp,n,vv,1)
+      checkdiag = 0
+
+      do ii=1,nb
+         if (abs(vv(ii)-aa(ii,ii)).ge.1e-10) then
+            checkdiag=checkdiag+1
+         endif
+      enddo
+      if (checkdiag==0) ifdiag=.true.
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine check_box(chekbc,uu,amax,amin,tol_box,n)
+
+      real uu(n)
+      real amax(n),amin(n)
+      integer chekbc
+
+      chekbc=0
+
+      do ii=1,n
+         if ((uu(ii)-amax(ii)).ge.tol_box) then
+            chekbc = 1
+         elseif ((amin(ii)-uu(ii)).ge.tol_box) then
+            chekbc = 1
+         endif
+      enddo
 
       return
       end
