@@ -30,4 +30,6 @@ tail drag.log
 iexit=${PIPESTATUS[0]}
 if [ "$iexit" != "0" ]; then cp logfile fail.log; fi
 
+ls -latr
+
 exit $iexit
