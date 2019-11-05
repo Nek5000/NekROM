@@ -5,7 +5,8 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
-      common /scrbdfext/ rhs(0:lb,2),rhstmp(0:lb),utmp1(0:lb),utmp2(0:lb)
+      common /scrbdfext/ rhs(0:lb,2),rhstmp(0:lb),
+     $                   utmp1(0:lb),utmp2(0:lb)
 
       logical ifdebug
       integer chekbc
