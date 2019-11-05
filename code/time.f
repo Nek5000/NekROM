@@ -108,17 +108,17 @@ c     if (icount.le.2) then
 
       ttime=dnekclock()
       if ((isolve.eq.0).or.(icopt.eq.2)) then ! standard matrix inversion
-         call mxm(wt,nb,rhs(1),nb,rhstmp(1),1)
-         call mxm(hinv,nb,rhstmp(1),nb,rhs(1),1)
-         call mxm(rhs(1),1,wt,nb,rhstmp(1),nb)
-         call copy(rhs(1),rhstmp(1),nb)
+         call mxm(wt,nb,rhs(1,1),nb,rhstmp(1),1)
+         call mxm(hinv,nb,rhstmp(1),nb,rhs(1,1),1)
+         call mxm(rhs(1,1),1,wt,nb,rhstmp(1),nb)
+         call copy(rhs(1,1),rhstmp(1),nb)
       else 
          call mxm(u,nb+1,ad_alpha(1,icount),icount,utmp1,1)
          call mxm(wt,nb,utmp1(1),nb,utmp2(1),1)
-         call mxm(wt,nb,rhs(1),nb,rhstmp(1),1)
+         call mxm(wt,nb,rhs(1,1),nb,rhstmp(1),1)
          call constrained_POD(rhstmp,hinv,hinv,utmp2(1),upmax,upmin,
      $                        updis,ubarr0,ubarrseq,ucopt_count)
-         call mxm(rhstmp(1),1,wt,nb,rhs(1),nb)
+         call mxm(rhstmp(1),1,wt,nb,rhs(1,1),nb)
 
          ttime=dnekclock()
          if (isolve.eq.0) then
