@@ -104,8 +104,6 @@ c     if (icount.le.2) then
          endif
 
          call setr_v(rhs(1,1),icount)
-      if (ad_step.le.3) then
-         call diag(hinv,wt,rhs,nb)
       endif
 
       rhs(0)=1.
