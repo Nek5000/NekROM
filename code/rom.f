@@ -639,6 +639,7 @@ c-----------------------------------------------------------------------
 
       ifcintp=.false.
       ifavisc=.false.
+      ifdecpl=.false.
 
       ifsub0=.true.
       if (param(197).ne.0.) ifsub0=.false.
