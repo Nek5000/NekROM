@@ -96,7 +96,7 @@ c     if (icount.le.2) then
                call invmat(hinv,hlu,hlm,ihlu,nb-nplay)
                call rzero(wt,(nb-nplay)**2)
                do i=1,nb-nplay
-                  wt(i+(nb-nplay)*(i-1))=1.
+                  wt(i+(nb-nplay)*(i-1),1)=1.
                enddo
             endif
             lu_time=lu_time+dnekclock()-ttime
