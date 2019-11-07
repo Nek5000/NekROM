@@ -51,12 +51,12 @@
             if (isolve.eq.1.OR.isolve.eq.2) then
                if (j.eq.1) then
                   call copy(qns,qngradf,nb)
-                  call chsign(qns,nb)
                   if (ifdiag) then
                      call col2(qns,invhelm,nb)
                   else 
-                     call dgetrs('N',nb,1,invhelm,nb,ipiv,qns,nb,info)
+                     call mxm(invhelm,nb,qngradf,nb,qns,1)
                   endif
+                  call chsign(qns,nb)
                endif
 
                tlnsrch_time=dnekclock()
@@ -215,7 +215,7 @@ c-----------------------------------------------------------------------
          term2 = vlsc2(uu,rhs,nb) ! coef'*rhs
          ! 0.5*rhs'*inv(H)*rhs
          call copy(tmp5,rhs,nb)
-         call dgetrs('N',nb,1,invhelm,nb,ipiv,tmp5,nb,info)
+         call mxm(invhelm,nb,rhs,nb,tmp5,1)
          term3 = 0.5 * vlsc2(rhs,tmp5,nb)
       endif
 
@@ -442,7 +442,6 @@ c-----------------------------------------------------------------------
       logical ifdiag
 
       call copy(qnsol,qnd,nb)
-      call chsign(qnsol,nb)
 
       ! compute right product
       do i=qnstep,1,-1
@@ -455,9 +454,8 @@ c-----------------------------------------------------------------------
       if (ifdiag) then
          call col2(qnsol,invh0,nb)
       else
-         ONE = 1.
-         ZERO= 0.
-         call dgetrs('N',nb,1,invh0,nb,ipiv,qnsol,nb,info)
+         call copy(tmp,qnsol,nb)
+         call mxm(invh0,nb,tmp,nb,qnsol,1)
       endif
 
       ! compute left product
@@ -466,6 +464,7 @@ c-----------------------------------------------------------------------
          qnfact(i) = (qnalpha(i)-qnbeta(i))
          call add2s2(qnsol,sk(1,i),qnfact(i),nb)
       enddo
+      call chsign(qnsol,nb)
 
       return
       end

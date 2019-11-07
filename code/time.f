@@ -90,7 +90,7 @@ c     if (icount.le.2) then
             enddo
             enddo
             if (ifdecpl) then
-               call copy(hinv,hlm,nb-nplay)
+               call copy(hinv,hlm,(nb-nplay)**2)
                call diag(hinv,wt,rhs(1,1),nb)
             else
                call invmat(hinv,hlu,hlm,ihlu,nb-nplay)
@@ -116,22 +116,12 @@ c     if (icount.le.2) then
          call mxm(u,nb+1,ad_alpha(1,icount),icount,utmp1,1)
          call mxm(wt,nb,utmp1(1),nb,utmp2(1),1)
          call mxm(wt,nb,rhs(1,1),nb,rhstmp(1),1)
-         call constrained_POD(rhstmp,hinv,hinv,utmp2(1),upmax,upmin,
+         call constrained_POD(rhstmp,hlm,hinv,utmp2(1),upmax,upmin,
      $                        updis,ubarr0,ubarrseq,ucopt_count)
          call mxm(rhstmp(1),1,wt,nb,rhs(1,1),nb)
 
-         ttime=dnekclock()
-         if (isolve.eq.0) then
-            call mxm(hinv,nb-nplay,rhs(1+nplay,1),nb-nplay,rhstmp,1)
-            call copy(rhs(1+nplay,1),rhstmp,nb-nplay)
-         else
-            call mxm(u,nb+1,ad_alpha(1,icount),icount,rhstmp,1)
-            call icopy(ipiv,ihlu,nb)
-            call constrained_POD(rhs(0,1),rhstmp(1),hlm,hlu,
-     $         umax,umin,udis,ubarr0,ubarrseq,ucopt_count)
-         endif
-         solve_time=solve_time+dnekclock()-ttime
       endif
+      solve_time=solve_time+dnekclock()-ttime
 
       if (nplay.gt.0) then
          do i=1,nplay
@@ -157,6 +147,8 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
       common /scrrstep/ t1(lt),t2(lt),t3(lt),work(lt)
+      common /scrbdfext/ rhs(0:lb,2),rhstmp(0:lb),
+     $                   utmp1(0:lb),utmp2(0:lb)
       common /nekmpi/ nidd,npp,nekcomm,nekgroup,nekreal
 
       save icalld
@@ -177,7 +169,8 @@ c-----------------------------------------------------------------------
       if (ifrom(1)) then
          call setuavg(ua,u2a,u)
          call setuj(uj,u2j,u)
-         call count_gal(num_galu,anum_galu,u(1),umax,umin,1e-16,nb)
+         call count_gal(num_galu,anum_galu,rhstmp(1),upmax,upmin,
+     $   1e-16,nb)
       endif
 
       if (ifrom(2)) then
@@ -692,6 +685,7 @@ c-----------------------------------------------------------------------
       real helm(nb,nb),invhelm(nb,nb)
       real uu(nb),amax(nb),amin(nb),adis(nb)
       real bpar,tol_box
+      real ipiv(nb)
       integer bstep,chekbc,copt_count,nb
       logical ifdiag
 
@@ -701,7 +695,7 @@ c-----------------------------------------------------------------------
       if (ifdiag) then
          call col2(rhstmp(1),invhelm,nb)
       else
-         call dgetrs('N',nb,1,invhelm,nb,ipiv,rhstmp(1),nb,info)
+         call mxm(invhelm,nb,rhs(1),nb,rhstmp(1),1)
       endif
 
       call check_box(chekbc,rhstmp(1),amax,amin,tol_box,nb)
@@ -739,11 +733,11 @@ c-----------------------------------------------------------------------
       call check_diag(checkdiag,ifdiag,invhh,nb)
 
       if (ifpod(1)) then 
-         if (abs(helm(1,1)-(1./hh(1))).ge.1e-10) then
+         if (abs(helm(1,1)-(1./invhh(1))).ge.1e-10) then
             write(6,*) ad_step,'ad_step'
             if (ifdiag) then 
                do jj=1,nb
-                  helm(jj,1) = 1/hh(jj+(jj-1)*nb)
+                  helm(jj,1) = 1/invhh(jj+(jj-1)*nb)
                enddo
             else 
                call copy(helm(1,1),hh(1),nb*nb)
@@ -876,17 +870,20 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine check_diag(checkdiag,ifdiag,aa,n)
+c     check_diag is not working
 
       real aa(n,n)
       real vv(n),tmp(n)
       integer checkdiag
       logical ifdiag
 
+      ifdiag=.false.
+
       call rone(tmp,n)
       call mxm(aa,n,tmp,n,vv,1)
       checkdiag = 0
 
-      do ii=1,nb
+      do ii=1,n
          if (abs(vv(ii)-aa(ii,ii)).ge.1e-10) then
             checkdiag=checkdiag+1
          endif
