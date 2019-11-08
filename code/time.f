@@ -730,30 +730,7 @@ c-----------------------------------------------------------------------
       logical ifdiag
       integer checkdiag
 
-      call check_diag(checkdiag,ifdiag,invhh,nb)
-
-      if (ifpod(1)) then 
-         if (abs(helm(1,1)-(1./invhh(1))).ge.1e-10) then
-c           write(6,*) ad_step,'ad_step'
-            if (ifdiag) then 
-               do jj=1,nb
-                  helm(jj,1) = 1/invhh(jj+(jj-1)*nb)
-               enddo
-            else 
-               call copy(helm(1,1),hh(1),nb*nb)
-            endif
-         endif
-         if (abs(invhelm(1,1)-(invhh(1))).ge.1e-10) then
-c           write(6,*) ad_step,'ad_step'
-            if (ifdiag) then
-               do jj=1,nb
-                  invhelm(jj,1) = invhh(jj+(jj-1)*nb)
-               enddo
-            else 
-               call copy(invhelm(1,1),invhh(1),nb*nb)
-            endif
-         endif
-      endif
+      call check_diag(checkdiag,ifdiag,hh,invhh,nb)
 
       if (isolve.eq.1) then 
          ! constrained solver with inverse update
@@ -869,10 +846,9 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine check_diag(checkdiag,ifdiag,aa,n)
-c     check_diag is not working
+      subroutine check_diag(checkdiag,ifdiag,aa,bb,n)
 
-      real aa(n,n)
+      real aa(n,n),bb(n,n)
       real vv(n),tmp(n)
       integer checkdiag
       logical ifdiag
@@ -880,15 +856,18 @@ c     check_diag is not working
       ifdiag=.false.
 
       call rone(tmp,n)
-      call mxm(aa,n,tmp,n,vv,1)
+      call mxm(bb,n,tmp,n,vv,1)
       checkdiag = 0
 
       do ii=1,n
-         if (abs(vv(ii)-aa(ii,ii)).ge.1e-10) then
+         if (abs(vv(ii)-bb(ii,ii)).ge.1e-10) then
             checkdiag=checkdiag+1
          endif
       enddo
-      if (checkdiag==0) ifdiag=.true.
+      if (checkdiag==0) then
+         ifdiag=.true.
+      endif
+      call update_h(aa,bb,ifdiag)
 
       return
       end
@@ -912,3 +891,49 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine update_h(hh,invhh,ifdiag)
+         
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      common /scrcopt/ helm(lb**2,2),invhelm(lb**2,2)
+
+      real hh(nb**2),invhh(nb**2)
+      real invhelm
+      logical ifdiag
+
+      if (ifpod(1)) then 
+         if (ifdiag) then 
+            do jj=1,nb
+               helm(jj,1) = 1/invhh(jj+(jj-1)*nb)
+            enddo
+         else 
+            call copy(helm(1,1),hh(1),nb*nb)
+         endif
+         if (ifdiag) then
+            do jj=1,nb
+               invhelm(jj,1) = invhh(jj+(jj-1)*nb)
+            enddo
+         else 
+            call copy(invhelm(1,1),invhh(1),nb*nb)
+         endif
+      elseif (ifpod(2)) then
+         if (ifdiag) then 
+            do jj=1,nb
+               helm(jj,2) = 1/invhh(jj+(jj-1)*nb)
+            enddo
+         else 
+            call copy(helm(1,2),hh(1),nb*nb)
+         endif
+         if (ifdiag) then
+            do jj=1,nb
+               invhelm(jj,2) = invhh(jj+(jj-1)*nb)
+            enddo
+         else 
+            call copy(invhelm(1,2),invhh(1),nb*nb)
+         endif
+      endif
+
+      return
+      end
