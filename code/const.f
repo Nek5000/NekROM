@@ -7,6 +7,8 @@
       include 'TOTAL'
       include 'MOR'
 
+c     common /scripm/ tlncount
+
       real vv(nb),rhs(nb)
       real helm(nb,nb),invhelm(nb,nb)
       real amax(nb),amin(nb),adis(nb)
@@ -36,73 +38,10 @@
       tcopt_time=dnekclock()
       do k=1,par_step
 
-         chekbc = 0
-         tlncount = 0
-
-         ! use helm from BDF3/EXT3 as intial approximation
-         call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par,ifdiag,nb)
-
-         norm_uo = vlamax(uu,nb)
-
          ! compute quasi-Newton step
          tquasi_time=dnekclock()
-         do j=1,nb
-
-            if (isolve.eq.1.OR.isolve.eq.2) then
-               if (j.eq.1) then
-                  call copy(qns,qngradf,nb)
-                  if (ifdiag) then
-                     call col2(qns,invhelm,nb)
-                  else 
-                     call mxm(invhelm,nb,qngradf,nb,qns,1)
-                  endif
-                  call chsign(qns,nb)
-               endif
-
-               tlnsrch_time=dnekclock()
-               call backtrackr(uu,qns,rhs,helm,invhelm,1e-4,0.5,
-     $                     amax,amin,par,chekbc,lncount,
-     $                     tol_box,ifdiag,nb)
-               lnsrch_time=lnsrch_time+dnekclock()-tlnsrch_time
-               tlncount = tlncount + lncount
-
-               ! store qns
-               call copy(sk(1,j),qns,nb)
-
-               ! store old qn-gradf
-               call copy(qgo,qngradf,nb) 
-
-               ! update qn-gradf
-               tcompgf_time=dnekclock()
-               call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,
-     $         par,ifdiag,nb)
-               call sub3(qny,qngradf,qgo,nb) 
-               compgf_time=compgf_time+dnekclock()-tcompgf_time
-
-               ysk = vlsc2(qny,qns,nb)
-
-               norm_s = vlamax(qns,nb)
-               norm_step = norm_s/norm_uo
-
-               ! compute norm of gradf
-               ngf = vlamax(qngradf,nb)
-
-               jmax = max(j,jmax)
-
-               ! store qny 
-               call copy(yk(1,j),qny,nb)
-
-               tinvhm_time=dnekclock()
-               call invH_multiply(qns,invhelm,sk,yk,qngradf,j,ifdiag,nb)
-               invhm_time=invhm_time+dnekclock()-tinvhm_time
-            endif
-
-            if (ngf .lt. 1e-6 .OR. ysk .lt. 1e-6 .OR. norm_step .lt.
-     $      1e-6  ) then 
-               exit
-            endif
-
-         enddo
+         call quasi_newton(uu,helm,invhelm,rhs,amax,amin,
+     $                     par,tol_box,ifdiag,ngf,norm_step)    
          quasi_time=quasi_time+dnekclock()-tquasi_time
 
          if (mod(ad_step,ad_iostep).eq.0) then
@@ -117,6 +56,99 @@
 
       call copy(rhs,uu,nb)
 
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine quasi_newton(uu,helm,invhelm,rhs,amax,amin,
+     $                        par,tol_box,ifdiag,ngf,norm_step)
+
+      ! BFGS Method
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      common /scripm/ tlncount
+
+      real vv(nb),rhs(nb)
+      real helm(nb,nb),invhelm(nb,nb)
+      real amax(nb),amin(nb),adis(nb)
+
+      real sk(nb,nb),yk(nb,nb)
+      real qgo(nb),qngradf(nb)
+      real qns(nb),qny(nb)
+      real tmp(nb),uu(nb)
+      real qnf,ngf,ysk
+      real bpar,par,tol_box
+      real norm_s,norm_step,norm_uo
+
+      ! parameter for barrier function
+      integer chekbc
+      integer lncount,tlncount
+
+      logical ifdiag
+
+      chekbc = 0
+      tlncount = 0
+      ! use helm from BDF3/EXT3 as intial approximation
+      call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par,ifdiag,nb)
+
+      norm_uo = vlamax(uu,nb)
+
+      do j=1,nb
+         if (j.eq.1) then
+            call copy(qns,qngradf,nb)
+            if (ifdiag) then
+               call col2(qns,invhelm,nb)
+            else 
+               call mxm(invhelm,nb,qngradf,nb,qns,1)
+            endif
+            call chsign(qns,nb)
+         endif
+
+         tlnsrch_time=dnekclock()
+         call backtrackr(uu,qns,rhs,helm,invhelm,1e-4,0.5,
+     $                   amax,amin,par,chekbc,lncount,
+     $                   tol_box,ifdiag,nb)
+         lnsrch_time=lnsrch_time+dnekclock()-tlnsrch_time
+         tlncount = tlncount + lncount
+
+         ! store qns
+         call copy(sk(1,j),qns,nb)
+
+         ! store old qn-gradf
+         call copy(qgo,qngradf,nb) 
+
+         ! update qn-gradf
+         tcompgf_time=dnekclock()
+         call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,
+     $                     par,ifdiag,nb)
+         call sub3(qny,qngradf,qgo,nb) 
+         compgf_time=compgf_time+dnekclock()-tcompgf_time
+
+         ysk = vlsc2(qny,qns,nb)
+
+         norm_s = vlamax(qns,nb)
+         norm_step = norm_s/norm_uo
+
+         ! compute norm of gradf
+         ngf = vlamax(qngradf,nb)
+
+         jmax = max(j,jmax)
+
+         ! store qny 
+         call copy(yk(1,j),qny,nb)
+
+         tinvhm_time=dnekclock()
+         call invH_multiply(qns,invhelm,sk,yk,qngradf,j,ifdiag,nb)
+         invhm_time=invhm_time+dnekclock()-tinvhm_time
+
+         if (ngf .lt. 1e-6 .OR. ysk .lt. 1e-6 .OR. norm_step .lt.
+     $      1e-6  ) then 
+            exit
+         endif
+
+      enddo
       return
       end
 c-----------------------------------------------------------------------
