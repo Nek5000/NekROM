@@ -7,51 +7,44 @@
       include 'TOTAL'
       include 'MOR'
 
-c     common /scripm/ tlncount
+      common /scripm/ tlncount
 
       real vv(nb),rhs(nb)
       real helm(nb,nb),invhelm(nb,nb)
       real amax(nb),amin(nb),adis(nb)
 
-      real sk(nb,nb),yk(nb,nb)
-      real qgo(nb),qngradf(nb)
-      real qns(nb),qny(nb)
-      real tmp(nb),uu(nb)
-      real qnf,ngf,ysk
+      real uu(nb)
+      real ngf,ysk,norm_step
       real bpar,par,tol_box
-      real norm_s,norm_step,norm_uo
-
-      ! parameter for barrier function
-      integer par_step,jmax,bstep,chekbc
-      integer lncount,tlncount
+      integer bstep,tlncount
 
       logical ifdiag
 
       call copy(uu,vv,nb)
 
-      jmax = 0
-
       par = bpar 
-      par_step = bstep 
 
       ! BFGS method with barrier function starts
       tcopt_time=dnekclock()
-      do k=1,par_step
+
+      do k=1,bstep
 
          ! compute quasi-Newton step
          tquasi_time=dnekclock()
-         call quasi_newton(uu,helm,invhelm,rhs,amax,amin,
-     $                     par,tol_box,ifdiag,ngf,norm_step)    
+         call quasi_newton(uu,qstep,ngf,norm_step,ysk,
+     $                     helm,invhelm,rhs,amax,amin,
+     $                     par,tol_box,ifdiag)
          quasi_time=quasi_time+dnekclock()-tquasi_time
 
          if (mod(ad_step,ad_iostep).eq.0) then
             if (nio.eq.0) write (6,*) 'lnconst_ana'
-            call cpod_ana(uu,par,j,tlncount,ngf,norm_step
+            call cpod_ana(uu,par,qstep,tlncount,ngf,norm_step
      $      ,ysk)
          endif
          par = par*0.1
 
       enddo
+
       copt_time=copt_time+dnekclock()-tcopt_time
 
       call copy(rhs,uu,nb)
@@ -59,8 +52,9 @@ c     common /scripm/ tlncount
       return
       end
 c-----------------------------------------------------------------------
-      subroutine quasi_newton(uu,helm,invhelm,rhs,amax,amin,
-     $                        par,tol_box,ifdiag,ngf,norm_step)
+      subroutine quasi_newton(uu,qstep,ngf,norm_step,ysk,
+     $                        helm,invhelm,rhs,amax,amin,
+     $                        par,tol_box,ifdiag)
 
       ! BFGS Method
 
@@ -79,11 +73,11 @@ c-----------------------------------------------------------------------
       real qns(nb),qny(nb)
       real tmp(nb),uu(nb)
       real qnf,ngf,ysk
-      real bpar,par,tol_box
+      real par,tol_box
       real norm_s,norm_step,norm_uo
 
       ! parameter for barrier function
-      integer chekbc
+      integer chekbc,qstep
       integer lncount,tlncount
 
       logical ifdiag
@@ -134,8 +128,6 @@ c-----------------------------------------------------------------------
          ! compute norm of gradf
          ngf = vlamax(qngradf,nb)
 
-         jmax = max(j,jmax)
-
          ! store qny 
          call copy(yk(1,j),qny,nb)
 
@@ -149,6 +141,9 @@ c-----------------------------------------------------------------------
          endif
 
       enddo
+
+      qstep=j
+
       return
       end
 c-----------------------------------------------------------------------
