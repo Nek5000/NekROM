@@ -734,7 +734,7 @@ c-----------------------------------------------------------------------
 
       if (ifpod(1)) then 
          if (abs(helm(1,1)-(1./invhh(1))).ge.1e-10) then
-            write(6,*) ad_step,'ad_step'
+c           write(6,*) ad_step,'ad_step'
             if (ifdiag) then 
                do jj=1,nb
                   helm(jj,1) = 1/invhh(jj+(jj-1)*nb)
@@ -744,7 +744,7 @@ c-----------------------------------------------------------------------
             endif
          endif
          if (abs(invhelm(1,1)-(invhh(1))).ge.1e-10) then
-            write(6,*) ad_step,'ad_step'
+c           write(6,*) ad_step,'ad_step'
             if (ifdiag) then
                do jj=1,nb
                   invhelm(jj,1) = invhh(jj+(jj-1)*nb)
