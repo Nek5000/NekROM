@@ -2,6 +2,9 @@
      $               tol_box,ifdiag)
 
       ! Interrior-point method (IPM)
+      ! Transform the inequality constrained optimization problem
+      ! into unconstrained optimization problem with barrier method
+      ! Quasi-Newton is used to solve the unconstrained opt problem
 
       include 'SIZE'
       include 'TOTAL'
@@ -24,12 +27,10 @@
 
       par = bpar 
 
-      ! BFGS method with barrier function starts
       tcopt_time=dnekclock()
 
       do k=1,bstep
 
-         ! compute quasi-Newton step
          tquasi_time=dnekclock()
          call quasi_newton(uu,qstep,ngf,norm_step,ysk,
      $                     helm,invhelm,rhs,amax,amin,
@@ -117,8 +118,8 @@ c-----------------------------------------------------------------------
          tcompgf_time=dnekclock()
          call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,
      $                     par,ifdiag,nb)
-         call sub3(qny,qngradf,qgo,nb) 
          compgf_time=compgf_time+dnekclock()-tcompgf_time
+         call sub3(qny,qngradf,qgo,nb) 
 
          ysk = vlsc2(qny,qns,nb)
 
