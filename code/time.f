@@ -73,7 +73,7 @@ c     if (icount.le.2) then
          else
             call mxm(ut,nb+1,ad_alpha(1,icount),icount,rhstmp,1)
             call icopy(ipiv,ihlu(1,2),nb)
-            call constrained_POD(rhs(0,2),rhstmp(1),hlm(1,2),hlu(1,2),
+            call constrained_POD(rhs(0,2),hlm(1,2),hinv(1,2),rhstmp(1),
      $         tmax,tmin,tdis,tbarr0,tbarrseq,tcopt_count)
          endif
          tsolve_time=tsolve_time+dnekclock()-ttime
@@ -176,7 +176,7 @@ c-----------------------------------------------------------------------
       if (ifrom(2)) then
          call settavg(uta,uuta,utua,ut2a,u,ut)
          call settj(utj,uutj,utuj,uj,ut)
-         call count_gal(num_galu,anum_galu,ut(1),tmax,tmin,1e-16,nb)
+         call count_gal(num_galt,anum_galt,ut(1),tmax,tmin,1e-16,nb)
       endif
 
       if (mod(ad_step,ad_qstep).eq.0) then
