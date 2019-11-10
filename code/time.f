@@ -370,7 +370,8 @@ c        enddo
       else
          call rzero(cu,nb)
          if (ncloc.ne.0) then
-            if ((kc2-kc1).lt.64.and.(jc2-jc1).lt.64) then
+            if ((kc2-kc1).lt.64.and.(jc2-jc1).lt.64
+     $          .and.rfilter.eq.'STD') then
                call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),
      $                  u(kc1),(kc2-kc1+1),cm,1)
                call mxm(cm,(ic2-ic1+1),uu(jc1),(jc2-jc1+1),cu(ic1),1)
