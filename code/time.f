@@ -551,7 +551,7 @@ c-----------------------------------------------------------------------
 
       real s1(0:nb),s2(0:nb,0:nb),t1(0:nb)
 
-      if (ad_step.eq.navg_step) then
+      if (ad_step.eq.1) then
          call rzero(s1,nb+1)
          call rzero(s2,(nb+1)**2)
       endif
