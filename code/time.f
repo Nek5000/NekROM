@@ -74,10 +74,17 @@ c     if (icount.le.2) then
          else
             call mxm(ut,nb+1,ad_alpha(1,icount),icount,rhstmp,1)
             call icopy(ipiv,ihlu(1,2),nb)
-            call constrained_POD(rhs(0,2),rhstmp(1),hlm(1,2),hlu(1,2),
+            call constrained_POD(rhs(0,2),hlm(1,2),hinv(1,2),rhstmp(1),
      $         tmax,tmin,tdis,tbarr0,tbarrseq,tcopt_count)
          endif
          tsolve_time=tsolve_time+dnekclock()-ttime
+         if (nplay.gt.0) then
+            do i=1,nplay
+               rhs(i,2)=tk(i,ad_step)
+            enddo
+         endif
+
+         call shift3(ut,rhs(0,2),nb+1)
       endif
 
       if (ifrom(1)) then
@@ -105,34 +112,32 @@ c     if (icount.le.2) then
          endif
 
          call setr_v(rhs(1,1),icount)
+
+         ttime=dnekclock()
+         if ((isolve.eq.0).or.(icopt.eq.2)) then ! standard matrix inversion
+            call mxm(wt,nb,rhs(1,1),nb,rhstmp(1),1)
+            call mxm(hinv,nb,rhstmp(1),nb,rhs(1,1),1)
+            call mxm(rhs(1,1),1,wt,nb,rhstmp(1),nb)
+            call copy(rhs(1,1),rhstmp(1),nb)
+         else 
+            call mxm(u,nb+1,ad_alpha(1,icount),icount,utmp1,1)
+            call mxm(wt,nb,utmp1(1),nb,utmp2(1),1)
+            call mxm(wt,nb,rhs(1,1),nb,rhstmp(1),1)
+            call constrained_POD(rhstmp,hlm,hinv,utmp2(1),upmax,upmin,
+     $                           updis,ubarr0,ubarrseq,ucopt_count)
+            call mxm(rhstmp(1),1,wt,nb,rhs(1,1),nb)
+
+         endif
+         solve_time=solve_time+dnekclock()-ttime
+         if (nplay.gt.0) then
+            do i=1,nplay
+               rhs(i,1)=uk(i,ad_step)
+            enddo
+         endif
+
+         call shift3(u,rhs,nb+1)
       endif
 
-      ttime=dnekclock()
-      if ((isolve.eq.0).or.(icopt.eq.2)) then ! standard matrix inversion
-         call mxm(wt,nb,rhs(1,1),nb,rhstmp(1),1)
-         call mxm(hinv,nb,rhstmp(1),nb,rhs(1,1),1)
-         call mxm(rhs(1,1),1,wt,nb,rhstmp(1),nb)
-         call copy(rhs(1,1),rhstmp(1),nb)
-      else 
-         call mxm(u,nb+1,ad_alpha(1,icount),icount,utmp1,1)
-         call mxm(wt,nb,utmp1(1),nb,utmp2(1),1)
-         call mxm(wt,nb,rhs(1,1),nb,rhstmp(1),1)
-         call constrained_POD(rhstmp,hlm,hinv,utmp2(1),upmax,upmin,
-     $                        updis,ubarr0,ubarrseq,ucopt_count)
-         call mxm(rhstmp(1),1,wt,nb,rhs(1,1),nb)
-
-      endif
-      solve_time=solve_time+dnekclock()-ttime
-
-      if (nplay.gt.0) then
-         do i=1,nplay
-            if (ifrom(1)) rhs(i,1)=uk(i,ad_step)
-            if (ifrom(2)) rhs(i,2)=tk(i,ad_step)
-         enddo
-      endif
-
-      if (ifrom(2)) call shift3(ut,rhs(0,2),nb+1)
-      if (ifrom(1)) call shift3(u,rhs,nb+1)
 
       ustep_time=ustep_time+dnekclock()-ulast_time
 
@@ -177,7 +182,7 @@ c-----------------------------------------------------------------------
       if (ifrom(2)) then
          call settavg(uta,uuta,utua,ut2a,u,ut)
          call settj(utj,uutj,utuj,uj,ut)
-         call count_gal(num_galu,anum_galu,ut(1),tmax,tmin,1e-16,nb)
+         call count_gal(num_galt,anum_galt,ut(1),tmax,tmin,1e-16,nb)
       endif
 
       if (mod(ad_step,ad_qstep).eq.0) then
