@@ -22,6 +22,7 @@ c-----------------------------------------------------------------------
 
       icount = min(max(1,ad_step),3)
 
+
       rhs(0,1)=1.
       rhs(0,2)=1.
 
@@ -271,6 +272,7 @@ c        call cubar
             endif
          endif
       endif
+
 
       call nekgsync
       postu_time=postu_time+dnekclock()-tttime

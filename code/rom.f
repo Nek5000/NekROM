@@ -1347,7 +1347,7 @@ c-----------------------------------------------------------------------
          call dump_serial(ut,nb+1,'ops/tf ',nid)
       endif
       do i=0,nb
-         t1(i)=u2a(i+i*(nb+1))-ua(i)*ua(i)
+         t1(i)=u2a(1+i+i*(nb+1))-ua(i)*ua(i)
       enddo
 
       call dump_serial(t1,nb+1,'ops/uv ',nid)
