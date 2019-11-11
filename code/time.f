@@ -83,8 +83,6 @@ c     if (icount.le.2) then
                rhs(i,2)=tk(i,ad_step)
             enddo
          endif
-
-         call shift3(ut,rhs(0,2),nb+1)
       endif
 
       if (ifrom(1)) then
@@ -134,10 +132,10 @@ c     if (icount.le.2) then
                rhs(i,1)=uk(i,ad_step)
             enddo
          endif
-
-         call shift3(u,rhs,nb+1)
       endif
 
+      if (ifrom(2)) call shift3(ut,rhs(0,2),nb+1)
+      if (ifrom(1)) call shift3(u,rhs,nb+1)
 
       ustep_time=ustep_time+dnekclock()-ulast_time
 
