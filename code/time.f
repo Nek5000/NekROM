@@ -73,6 +73,11 @@ c     if (icount.le.2) then
             call copy(rhs(1,2),rhstmp,nb)
          else
             call mxm(ut,nb+1,ad_alpha(1,icount),icount,rhstmp,1)
+            eps=1.e-3
+            do i=1,nb
+               if (ut(i).gt.tmax(i)) ut(i)=tmax(i)-tdis(i)*eps
+               if (ut(i).lt.tmin(i)) ut(i)=tmin(i)+tdis(i)*eps
+            enddo
             call icopy(ipiv,ihlu(1,2),nb)
             call constrained_POD(rhs(0,2),hlm(1,2),hinv(1,2),rhstmp(1),
      $         tmax,tmin,tdis,tbarr0,tbarrseq,tcopt_count)
@@ -120,6 +125,11 @@ c     if (icount.le.2) then
          else 
             call mxm(u,nb+1,ad_alpha(1,icount),icount,utmp1,1)
             call mxm(wt,nb,utmp1(1),nb,utmp2(1),1)
+            eps=1.e-3
+            do i=1,nb
+               if (utmp2(i).gt.upmax(i)) utmp2(i)=upmax(i)-udis(i)*eps
+               if (utmp2(i).lt.upmin(i)) utmp2(i)=upmin(i)+udis(i)*eps
+            enddo
             call mxm(wt,nb,rhs(1,1),nb,rhstmp(1),1)
             call constrained_POD(rhstmp,hlm,hinv,utmp2(1),upmax,upmin,
      $                           updis,ubarr0,ubarrseq,ucopt_count)
