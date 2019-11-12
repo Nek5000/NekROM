@@ -329,6 +329,7 @@ c-----------------------------------------------------------------------
          enddo
       else if (inus.eq.4) then
          call rone(ones,lx1*ly1*lz1*nelt)
+         if (rmode.ne.'ON ') then
          do i=0,nb
             call gradm1(tx,ty,tz,tb(1,i))
 
@@ -360,6 +361,10 @@ c-----------------------------------------------------------------------
             a=glsum(a,1)
             qwall(i)=ta/a
          enddo
+         call dump_serial(qwall,nb+1,'qoi/qwall ',nid)
+         else
+         call read_serial(qwall,nb+1,'qoi/qwall ',rtmp1,nid)
+         endif
       endif
 
       return
