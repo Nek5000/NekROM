@@ -393,7 +393,7 @@ c-----------------------------------------------------------------------
 
       if (ifpod(2)) then
          do i=1,ns
-            call mxm(wt,nb,tk(1,i),nb,tkp(1,i),1)
+            call mxm(wt(1,2),nb,tk(1,i),nb,tkp(1,i),1)
          enddo
       endif
 

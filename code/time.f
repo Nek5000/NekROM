@@ -60,27 +60,42 @@ c     if (icount.le.2) then
                hlm(i+(j-1)*(nb-nplay),2)=hlm(i+nplay+(j+nplay-1)*nb,2)
             enddo
             enddo
-
-            call invmat(hinv(1,2),hlu(1,2),hlm(1,2),ihlu(1,2),nb-nplay)
+            if (ifdecpl) then
+               call copy(hinv(1,2),hlm(1,2),(nb-nplay)**2)
+               call diag(hinv(1,2),wt(1,2),rhs(1,2),nb)
+            else
+               call invmat(hinv(1,2),hlu(1,2),hlm(1,2),
+     $         ihlu(1,2),nb-nplay)
+               call rzero(wt(1,2),(nb-nplay)**2)
+               do i=1,nb-nplay
+                  wt(i+(nb-nplay)*(i-1),2)=1.
+               enddo
+            endif
             lu_time=lu_time+dnekclock()-ttime
+            call update_k
          endif
 
          call setr_t(rhs(1,2),icount)
 
          ttime=dnekclock()
          if (isolve.eq.0) then
-            call mxm(hinv(1,2),nb,rhs(1,2),nb,rhstmp,1)
-            call copy(rhs(1,2),rhstmp,nb)
+            call mxm(wt(1,2),nb,rhs(1,2),nb,rhstmp(1),1)
+            call mxm(hinv(1,2),nb,rhstmp(1),nb,rhs(1,2),1)
+            call mxm(rhs(1,2),1,wt(1,2),nb,rhstmp(1),nb)
+            call copy(rhs(1,2),rhstmp(1),nb)
          else
-            call mxm(ut,nb+1,ad_alpha(1,icount),icount,rhstmp,1)
+            call mxm(ut,nb+1,ad_alpha(1,icount),icount,utmp1,1)
+            call mxm(wt(1,2),nb,utmp1(1),nb,utmp2(1),1)
             eps=1.e-3
             do i=1,nb
-               if (ut(i).gt.tmax(i)) ut(i)=tmax(i)-tdis(i)*eps
-               if (ut(i).lt.tmin(i)) ut(i)=tmin(i)+tdis(i)*eps
+               if (ut(i).gt.tpmax(i)) ut(i)=tpmax(i)-tpdis(i)*eps
+               if (ut(i).lt.tpmin(i)) ut(i)=tpmin(i)+tpdis(i)*eps
             enddo
-            call icopy(ipiv,ihlu(1,2),nb)
-            call constrained_POD(rhs(0,2),hlm(1,2),hinv(1,2),rhstmp(1),
-     $         tmax,tmin,tdis,tbarr0,tbarrseq,tcopt_count)
+            call mxm(wt(1,2),nb,rhs(1,2),nb,rhstmp(1),1)
+            call constrained_POD(rhstmp,hlm(1,2),hinv(1,2),utmp2(1),
+     $                           tpmax,tpmin,tpdis,
+     $                           tbarr0,tbarrseq,tcopt_count)
+            call mxm(rhstmp(1),1,wt(1,2),nb,rhs(1,2),nb)
          endif
          tsolve_time=tsolve_time+dnekclock()-ttime
          if (nplay.gt.0) then
@@ -127,8 +142,8 @@ c     if (icount.le.2) then
             call mxm(wt,nb,utmp1(1),nb,utmp2(1),1)
             eps=1.e-3
             do i=1,nb
-               if (utmp2(i).gt.upmax(i)) utmp2(i)=upmax(i)-udis(i)*eps
-               if (utmp2(i).lt.upmin(i)) utmp2(i)=upmin(i)+udis(i)*eps
+               if (utmp2(i).gt.upmax(i)) utmp2(i)=upmax(i)-updis(i)*eps
+               if (utmp2(i).lt.upmin(i)) utmp2(i)=upmin(i)+updis(i)*eps
             enddo
             call mxm(wt,nb,rhs(1,1),nb,rhstmp(1),1)
             call constrained_POD(rhstmp,hlm,hinv,utmp2(1),upmax,upmin,
