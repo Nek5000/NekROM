@@ -73,7 +73,7 @@ jobs:
   - env: TYPE=INTEG TEST=CYL IPS=L2 NP=2 NB=20 LB=20 SCR=tdragx
   - env: TYPE=INTEG TEST=CYL IPS=L2 NP=1 NB=20 LB=50 SCR=tdragx
   - env: TYPE=INTEG TEST=CYL IPS=L2 NP=1 NB=10 LB=10 SCR=tbox
-  - env: TYPE=INTEG TEST=CYL IPS=L2 NP=1 NB=20 LB=20 SCR=tdragx
+  - env: TYPE=INTEG TEST=CYL IPS=L2 NP=1 NB=20 LB=20 SCR=tcopt
 
 after_success:
   - bash <(curl -s https://codecov.io/bash)
