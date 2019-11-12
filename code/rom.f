@@ -34,10 +34,8 @@ c-----------------------------------------------------------------------
          if (ifflow) call exitti(
      $   'error: running rom_update with ifflow = .true.$',nelv)
          if (istep.gt.0) then
-            if (ifrom(2)) call rom_step_t_legacy
-            if (ifrom(1)) call rom_step_legacy
-            call postu_legacy
-            call postt_legacy
+            call bdfext_step
+            call post
             call reconv(vx,vy,vz,u) ! reconstruct velocity to be used in h-t
          endif
       else
