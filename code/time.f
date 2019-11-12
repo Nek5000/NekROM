@@ -88,8 +88,8 @@ c     if (icount.le.2) then
             call mxm(wt(1,2),nb,utmp1(1),nb,utmp2(1),1)
             eps=1.e-3
             do i=1,nb
-               if (ut(i).gt.tpmax(i)) ut(i)=tpmax(i)-tpdis(i)*eps
-               if (ut(i).lt.tpmin(i)) ut(i)=tpmin(i)+tpdis(i)*eps
+               if (utmp2(i).gt.tpmax(i)) utmp2(i)=tpmax(i)-tpdis(i)*eps
+               if (utmp2(i).lt.tpmin(i)) utmp2(i)=tpmin(i)+tpdis(i)*eps
             enddo
             call mxm(wt(1,2),nb,rhs(1,2),nb,rhstmp(1),1)
             call constrained_POD(rhstmp,hlm(1,2),hinv(1,2),utmp2(1),
