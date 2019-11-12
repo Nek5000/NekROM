@@ -193,8 +193,6 @@ c-----------------------------------------------------------------------
       call nekgsync
       tttime=dnekclock()
 
-      time=time+ad_dt
-
       if (ifrom(1)) then
          call setuavg(ua,u2a,u)
          call setuj(uj,u2j,u)
