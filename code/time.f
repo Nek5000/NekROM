@@ -22,7 +22,6 @@ c-----------------------------------------------------------------------
 
       icount = min(max(1,ad_step),3)
 
-
       rhs(0,1)=1.
       rhs(0,2)=1.
 
@@ -572,7 +571,7 @@ c-----------------------------------------------------------------------
 
       real s1(0:nb),s2(0:nb,0:nb),t1(0:nb)
 
-      if (ad_step.eq.1) then
+      if (ad_step.eq.navg_step) then
          call rzero(s1,nb+1)
          call rzero(s2,(nb+1)**2)
       endif
@@ -601,7 +600,6 @@ c-----------------------------------------------------------------------
 
       real s1(0:nb),s2(0:nb,0:nb),s3(0:nb,0:nb),s4(0:nb,0:nb)
       real t1(0:nb),t2(0:nb)
-
 
       if (ad_step.eq.navg_step) then
          call rzero(s1,nb+1)
