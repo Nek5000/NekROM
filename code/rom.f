@@ -698,7 +698,7 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
       endif
 
       ! POD spatial filter
-      rbf=nint(param(199))
+      rbf=min(nint(param(199)),nb-1)
 
       ! POD radius of the filter for differential filter
       rdft=param(200)
