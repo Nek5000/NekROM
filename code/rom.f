@@ -60,6 +60,7 @@ c        cts='rkck  '
          do i=1,ad_nsteps
             if (cts.eq.'bdfext') then
                call bdfext_step
+               time=time+ad_dt
                call post
             else if (cts.eq.'copt  ') then
                if (ifrom(2)) call rom_step_t_legacy
