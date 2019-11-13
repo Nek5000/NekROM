@@ -19,7 +19,7 @@
       real uu(nb)
       real ngf,ysk,norm_step
       real bpar,par,tol_box
-      integer bstep,tlncount
+      integer bstep,tlncount,qstep
 
       logical ifdiag
 
@@ -104,7 +104,7 @@ c-----------------------------------------------------------------------
          tlnsrch_time=dnekclock()
          call backtrackr(uu,qns,rhs,helm,invhelm,1e-4,0.5,
      $                   amax,amin,par,chekbc,lncount,
-     $                   tol_box,ifdiag,nb)
+     $                   tol_box,ifdiag)
          lnsrch_time=lnsrch_time+dnekclock()-tlnsrch_time
          tlncount = tlncount + lncount
 
@@ -154,6 +154,7 @@ c-----------------------------------------------------------------------
       real uu(nb),rhs(nb),s(nb)
       real amax(nb),amin(nb) 
       real tmp1(nb),tmp2(nb),tmp3(nb),tmp4(nb)
+      real denum(nb)
       real bpar,mpar,pert
       logical ifdiag
       integer nb
@@ -167,9 +168,9 @@ c-----------------------------------------------------------------------
          call cadd(tmp1,-1e-2,nb)
          call cadd(tmp2,1e-2,nb)
    
-         call invcol1(tmp1,nb)
-         call invcol1(tmp2,nb)
          call add3(tmp3,tmp1,tmp2,nb)
+         call col3(denum,tmp1,tmp2,nb)
+         call invcol2(tmp3,denum,nb)
 
          mpar = -1.0*bpar
          call add3s12(s,rhs,tmp3,-1.0,mpar,nb)
@@ -628,7 +629,7 @@ c-----------------------------------------------------------------------
 
             tlnsrch_time=dnekclock()
             call backtrackr(uu,qns,rhs,helm,invhelm,1e-4,0.5,
-     $                  amax,amin,par,chekbc,lncount,nb)
+     $                  amax,amin,par,chekbc,lncount,tol_box,ifdiag)
             lnsrch_time=lnsrch_time+dnekclock()-tlnsrch_time
 
             norm_s = vlamax(qns,nb)
