@@ -86,7 +86,8 @@ c-----------------------------------------------------------------------
       chekbc = 0
       tlncount = 0
       ! use helm from BDF3/EXT3 as intial approximation
-      call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par,ifdiag,nb)
+      call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,
+     $                  par,ifdiag,barr_func,nb)
 
       norm_uo = vlamax(uu,nb)
 
@@ -117,7 +118,7 @@ c-----------------------------------------------------------------------
          ! update qn-gradf
          tcompgf_time=dnekclock()
          call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,
-     $                     par,ifdiag,nb)
+     $                     par,ifdiag,barr_func,nb)
          compgf_time=compgf_time+dnekclock()-tcompgf_time
          call sub3(qny,qngradf,qgo,nb) 
 
@@ -148,7 +149,8 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine comp_qngradf(uu,rhs,helm,s,amax,amin,bpar,ifdiag,nb)
+      subroutine comp_qngradf(uu,rhs,helm,s,amax,amin,
+     $                        bpar,ifdiag,barr_func,nb)
       
       real helm(nb,nb)
       real uu(nb),rhs(nb),s(nb)
@@ -215,8 +217,8 @@ c-----------------------------------------------------------------------
       return 
       end
 c-----------------------------------------------------------------------
-      subroutine comp_qnf(uu,rhs,helm,invhelm,qnf,amax,amin,bpar,
-     $   ifdiag,nb)
+      subroutine comp_qnf(uu,rhs,helm,invhelm,qnf,amax,amin,
+     $                    bpar,ifdiag,barr_func,nb)
       
       real uu(nb),rhs(nb)
       real helm(nb,nb),invhelm(nb,nb)
@@ -224,9 +226,10 @@ c-----------------------------------------------------------------------
       real qnf,bpar
       real tmp1(nb),tmp2(nb),tmp3(nb)
       real tmp4(nb),tmp5(nb),tmp6(nb)
-      real bar1,bar2 
+      real denum(nb)
+      real bar1,bar2,pert
       real term1,term2,term3,term4
-      integer nb
+      integer nb,barr_func
 
       logical ifdiag
 
@@ -345,11 +348,13 @@ c     alphak = 1.0
       counter = 0
 
       tcompf_time=dnekclock()
-      call comp_qnf(uu,rhs,helm,invhelm,fk,amax,amin,bpar,ifdiag,nb) ! get old f
+      call comp_qnf(uu,rhs,helm,invhelm,fk,amax,amin,
+     $              bpar,ifdiag,barr_func,nb) ! get old f
       compf_time=compf_time+dnekclock()-tcompf_time
 
       tcompgf_time=dnekclock()
-      call comp_qngradf(uu,rhs,helm,Jfk,amax,amin,bpar,ifdiag,nb)
+      call comp_qngradf(uu,rhs,helm,Jfk,amax,amin,
+     $                  bpar,ifdiag,barr_func,nb)
       compgf_time=compgf_time+dnekclock()-tcompgf_time
 
       call findminalpha(minalpha,s,uu,amax,amin,nb)
@@ -367,11 +372,13 @@ c     alphak = 1.0
       call check_box(chekbc,uu,amax,amin,tol_box,nb)
 
       tcompf_time=dnekclock()
-      call comp_qnf(uu,rhs,helm,invhelm,fk1,amax,amin,bpar,ifdiag,nb) ! get new f
+      call comp_qnf(uu,rhs,helm,invhelm,fk1,amax,amin,
+     $              bpar,ifdiag,barr_func,nb) ! get new f
       compf_time=compf_time+dnekclock()-tcompf_time
 
       tcompgf_time=dnekclock()
-      call comp_qngradf(uu,rhs,helm,Jfk1,amax,amin,bpar,ifdiag,nb)
+      call comp_qngradf(uu,rhs,helm,Jfk1,amax,amin,
+     $                  bpar,ifdiag,barr_func,nb)
       compgf_time=compgf_time+dnekclock()-tcompgf_time
 
       Jfks  = vlsc2(Jfk,s,nb)   
@@ -390,11 +397,13 @@ c     alphak = 1.0
          call check_box(chekbc,uu,amax,amin,tol_box,nb)
 
          tcompf_time=dnekclock()
-         call comp_qnf(uu,rhs,helm,invhelm,fk1,amax,amin,bpar,ifdiag,nb)
+         call comp_qnf(uu,rhs,helm,invhelm,fk1,amax,amin,
+     $                 bpar,ifdiag,barr_func,nb)
          compf_time=compf_time+dnekclock()-tcompf_time
 
          tcompgf_time=dnekclock()
-         call comp_qngradf(uu,rhs,helm,Jfk1,amax,amin,bpar,ifdiag,nb)
+         call comp_qngradf(uu,rhs,helm,Jfk1,amax,amin,
+     $                     bpar,ifdiag,barr_func,nb)
          compgf_time=compgf_time+dnekclock()-tcompgf_time
 
          Jfks1 = vlsc2(Jfk1,s,nb)   
@@ -602,7 +611,8 @@ c-----------------------------------------------------------------------
 
          ! use helm from BDF3/EXT3 as intial approximation
          call copy(B_qn(1,1),helm(1,1),nb*nb)
-         call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par,ifdiag,nb)
+         call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par,
+     $                     ifdiag,barr_func,nb)
 
          if (isolve.eq.5) then
             call copy(invB_qn(1,1),invhelm(1,1),nb*nb)
@@ -639,7 +649,7 @@ c-----------------------------------------------------------------------
             call copy(qgo,qngradf,nb) 
             ! update qn-gradf
             call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par,
-     $      ifdiag,nb)
+     $      ifdiag,barr_func,nb)
             call sub3(qny,qngradf,qgo,nb) 
 
             ! compute curvature condition
