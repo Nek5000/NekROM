@@ -432,12 +432,9 @@ c-----------------------------------------------------------------------
       real par
       real ngf,qndf,ysk
       integer qstep,tlncount
-      character*5 chartmp
 
       if (nio.eq.0) then
-         if (ifrom(1)) chartmp='ucopt'
-         if (ifrom(2)) chartmp='tcopt'
-         write (6,2)'ad_step:',ad_step,chartmp,par,
+         write (6,2)'ad_step:',ad_step,scopt,par,
      $            qstep,tlncount,
      $            ngf,qndf,ysk
          if (ad_step.eq.ad_nsteps) then
@@ -450,7 +447,7 @@ c-----------------------------------------------------------------------
             enddo
          endif
       endif
-    2 format (a8,i6,1x,a5,1p1e16.8,i3,i3,1p4e16.8)  
+    2 format (a8,i6,1x,a5,1p1e16.8,i3,i5,1p4e16.8)  
       return
       end
 c-----------------------------------------------------------------------
