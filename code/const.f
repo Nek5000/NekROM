@@ -159,18 +159,22 @@ c-----------------------------------------------------------------------
       real denum(nb)
       real bpar,mpar,pert
       logical ifdiag
-      integer nb
+      integer nb,barr_func
+
+      pert = 1e-2
 
       if (barr_func.eq.1) then ! use logarithmic as barrier function
+         
+         pert = 1e-2
 
-         call sub3(tmp1,uu,amax,nb)  
+         call sub3(tmp1,amax,uu,nb)  
          call sub3(tmp2,uu,amin,nb)  
    
          ! add perturbation 
-         call cadd(tmp1,-1e-2,nb)
-         call cadd(tmp2,1e-2,nb)
+         call cadd(tmp1,pert,nb)
+         call cadd(tmp2,pert,nb)
    
-         call add3(tmp3,tmp1,tmp2,nb)
+         call sub3(tmp3,tmp1,tmp2,nb)
          call col3(denum,tmp1,tmp2,nb)
          call invcol2(tmp3,denum,nb)
 
@@ -186,13 +190,16 @@ c-----------------------------------------------------------------------
          call add2(s,tmp4,nb)
 
       else ! use inverse function as barrier function
+         
+
+         pert = -1e-2
 
          call sub3(tmp1,uu,amax,nb)  
          call sub3(tmp2,amin,uu,nb)  
 
          ! add perturbation
-         call cadd(tmp1,-1e-2,nb)
-         call cadd(tmp2,-1e-2,nb)
+         call cadd(tmp1,pert,nb)
+         call cadd(tmp2,pert,nb)
 
          call vsq(tmp1,nb)
          call vsq(tmp2,nb)
@@ -200,6 +207,23 @@ c-----------------------------------------------------------------------
          call invcol1(tmp1,nb)
          call invcol1(tmp2,nb)
          call sub3(tmp3,tmp2,tmp1,nb)
+
+c        call sub3(tmp1,amax,uu,nb)  
+c        call sub3(tmp2,amin,uu,nb)  
+
+c        ! add perturbation
+c        call cadd(tmp1,1e-2,nb)
+c        call cadd(tmp2,-1e-2,nb)
+
+c        call sub3(tmp3,tmp1,tmp2,nb)
+c        call add3(tmp4,tmp1,tmp2,nb)
+c        call col2(tmp3,tmp4,nb)
+
+c        call vsq(tmp1,nb)
+c        call vsq(tmp2,nb)
+
+c        call col3(denum,tmp1,tmp2,nb)
+c        call invcol2(tmp3,denum,nb)
 
          mpar = -1.0*bpar
          call add3s12(s,rhs,tmp3,-1.0,mpar,nb)
@@ -252,35 +276,43 @@ c-----------------------------------------------------------------------
       endif
 
       if (barr_func.eq.1) then ! use logarithmetic as barrier function
+
+         pert=1e-2
          ! barrier term
          call sub3(tmp1,amax,uu,nb)  
          call sub3(tmp2,uu,amin,nb)  
    
          ! add perturbation
-         call cadd(tmp1,1e-2,nb)
-         call cadd(tmp2,1e-2,nb)
+         call cadd(tmp1,pert,nb)
+         call cadd(tmp2,pert,nb)
    
          do i=1,nb
             tmp3(i) = log(tmp1(i))
             tmp4(i) = log(tmp2(i))
          enddo
+
+         bar1 = vlsum(tmp3,nb)
+         bar2 = vlsum(tmp4,nb)
+         term4 = bpar*(bar1+bar2)
+
       else 
+
+         pert=-1e-2
          call sub3(tmp1,uu,amax,nb)  
          call sub3(tmp2,amin,uu,nb)  
 
          ! add perturbation
-         call cadd(tmp1,-1e-2,nb)
-         call cadd(tmp2,-1e-2,nb)
-   
-         do i=1,nb
-            tmp3(i) = 1./tmp1(i)
-            tmp4(i) = 1./tmp2(i)
-         enddo
-      endif
+         call cadd(tmp1,pert,nb)
+         call cadd(tmp2,pert,nb)
 
-      bar1 = vlsum(tmp3,nb)
-      bar2 = vlsum(tmp4,nb)
-      term4 = bpar*(bar1+bar2)
+         call invers2(tmp3,tmp1,nb)
+         call invers2(tmp4,tmp2,nb)
+
+         bar1 = vlsum(tmp3,nb)
+         bar2 = vlsum(tmp4,nb)
+         term4 = bpar*(bar1+bar2)
+
+      endif
 
       qnf = term1 - term2 + term3 - term4
 
