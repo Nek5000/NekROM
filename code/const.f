@@ -262,17 +262,11 @@ c-----------------------------------------------------------------------
          ! 0.5*coef'*H*coef
          term1 = 0.5 * vlsc3(uu,helm,uu,nb)
          term2 = vlsc2(uu,rhs,nb) ! coef'*rhs
-         ! 0.5*rhs'*inv(H)*rhs
-         term3 = 0.5 * vlsc3(rhs,invhelm,rhs,nb)
       else 
          ! 0.5*coef'*H*coef
          call mxm(helm,nb,uu,nb,tmp6,1)
          term1 = 0.5 * vlsc2(tmp6,uu,nb)
          term2 = vlsc2(uu,rhs,nb) ! coef'*rhs
-         ! 0.5*rhs'*inv(H)*rhs
-         call copy(tmp5,rhs,nb)
-         call mxm(invhelm,nb,rhs,nb,tmp5,1)
-         term3 = 0.5 * vlsc2(rhs,tmp5,nb)
       endif
 
       if (barr_func.eq.1) then ! use logarithmetic as barrier function
@@ -314,7 +308,7 @@ c-----------------------------------------------------------------------
 
       endif
 
-      qnf = term1 - term2 + term3 - term4
+      qnf = term1 - term2 - term4
 
       return
       end
