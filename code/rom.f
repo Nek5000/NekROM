@@ -502,10 +502,10 @@ c-----------------------------------------------------------------------
          if (nio.eq.0) write (6,*) 'proj_time:',dnekclock()-proj_time
       else if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
          inquire (file='ops/uk',exist=ifexist)
-         if (ifexist) call read_serial(uk,(lb+1)*ns,'ops/uk ',wk,nid)
+         if (ifexist) call read_serial(uk,(mb+1)*ns,'ops/uk ',wk,nid)
 
          inquire (file='ops/tk',exist=ifexist)
-         if (ifexist) call read_serial(tk,(lb+1)*ns,'ops/tk ',wk,nid)
+         if (ifexist) call read_serial(tk,(mb+1)*ns,'ops/tk ',wk,nid)
       endif
 
       if (ifpod(1)) then
@@ -699,6 +699,7 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
 
       ! POD spatial filter
       rbf=min(nint(param(199)),nb-1)
+      if (rbf.lt.0) rbf=nint(nb*0.5)
 
       ! POD radius of the filter for differential filter
       rdft=param(200)
