@@ -19,7 +19,7 @@
       real uu(nb)
       real ngf,ysk,norm_step
       real bpar,par,tol_box
-      integer bstep,tlncount
+      integer bstep,tlncount,qstep
 
       logical ifdiag
 
@@ -86,7 +86,8 @@ c-----------------------------------------------------------------------
       chekbc = 0
       tlncount = 0
       ! use helm from BDF3/EXT3 as intial approximation
-      call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par,ifdiag,nb)
+      call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,
+     $                  par,ifdiag,barr_func,nb)
 
       norm_uo = vlamax(uu,nb)
 
@@ -102,9 +103,9 @@ c-----------------------------------------------------------------------
          endif
 
          tlnsrch_time=dnekclock()
-         call backtrackr(uu,qns,rhs,helm,invhelm,1e-4,0.5,
+         call backtrackr(uu,qns,rhs,qngradf,helm,invhelm,1e-4,0.5,
      $                   amax,amin,par,chekbc,lncount,
-     $                   tol_box,ifdiag,nb)
+     $                   tol_box,ifdiag)
          lnsrch_time=lnsrch_time+dnekclock()-tlnsrch_time
          tlncount = tlncount + lncount
 
@@ -117,7 +118,7 @@ c-----------------------------------------------------------------------
          ! update qn-gradf
          tcompgf_time=dnekclock()
          call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,
-     $                     par,ifdiag,nb)
+     $                     par,ifdiag,barr_func,nb)
          compgf_time=compgf_time+dnekclock()-tcompgf_time
          call sub3(qny,qngradf,qgo,nb) 
 
@@ -148,28 +149,34 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine comp_qngradf(uu,rhs,helm,s,amax,amin,bpar,ifdiag,nb)
+      subroutine comp_qngradf(uu,rhs,helm,s,amax,amin,
+     $                        bpar,ifdiag,barr_func,nb)
       
       real helm(nb,nb)
       real uu(nb),rhs(nb),s(nb)
       real amax(nb),amin(nb) 
       real tmp1(nb),tmp2(nb),tmp3(nb),tmp4(nb)
+      real denum(nb)
       real bpar,mpar,pert
       logical ifdiag
-      integer nb
+      integer nb,barr_func
+
+      pert = 1e-2
 
       if (barr_func.eq.1) then ! use logarithmic as barrier function
+         
+         pert = 1e-2
 
-         call sub3(tmp1,uu,amax,nb)  
+         call sub3(tmp1,amax,uu,nb)  
          call sub3(tmp2,uu,amin,nb)  
    
          ! add perturbation 
-         call cadd(tmp1,-1e-2,nb)
-         call cadd(tmp2,1e-2,nb)
+         call cadd(tmp1,pert,nb)
+         call cadd(tmp2,pert,nb)
    
-         call invcol1(tmp1,nb)
-         call invcol1(tmp2,nb)
-         call add3(tmp3,tmp1,tmp2,nb)
+         call sub3(tmp3,tmp1,tmp2,nb)
+         call col3(denum,tmp1,tmp2,nb)
+         call invcol2(tmp3,denum,nb)
 
          mpar = -1.0*bpar
          call add3s12(s,rhs,tmp3,-1.0,mpar,nb)
@@ -183,13 +190,16 @@ c-----------------------------------------------------------------------
          call add2(s,tmp4,nb)
 
       else ! use inverse function as barrier function
+         
+
+         pert = -1e-2
 
          call sub3(tmp1,uu,amax,nb)  
          call sub3(tmp2,amin,uu,nb)  
 
          ! add perturbation
-         call cadd(tmp1,-1e-2,nb)
-         call cadd(tmp2,-1e-2,nb)
+         call cadd(tmp1,pert,nb)
+         call cadd(tmp2,pert,nb)
 
          call vsq(tmp1,nb)
          call vsq(tmp2,nb)
@@ -197,6 +207,23 @@ c-----------------------------------------------------------------------
          call invcol1(tmp1,nb)
          call invcol1(tmp2,nb)
          call sub3(tmp3,tmp2,tmp1,nb)
+
+c        call sub3(tmp1,amax,uu,nb)  
+c        call sub3(tmp2,amin,uu,nb)  
+
+c        ! add perturbation
+c        call cadd(tmp1,1e-2,nb)
+c        call cadd(tmp2,-1e-2,nb)
+
+c        call sub3(tmp3,tmp1,tmp2,nb)
+c        call add3(tmp4,tmp1,tmp2,nb)
+c        call col2(tmp3,tmp4,nb)
+
+c        call vsq(tmp1,nb)
+c        call vsq(tmp2,nb)
+
+c        call col3(denum,tmp1,tmp2,nb)
+c        call invcol2(tmp3,denum,nb)
 
          mpar = -1.0*bpar
          call add3s12(s,rhs,tmp3,-1.0,mpar,nb)
@@ -214,8 +241,8 @@ c-----------------------------------------------------------------------
       return 
       end
 c-----------------------------------------------------------------------
-      subroutine comp_qnf(uu,rhs,helm,invhelm,qnf,amax,amin,bpar,
-     $   ifdiag,nb)
+      subroutine comp_qnf(uu,rhs,helm,invhelm,qnf,amax,amin,
+     $                    bpar,ifdiag,barr_func,nb)
       
       real uu(nb),rhs(nb)
       real helm(nb,nb),invhelm(nb,nb)
@@ -223,9 +250,10 @@ c-----------------------------------------------------------------------
       real qnf,bpar
       real tmp1(nb),tmp2(nb),tmp3(nb)
       real tmp4(nb),tmp5(nb),tmp6(nb)
-      real bar1,bar2 
+      real denum(nb)
+      real bar1,bar2,pert
       real term1,term2,term3,term4
-      integer nb
+      integer nb,barr_func
 
       logical ifdiag
 
@@ -234,51 +262,53 @@ c-----------------------------------------------------------------------
          ! 0.5*coef'*H*coef
          term1 = 0.5 * vlsc3(uu,helm,uu,nb)
          term2 = vlsc2(uu,rhs,nb) ! coef'*rhs
-         ! 0.5*rhs'*inv(H)*rhs
-         term3 = 0.5 * vlsc3(rhs,invhelm,rhs,nb)
       else 
          ! 0.5*coef'*H*coef
          call mxm(helm,nb,uu,nb,tmp6,1)
          term1 = 0.5 * vlsc2(tmp6,uu,nb)
          term2 = vlsc2(uu,rhs,nb) ! coef'*rhs
-         ! 0.5*rhs'*inv(H)*rhs
-         call copy(tmp5,rhs,nb)
-         call mxm(invhelm,nb,rhs,nb,tmp5,1)
-         term3 = 0.5 * vlsc2(rhs,tmp5,nb)
       endif
 
       if (barr_func.eq.1) then ! use logarithmetic as barrier function
+
+         pert=1e-2
          ! barrier term
          call sub3(tmp1,amax,uu,nb)  
          call sub3(tmp2,uu,amin,nb)  
    
          ! add perturbation
-         call cadd(tmp1,1e-2,nb)
-         call cadd(tmp2,1e-2,nb)
+         call cadd(tmp1,pert,nb)
+         call cadd(tmp2,pert,nb)
    
          do i=1,nb
             tmp3(i) = log(tmp1(i))
             tmp4(i) = log(tmp2(i))
          enddo
+
+         bar1 = vlsum(tmp3,nb)
+         bar2 = vlsum(tmp4,nb)
+         term4 = bpar*(bar1+bar2)
+
       else 
+
+         pert=-1e-2
          call sub3(tmp1,uu,amax,nb)  
          call sub3(tmp2,amin,uu,nb)  
 
          ! add perturbation
-         call cadd(tmp1,-1e-2,nb)
-         call cadd(tmp2,-1e-2,nb)
-   
-         do i=1,nb
-            tmp3(i) = 1./tmp1(i)
-            tmp4(i) = 1./tmp2(i)
-         enddo
+         call cadd(tmp1,pert,nb)
+         call cadd(tmp2,pert,nb)
+
+         call invers2(tmp3,tmp1,nb)
+         call invers2(tmp4,tmp2,nb)
+
+         bar1 = vlsum(tmp3,nb)
+         bar2 = vlsum(tmp4,nb)
+         term4 = bpar*(bar1+bar2)
+
       endif
 
-      bar1 = vlsum(tmp3,nb)
-      bar2 = vlsum(tmp4,nb)
-      term4 = bpar*(bar1+bar2)
-
-      qnf = term1 - term2 + term3 - term4
+      qnf = term1 - term2 - term4
 
       return
       end
@@ -320,7 +350,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine backtrackr(uu,s,rhs,helm,invhelm,sigmab,facb,
+      subroutine backtrackr(uu,s,rhs,qngradf,helm,invhelm,sigmab,facb,
      $            amax,amin,bpar,chekbc,counter,tol_box,ifdiag)
 
       include 'SIZE'
@@ -330,7 +360,7 @@ c-----------------------------------------------------------------------
       real rhs(nb),s(nb)
       real uuo(nb),uu(nb)
       real helm(nb,nb),invhelm(nb,nb)
-      real Jfk(nb),Jfk1(nb)
+      real Jfk(nb),Jfk1(nb),qngradf(nb)
       real amax(nb),amin(nb)
       real fk,fk1
       real Jfks,Jfks1
@@ -344,12 +374,11 @@ c     alphak = 1.0
       counter = 0
 
       tcompf_time=dnekclock()
-      call comp_qnf(uu,rhs,helm,invhelm,fk,amax,amin,bpar,ifdiag,nb) ! get old f
+      call comp_qnf(uu,rhs,helm,invhelm,fk,amax,amin,
+     $              bpar,ifdiag,barr_func,nb) ! get old f
       compf_time=compf_time+dnekclock()-tcompf_time
 
-      tcompgf_time=dnekclock()
-      call comp_qngradf(uu,rhs,helm,Jfk,amax,amin,bpar,ifdiag,nb)
-      compgf_time=compgf_time+dnekclock()-tcompgf_time
+      call copy(Jfk,qngradf,nb)
 
       call findminalpha(minalpha,s,uu,amax,amin,nb)
 
@@ -366,11 +395,13 @@ c     alphak = 1.0
       call check_box(chekbc,uu,amax,amin,tol_box,nb)
 
       tcompf_time=dnekclock()
-      call comp_qnf(uu,rhs,helm,invhelm,fk1,amax,amin,bpar,ifdiag,nb) ! get new f
+      call comp_qnf(uu,rhs,helm,invhelm,fk1,amax,amin,
+     $              bpar,ifdiag,barr_func,nb) ! get new f
       compf_time=compf_time+dnekclock()-tcompf_time
 
       tcompgf_time=dnekclock()
-      call comp_qngradf(uu,rhs,helm,Jfk1,amax,amin,bpar,ifdiag,nb)
+      call comp_qngradf(uu,rhs,helm,Jfk1,amax,amin,
+     $                  bpar,ifdiag,barr_func,nb)
       compgf_time=compgf_time+dnekclock()-tcompgf_time
 
       Jfks  = vlsc2(Jfk,s,nb)   
@@ -389,11 +420,13 @@ c     alphak = 1.0
          call check_box(chekbc,uu,amax,amin,tol_box,nb)
 
          tcompf_time=dnekclock()
-         call comp_qnf(uu,rhs,helm,invhelm,fk1,amax,amin,bpar,ifdiag,nb)
+         call comp_qnf(uu,rhs,helm,invhelm,fk1,amax,amin,
+     $                 bpar,ifdiag,barr_func,nb)
          compf_time=compf_time+dnekclock()-tcompf_time
 
          tcompgf_time=dnekclock()
-         call comp_qngradf(uu,rhs,helm,Jfk1,amax,amin,bpar,ifdiag,nb)
+         call comp_qngradf(uu,rhs,helm,Jfk1,amax,amin,
+     $                     bpar,ifdiag,barr_func,nb)
          compgf_time=compgf_time+dnekclock()-tcompgf_time
 
          Jfks1 = vlsc2(Jfk1,s,nb)   
@@ -432,12 +465,9 @@ c-----------------------------------------------------------------------
       real par
       real ngf,qndf,ysk
       integer qstep,tlncount
-      character*5 chartmp
 
       if (nio.eq.0) then
-         if (ifrom(1)) chartmp='ucopt'
-         if (ifrom(2)) chartmp='tcopt'
-         write (6,2)'ad_step:',ad_step,chartmp,par,
+         write (6,2)'ad_step:',ad_step,scopt,par,
      $            qstep,tlncount,
      $            ngf,qndf,ysk
          if (ad_step.eq.ad_nsteps) then
@@ -450,7 +480,7 @@ c-----------------------------------------------------------------------
             enddo
          endif
       endif
-    2 format (a8,i6,1x,a5,1p1e16.8,i3,i3,1p4e16.8)  
+    2 format (a8,i6,1x,a5,1p1e16.8,i3,i5,1p4e16.8)  
       return
       end
 c-----------------------------------------------------------------------
@@ -604,7 +634,8 @@ c-----------------------------------------------------------------------
 
          ! use helm from BDF3/EXT3 as intial approximation
          call copy(B_qn(1,1),helm(1,1),nb*nb)
-         call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par,ifdiag,nb)
+         call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par,
+     $                     ifdiag,barr_func,nb)
 
          if (isolve.eq.5) then
             call copy(invB_qn(1,1),invhelm(1,1),nb*nb)
@@ -630,8 +661,8 @@ c-----------------------------------------------------------------------
             endif
 
             tlnsrch_time=dnekclock()
-            call backtrackr(uu,qns,rhs,helm,invhelm,1e-4,0.5,
-     $                  amax,amin,par,chekbc,lncount,nb)
+            call backtrackr(uu,qns,rhs,qngradf,helm,invhelm,1e-4,0.5,
+     $                  amax,amin,par,chekbc,lncount,tol_box,ifdiag)
             lnsrch_time=lnsrch_time+dnekclock()-tlnsrch_time
 
             norm_s = vlamax(qns,nb)
@@ -641,7 +672,7 @@ c-----------------------------------------------------------------------
             call copy(qgo,qngradf,nb) 
             ! update qn-gradf
             call comp_qngradf(uu,rhs,helm,qngradf,amax,amin,par,
-     $      ifdiag,nb)
+     $      ifdiag,barr_func,nb)
             call sub3(qny,qngradf,qgo,nb) 
 
             ! compute curvature condition

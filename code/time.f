@@ -83,6 +83,7 @@ c     if (icount.le.2) then
             call mxm(rhs(1,2),1,wt(1,2),nb,rhstmp(1),nb)
             call copy(rhs(1,2),rhstmp(1),nb)
          else
+            scopt='tcopt'
             call mxm(ut,nb+1,ad_alpha(1,icount),icount,utmp1,1)
             call mxm(wt(1,2),nb,utmp1(1),nb,utmp2(1),1)
             eps=1.e-3
@@ -143,6 +144,7 @@ c     if (icount.le.2) then
             call mxm(rhs(1,1),1,wt,nb,rhstmp(1),nb)
             call copy(rhs(1,1),rhstmp(1),nb)
          else 
+            scopt='ucopt'
             call mxm(u,nb+1,ad_alpha(1,icount),icount,utmp1,1)
             call mxm(wt,nb,utmp1(1),nb,utmp2(1),1)
             eps=1.e-3
