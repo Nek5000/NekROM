@@ -103,7 +103,7 @@ c-----------------------------------------------------------------------
          endif
 
          tlnsrch_time=dnekclock()
-         call backtrackr(uu,qns,rhs,helm,invhelm,1e-4,0.5,
+         call backtrackr(uu,qns,rhs,qngradf,helm,invhelm,1e-4,0.5,
      $                   amax,amin,par,chekbc,lncount,
      $                   tol_box,ifdiag)
          lnsrch_time=lnsrch_time+dnekclock()-tlnsrch_time
@@ -350,7 +350,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine backtrackr(uu,s,rhs,helm,invhelm,sigmab,facb,
+      subroutine backtrackr(uu,s,rhs,qngradf,helm,invhelm,sigmab,facb,
      $            amax,amin,bpar,chekbc,counter,tol_box,ifdiag)
 
       include 'SIZE'
@@ -360,7 +360,7 @@ c-----------------------------------------------------------------------
       real rhs(nb),s(nb)
       real uuo(nb),uu(nb)
       real helm(nb,nb),invhelm(nb,nb)
-      real Jfk(nb),Jfk1(nb)
+      real Jfk(nb),Jfk1(nb),qngradf(nb)
       real amax(nb),amin(nb)
       real fk,fk1
       real Jfks,Jfks1
@@ -378,10 +378,7 @@ c     alphak = 1.0
      $              bpar,ifdiag,barr_func,nb) ! get old f
       compf_time=compf_time+dnekclock()-tcompf_time
 
-      tcompgf_time=dnekclock()
-      call comp_qngradf(uu,rhs,helm,Jfk,amax,amin,
-     $                  bpar,ifdiag,barr_func,nb)
-      compgf_time=compgf_time+dnekclock()-tcompgf_time
+      call copy(Jfk,qngradf,nb)
 
       call findminalpha(minalpha,s,uu,amax,amin,nb)
 
@@ -664,7 +661,7 @@ c-----------------------------------------------------------------------
             endif
 
             tlnsrch_time=dnekclock()
-            call backtrackr(uu,qns,rhs,helm,invhelm,1e-4,0.5,
+            call backtrackr(uu,qns,rhs,qngradf,helm,invhelm,1e-4,0.5,
      $                  amax,amin,par,chekbc,lncount,tol_box,ifdiag)
             lnsrch_time=lnsrch_time+dnekclock()-tlnsrch_time
 
