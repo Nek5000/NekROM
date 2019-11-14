@@ -134,6 +134,12 @@ c     if (icount.le.2) then
          if ((isolve.eq.0).or.(icopt.eq.2)) then ! standard matrix inversion
             call mxm(wt,nb,rhs(1,1),nb,rhstmp(1),1)
             call mxm(hinv,nb,rhstmp(1),nb,rhs(1,1),1)
+            if (ifdecpl) then
+            do i=1,nb
+               if (rhs(i,1).gt.upmax(i)) rhs(i,1)=upmax(i)-updis(i)*eps
+               if (rhs(i,1).lt.upmin(i)) rhs(i,1)=upmin(i)+updis(i)*eps
+            enddo
+            endif
             call mxm(rhs(1,1),1,wt,nb,rhstmp(1),nb)
             call copy(rhs(1,1),rhstmp(1),nb)
          else 
