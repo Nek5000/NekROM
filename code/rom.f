@@ -500,7 +500,7 @@ c-----------------------------------------------------------------------
 
          call nekgsync
          if (nio.eq.0) write (6,*) 'proj_time:',dnekclock()-proj_time
-      else if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
+      else if (rmode.eq.'ON '.or.rmode.eq.'ONB'.or.rmode.eq.'CP') then
          inquire (file='ops/uk',exist=ifexist)
          if (ifexist) call read_serial(uk,(mb+1)*ns,'ops/uk ',wk,nid)
 
@@ -595,11 +595,12 @@ c-----------------------------------------------------------------------
          rmode='ONB'
       else if (np173.eq.4) then
          rmode='CP '
+         ntr = 200 
       else
          call exitti('unsupported param(173), exiting...$',np173)
       endif
 
-      if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
+      if (rmode.eq.'ON '.or.rmode.eq.'ONB'.or.rmode.eq.'CP ') then
          open (unit=10,file='ops/ips')
          read (10,*) chartmp
          close (unit=10)
@@ -925,39 +926,8 @@ c     call cpart(ic1,ic2,jc1,jc2,kc1,kc2,ncloc,nb,np,nid+1) ! new indexing
          enddo
       else if (rmode.eq.'CP ') then
          ! read in the cp decomposition
-         if (nid.eq.0) open (unit=100,file='./ops/lambda')
-         do kk=1,ltr
-            cel=0.
-            read(100,*) cel 
-            cp_w(kk) = cel
-         enddo
-         call rzero(cua,lub*ltr)
-         if (nid.eq.0) open (unit=100,file='./ops/cua')
-         do kk=1,ltr
-         do i=1,nb
-            cel=0.
-            read(100,*) cel 
-            cua(i+(kk-1)*lub) = cel
-         enddo
-         enddo
-         call rzero(cub,(lub+1)*ltr)
-         if (nid.eq.0) open (unit=100,file='./ops/cub')
-         do kk=1,ltr
-         do i=1,nb+1
-            cel=0.
-            read(100,*) cel 
-            cub(i+(kk-1)*(lub+1)) = cel
-         enddo
-         enddo
-         call rzero(cuc,(lub+1)*ltr)
-         if (nid.eq.0) open (unit=100,file='./ops/cuc')
-         do kk=1,ltr
-         do i=1,nb+1
-            cel=0.
-            read(100,*) cel 
-            cuc(i+(kk-1)*(lub+1)) = cel
-         enddo
-         enddo
+         call set_cp_weight
+         call set_cp_mode
 
          ! debug purpose
          ! forming the tensor

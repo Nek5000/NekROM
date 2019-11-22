@@ -55,6 +55,24 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine set_cp_weight
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /scrsetmode/ wk(ltr+1)
+
+      logical ifexist
+
+      inquire (file='./ops/lambda',exist=ifexist)
+      if (ifexist) call read_serial(cp_w,ntr,'./ops/lambda ',wk,nid)
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine set_cp_mode
 
       include 'SIZE'
