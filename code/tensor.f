@@ -50,8 +50,29 @@ c-----------------------------------------------------------------------
       do jj=1,n
 
          vlngth = vlsc2(aa(1,jj),aa(1,jj),m)
-         write(6,*)jj,vlngth,'norm of jj colum'
       enddo
       
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine set_cp_mode
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /scrsetmode/ wk1(lt)
+
+      if (nio.eq.0) write (6,*) 'reading A1...'
+      call read_mat_serial(cua,nb,ntr,'./ops/cua ',mb,ntr,wk1,nid)
+
+      if (nio.eq.0) write (6,*) 'reading A2...'
+      call read_mat_serial(cub,nb+1,ntr,'./ops/cub ',mb+1,ntr,wk1,nid)
+
+      if (nio.eq.0) write (6,*) 'reading A3...'
+      call read_mat_serial(cuc,nb+1,ntr,'./ops/cuc ',mb+1,ntr,wk1,nid)
+
       return
       end
