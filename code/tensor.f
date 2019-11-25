@@ -6,7 +6,6 @@ c-----------------------------------------------------------------------
       integer m,n
 
       do jj=1,n
-
          vlngth = vlsc2(aa(1,jj),aa(1,jj),m)
          vlngth = 1./sqrt(vlngth)
          do ii=1,m
@@ -23,20 +22,20 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
-      real mode_unfold(nb*ltr,3)
+      real mode_unfold(0:lub*ltr,3)
       integer,parameter :: seed = 86456
   
       call srand(seed)
       
       do jj=1,3
-         do ii=1,nb*ltr
+         do ii=0,lub*ltr
             mode_unfold(ii,jj) = rand()
          enddo
-         call mode_normalize(mode_unfold(1,jj),nb,ltr)
+         call mode_normalize(mode_unfold(0,jj),lub,ltr)
       enddo
 
       do jj=1,3
-         call check_normalize(mode_unfold(1,jj),nb,ltr)
+         call check_normalize(mode_unfold(0,jj),lub,ltr)
       enddo
       return
       end
@@ -48,14 +47,28 @@ c-----------------------------------------------------------------------
       integer m,n
 
       do jj=1,n
-
          vlngth = vlsc2(aa(1,jj),aa(1,jj),m)
+         write(6,*)jj,vlngth,'jj'
       enddo
       
       return
       end
 c-----------------------------------------------------------------------
-      subroutine set_cp_weight
+      subroutine set_product_matrix(aa,bb,m,n)
+
+      real aa(m,n)
+      real bb(n,n)
+
+      do jj=1,n
+         do ii=1,n
+            bb(ii,jj) = vlsc2(aa(1,ii),aa(1,jj),m)
+         enddo
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine read_cp_weight
 
       include 'SIZE'
       include 'TOTAL'
@@ -73,7 +86,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine set_cp_mode
+      subroutine read_cp_mode
 
       include 'SIZE'
       include 'TOTAL'
