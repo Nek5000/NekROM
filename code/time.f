@@ -358,8 +358,9 @@ c-----------------------------------------------------------------------
       real ucft(0:nb)
       real cl(ic1:ic2,jc1:jc2,kc1:kc2)
       real cm(ic1:ic2,jc1:jc2)
-      real bcu(1:ltr)
-      real cuu(1:ltr)
+      real bcu(ntr)
+      real cuu(ntr)
+      real tmp(ntr)
 
       common /scrc/ work(max(lub,ltb))
 
@@ -378,15 +379,12 @@ c-----------------------------------------------------------------------
          call mxm(cintp,n,uu,n+1,cu,1)
       else if (rmode.eq.'CP ') then
          call rzero(cu,nb)
-         do kk=1,ltr
-            bcu(kk) = vlsc2(uu,cub(1+(kk-1)*(lub+1)),nb+1)
-            cuu(kk) = vlsc2(u,cuc(1+(kk-1)*(lub+1)),nb+1)
+         do kk=1,ntr
+            bcu(kk) = vlsc2(uu,cub(1+(kk-1)*(nb+1)),nb+1)
+            cuu(kk) = vlsc2(u,cuc(1+(kk-1)*(nb+1)),nb+1)
          enddo
-         do kk=1,ltr
-            do i=1,nb
-               cu(i)=cu(i)+cp_w(kk)*cua(i+(kk-1)*(lub))*bcu(kk)*cuu(kk)
-            enddo
-         enddo
+         call col4(tmp,bcu,cuu,cp_w,ntr) 
+         call mxm(cua,nb,tmp,ntr,cu,1)
 
          ! debug checking
 c        do kk=1,ltr
