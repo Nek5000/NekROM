@@ -1,4 +1,89 @@
 c-----------------------------------------------------------------------
+      subroutine CP_ALS(cl)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      real fcm((lub+1)*ltr,3)
+      real fcmpm(ltr*ltr,3)
+      real lsm(ltr*ltr,3)
+      real cl(ic1:ic2,jc1:jc2,kc1:kc2)
+      integer mode,maxit
+
+      maxit = 1000
+
+      call rand_initial(fcm)
+
+      do mode=2,3
+         call set_product_matrix(fcm(1,mode),fcmpm(1,mode),lub+1,ltr)
+      enddo
+
+      do ii=1,2!maxit
+         do mode=1,3
+            call set_lsm(lsm,fcmpm,mode,ltr)
+         enddo
+      enddo
+
+      call mttkrp(lsr,cl,fcm,1)
+      
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine mttkrp(lsr,cl,fcm,mode)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      real lsr((lub+1)*ltr)
+      real fcm((lub+1)*ltr,3)
+      real cl(ic1:ic2,jc1:jc2,kc1:kc2)
+      real cm(ic1:ic2,jc1:jc2,ltr)
+      integer mode
+
+      write(6,*)ic1,ic2,jc1,jc2,kc1,kc2,'index'
+ 
+      if (mode.eq.1) then
+         do ii=1,ltr
+         call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),
+     $            fcm(kc1,3),(kc2-kc1+1),cm(1,1,ii),1)
+         enddo
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine set_lsm(lsm,fcmpm,mode,nn)
+
+      real fcmpm(nn*nn,3)
+      real lsm(nn*nn,3)
+      integer mode,idx,nn
+
+      if (mode.eq.1) then 
+         do ii=1,nn
+            idx = 1+(ii-1)*nn
+            call col3(lsm(idx,1),fcmpm(idx,2),fcmpm(idx,3),nn)
+         enddo
+         do ii=1,nn*nn
+            write(6,*)ii,lsm(ii,1),fcmpm(ii,2),fcmpm(ii,3),'check'
+         enddo
+      elseif (mode.eq.2) then
+         do ii=1,nn
+            idx = 1+(ii-1)*nn
+            call col3(lsm(idx,2),fcmpm(idx,1),fcmpm(idx,3),nn)
+         enddo
+      elseif (mode.eq.3) then
+         do ii=1,nn
+            idx = 1+(ii-1)*nn
+            call col3(lsm(idx,3),fcmpm(idx,1),fcmpm(idx,2),nn)
+         enddo
+      endif
+      
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine mode_normalize(aa,m,n)
 
       real aa(m,n)
@@ -16,27 +101,26 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine rand_initial()
+      subroutine rand_initial(fcm)
 
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
 
-      real mode_unfold(0:lub*ltr,3)
+      real fcm((lub+1)*ltr,3)
       integer,parameter :: seed = 86456
   
       call srand(seed)
       
-      do jj=1,3
-         do ii=0,lub*ltr
-            mode_unfold(ii,jj) = rand()
+      do jj=2,3
+         do ii=1,(lub+1)*ltr
+            fcm(ii,jj) = rand()
          enddo
-         call mode_normalize(mode_unfold(0,jj),lub,ltr)
+         call mode_normalize(fcm(1,jj),lub+1,ltr)
+
+         call check_normalize(fcm(1,jj),lub+1,ltr)
       enddo
 
-      do jj=1,3
-         call check_normalize(mode_unfold(0,jj),lub,ltr)
-      enddo
       return
       end
 c-----------------------------------------------------------------------
