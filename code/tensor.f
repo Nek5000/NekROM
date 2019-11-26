@@ -5,7 +5,7 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
-      real fcm((lub+1)*ltr,3)
+      real fcm(0:(lub+1)*ltr-1,3)
       real fcmpm(ltr*ltr,3)
       real lsm(ltr*ltr,3)
       real cl(ic1:ic2,jc1:jc2,kc1:kc2)
@@ -16,7 +16,7 @@ c-----------------------------------------------------------------------
       call rand_initial(fcm)
 
       do mode=2,3
-         call set_product_matrix(fcm(1,mode),fcmpm(1,mode),lub+1,ltr)
+         call set_product_matrix(fcm(0,mode),fcmpm(1,mode),lub+1,ltr)
       enddo
 
       do ii=1,2!maxit
@@ -60,6 +60,8 @@ c-----------------------------------------------------------------------
       real fcmpm(nn*nn,3)
       real lsm(nn*nn,3)
       integer mode,idx,nn
+
+      ! Hadamard product
 
       if (mode.eq.1) then 
          do ii=1,nn
