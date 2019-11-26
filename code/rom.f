@@ -924,10 +924,13 @@ c     call cpart(ic1,ic2,jc1,jc2,kc1,kc2,ncloc,nb,np,nid+1) ! new indexing
          enddo
          enddo
          enddo
+c        call CP_ALS(cul)
+c        call exitt0
       else if (rmode.eq.'CP ') then
+
          ! read in the cp decomposition
-         call set_cp_weight
-         call set_cp_mode
+c        call read_cp_weight
+c        call read_cp_mode
 
          ! debug purpose
          ! forming the tensor
