@@ -174,6 +174,19 @@ c        enddo
       return
       end
 c-----------------------------------------------------------------------
+      subroutine compute_cp_weight(cp_weight,aa,m,n)
+
+      real aa(m,n)
+      real cp_weight(n)
+      integer m,n
+
+      do jj=1,n
+         cp_weight(jj) = sqrt(vlsc2(aa(1,jj),aa(1,jj),m))
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine mode_normalize(aa,m,n)
 
       real aa(m,n)
