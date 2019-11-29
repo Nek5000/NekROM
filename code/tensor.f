@@ -40,17 +40,87 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       real lsr((lub+1)*ltr)
-      real fcm((lub+1)*ltr,3)
+      real fcm(0:(lub+1)*ltr-1,3)
       real cl(ic1:ic2,jc1:jc2,kc1:kc2)
       real cm(ic1:ic2,jc1:jc2,ltr)
-      integer mode
+      real cm2(ic1:ic2,ltr,kc1:kc2)
+      integer mode,tr
 
       write(6,*)ic1,ic2,jc1,jc2,kc1,kc2,'index'
+
  
       if (mode.eq.1) then
-         do ii=1,ltr
-         call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),
-     $            fcm(kc1,3),(kc2-kc1+1),cm(1,1,ii),1)
+
+         call rzero(lsr,(lub+1)*ltr)
+
+         ! construct temporary mttkrp
+         do tr=1,ltr
+            call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),
+     $               fcm(kc1+(lub+1)*(tr-1),3),(kc2-kc1+1),cm(1,0,tr),1)
+         enddo
+
+         ! temporary mttkrp with factor matrix
+         do tr=1,ltr
+            do jj=jc1,jc2
+               call add2s2(lsr(1+(lub+1)*(tr-1)),cm(1,jj,tr),
+     $                     fcm(jj+(lub+1)*(tr-1),2),lub)
+            enddo
+         enddo
+
+         write(6,*) 'First cp gradient'
+         do ii=1,(lub+1)*ltr
+            write(6,*)ii,lsr(ii)
+         enddo
+
+      elseif (mode.eq.2) then
+
+         call rzero(lsr,(lub+1)*ltr)
+
+         ! construct temporary mttkrp
+         do tr=1,ltr
+            call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),
+     $               fcm(kc1+(lub+1)*(tr-1),3),(kc2-kc1+1),cm(1,0,tr),1)
+         enddo
+
+         ! temporary mttkrp with factor matrix
+         do tr=1,ltr
+            do jj=jc1,jc2
+               lsr((jj+1)+(lub+1)*(tr-1)) = vlsc2(cm(1,jj,tr),
+     $         fcm(1+(lub+1)*(tr-1),1),lub)
+            enddo
+         enddo
+
+         write(6,*) 'Second cp gradient'
+         do ii=1,(lub+1)*ltr
+            write(6,*)ii,lsr(ii)
+         enddo
+
+      elseif (mode.eq.3) then
+
+         call rzero(lsr,(lub+1)*ltr)
+
+         ! construct temporary mttkrp
+         do kk=kc1,kc2
+         do tr=1,ltr
+            call mxm(cl(ic1,jc1,kk),(ic2-ic1+1),
+     $               fcm(jc1+(lub+1)*(tr-1),2),(jc2-jc1+1),
+     $               cm2(1,tr,kk),1) 
+c           call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),
+c    $               fcm(kc1+(lub+1)*(tr-1),3),(kc2-kc1+1),cm(1,0,tr),1)
+         enddo
+         enddo
+
+         ! temporary mttkrp with factor matrix
+         do tr=1,ltr
+            do kk=kc1,kc2
+               lsr((kk+1)+(lub+1)*(tr-1)) = vlsc2(cm2(1,tr,kk),
+     $         fcm(1+(lub+1)*(tr-1),1),lub)
+            enddo
+         enddo
+
+         write(6,*) 'Third cp gradient'
+         do ii=1,(lub+1)*ltr
+            write(6,*)ii,lsr(ii)
          enddo
       endif
 
