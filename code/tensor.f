@@ -7,8 +7,10 @@ c-----------------------------------------------------------------------
 
       real fcm(0:(lub+1)*ltr-1,3)
       real fcmpm(ltr*ltr,3)
-      real lsm(ltr*ltr,3)
+      real lsm(ltr*ltr,3),lsminv(ltr*ltr,3)
+      real tmp(ltr*ltr),tmp_wrk(ltr)
       real cl(ic1:ic2,jc1:jc2,kc1:kc2)
+      real lsr((lub+1)*ltr)
       integer mode,maxit
 
       maxit = 1000
@@ -68,9 +70,9 @@ c-----------------------------------------------------------------------
             idx = 1+(ii-1)*nn
             call col3(lsm(idx,1),fcmpm(idx,2),fcmpm(idx,3),nn)
          enddo
-         do ii=1,nn*nn
-            write(6,*)ii,lsm(ii,1),fcmpm(ii,2),fcmpm(ii,3),'check'
-         enddo
+c        do ii=1,nn*nn
+c           write(6,*)ii,lsm(ii,1),fcmpm(ii,2),fcmpm(ii,3),'check'
+c        enddo
       elseif (mode.eq.2) then
          do ii=1,nn
             idx = 1+(ii-1)*nn
