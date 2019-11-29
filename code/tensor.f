@@ -181,11 +181,13 @@ c-----------------------------------------------------------------------
       real lsr(mm,nn),lsm(nn,nn)
       real fcm(mm,nn),fcmpm(nn,nn)
       real tmp1(mm,nn),tmp2(nn,nn)
+      real tmp3(nn),tmp4(nn)
       integer mm,nn
 
       inner_prod=0.
       norm_approx=0.
 
+      write(6,*)'check dimension',mm,nn
       write(6,*)'check lsr,fcm'
       do jj=1,nn
       do ii=1,mm
@@ -203,7 +205,19 @@ c-----------------------------------------------------------------------
       enddo
 
       inner_prod = -2*vlsc2(tmp1,tmp1,mm*nn)
+
+      do ii=1,nn
+         call col3(tmp2(1,ii),lsm(1,ii),fcmpm(1,ii),nn)
+      enddo
+      call rone(tmp3,nn)
+      call mxm(tmp2,nn,tmp3,nn,tmp4,1)
+      norm_approx = vlsc2(tmp4,tmp3,nn)
+
       write(6,*)'inner_prod',inner_prod
+      write(6,*)'norm_c',norm_c
+      write(6,*)'norm_approx',norm_approx
+      relerr = sqrt(norm_c + inner_prod + norm_approx)/sqrt(norm_c)
+      write(6,*)'relerr',relerr
 
 
 
