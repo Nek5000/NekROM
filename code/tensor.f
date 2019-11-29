@@ -174,6 +174,42 @@ c        enddo
       return
       end
 c-----------------------------------------------------------------------
+      subroutine compute_relerr(relerr,lsr,fcm,lsm,fcmpm,norm_c,mm,nn)
+
+      real relerr,norm_c
+      real inner_prod,norm_approx 
+      real lsr(mm,nn),lsm(nn,nn)
+      real fcm(mm,nn),fcmpm(nn,nn)
+      real tmp1(mm,nn),tmp2(nn,nn)
+      integer mm,nn
+
+      inner_prod=0.
+      norm_approx=0.
+
+      write(6,*)'check lsr,fcm'
+      do jj=1,nn
+      do ii=1,mm
+         write(6,*)ii,jj,lsr(ii,jj),fcm(ii,jj),'check'
+      enddo
+      enddo
+      do ii=1,nn
+         call col3(tmp1(1,ii),lsr(1,ii),fcm(1,ii),mm)
+      enddo
+      write(6,*)'check tmp1'
+      do jj=1,nn
+      do ii=1,mm
+         write(6,*)ii,jj,tmp1(ii,jj),'check'
+      enddo
+      enddo
+
+      inner_prod = -2*vlsc2(tmp1,tmp1,mm*nn)
+      write(6,*)'inner_prod',inner_prod
+
+
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine compute_cp_weight(cp_weight,aa,m,n)
 
       real aa(m,n)
