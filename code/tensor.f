@@ -11,9 +11,16 @@ c-----------------------------------------------------------------------
       real tmp(ltr*ltr),tmp_wrk(ltr)
       real cl(ic1:ic2,jc1:jc2,kc1:kc2)
       real lsr((lub+1)*ltr)
+      real relerr
+      real norm_c
       integer mode,maxit
+      integer local_size
 
       maxit = 1000
+
+      local_size = (ic2-ic1+1)*(jc2-jc1+1)*(kc2-kc1+1)
+      write(6,*)'local_size',local_size
+      norm_c = vlsc2(cl(ic1,jc1,kc1),cl(ic1,jc1,kc1),local_size)
 
       call rand_initial(fcm)
 
@@ -21,27 +28,31 @@ c-----------------------------------------------------------------------
          call set_product_matrix(fcm(0,mode),fcmpm(1,mode),lub+1,ltr)
       enddo
 
-      do ii=1,1!maxit
+      do ii=1,10!maxit
          do mode=1,3
             call mttkrp(lsr,cl,fcm,mode)
             call set_lsm(lsm,fcmpm,mode,ltr)
             call invmat(lsminv(1,mode),tmp,lsm(1,mode),tmp_wrk,ltr)
             if (mode.eq.1) then
                do jj=1,ltr
-                  call mxm(lsr,lub+1,lsminv(1,mode),ltr,
+                  call mxm(lsr,lub+1,lsminv(1+(jj-1)*ltr,mode),ltr,
      $            fcm(0+(lub+1)*(jj-1),mode),1)
-               enddo
-               do jj=0,(lub+1)*ltr-1
-                  write(6,*)jj,fcm(jj,mode),'check'
                enddo
             elseif (mode.ne.1) then
                do jj=1,ltr
-                  call mxm(lsr,lub+1,lsminv(1,mode),ltr,
+                  call mxm(lsr,lub+1,lsminv(1+(jj-1)*ltr,mode),ltr,
      $            fcm(0+(lub+1)*(jj-1),mode),1)
                enddo
             endif
             call set_product_matrix(fcm(0,mode),fcmpm(1,mode),lub+1,ltr)
          enddo
+         call compute_relerr(relerr,lsr,fcm(0,3),lsm,
+     $                       fcmpm(1,3),norm_c,lub+1,ltr)
+c        call compute_cp_weight(cp_w,fcm(0,3),lub+1,ltr) 
+c        write(6,*)'check cp_w'
+c        do jj=1,ltr
+c           write(6,*)jj,cp_w(jj),'check'
+c        enddo
       enddo
 
       
