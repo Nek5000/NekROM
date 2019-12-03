@@ -1,58 +1,54 @@
 c-----------------------------------------------------------------------
-      subroutine CP_ALS(cl)
+      subroutine CP_ALS(cl,mm,nn)
 
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
 
-      real fcm(0:(lub+1)*ltr-1,3)
-      real fcmpm(ltr*ltr,3)
-      real lsm(ltr*ltr,3),lsminv(ltr*ltr,3)
-      real tmp(ltr*ltr),tmp_wrk(ltr)
+      real fcm(0:mm*nn-1,3)
+      real fcmpm(nn*nn,3)
+      real lsm(nn*nn,3),lsminv(nn*nn,3)
+      real tmp(nn*nn),tmp_wrk(nn)
       real cl(ic1:ic2,jc1:jc2,kc1:kc2)
-      real lsr((lub+1)*ltr)
-      real relerr
-      real norm_c
-      integer mode,maxit
-      integer local_size
+      real lsr(mm*nn)
+      real relerr,norm_c
+      integer mode,maxit,local_size
+      integer mm,nn
 
       maxit = 1000
 
       local_size = (ic2-ic1+1)*(jc2-jc1+1)*(kc2-kc1+1)
-      write(6,*)'local_size',local_size
       norm_c = vlsc2(cl(ic1,jc1,kc1),cl(ic1,jc1,kc1),local_size)
 
-      call rand_initial(fcm)
+      call rand_initial(fcm,mm,nn)
 
       do mode=2,3
-         call set_product_matrix(fcm(0,mode),fcmpm(1,mode),lub+1,ltr)
+         call set_product_matrix(fcm(0,mode),fcmpm(1,mode),mm,nn)
       enddo
 
-      do ii=1,10!maxit
+
+      do ii=1,maxit
          do mode=1,3
-            call mttkrp(lsr,cl,fcm,mode)
-            call set_lsm(lsm,fcmpm,mode,ltr)
-            call invmat(lsminv(1,mode),tmp,lsm(1,mode),tmp_wrk,ltr)
+            call mttkrp(lsr,cl,fcm,mm,nn,mode)
+            call set_lsm(lsm,fcmpm,mode,nn)
+            call invmat(lsminv(1,mode),tmp,lsm(1,mode),tmp_wrk,nn)
             if (mode.eq.1) then
-               do jj=1,ltr
-                  call mxm(lsr,lub+1,lsminv(1+(jj-1)*ltr,mode),ltr,
-     $            fcm(0+(lub+1)*(jj-1),mode),1)
+               do jj=1,nn
+                  call mxm(lsr,mm,lsminv(1+(jj-1)*nn,mode),nn,
+     $            fcm(0+(mm)*(jj-1),mode),1)
                enddo
             elseif (mode.ne.1) then
-               do jj=1,ltr
-                  call mxm(lsr,lub+1,lsminv(1+(jj-1)*ltr,mode),ltr,
-     $            fcm(0+(lub+1)*(jj-1),mode),1)
+               do jj=1,nn
+                  call mxm(lsr,mm,lsminv(1+(jj-1)*nn,mode),nn,
+     $            fcm(0+(mm)*(jj-1),mode),1)
                enddo
             endif
-            call set_product_matrix(fcm(0,mode),fcmpm(1,mode),lub+1,ltr)
+            call compute_cp_weight(cp_w,fcm(0,mode),mm,nn)
+            call mode_normalize(fcm(0,mode),mm,nn)
+            call set_product_matrix(fcm(0,mode),fcmpm(1,mode),mm,nn)
          enddo
-         call compute_relerr(relerr,lsr,fcm(0,3),lsm,
-     $                       fcmpm(1,3),norm_c,lub+1,ltr)
-c        call compute_cp_weight(cp_w,fcm(0,3),lub+1,ltr) 
-c        write(6,*)'check cp_w'
-c        do jj=1,ltr
-c           write(6,*)jj,cp_w(jj),'check'
-c        enddo
+         call compute_relerr(relerr,lsr,fcm(0,3),lsm(1,3),
+     $                       fcmpm(1,3),cp_w,norm_c,mm,nn)
       enddo
 
       
@@ -60,14 +56,130 @@ c        enddo
       return
       end
 c-----------------------------------------------------------------------
-      subroutine mttkrp(lsr,cl,fcm,mode)
+      subroutine CP_ALS_old(cl,mm,nn)
 
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
 
-      real lsr((lub+1)*ltr)
-      real fcm(0:(lub+1)*ltr-1,3)
+      real fcm(0:mm*nn-1,3)
+      real fcmpm(nn*nn,3)
+      real lsm(nn*nn,3),lsminv(nn*nn,3)
+      real tmp(nn*nn),tmp_wrk(nn)
+      real cl(ic1:ic2,jc1:jc2,kc1:kc2)
+      real lsr(mm*nn)
+      real relerr,norm_c
+      integer mode,maxit,local_size
+      integer mm,nn
+
+      maxit = 1000
+
+      local_size = (ic2-ic1+1)*(jc2-jc1+1)*(kc2-kc1+1)
+      norm_c = vlsc2(cl(ic1,jc1,kc1),cl(ic1,jc1,kc1),local_size)
+
+      call rand_initial(fcm,mm,nn)
+c     fcm(0,2) = 5.383424352600571e-01;
+c     fcm(2,2) = 7.817552875318368e-02;
+c     fcm(1,2) = 9.961347166268855e-01;
+c     fcm(3,2) = 4.426782697754463e-01;
+c     fcm(0,3) = 1.066527701805844e-01;
+c     fcm(2,3) = 4.634224134067444e-03;
+c     fcm(1,3) = 9.618980808550537e-01;
+c     fcm(3,3) = 7.749104647115024e-01;
+c     fcm(0,2) = 5.470088922863450e-01 
+c     fcm(1,2) = 2.963208056077732e-01 
+c     fcm(0,3) = 3.684845964903365e-01 
+c     fcm(1,3) = 6.256185607296904e-01 
+c     fcm(2,2) = 7.446928070741562e-01 
+c     fcm(3,2) = 1.889550150325445e-01 
+c     fcm(2,3) = 7.802274351513768e-01 
+c     fcm(3,3) = 8.112576886578526e-02 
+c     fcm(4,2) = 6.867754333653150e-01
+c     fcm(5,2) = 1.835111557372697e-01
+c     fcm(4,3) = 9.293859709687300e-01
+c     fcm(5,3) = 7.757126786084023e-01
+
+      do mode=2,3
+         call set_product_matrix(fcm(0,mode),fcmpm(1,mode),mm,nn)
+         do jj=0,mm*nn-1
+         write(6,*)jj,fcm(jj,mode),'check fcm'
+         enddo
+         do jj=1,nn*nn
+         write(6,*)jj,fcmpm(jj,mode),'check fcmpm'
+         enddo
+      enddo
+
+
+      do ii=1,10!maxit
+         do mode=1,3
+            call mttkrp(lsr,cl,fcm,mm,nn,mode)
+            call set_lsm(lsm,fcmpm,mode,nn)
+            call invmat(lsminv(1,mode),tmp,lsm(1,mode),tmp_wrk,nn)
+            if (mode.eq.1) then
+               write(6,*)'mode',mode
+               do jj=1,nn*nn
+               write(6,*)jj,lsminv(jj,mode),'check lsminv results'
+               enddo
+               do jj=1,mm*nn
+               write(6,*)jj,lsr(jj),'check lsr results'
+               enddo
+               do jj=1,nn
+                  call mxm(lsr,mm,lsminv(1+(jj-1)*nn,mode),nn,
+     $            fcm(0+(mm)*(jj-1),mode),1)
+               enddo
+               do jj=0,mm*nn-1
+               write(6,*)jj,fcm(jj,mode),'check fcm results'
+               enddo
+            elseif (mode.ne.1) then
+               write(6,*)'mode',mode
+               do jj=1,nn*nn
+               write(6,*)jj,lsminv(jj,mode),'check lsminv results'
+               enddo
+               do jj=1,mm*nn
+               write(6,*)jj,lsr(jj),'check lsr results'
+               enddo
+               do jj=1,nn
+                  call mxm(lsr,mm,lsminv(1+(jj-1)*nn,mode),nn,
+     $            fcm(0+(mm)*(jj-1),mode),1)
+               enddo
+               do jj=0,mm*nn-1
+               write(6,*)jj,fcm(jj,mode),'check fcm results'
+               enddo
+            endif
+            call compute_cp_weight(cp_w,fcm(0,mode),mm,nn)
+            call mode_normalize(fcm(0,mode),mm,nn)
+            call set_product_matrix(fcm(0,mode),fcmpm(1,mode),mm,nn)
+         enddo
+         write(6,*)'check cp_w'
+         do jj=1,ltr
+            write(6,*)jj,cp_w(jj),'check'
+         enddo
+         write(6,*)'check fcm outside'
+         do jj=0,mm*nn-1
+         write(6,*)jj,fcm(jj,1),'check fcm results'
+         enddo
+         do jj=0,mm*nn-1
+         write(6,*)jj,fcm(jj,2),'check fcm results'
+         enddo
+         do jj=1,nn*nn
+         write(6,*)jj,lsm(jj,mode),'check lsminv results'
+         enddo
+         call compute_relerr(relerr,lsr,fcm(0,3),lsm(1,3),
+     $                       fcmpm(1,3),cp_w,norm_c,mm,nn)
+c        call compute_cp_weight(cp_w,fcm(0,3),lub+1,ltr) 
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine mttkrp(lsr,cl,fcm,mm,nn,mode)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      real lsr(mm*nn)
+      real fcm(0:mm*nn-1,3)
       real cl(ic1:ic2,jc1:jc2,kc1:kc2)
       real cm(ic1:ic2,jc1:jc2,ltr)
       real cm2(ic1:ic2,ltr,kc1:kc2)
@@ -78,75 +190,80 @@ c-----------------------------------------------------------------------
  
       if (mode.eq.1) then
 
-         call rzero(lsr,(lub+1)*ltr)
+         call rzero(lsr,mm*nn)
 
          ! construct temporary mttkrp
-         do tr=1,ltr
+         do tr=1,nn
             call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),
-     $               fcm(kc1+(lub+1)*(tr-1),3),(kc2-kc1+1),cm(1,0,tr),1)
+     $               fcm(kc1+(mm)*(tr-1),3),(kc2-kc1+1),cm(1,0,tr),1)
          enddo
 
          ! temporary mttkrp with factor matrix
-         do tr=1,ltr
-            do jj=jc1,jc2
-               call add2s2(lsr(1+(lub+1)*(tr-1)),cm(1,jj,tr),
-     $                     fcm(jj+(lub+1)*(tr-1),2),lub)
-            enddo
+c        do tr=1,ltr
+c           do jj=jc1,jc2
+c              call add2s2(lsr(1+(mm)*(tr-1)),cm(1,jj,tr),
+c    $                     fcm(jj+(mm)*(tr-1),2),lub)
+c           enddo
+c        enddo
+         do tr=1,nn
+            call mxm(cm(ic1,jc1,tr),(ic2-ic1+1),
+     $               fcm(jc1+(mm)*(tr-1),2),(jc2-jc1+1),
+     $               lsr(1+(mm)*(tr-1)),1)
          enddo
 
          write(6,*) 'First cp gradient'
-         do ii=1,(lub+1)*ltr
+         do ii=1,mm*nn
             write(6,*)ii,lsr(ii)
          enddo
 
       elseif (mode.eq.2) then
 
-         call rzero(lsr,(lub+1)*ltr)
+         call rzero(lsr,mm*nn)
 
          ! construct temporary mttkrp
-         do tr=1,ltr
+         do tr=1,nn
             call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),
-     $               fcm(kc1+(lub+1)*(tr-1),3),(kc2-kc1+1),cm(1,0,tr),1)
+     $               fcm(kc1+(mm)*(tr-1),3),(kc2-kc1+1),cm(1,0,tr),1)
          enddo
 
          ! temporary mttkrp with factor matrix
-         do tr=1,ltr
+         do tr=1,nn
             do jj=jc1,jc2
-               lsr((jj+1)+(lub+1)*(tr-1)) = vlsc2(cm(1,jj,tr),
-     $         fcm(1+(lub+1)*(tr-1),1),lub)
+               lsr((jj+1)+(mm)*(tr-1)) = vlsc2(cm(1,jj,tr),
+     $         fcm(0+(mm)*(tr-1),1),mm)
             enddo
          enddo
 
          write(6,*) 'Second cp gradient'
-         do ii=1,(lub+1)*ltr
+         do ii=1,mm*nn
             write(6,*)ii,lsr(ii)
          enddo
 
       elseif (mode.eq.3) then
 
-         call rzero(lsr,(lub+1)*ltr)
+         call rzero(lsr,mm*nn)
 
          ! construct temporary mttkrp
          do kk=kc1,kc2
-         do tr=1,ltr
+         do tr=1,nn
             call mxm(cl(ic1,jc1,kk),(ic2-ic1+1),
-     $               fcm(jc1+(lub+1)*(tr-1),2),(jc2-jc1+1),
+     $               fcm(jc1+(mm)*(tr-1),2),(jc2-jc1+1),
      $               cm2(1,tr,kk),1) 
 c           call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),
-c    $               fcm(kc1+(lub+1)*(tr-1),3),(kc2-kc1+1),cm(1,0,tr),1)
+c    $               fcm(kc1+(mm)*(tr-1),3),(kc2-kc1+1),cm(1,0,tr),1)
          enddo
          enddo
 
          ! temporary mttkrp with factor matrix
-         do tr=1,ltr
+         do tr=1,nn
             do kk=kc1,kc2
-               lsr((kk+1)+(lub+1)*(tr-1)) = vlsc2(cm2(1,tr,kk),
-     $         fcm(1+(lub+1)*(tr-1),1),lub)
+               lsr((kk+1)+(mm)*(tr-1)) = vlsc2(cm2(1,tr,kk),
+     $         fcm(0+(mm)*(tr-1),1),mm)
             enddo
          enddo
 
          write(6,*) 'Third cp gradient'
-         do ii=1,(lub+1)*ltr
+         do ii=1,(mm)*nn
             write(6,*)ii,lsr(ii)
          enddo
       endif
@@ -167,9 +284,9 @@ c-----------------------------------------------------------------------
             idx = 1+(ii-1)*nn
             call col3(lsm(idx,1),fcmpm(idx,2),fcmpm(idx,3),nn)
          enddo
-c        do ii=1,nn*nn
-c           write(6,*)ii,lsm(ii,1),fcmpm(ii,2),fcmpm(ii,3),'check'
-c        enddo
+         do ii=1,nn*nn
+            write(6,*)ii,lsm(ii,1),fcmpm(ii,2),fcmpm(ii,3),'check'
+         enddo
       elseif (mode.eq.2) then
          do ii=1,nn
             idx = 1+(ii-1)*nn
@@ -185,7 +302,8 @@ c        enddo
       return
       end
 c-----------------------------------------------------------------------
-      subroutine compute_relerr(relerr,lsr,fcm,lsm,fcmpm,norm_c,mm,nn)
+      subroutine compute_relerr(relerr,lsr,fcm,lsm,fcmpm,cp_weight,
+     $                          norm_c,mm,nn)
 
       real relerr,norm_c
       real inner_prod,norm_approx 
@@ -193,6 +311,8 @@ c-----------------------------------------------------------------------
       real fcm(mm,nn),fcmpm(nn,nn)
       real tmp1(mm,nn),tmp2(nn,nn)
       real tmp3(nn),tmp4(nn)
+      real tmp5(mm),tmp6(mm)
+      real cp_weight(nn)
       integer mm,nn
 
       inner_prod=0.
@@ -215,19 +335,37 @@ c-----------------------------------------------------------------------
       enddo
       enddo
 
-      inner_prod = -2*vlsc2(tmp1,tmp1,mm*nn)
+      call rone(tmp6,mm)
+      call mxm(tmp1,mm,cp_weight,nn,tmp5,1)
+
+      inner_prod = vlsc2(tmp6,tmp5,mm)
 
       do ii=1,nn
          call col3(tmp2(1,ii),lsm(1,ii),fcmpm(1,ii),nn)
       enddo
-      call rone(tmp3,nn)
-      call mxm(tmp2,nn,tmp3,nn,tmp4,1)
-      norm_approx = vlsc2(tmp4,tmp3,nn)
+      write(6,*)'check lsm'
+      do jj=1,nn
+      do ii=1,nn
+         write(6,*)ii,jj,lsm(ii,jj),'check'
+      enddo
+      enddo
+      write(6,*)'check tmp2,fcmpm'
+      do jj=1,nn
+      do ii=1,nn
+         write(6,*)ii,jj,tmp2(ii,jj),fcmpm(ii,jj),'check'
+      enddo
+      enddo
+c     call rone(tmp3,nn)
+      call mxm(tmp2,nn,cp_weight,nn,tmp4,1)
+      do ii=1,nn
+      write(6,*)ii,tmp4(ii),'tmp4'
+      enddo
+      norm_approx = vlsc2(tmp4,cp_weight,nn)
 
       write(6,*)'inner_prod',inner_prod
       write(6,*)'norm_c',norm_c
       write(6,*)'norm_approx',norm_approx
-      relerr = sqrt(norm_c + inner_prod + norm_approx)/sqrt(norm_c)
+      relerr = sqrt((norm_c - 2*inner_prod + norm_approx)/(norm_c))
       write(6,*)'relerr',relerr
 
 
@@ -265,24 +403,24 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine rand_initial(fcm)
+      subroutine rand_initial(fcm,mm,nn)
 
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
 
-      real fcm((lub+1)*ltr,3)
+      real fcm(mm*nn,3)
       integer,parameter :: seed = 86456
   
       call srand(seed)
       
       do jj=2,3
-         do ii=1,(lub+1)*ltr
+         do ii=1,mm*nn
             fcm(ii,jj) = rand()
          enddo
-         call mode_normalize(fcm(1,jj),lub+1,ltr)
+         call mode_normalize(fcm(1,jj),mm,nn)
 
-         call check_normalize(fcm(1,jj),lub+1,ltr)
+         call check_normalize(fcm(1,jj),mm,nn)
       enddo
 
       return
