@@ -353,13 +353,12 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
+      common /evalctmp/ ucft(0:lb),bcu(ltr),cuu(ltr)
+
       real cu(nb)
       real uu(0:nb)
-      real ucft(0:nb)
       real cl(ic1:ic2,jc1:jc2,kc1:kc2)
       real cm(ic1:ic2,jc1:jc2)
-      real bcu(1:ltr)
-      real cuu(1:ltr)
 
       common /scrc/ work(max(lub,ltb))
 
