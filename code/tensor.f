@@ -355,3 +355,30 @@ c-----------------------------------------------------------------------
 
       return
       end
+c-----------------------------------------------------------------------
+      subroutine case1_tensor(tensor_1)
+
+      real tensor_1(2,2,2)
+
+      tensor_1(1,1,1) = 1
+      tensor_1(2,2,1) = 1
+      tensor_1(1,2,2) = 1
+      tensor_1(2,1,2) = -1
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine case2_tensor(tensor_1)
+
+      real tensor_1(3,4,4)
+      integer ii,jj,kk
+
+      do kk=1,4
+         do jj=1,4
+            do ii=1,3
+               tensor_1(ii,jj,kk) = ii+(jj-1)*3+(kk-1)*12
+            enddo
+         enddo
+      enddo
+      return
+      end
