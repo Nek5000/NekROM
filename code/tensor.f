@@ -203,21 +203,10 @@ c-----------------------------------------------------------------------
          enddo
 
          ! temporary mttkrp with factor matrix
-c        do tr=1,ltr
-c           do jj=jc1,jc2
-c              call add2s2(lsr(1+(mm)*(tr-1)),cm(1,jj,tr),
-c    $                     fcm(jj+(mm)*(tr-1),2),lub)
-c           enddo
-c        enddo
          do tr=1,nn
             call mxm(cm(ic1,jc1,tr),(ic2-ic1+1),
      $               fcm(jc1+(mm)*(tr-1),2),(jc2-jc1+1),
      $               lsr(1+(mm)*(tr-1)),1)
-         enddo
-
-         write(6,*) 'First cp gradient'
-         do ii=1,mm*nn
-            write(6,*)ii,lsr(ii)
          enddo
 
       elseif (mode.eq.2) then
@@ -238,11 +227,6 @@ c        enddo
             enddo
          enddo
 
-         write(6,*) 'Second cp gradient'
-         do ii=1,mm*nn
-            write(6,*)ii,lsr(ii)
-         enddo
-
       elseif (mode.eq.3) then
 
          call rzero(lsr,mm*nn)
@@ -253,8 +237,6 @@ c        enddo
             call mxm(cl(ic1,jc1,kk),(ic2-ic1+1),
      $               fcm(jc1+(mm)*(tr-1),2),(jc2-jc1+1),
      $               cm2(1,tr,kk),1) 
-c           call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),
-c    $               fcm(kc1+(mm)*(tr-1),3),(kc2-kc1+1),cm(1,0,tr),1)
          enddo
          enddo
 
@@ -266,10 +248,6 @@ c    $               fcm(kc1+(mm)*(tr-1),3),(kc2-kc1+1),cm(1,0,tr),1)
             enddo
          enddo
 
-         write(6,*) 'Third cp gradient'
-         do ii=1,(mm)*nn
-            write(6,*)ii,lsr(ii)
-         enddo
       endif
 
       return
@@ -287,9 +265,6 @@ c-----------------------------------------------------------------------
          do ii=1,nn
             idx = 1+(ii-1)*nn
             call col3(lsm(idx,1),fcmpm(idx,2),fcmpm(idx,3),nn)
-         enddo
-         do ii=1,nn*nn
-            write(6,*)ii,lsm(ii,1),fcmpm(ii,2),fcmpm(ii,3),'check'
          enddo
       elseif (mode.eq.2) then
          do ii=1,nn
