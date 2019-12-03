@@ -11,7 +11,7 @@ c-----------------------------------------------------------------------
       real tmp(nn*nn),tmp_wrk(nn)
       real cl(ic1:ic2,jc1:jc2,kc1:kc2)
       real lsr(mm*nn)
-      real relerr,norm_c
+      real relerr,norm_c,fit
       integer mode,maxit,local_size
       integer mm,nn
 
@@ -49,6 +49,10 @@ c-----------------------------------------------------------------------
          enddo
          call compute_relerr(relerr,lsr,fcm(0,3),lsm(1,3),
      $                       fcmpm(1,3),cp_w,norm_c,mm,nn)
+         fit = 1-relerr
+         if (relerr.lt.1e-7.OR.ii.ge.maxit) then
+            exit
+         endif
       enddo
 
       
