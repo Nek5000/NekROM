@@ -413,7 +413,6 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       real ep
-      real wk(nb)
 
       call nekgsync
       hpar_time=dnekclock()
@@ -503,10 +502,10 @@ c-----------------------------------------------------------------------
          if (nio.eq.0) write (6,*) 'proj_time:',dnekclock()-proj_time
       else if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
          inquire (file='ops/uk',exist=ifexist)
-         if (ifexist) call read_serial(uk,(mb+1)*ns,'ops/uk ',wk,nid)
+         if (ifexist) call read_serial(uk,(mb+1)*ns,'ops/uk ',rtmp1,nid)
 
          inquire (file='ops/tk',exist=ifexist)
-         if (ifexist) call read_serial(tk,(mb+1)*ns,'ops/tk ',wk,nid)
+         if (ifexist) call read_serial(tk,(mb+1)*ns,'ops/tk ',rtmp1,nid)
       endif
 
       if (ifpod(1)) then
@@ -534,8 +533,6 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       character*3 chartmp
-
-      real a(1),b(1)
 
       if (nio.eq.0) write (6,*) 'inside rom_init_params'
 
@@ -893,7 +890,7 @@ c-----------------------------------------------------------------------
 
       common /scrcwk/ wk(lcloc),wk2(0:lub)
 
-      real cl(lcloc),icl(3,lcloc)
+      real cl(lcloc)
 
       character*128 fname
       character*128 fnlint
@@ -1318,9 +1315,7 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
 
-      common /romup/ rom_time
-
-      real t1(0:nb),t2(0:nb)
+      common /romup/ rom_time,t1(0:lb) ,t2(0:lb)
 
       if (nio.eq.0) write (6,*) 'final...'
       if (nid.eq.0) then
