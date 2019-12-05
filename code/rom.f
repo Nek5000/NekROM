@@ -487,7 +487,8 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       logical ifexist
-      real wk((lb+1)*ns)
+
+      common /scrmisc/ wk((lb+1)*ls)
 
       if (nio.eq.0) write (6,*) 'begin range setup'
 
@@ -806,6 +807,7 @@ c-----------------------------------------------------------------------
       if (ifrom(2)) call copy(tic,t,n)
 
       ns = ls
+      ! ns should be set in get_saved_fields
 
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
          fname1='file.list '
