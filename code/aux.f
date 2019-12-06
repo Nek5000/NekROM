@@ -1434,3 +1434,24 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine checker(cstr)
+
+      include 'SIZE'
+      include 'MOR'
+
+      character*3 cstr
+
+      vmin=vlmin(u,nb+1)
+      vmax=vlmax(u,nb+1)
+      vmean=vlsum(u,nb+1)/(nb+1.)
+      vprod=1.
+      do i=0,nb
+         vprod=vprod*u(i)
+      enddo
+
+      if (nio.eq.0) write (6,1) vmin,vmax,vmean,vprod,cstr
+    1 format('check',1p4e12.5,a)
+
+      return
+      end
+c-----------------------------------------------------------------------
