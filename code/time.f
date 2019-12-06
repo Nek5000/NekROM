@@ -143,6 +143,11 @@ c     if (icount.le.2) then
             call update_k
          endif
 
+         call dump_serial(hinv,nb*nb,'ops/hinv_debug ',nid)
+         call dump_serial(hlm,nb*nb,'ops/hlm_debug ',nid)
+         call dump_serial(hlu,nb*nb,'ops/hlu_debug ',nid)
+         call idump_serial(ihlu,nb,'ops/ihlu_debug ',nid)
+
          call exitt0
 
          call setr_v(rhs(1,1),icount)
