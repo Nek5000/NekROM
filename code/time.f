@@ -139,9 +139,9 @@ c     if (icount.le.2) then
             lu_time=lu_time+dnekclock()-ttime
             call update_k
          endif
-         call checker('baj',ad_step)
 
          call setr_v(rhs(1,1),icount)
+         call checkera('baj',rhs(1,1),nb,ad_step)
 
          ttime=dnekclock()
          if ((isolve.eq.0).or.(icopt.eq.2)) then ! standard matrix inversion
@@ -170,7 +170,7 @@ c     if (icount.le.2) then
             call mxm(rhstmp(1),1,wt,nb,rhs(1,1),nb)
 
          endif
-         call checker('bak',ad_step)
+         call checkera('bak',rhstmp(1),nb,ad_step)
          solve_time=solve_time+dnekclock()-ttime
          if (nplay.gt.0) then
             do i=1,nplay
@@ -511,10 +511,16 @@ c-----------------------------------------------------------------------
 
       real rhs(nb)
 
+      call checkera('ba1',rhs,nb,ad_step)
+
       call mxm(u,nb+1,ad_beta(2,icount),3,tmp1,1)
+      call checkera('ba2',tmp1,nb,ad_step)
       call mxm(bu,nb,tmp1(1),nb,rhs,1)
+      call checkera('ba3',rhs,nb,ad_step)
 
       call cmult(rhs,-1.0/ad_dt,nb)
+
+      call checkera('ba4',rhs,nb,ad_step)
 
       s=-1.0/ad_re
 
@@ -522,8 +528,10 @@ c-----------------------------------------------------------------------
          rhs(i)=rhs(i)+s*au0(1+i)
       enddo
 
+
       call evalc(tmp1(1),ctmp,cul,u)
       call chsign(tmp1(1),nb)
+      call checkera('ba5',tmp1(1),nb,ad_step)
 
       if (ifbuoy) then
          call mxm(but0,nb+1,ut,nb+1,tmp2(0),1)
@@ -534,9 +542,11 @@ c-----------------------------------------------------------------------
 
       call shift3(fu,tmp1(1),nb)
 
+
       call mxm(fu,nb,ad_alpha(1,icount),3,tmp1(1),1)
 
       call add2(rhs,tmp1(1),nb)
+      call checkera('ba5',rhs,nb,ad_step)
 
       ! artificial viscosity
 

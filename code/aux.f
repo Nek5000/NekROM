@@ -1455,3 +1455,26 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine checkera(cstr,a,nn,myind)
+
+      include 'SIZE'
+      include 'MOR'
+
+      character*3 cstr
+
+      real a(nn)
+
+      vmin=vlmin(a,nn)
+      vmax=vlmax(a,nn)
+      vmean=vlsum(a,nn)/(nn*1.)
+      vprod=1.
+      do i=1,nn
+         vprod=vprod*a(i)
+      enddo
+
+      if (nio.eq.0) write (6,1) vmin,vmax,vmean,vprod,cstr,myind
+    1 format('check ',1p4e13.5,1x,a,1x,i8)
+
+      return
+      end
+c-----------------------------------------------------------------------
