@@ -702,6 +702,10 @@ C--------------------------------------------------------------------
       real a(n,n),b(n,n),c(n,n)
       integer iwk1(n)
 
+      call checkera('im1',a,n*n,ad_step)
+      call checkera('im2',b,n*n,ad_step)
+      call checkera('im3',c,n*n,ad_step)
+
       if (n.gt.0) then
          call rzero(a,n*n)
 
@@ -711,8 +715,16 @@ C--------------------------------------------------------------------
 
          call copy(b,c,n*n)
 
+         call checkera('im4',a,n*n,ad_step)
+         call checkera('im5',b,n*n,ad_step)
+         call checkera('im6',c,n*n,ad_step)
+
          call dgetrf(n,n,b,n,iwk,info)
          call dgetrs('N',n,n,b,n,iwk,a,n,info)
+
+         call checkera('im7',a,n*n,ad_step)
+         call checkera('im8',b,n*n,ad_step)
+         call checkera('im9',c,n*n,ad_step)
       endif
 
       return

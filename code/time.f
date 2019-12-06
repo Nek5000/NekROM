@@ -132,6 +132,7 @@ c     if (icount.le.2) then
                call diag(hinv,wt,rhs(1,1),nb)
             else
                call invmat(hinv,hlu,hlm,ihlu,nb-nplay)
+            if (nio.eq.0) write (6,*) 'check nplay',nplay,'cp3'
                call checkera('baj',hinv,nb*nb,ad_step)
                call rzero(wt,(nb-nplay)**2)
                do i=1,nb-nplay
