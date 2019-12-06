@@ -1434,7 +1434,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine checker(cstr)
+      subroutine checker(cstr,myind)
 
       include 'SIZE'
       include 'MOR'
@@ -1449,8 +1449,8 @@ c-----------------------------------------------------------------------
          vprod=vprod*u(i)
       enddo
 
-      if (nio.eq.0) write (6,1) vmin,vmax,vmean,vprod,cstr
-    1 format('check',1p4e12.5,a)
+      if (nio.eq.0) write (6,1) vmin,vmax,vmean,vprod,cstr,myind
+    1 format('check ',1p4e13.5,1x,a,1x,i8)
 
       return
       end

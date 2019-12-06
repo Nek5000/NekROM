@@ -23,11 +23,14 @@ c-----------------------------------------------------------------------
          call rom_setup
       endif
 
+      call checker('baa',ad_step)
+
       ad_step = istep
       jfield=ifield
       ifield=1
 
       ifmult=.not.ifrom(2).and.ifheat
+
 
       if (rmode.ne.'OFF') then
       if (ifmult) then
@@ -35,8 +38,11 @@ c-----------------------------------------------------------------------
      $   'error: running rom_update with ifflow = .true.$',nelv)
          if (istep.gt.0) then
             call bdfext_step
+            call checker('bba',ad_step)
             call post
+            call checker('bca',ad_step)
             call reconv(vx,vy,vz,u) ! reconstruct velocity to be used in h-t
+            call checker('bda',ad_step)
          endif
       else
          if (nio.eq.0) write (6,*) 'starting rom_step loop',ad_nsteps
@@ -196,8 +202,15 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelt
 
+      call checker('aaa',ad_step)
+
       call rom_init_params
+
+      call checker('aba',ad_step)
+
       call rom_init_fields
+
+      call checker('aca',ad_step)
 
       inquire (file='ops/evec',exist=ifexist)
       if (ifexist) then
@@ -211,20 +224,33 @@ c-----------------------------------------------------------------------
          call setevec
       endif
 
+      call checker('ada',ad_step)
+
       call setbases
+
+      call checker('aea',ad_step)
       call setops
+      call checker('afa',ad_step)
       call setu
+      call checker('aga',ad_step)
 
       call setf
+      call checker('aha',ad_step)
 
       call setqoi
+      call checker('aia',ad_step)
       call setmisc
+      call checker('aja',ad_step)
       if (ifei) call set_sigma
+      call checker('aka',ad_step)
       if (ifplay) call set_trace
+      call checker('ala',ad_step)
 
       if (nio.eq.0) write (6,*) 'end range setup'
 
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF') call dump_misc
+
+      call checker('ama',ad_step)
 
       time=ttime
 
