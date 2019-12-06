@@ -126,6 +126,7 @@ c     if (icount.le.2) then
             enddo
             enddo
             call checkera('bai',hlm,nb*nb,ad_step)
+            if (nio.eq.0) write (6,*) 'check ifdecpl',ifdecpl,'cp3'
             if (ifdecpl) then
                call copy(hinv,hlm,(nb-nplay)**2)
                call diag(hinv,wt,rhs(1,1),nb)

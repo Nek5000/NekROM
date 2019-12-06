@@ -663,6 +663,7 @@ c-----------------------------------------------------------------------
       ifcintp=.false.
       ifavisc=.false.
       ifdecpl=.false.
+      if (nio.eq.0) write (6,*) 'check ifdecpl',ifdecpl,'cp1'
 
       ifsub0=.true.
       if (param(197).ne.0.) ifsub0=.false.
