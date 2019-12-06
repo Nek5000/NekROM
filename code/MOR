@@ -58,7 +58,7 @@ c     parameters and common blocks for MOR
 
       common /morfops/ hlm(lb**2,2),hinv(lb**2,2),hlu(lb**2,2),
      $                 wt(lb**2,2)
-      common /morifops/ ihlu(lb,2)
+      common /morifops/ ihlu(lb,2),ihlu2(lb,2)
 
       common /morvops/ au0((lub+1)**2),bu0((lub+1)**2),
      $                 au(lub**2),bu(lub**2),cul((lcloc-1)*lmu+1)

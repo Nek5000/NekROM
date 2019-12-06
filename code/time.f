@@ -69,7 +69,7 @@ c     if (icount.le.2) then
                call diag(hinv(1,2),wt(1,2),rhs(1,2),nb)
             else
                call invmat(hinv(1,2),hlu(1,2),hlm(1,2),
-     $         ihlu(1,2),nb-nplay)
+     $         ihlu(1,2),ihlu2(1,2),nb-nplay)
                call rzero(wt(1,2),(nb-nplay)**2)
                do i=1,nb-nplay
                   wt(i+(nb-nplay)*(i-1),2)=1.
@@ -131,7 +131,7 @@ c     if (icount.le.2) then
                call copy(hinv,hlm,(nb-nplay)**2)
                call diag(hinv,wt,rhs(1,1),nb)
             else
-               call invmat(hinv,hlu,hlm,ihlu,nb-nplay)
+               call invmat(hinv,hlu,hlm,ihlu,ihlu2,nb-nplay)
             if (nio.eq.0) write (6,*) 'check nplay',nplay,'cp3'
                call checkera('baj',hinv,nb*nb,ad_step)
                call rzero(wt,(nb-nplay)**2)

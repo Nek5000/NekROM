@@ -697,10 +697,10 @@ C--------------------------------------------------------------------
       return
       end
 C--------------------------------------------------------------------
-      subroutine invmat(a,b,c,iwk,n)
+      subroutine invmat(a,b,c,iwk1,iwk2,n)
 
       real a(n,n),b(n,n),c(n,n)
-      integer iwk(n)
+      integer iwk1(n),iwk2(n)
 
       if (n.gt.0) then
          call rzero(a,n*n)
@@ -715,13 +715,15 @@ C--------------------------------------------------------------------
          call checkera('im2',b,n*n,ad_step)
          call checkera('im3',c,n*n,ad_step)
 
-         call dgetrf(n,n,b,n,iwk,info)
+         call lu(b,n,n,iwk1,iwk2)
+c        call dgetrf(n,n,b,n,iwk1,info)
 
          call checkera('im4',a,n*n,ad_step)
          call checkera('im5',b,n*n,ad_step)
          call checkera('im6',c,n*n,ad_step)
 
-         call dgetrs('N',n,n,b,n,iwk,a,n,info)
+         call solve(a,b,n,n,n,iwk1,iwk2)
+c        call dgetrs('N',n,n,b,n,iwk1,a,n,info)
 
          call checkera('im7',a,n*n,ad_step)
          call checkera('im8',b,n*n,ad_step)
@@ -1330,8 +1332,8 @@ c-----------------------------------------------------------------------
 
       common /invevf/ buinv(lb*lb),btinv(lb*lb)
 
-      call invmat(buinv,rtmp1,bu,itmp1,nb)
-      call invmat(btinv,rtmp1,bt,itmp1,nb)
+      call invmat(buinv,rtmp1,bu,itmp1,itmp2,nb)
+      call invmat(btinv,rtmp1,bt,itmp1,itmp2,nb)
 
       return
       end
