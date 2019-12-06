@@ -121,10 +121,11 @@ c-----------------------------------------------------------------------
       open (unit=12,file=fname)
 
       do i=1,n
-         write (12,*) a(i)
+         write (12,1) a(i)
       enddo
 
       close (unit=12)
+    1 format(1pe24.16)
 
       return
       end
