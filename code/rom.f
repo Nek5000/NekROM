@@ -708,11 +708,11 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
       call compute_BDF_coef(ad_alpha,ad_beta)
 
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
-         a(1)=nb*1.
-         call dump_serial(a,1,'ops/nb ',nid)
+         rtmp1(1,1)=nb*1.
+         call dump_serial(rtmp1(1,1),1,'ops/nb ',nid)
       else
-         call read_serial(a,1,'ops/nb ',b,nid)
-         mb=a(1)
+         call read_serial(rtmp1(1,1),1,'ops/nb ',b,nid)
+         mb=rtmp1(1,1)
          if (mb.lt.nb) call exitti('mb less than nb, exiting...$',mb)
       endif
 
