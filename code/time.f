@@ -118,19 +118,20 @@ c     if (icount.le.2) then
          if (ad_step.le.3) then
             ttime=dnekclock()
             call seth(hlm,au,bu,1./ad_re)
-         call checker('bah',ad_step)
+            call checkera('bah',hlm,nb*nb,ad_step)
             if (ad_step.eq.3) call dump_serial(hlm,nb*nb,'ops/hu ',nid)
             do j=1,nb-nplay
             do i=1,nb-nplay
                hlm(i+(j-1)*(nb-nplay),1)=hlm(i+nplay+(j+nplay-1)*nb,1)
             enddo
             enddo
-         call checker('bai',ad_step)
+            call checkera('bai',hlm,nb*nb,ad_step)
             if (ifdecpl) then
                call copy(hinv,hlm,(nb-nplay)**2)
                call diag(hinv,wt,rhs(1,1),nb)
             else
                call invmat(hinv,hlu,hlm,ihlu,nb-nplay)
+               call checkera('baj',hinv,nb*nb,ad_step)
                call rzero(wt,(nb-nplay)**2)
                do i=1,nb-nplay
                   wt(i+(nb-nplay)*(i-1),1)=1.
@@ -141,14 +142,13 @@ c     if (icount.le.2) then
          endif
 
          call setr_v(rhs(1,1),icount)
-         call checkera('baj',rhs(1,1),nb,ad_step)
 
          ttime=dnekclock()
          if ((isolve.eq.0).or.(icopt.eq.2)) then ! standard matrix inversion
             call mxm(wt,nb,rhs(1,1),nb,rhstmp(1),1)
             call checkera('bak',rhstmp(1),nb,ad_step)
             call mxm(hinv,nb,rhstmp(1),nb,rhs(1,1),1)
-            call checkera('bal',rhs(1,1),nb,ad_step)
+            call checkera('bal',hinv(1,1),nb*nb,ad_step)
             if (ifdecpl) then
             do i=1,nb
                if (rhs(i,1).gt.upmax(i)) rhs(i,1)=upmax(i)-updis(i)*eps
