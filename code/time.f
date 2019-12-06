@@ -143,6 +143,8 @@ c     if (icount.le.2) then
             call update_k
          endif
 
+         call exitt0
+
          call setr_v(rhs(1,1),icount)
 
          ttime=dnekclock()
