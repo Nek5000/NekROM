@@ -177,10 +177,13 @@ c     if (icount.le.2) then
                rhs(i,1)=uk(i,ad_step)
             enddo
          endif
+         call checker('bal',ad_step)
       endif
 
       if (ifrom(2)) call shift3(ut,rhs(0,2),nb+1)
+         call checker('bam',ad_step)
       if (ifrom(1)) call shift3(u,rhs,nb+1)
+         call checker('ban',ad_step)
 
       ustep_time=ustep_time+dnekclock()-ulast_time
 
