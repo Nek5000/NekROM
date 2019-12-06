@@ -146,7 +146,9 @@ c     if (icount.le.2) then
          ttime=dnekclock()
          if ((isolve.eq.0).or.(icopt.eq.2)) then ! standard matrix inversion
             call mxm(wt,nb,rhs(1,1),nb,rhstmp(1),1)
+            call checkera('bak',rhstmp(1),nb,ad_step)
             call mxm(hinv,nb,rhstmp(1),nb,rhs(1,1),1)
+            call checkera('bal',rhs(1,1),nb,ad_step)
             if (ifdecpl) then
             do i=1,nb
                if (rhs(i,1).gt.upmax(i)) rhs(i,1)=upmax(i)-updis(i)*eps
@@ -154,6 +156,7 @@ c     if (icount.le.2) then
             enddo
             endif
             call mxm(rhs(1,1),1,wt,nb,rhstmp(1),nb)
+            call checkera('bam',rhstmp(1),nb,ad_step)
             call copy(rhs(1,1),rhstmp(1),nb)
          else 
             scopt='ucopt'
@@ -170,20 +173,19 @@ c     if (icount.le.2) then
             call mxm(rhstmp(1),1,wt,nb,rhs(1,1),nb)
 
          endif
-         call checkera('bak',rhstmp(1),nb,ad_step)
+         call checkera('ban',rhstmp(1),nb,ad_step)
          solve_time=solve_time+dnekclock()-ttime
          if (nplay.gt.0) then
             do i=1,nplay
                rhs(i,1)=uk(i,ad_step)
             enddo
          endif
-         call checker('bal',ad_step)
       endif
 
       if (ifrom(2)) call shift3(ut,rhs(0,2),nb+1)
-         call checker('bam',ad_step)
+         call checker('bal',ad_step)
       if (ifrom(1)) call shift3(u,rhs,nb+1)
-         call checker('ban',ad_step)
+         call checker('bao',ad_step)
 
       ustep_time=ustep_time+dnekclock()-ulast_time
 
