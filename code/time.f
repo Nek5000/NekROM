@@ -361,6 +361,7 @@ c-----------------------------------------------------------------------
       real bcu(ntr)
       real cuu(ntr)
       real tmp(ntr)
+      real tmpcu(0:nb)
 
       common /scrc/ work(max(lub,ltb))
 
@@ -384,7 +385,9 @@ c-----------------------------------------------------------------------
             cuu(kk) = vlsc2(u,cuc(1+(kk-1)*(nb+1)),nb+1)
          enddo
          call col4(tmp,bcu,cuu,cp_w,ntr) 
-         call mxm(cua,nb,tmp,ntr,cu,1)
+         call mxm(cua,nb+1,tmp,ntr,tmpcu,1)
+
+         call copy(cu,tmpcu,nb)
 
          ! debug checking
 c        do kk=1,ltr

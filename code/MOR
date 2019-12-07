@@ -190,6 +190,7 @@ c     parameters and common blocks for MOR
       ! Tensor Decomposition 
       real cua,cub,cuc,cp_w
       integer ntr
-      common /cp_decomp/ cua(lub*ltr),cub((lub+1)*ltr),cuc((lub+1)*ltr),
-     $                   cp_w(ltr)
+      common /cp_decomp/ cua((lub+1)*ltr),cub((lub+1)*ltr),
+     $                   cuc((lub+1)*ltr),cp_w(ltr)
+
       common /cp_rank/ ntr
