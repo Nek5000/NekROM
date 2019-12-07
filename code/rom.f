@@ -924,9 +924,21 @@ c     call cpart(ic1,ic2,jc1,jc2,kc1,kc2,ncloc,nb,np,nid+1) ! new indexing
          enddo
          enddo
          enddo
-c        call CP_ALS(cul)
-c        call exitt0
       else if (rmode.eq.'CP ') then
+         do k=0,nb
+         do j=0,mb
+         do i=1,mb
+            cel=0.
+            if (nid.eq.0) read(100,*) cel
+            cel=glsum(cel,1)
+            call setc_local(cl,cel,ic1,ic2,jc1,jc2,kc1,kc2,i,j,k)
+         enddo
+         enddo
+         enddo
+
+         tcp_time=dnekclock()
+         call CP_ALS(cl,nb+1,ltr)
+         cp_time=cp_time+dnekclock()-tcp_time
 
          ! read in the cp decomposition
 c        call read_cp_weight
@@ -1316,6 +1328,7 @@ c-----------------------------------------------------------------------
          write (6,*) 'rom_time:    ',rom_time
          write (6,*) 'postu_time:  ',postu_time
          write (6,*) 'postt_time:  ',postt_time
+         write (6,*) 'cp_time:     ',cp_time
       endif
 
       call dump_serial(u,nb+1,'ops/uf ',nid)
