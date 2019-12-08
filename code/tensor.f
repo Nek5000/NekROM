@@ -5,17 +5,19 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
-      real fcm(0:mm*nn-1,3)
-      real fcmpm(nn*nn,3)
+      real cl(ic1:ic2,jc1:jc2,kc1:kc2)
+      real fcm(0:mm*nn-1,3),fcmpm(nn*nn,3)
       real lsm(nn*nn,3),lsminv(nn*nn,3)
       real tmp(nn*nn),tmp_wrk(nn)
-      real cl(ic1:ic2,jc1:jc2,kc1:kc2)
       real lsr(mm*nn)
-      real relerr,norm_c,fit
+      real relerr,norm_c,fit,cp_tol
       integer mode,maxit,local_size
       integer mm,nn
 
-      maxit = 1000
+      if (nid.eq.0) write(6,*) 'inside cp_als'
+
+      maxit = 2000
+      cp_tol = 1e-5
 
       local_size = (ic2-ic1+1)*(jc2-jc1+1)*(kc2-kc1+1)
       norm_c = vlsc2(cl(ic1,jc1,kc1),cl(ic1,jc1,kc1),local_size)
@@ -50,10 +52,17 @@ c-----------------------------------------------------------------------
          call compute_relerr(relerr,lsr,fcm(0,3),lsm(1,3),
      $                       fcmpm(1,3),cp_w,norm_c,mm,nn)
          fit = 1-relerr
-         if (relerr.lt.1e-7.OR.ii.ge.maxit) then
+         if (nid.eq.0) write(6,*) ii, fit, relerr, 'relerr'
+         if (relerr.lt.cp_tol.OR.ii.ge.maxit) then
             exit
          endif
       enddo
+
+      call copy(cua,fcm(0,1),(lub+1)*ltr)
+      call copy(cub,fcm(0,2),(lub+1)*ltr)
+      call copy(cuc,fcm(0,3),(lub+1)*ltr)
+
+      if (nid.eq.0) write(6,*) 'exit cp_als'
 
       
 
@@ -189,13 +198,9 @@ c-----------------------------------------------------------------------
       real cm2(ic1:ic2,ltr,kc1:kc2)
       integer mode,tr
 
-      write(6,*)ic1,ic2,jc1,jc2,kc1,kc2,'index'
-
- 
       if (mode.eq.1) then
 
          call rzero(lsr,mm*nn)
-
          ! construct temporary mttkrp
          do tr=1,nn
             call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),
@@ -212,7 +217,6 @@ c-----------------------------------------------------------------------
       elseif (mode.eq.2) then
 
          call rzero(lsr,mm*nn)
-
          ! construct temporary mttkrp
          do tr=1,nn
             call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),
@@ -297,21 +301,8 @@ c-----------------------------------------------------------------------
       inner_prod=0.
       norm_approx=0.
 
-      write(6,*)'check dimension',mm,nn
-      write(6,*)'check lsr,fcm'
-      do jj=1,nn
-      do ii=1,mm
-         write(6,*)ii,jj,lsr(ii,jj),fcm(ii,jj),'check'
-      enddo
-      enddo
       do ii=1,nn
          call col3(tmp1(1,ii),lsr(1,ii),fcm(1,ii),mm)
-      enddo
-      write(6,*)'check tmp1'
-      do jj=1,nn
-      do ii=1,mm
-         write(6,*)ii,jj,tmp1(ii,jj),'check'
-      enddo
       enddo
 
       call rone(tmp6,mm)
@@ -322,30 +313,11 @@ c-----------------------------------------------------------------------
       do ii=1,nn
          call col3(tmp2(1,ii),lsm(1,ii),fcmpm(1,ii),nn)
       enddo
-      write(6,*)'check lsm'
-      do jj=1,nn
-      do ii=1,nn
-         write(6,*)ii,jj,lsm(ii,jj),'check'
-      enddo
-      enddo
-      write(6,*)'check tmp2,fcmpm'
-      do jj=1,nn
-      do ii=1,nn
-         write(6,*)ii,jj,tmp2(ii,jj),fcmpm(ii,jj),'check'
-      enddo
-      enddo
-c     call rone(tmp3,nn)
+
       call mxm(tmp2,nn,cp_weight,nn,tmp4,1)
-      do ii=1,nn
-      write(6,*)ii,tmp4(ii),'tmp4'
-      enddo
       norm_approx = vlsc2(tmp4,cp_weight,nn)
 
-      write(6,*)'inner_prod',inner_prod
-      write(6,*)'norm_c',norm_c
-      write(6,*)'norm_approx',norm_approx
       relerr = sqrt((norm_c - 2*inner_prod + norm_approx)/(norm_c))
-      write(6,*)'relerr',relerr
 
 
 
@@ -482,6 +454,14 @@ c-----------------------------------------------------------------------
       tensor_1(1,2,2) = 1
       tensor_1(2,1,2) = -1
 
+c     set this in rom.f for testing
+c     call case1_tensor(tensor_1)
+c     ic1=1
+c     ic2=2
+c     jc1=0
+c     jc2=1
+c     kc1=0
+c     kc2=1
       return
       end
 c-----------------------------------------------------------------------
@@ -536,5 +516,15 @@ c     fcm(12,3) = 5.383424352600571e-01
 c     fcm(13,3) = 9.961347166268855e-01
 c     fcm(14,3) = 7.817552875318368e-02
 c     fcm(15,3) = 4.426782697754463e-01
+
+      ! sete this in rom.f for testing
+c     call case2_tensor(tensor_2)
+
+c     ic1=1
+c     ic2=3
+c     jc1=0
+c     jc2=3
+c     kc1=0
+c     kc2=3
       return
       end
