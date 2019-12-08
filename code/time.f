@@ -379,6 +379,7 @@ c-----------------------------------------------------------------------
       if (ifcintp) then
          call mxm(cintp,n,uu,n+1,cu,1)
       else if (rmode.eq.'CP ') then
+
          call rzero(cu,nb)
          do kk=1,ntr
             bcu(kk) = vlsc2(uu,cub(1+(kk-1)*(nb+1)),nb+1)
@@ -388,7 +389,6 @@ c-----------------------------------------------------------------------
          call mxm(cua,nb+1,tmp,ntr,tmpcu,1)
 
          call copy(cu,tmpcu,nb)
-
          ! debug checking
 c        do kk=1,ltr
 c           do k=1,nb+1

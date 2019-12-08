@@ -935,9 +935,10 @@ c     call cpart(ic1,ic2,jc1,jc2,kc1,kc2,ncloc,nb,np,nid+1) ! new indexing
          enddo
          enddo
          enddo
+         write(6,*)'check index',ic1,ic2,jc1,jc2,kc1,kc2
 
          tcp_time=dnekclock()
-         call CP_ALS(cl,nb+1,ltr)
+         call CP_ALS(cl,nb+1,ntr)
          cp_time=cp_time+dnekclock()-tcp_time
 
          ! read in the cp decomposition

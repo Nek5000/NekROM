@@ -10,7 +10,7 @@ c-----------------------------------------------------------------------
       real lsm(nn*nn,3),lsminv(nn*nn,3)
       real tmp(nn*nn),tmp_wrk(nn)
       real lsr(mm*nn)
-      real relerr,norm_c,fit,cp_tol
+      real relerr,norm_c,fit,cp_tol,pre_err,rel_diff
       integer mode,maxit,local_size
       integer mm,nn
 
@@ -18,6 +18,7 @@ c-----------------------------------------------------------------------
 
       maxit = 2000
       cp_tol = 1e-5
+      pre_err = 1
 
       local_size = (ic2-ic1+1)*(jc2-jc1+1)*(kc2-kc1+1)
       norm_c = vlsc2(cl(ic1,jc1,kc1),cl(ic1,jc1,kc1),local_size)
@@ -52,15 +53,17 @@ c-----------------------------------------------------------------------
          call compute_relerr(relerr,lsr,fcm(0,3),lsm(1,3),
      $                       fcmpm(1,3),cp_w,norm_c,mm,nn)
          fit = 1-relerr
-         if (nid.eq.0) write(6,*) ii, fit, relerr, 'relerr'
-         if (relerr.lt.cp_tol.OR.ii.ge.maxit) then
+         rel_diff = abs(pre_err-relerr)/pre_err
+         pre_err = relerr
+         if (nid.eq.0) write(6,*) ii, rel_diff, relerr, 'relerr'
+         if (relerr.lt.cp_tol.OR.ii.ge.maxit.OR.rel_diff.le.1e-4) then
             exit
          endif
       enddo
 
-      call copy(cua,fcm(0,1),(lub+1)*ltr)
-      call copy(cub,fcm(0,2),(lub+1)*ltr)
-      call copy(cuc,fcm(0,3),(lub+1)*ltr)
+      call copy(cua,fcm(0,1),mm*nn)
+      call copy(cub,fcm(0,2),mm*nn)
+      call copy(cuc,fcm(0,3),mm*nn)
 
       if (nid.eq.0) write(6,*) 'exit cp_als'
 
