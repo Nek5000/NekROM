@@ -595,7 +595,7 @@ c-----------------------------------------------------------------------
          rmode='ONB'
       else if (np173.eq.4) then
          rmode='CP '
-         ntr = 200 
+         ntr = 100 
       else
          call exitti('unsupported param(173), exiting...$',np173)
       endif
@@ -935,11 +935,11 @@ c     call cpart(ic1,ic2,jc1,jc2,kc1,kc2,ncloc,nb,np,nid+1) ! new indexing
          enddo
          enddo
          enddo
-         write(6,*)'check index',ic1,ic2,jc1,jc2,kc1,kc2
+c        write(6,*)'check index',ic1,ic2,jc1,jc2,kc1,kc2
 
-         tcp_time=dnekclock()
-         call CP_ALS(cl,nb+1,ntr)
-         cp_time=cp_time+dnekclock()-tcp_time
+c        tcp_time=dnekclock()
+c        call CP_ALS(cl,nb+1,ntr)
+c        cp_time=cp_time+dnekclock()-tcp_time
 
          ! read in the cp decomposition
 c        call read_cp_weight
