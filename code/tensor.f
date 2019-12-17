@@ -11,12 +11,14 @@ c-----------------------------------------------------------------------
       real tmp(nn*nn),tmp_wrk(nn)
       real lsr(mm*nn)
       real relerr,norm_c,fit,cp_tol,pre_err,rel_diff
+      real wk(lb+1)
       integer mode,maxit,local_size
       integer mm,nn
+      logical ifexist
 
       if (nid.eq.0) write(6,*) 'inside cp_als'
 
-      maxit = 2000
+      maxit = 1000
       cp_tol = 1e-5
       pre_err = 1
 
@@ -61,13 +63,65 @@ c-----------------------------------------------------------------------
          endif
       enddo
 
+
       call copy(cua,fcm(0,1),mm*nn)
       call copy(cub,fcm(0,2),mm*nn)
       call copy(cuc,fcm(0,3),mm*nn)
 
+      inquire (file='ops/u0',exist=ifexist)
+      if (ifexist) call read_serial(u,nb+1,'ops/u0 ',wk,nid)
+      call check_conv_err(cl,u)
+
       if (nid.eq.0) write(6,*) 'exit cp_als'
 
       
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine check_conv_err(cl,uu)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      real cu(nb)
+      real uu(0:nb)
+      real cu_diff(nb), cu_err
+      real cl(ic1:ic2,jc1:jc2,kc1:kc2)
+      real cm(ic1:ic2,jc1:jc2)
+      real bcu(ntr)
+      real cuu(ntr)
+      real tmp(ntr)
+      real tmpcu(0:nb)
+
+      call rzero(cu,nb)
+      do kk=1,ntr
+         bcu(kk) = vlsc2(uu,cub(1+(kk-1)*(nb+1)),nb+1)
+         cuu(kk) = vlsc2(u,cuc(1+(kk-1)*(nb+1)),nb+1)
+      enddo
+      call col4(tmp,bcu,cuu,cp_w,ntr) 
+      call mxm(cua,nb+1,tmp,ntr,tmpcu,1)
+
+      call rzero(cu,nb)
+      if (ncloc.ne.0) then
+         do k=kc1,kc2
+         do j=jc1,jc2
+         do i=ic1,ic2
+            cu(i)=cu(i)+cl(i,j,k)*uu(j)*u(k)
+         enddo
+         enddo
+         enddo
+      endif
+      
+      call sub3(cu_diff,cu,tmpcu(0),nb)
+      cu_err = sqrt(vlsc2(cu_diff,cu_diff,nb))
+      write(6,*)'cu_err',cu_err
+      
+      write(6,*)'compare'
+      do ii=1,nb
+         write(6,*)ii,cu(ii),tmpcu(ii-1),cu_diff(ii),'cu, tmpcu'
+      enddo
 
       return
       end
