@@ -190,9 +190,9 @@ c     parameters and common blocks for MOR
       common /morifilt/  rbf
 
       ! Tensor Decomposition 
-      real cua,cub,cuc,cp_w
+      real cua,cub,cuc,cp_uw
       integer ntr
       common /cp_decomp/ cua((lub+1)*ltr),cub((lub+1)*ltr),
-     $                   cuc((lub+1)*ltr),cp_w(ltr)
+     $                   cuc((lub+1)*ltr),cp_uw(ltr)
 
       common /cp_rank/ ntr

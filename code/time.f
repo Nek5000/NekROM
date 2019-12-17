@@ -385,7 +385,7 @@ c-----------------------------------------------------------------------
             bcu(kk) = vlsc2(uu,cub(1+(kk-1)*(nb+1)),nb+1)
             cuu(kk) = vlsc2(u,cuc(1+(kk-1)*(nb+1)),nb+1)
          enddo
-         call col4(tmp,bcu,cuu,cp_w,ntr) 
+         call col4(tmp,bcu,cuu,cp_uw,ntr) 
          call mxm(cua,nb+1,tmp,ntr,tmpcu,1)
 
          call copy(cu,tmpcu,nb)
@@ -447,6 +447,52 @@ c        enddo
       return
       end
 c-----------------------------------------------------------------------
+      subroutine evalc3(cu,fac_a,fac_b,fac_c,cp_weight,uu)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      real cu(nb)
+      real uu(0:nb)
+      real ucft(0:nb)
+      real fac_a((nb+1)*ntr),fac_b((nb+1)*ntr)
+      real fac_c((nb+1)*ntr),cp_weight(ntr)
+      real bcu(ntr)
+      real cuu(ntr)
+      real tmp(ntr)
+      real tmpcu(0:nb)
+
+      common /scrc/ work(max(lub,ltb))
+
+      integer icalld
+      save    icalld
+      data    icalld /0/
+
+      if (icalld.eq.0) then
+         evalc_time=0.
+         icalld=1
+      endif
+
+      stime=dnekclock()
+
+      call rzero(cu,nb)
+      do kk=1,ntr
+         bcu(kk) = vlsc2(uu,fac_b(1+(kk-1)*(nb+1)),nb+1)
+         cuu(kk) = vlsc2(u,fac_c(1+(kk-1)*(nb+1)),nb+1)
+      enddo
+      call col4(tmp,bcu,cuu,cp_weight,ntr) 
+      call mxm(fac_a,nb+1,tmp,ntr,tmpcu,1)
+
+      call copy(cu,tmpcu,nb)
+
+      call nekgsync
+
+      evalc_time=evalc_time+dnekclock()-stime
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine setcintp
       call exitti('called deprecated subroutine setcintp$',1)
       return
@@ -472,7 +518,11 @@ c-----------------------------------------------------------------------
          rhs(i)=rhs(i)+s*at0(1+i)
       enddo
 
-      call evalc(tmp(1),ctmp,ctl,ut)
+      if (rmode.eq.'CP ') then
+         call evalc3(tmp(1),cta,ctb,ctc,cp_tw,ut)
+      else
+         call evalc(tmp(1),ctmp,ctl,ut)
+      endif
 c     call add2(tmp(1),st0(1),nb)
 
       call shift3(ctr,tmp(1),nb)
@@ -508,7 +558,11 @@ c-----------------------------------------------------------------------
          rhs(i)=rhs(i)+s*au0(1+i)
       enddo
 
-      call evalc(tmp1(1),ctmp,cul,u)
+      if (rmode.eq.'CP ') then
+         call evalc3(tmp1(1),cua,cub,cuc,cp_uw,u)
+      else
+         call evalc(tmp1(1),ctmp,cul,u)
+      endif
       call chsign(tmp1(1),nb)
 
       if (ifbuoy) then
