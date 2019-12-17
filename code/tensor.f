@@ -1,5 +1,86 @@
 c-----------------------------------------------------------------------
-      subroutine CP_ALS(cl,mm,nn)
+      subroutine set_cp(cl,fname)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real cl(lcglo)
+
+      character*128 fname
+      character*128 fnlint
+
+      if (nio.eq.0) write (6,*) 'inside set_cp'
+
+      call nekgsync
+      tcp_time=dnekclock()
+
+      if (iffastc) call exitti('fastc not supported in setc_new$',nb)
+
+      ! set global index
+      ic1=1
+      ic2=nb
+      jc1=0
+      jc2=nb
+      kc1=0
+      kc2=nb
+
+      n=lx1*ly1*lz1*nelv
+
+      call lints(fnlint,fname,128)
+      if (nid.eq.0) open (unit=100,file=fnlint)
+      if (nio.eq.0) write (6,*) 'setc file:',fnlint
+
+      do k=0,nb
+      do j=0,mb
+      do i=1,mb
+         cel=0.
+         if (nid.eq.0) read(100,*) cel
+         cel=glsum(cel,1)
+         call setc_local(cl,cel,ic1,ic2,jc1,jc2,kc1,kc2,i,j,k)
+      enddo
+      enddo
+      enddo
+
+      write(6,*)'check index',ic1,ic2,jc1,jc2,kc1,kc2,nid
+      call nekgsync
+
+      call CP_ALS(cl,cua,cub,cuc,cp_uw,u,nb+1,ntr)
+
+         ! read in the cp decomposition
+c        call read_cp_weight
+c        call read_cp_mode
+
+         ! debug purpose
+         ! forming the tensor
+c        do kk=1,ltr
+c        do k=1,nb+1
+c        do j=1,nb+1
+c        do i=1,nb
+c           cl(i+(j-1)*(nb)+(k-1)*(nb+1)*(nb)) = 
+c    $      cl(i+(j-1)*(nb)+(k-1)*(nb+1)*(nb)) + 
+c    $      cp_w(kk)*cua(i+(kk-1)*lub)
+c    $      * cub(j+(kk-1)*(lub+1))*cuc(k+(kk-1)*(lub+1))
+c        enddo
+c        enddo
+c        enddo
+c        enddo
+      if (nid.eq.0) close (unit=100)
+
+      call nekgsync
+
+      cp_time=cp_time+dnekclock()-tcp_time
+      if (nio.eq.0) write (6,*) 'cp_time: ',cp_time
+      if (nio.eq.0) write (6,*) 'lcglo=',lcglo
+
+      if (nio.eq.0) write (6,*) 'exiting set_cp'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine CP_ALS(cl,aa,bb,cc,cp_weight,uu,mm,nn)
 
       include 'SIZE'
       include 'TOTAL'
@@ -7,6 +88,10 @@ c-----------------------------------------------------------------------
 
       real cl(ic1:ic2,jc1:jc2,kc1:kc2)
       real fcm(0:mm*nn-1,3),fcmpm(nn*nn,3)
+      real aa(1:mm*nn)
+      real bb(1:mm*nn)
+      real cc(1:mm*nn)
+      real uu(1:m)
       real lsm(nn*nn,3),lsminv(nn*nn,3)
       real tmp(nn*nn),tmp_wrk(nn)
       real lsr(mm*nn)
@@ -27,6 +112,21 @@ c-----------------------------------------------------------------------
       norm_c = vlsc2(cl(ic1,jc1,kc1),cl(ic1,jc1,kc1),local_size)
 
       call rand_initial(fcm,mm,nn)
+c     if (nid.eq.0) then
+c     write(6,*)'processor 0'
+c        do ii=0,mm*nn-1
+c        write(6,*)ii,fcm(ii,2),fcm(ii,3),nid,'nid'
+c        enddo
+c     endif
+c     call nekgsync
+c     if (nid.eq.1) then
+c     write(6,*)'processor 1'
+c        do ii=0,mm*nn-1
+c        write(6,*)ii,fcm(ii,2),fcm(ii,3),nid,'nid'
+c        enddo
+c     endif
+c     call nekgsync
+c     call exitt0
 
       do mode=2,3
          call set_product_matrix(fcm(0,mode),fcmpm(1,mode),mm,nn)
@@ -64,26 +164,28 @@ c-----------------------------------------------------------------------
          endif
       enddo
 
-      if (ifrom(1)) then
-         call copy(cua,fcm(0,1),mm*nn)
-         call copy(cub,fcm(0,2),mm*nn)
-         call copy(cuc,fcm(0,3),mm*nn)
-         call copy(cp_uw,cp_weight,nn)
+c     if (ifrom(1)) then
+         call copy(aa,fcm(0,1),mm*nn)
+         call copy(bb,fcm(0,2),mm*nn)
+         call copy(cc,fcm(0,3),mm*nn)
+c        call copy(cp_uw,cp_weight,nn)
 
-         inquire (file='ops/u0',exist=ifexist)
-         if (ifexist) call read_serial(u,nb+1,'ops/u0 ',wk,nid)
-         call check_conv_err(cl,cua,cub,cuc,cp_uw,u)
-      endif
-      if (ifrom(2)) then
-         call copy(cta,fcm(0,1),mm*nn)
-         call copy(ctb,fcm(0,2),mm*nn)
-         call copy(ctc,fcm(0,3),mm*nn)
-         call copy(cp_tw,cp_weight,nn)
+c        inquire (file='ops/u0',exist=ifexist)
+c        if (ifexist) call read_serial(u,nb+1,'ops/u0 ',wk,nid)
+         call check_conv_err(cl,aa,bb,cc,cp_weight,uu)
+c     endif
+c     if (ifrom(2)) then
+c        call copy(cta,fcm(0,1),mm*nn)
+c        call copy(ctb,fcm(0,2),mm*nn)
+c        call copy(ctc,fcm(0,3),mm*nn)
+c        call copy(cp_tw,cp_weight,nn)
 
-         inquire (file='ops/t0',exist=ifexist)
-         if (ifexist) call read_serial(ut,nb+1,'ops/t0 ',wk,nid)
-         call check_conv_err(cl,cta,ctb,ctc,cp_tw,ut)
-      endif
+c        inquire (file='ops/t0',exist=ifexist)
+c        if (ifexist) call read_serial(ut,nb+1,'ops/t0 ',wk,nid)
+c        call check_conv_err(cl,cta,ctb,ctc,cp_tw,ut)
+c     endif
+
+      call nekgsync
 
       if (nid.eq.0) write(6,*) 'exit cp_als'
 
@@ -119,23 +221,21 @@ c-----------------------------------------------------------------------
       call mxm(fac_a,nb+1,tmp,ntr,tmpcu,1)
 
       call rzero(cu,nb)
-      if (ncloc.ne.0) then
-         do k=kc1,kc2
-         do j=jc1,jc2
-         do i=ic1,ic2
-            cu(i)=cu(i)+cl(i,j,k)*uu(j)*u(k)
-         enddo
-         enddo
-         enddo
-      endif
+      do k=kc1,kc2
+      do j=jc1,jc2
+      do i=ic1,ic2
+         cu(i)=cu(i)+cl(i,j,k)*uu(j)*u(k)
+      enddo
+      enddo
+      enddo
       
       call sub3(cu_diff,cu,tmpcu(0),nb)
       cu_err = sqrt(vlsc2(cu_diff,cu_diff,nb))
-      write(6,*)'cu_err',cu_err
+      write(6,*)nid,cu_err,'cu_err'
       
       write(6,*)'compare'
       do ii=1,nb
-         write(6,*)ii,cu(ii),tmpcu(ii-1),cu_diff(ii),'cu, tmpcu'
+         write(6,*)ii,cu(ii),tmpcu(ii-1),cu_diff(ii),'cu, tmpcu',nid
       enddo
 
       return
