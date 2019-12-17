@@ -10,6 +10,7 @@ c-----------------------------------------------------------------------
       real lsm(nn*nn,3),lsminv(nn*nn,3)
       real tmp(nn*nn),tmp_wrk(nn)
       real lsr(mm*nn)
+      real cp_weight(nn)
       real relerr,norm_c,fit,cp_tol,pre_err,rel_diff
       real wk(lb+1)
       integer mode,maxit,local_size
@@ -18,7 +19,7 @@ c-----------------------------------------------------------------------
 
       if (nid.eq.0) write(6,*) 'inside cp_als'
 
-      maxit = 1000
+      maxit = 500
       cp_tol = 1e-5
       pre_err = 1
 
@@ -48,12 +49,12 @@ c-----------------------------------------------------------------------
      $            fcm(0+(mm)*(jj-1),mode),1)
                enddo
             endif
-            call compute_cp_weight(cp_w,fcm(0,mode),mm,nn)
+            call compute_cp_weight(cp_weight,fcm(0,mode),mm,nn)
             call mode_normalize(fcm(0,mode),mm,nn)
             call set_product_matrix(fcm(0,mode),fcmpm(1,mode),mm,nn)
          enddo
          call compute_relerr(relerr,lsr,fcm(0,3),lsm(1,3),
-     $                       fcmpm(1,3),cp_w,norm_c,mm,nn)
+     $                       fcmpm(1,3),cp_weight,norm_c,mm,nn)
          fit = 1-relerr
          rel_diff = abs(pre_err-relerr)/pre_err
          pre_err = relerr
@@ -63,14 +64,26 @@ c-----------------------------------------------------------------------
          endif
       enddo
 
+      if (ifrom(1)) then
+         call copy(cua,fcm(0,1),mm*nn)
+         call copy(cub,fcm(0,2),mm*nn)
+         call copy(cuc,fcm(0,3),mm*nn)
+         call copy(cp_uw,cp_weight,nn)
 
-      call copy(cua,fcm(0,1),mm*nn)
-      call copy(cub,fcm(0,2),mm*nn)
-      call copy(cuc,fcm(0,3),mm*nn)
+         inquire (file='ops/u0',exist=ifexist)
+         if (ifexist) call read_serial(u,nb+1,'ops/u0 ',wk,nid)
+         call check_conv_err(cl,u)
+      endif
+      if (ifrom(2)) then
+         call copy(cta,fcm(0,1),mm*nn)
+         call copy(ctb,fcm(0,2),mm*nn)
+         call copy(ctc,fcm(0,3),mm*nn)
+         call copy(cp_tw,cp_weight,nn)
 
-      inquire (file='ops/u0',exist=ifexist)
-      if (ifexist) call read_serial(u,nb+1,'ops/u0 ',wk,nid)
-      call check_conv_err(cl,u)
+         inquire (file='ops/t0',exist=ifexist)
+         if (ifexist) call read_serial(ut,nb+1,'ops/t0 ',wk,nid)
+         call check_conv_err(cl,ut)
+      endif
 
       if (nid.eq.0) write(6,*) 'exit cp_als'
 
@@ -100,7 +113,7 @@ c-----------------------------------------------------------------------
          bcu(kk) = vlsc2(uu,cub(1+(kk-1)*(nb+1)),nb+1)
          cuu(kk) = vlsc2(u,cuc(1+(kk-1)*(nb+1)),nb+1)
       enddo
-      call col4(tmp,bcu,cuu,cp_w,ntr) 
+      call col4(tmp,bcu,cuu,cp_uw,ntr) 
       call mxm(cua,nb+1,tmp,ntr,tmpcu,1)
 
       call rzero(cu,nb)
@@ -136,6 +149,7 @@ c-----------------------------------------------------------------------
       real fcmpm(nn*nn,3)
       real lsm(nn*nn,3),lsminv(nn*nn,3)
       real tmp(nn*nn),tmp_wrk(nn)
+      real cp_weight(nn)
       real cl(ic1:ic2,jc1:jc2,kc1:kc2)
       real lsr(mm*nn)
       real relerr,norm_c
@@ -216,13 +230,13 @@ c     fcm(5,3) = 7.757126786084023e-01
                write(6,*)jj,fcm(jj,mode),'check fcm results'
                enddo
             endif
-            call compute_cp_weight(cp_w,fcm(0,mode),mm,nn)
+            call compute_cp_weight(cp_weight,fcm(0,mode),mm,nn)
             call mode_normalize(fcm(0,mode),mm,nn)
             call set_product_matrix(fcm(0,mode),fcmpm(1,mode),mm,nn)
          enddo
          write(6,*)'check cp_w'
          do jj=1,ltr
-            write(6,*)jj,cp_w(jj),'check'
+            write(6,*)jj,cp_weight(jj),'check'
          enddo
          write(6,*)'check fcm outside'
          do jj=0,mm*nn-1
@@ -235,7 +249,7 @@ c     fcm(5,3) = 7.757126786084023e-01
          write(6,*)jj,lsm(jj,mode),'check lsminv results'
          enddo
          call compute_relerr(relerr,lsr,fcm(0,3),lsm(1,3),
-     $                       fcmpm(1,3),cp_w,norm_c,mm,nn)
+     $                       fcmpm(1,3),cp_weight,norm_c,mm,nn)
 c        call compute_cp_weight(cp_w,fcm(0,3),lub+1,ltr) 
       enddo
 
