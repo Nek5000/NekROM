@@ -1,5 +1,5 @@
 c-----------------------------------------------------------------------
-      subroutine set_cp(cl,fname)
+      subroutine set_cp(cl,fname,cp_a,cp_b,cp_c,cp_w,uu)
 
       include 'SIZE'
       include 'TOTAL'
@@ -8,6 +8,10 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       real cl(lcglo)
+      real uu(0:nb)
+      real cp_a((nb+1)*max_tr),cp_b((nb+1)*max_tr),cp_c((nb+1)*max_tr)
+      real cp_w(max_tr)
+      integer rank_list(2,max_tr),mm
 
       character*128 fname
       character*128 fnlint
@@ -16,8 +20,6 @@ c-----------------------------------------------------------------------
 
       call nekgsync
       tcp_time=dnekclock()
-
-      if (iffastc) call exitti('fastc not supported in setc_new$',nb)
 
       ! set global index
       ic1=1
@@ -47,7 +49,11 @@ c-----------------------------------------------------------------------
       write(6,*)'check index',ic1,ic2,jc1,jc2,kc1,kc2,nid
       call nekgsync
 
-      call CP_ALS(cl,cua,cub,cuc,cp_uw,u,nb+1,ntr)
+      call set_rank(rank_list,mm)
+      do kk=1,2
+         ntr = rank_list(2,kk)
+         call CP_ALS(cl,cp_a,cp_b,cp_c,cp_w,uu,nb+1,ntr)
+      enddo
 
          ! read in the cp decomposition
 c        call read_cp_weight
@@ -80,7 +86,58 @@ c        enddo
       return
       end
 c-----------------------------------------------------------------------
-      subroutine CP_ALS(cl,aa,bb,cc,cp_weight,uu,mm,nn)
+      subroutine set_rank(rank_list,mm)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      integer rank_list(2,max_tr)
+      integer mm
+
+      mm = ceiling(real(max_tr/np))
+      write(6,*)mm,'length for each proc'
+
+
+      call izero(rank_list,2*max_tr)
+      if (nid.eq.0) then
+         do i=1,max_tr
+            rank_list(1,i) = mod(i,np) ! destination processor
+            rank_list(2,i) = i         ! return location
+         enddo
+      endif
+      ky = 1
+      call nekgsync
+
+      if (nid.eq.0) then
+         ni = max_tr
+         call fgslib_crystal_ituple_transfer(cr_h, rank_list,2,ni,
+     $                                    20*max_tr,ky)
+      else
+         ni = 0
+         call fgslib_crystal_ituple_transfer(cr_h, rank_list,2,ni,
+     $                                    20*max_tr,ky)
+      endif
+
+c     if (nid.eq.0) then
+c     do i=1,mm
+c        write(6,*)i,rank_list(1,i),nid
+c        write(6,*)i,rank_list(2,i),nid
+c     enddo
+c     endif
+c     call nekgsync
+c     if (nid.eq.1) then
+c     do i=1,mm
+c        write(6,*)i,rank_list(1,i),nid
+c        write(6,*)i,rank_list(2,i),nid
+c     enddo
+c     endif
+c     call nekgsync
+   
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine CP_ALS(cl,cp_a,cp_b,cp_c,cp_w,uu,mm,nn)
 
       include 'SIZE'
       include 'TOTAL'
@@ -88,16 +145,14 @@ c-----------------------------------------------------------------------
 
       real cl(ic1:ic2,jc1:jc2,kc1:kc2)
       real fcm(0:mm*nn-1,3),fcmpm(nn*nn,3)
-      real aa(1:mm*nn)
-      real bb(1:mm*nn)
-      real cc(1:mm*nn)
-      real uu(1:m)
       real lsm(nn*nn,3),lsminv(nn*nn,3)
       real tmp(nn*nn),tmp_wrk(nn)
       real lsr(mm*nn)
-      real cp_weight(nn)
-      real relerr,norm_c,fit,cp_tol,pre_err,rel_diff
       real wk(lb+1)
+      real cp_a(mm*nn),cp_b(mm*nn),cp_c(mm*nn),cp_w(nn)
+      real uu(1:mm)
+      real relerr,norm_c,fit,cp_tol,pre_err,rel_diff
+
       integer mode,maxit,local_size
       integer mm,nn
       logical ifexist
@@ -132,29 +187,21 @@ c     call exitt0
          call set_product_matrix(fcm(0,mode),fcmpm(1,mode),mm,nn)
       enddo
 
-
       do ii=1,maxit
          do mode=1,3
             call mttkrp(lsr,cl,fcm,mm,nn,mode)
             call set_lsm(lsm,fcmpm,mode,nn)
             call invmat(lsminv(1,mode),tmp,lsm(1,mode),tmp_wrk,nn)
-            if (mode.eq.1) then
-               do jj=1,nn
-                  call mxm(lsr,mm,lsminv(1+(jj-1)*nn,mode),nn,
-     $            fcm(0+(mm)*(jj-1),mode),1)
-               enddo
-            elseif (mode.ne.1) then
-               do jj=1,nn
-                  call mxm(lsr,mm,lsminv(1+(jj-1)*nn,mode),nn,
-     $            fcm(0+(mm)*(jj-1),mode),1)
-               enddo
-            endif
-            call compute_cp_weight(cp_weight,fcm(0,mode),mm,nn)
+            do jj=1,nn
+               call mxm(lsr,mm,lsminv(1+(jj-1)*nn,mode),nn,
+     $         fcm(0+(mm)*(jj-1),mode),1)
+            enddo
+            call compute_cp_weight(cp_w,fcm(0,mode),mm,nn)
             call mode_normalize(fcm(0,mode),mm,nn)
             call set_product_matrix(fcm(0,mode),fcmpm(1,mode),mm,nn)
          enddo
          call compute_relerr(relerr,lsr,fcm(0,3),lsm(1,3),
-     $                       fcmpm(1,3),cp_weight,norm_c,mm,nn)
+     $                       fcmpm(1,3),cp_w,norm_c,mm,nn)
          fit = 1-relerr
          rel_diff = abs(pre_err-relerr)/pre_err
          pre_err = relerr
@@ -164,32 +211,14 @@ c     call exitt0
          endif
       enddo
 
-c     if (ifrom(1)) then
-         call copy(aa,fcm(0,1),mm*nn)
-         call copy(bb,fcm(0,2),mm*nn)
-         call copy(cc,fcm(0,3),mm*nn)
-c        call copy(cp_uw,cp_weight,nn)
-
-c        inquire (file='ops/u0',exist=ifexist)
-c        if (ifexist) call read_serial(u,nb+1,'ops/u0 ',wk,nid)
-         call check_conv_err(cl,aa,bb,cc,cp_weight,uu)
-c     endif
-c     if (ifrom(2)) then
-c        call copy(cta,fcm(0,1),mm*nn)
-c        call copy(ctb,fcm(0,2),mm*nn)
-c        call copy(ctc,fcm(0,3),mm*nn)
-c        call copy(cp_tw,cp_weight,nn)
-
-c        inquire (file='ops/t0',exist=ifexist)
-c        if (ifexist) call read_serial(ut,nb+1,'ops/t0 ',wk,nid)
-c        call check_conv_err(cl,cta,ctb,ctc,cp_tw,ut)
-c     endif
+      call copy(cp_a,fcm(0,1),mm*nn)
+      call copy(cp_b,fcm(0,2),mm*nn)
+      call copy(cp_c,fcm(0,3),mm*nn)
+      call check_conv_err(cl,cp_a,cp_b,cp_c,cp_w,uu)
 
       call nekgsync
 
       if (nid.eq.0) write(6,*) 'exit cp_als'
-
-      
 
       return
       end
