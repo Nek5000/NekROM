@@ -72,7 +72,7 @@ c-----------------------------------------------------------------------
 
          inquire (file='ops/u0',exist=ifexist)
          if (ifexist) call read_serial(u,nb+1,'ops/u0 ',wk,nid)
-         call check_conv_err(cl,u)
+         call check_conv_err(cl,cua,cub,cuc,cp_uw,u)
       endif
       if (ifrom(2)) then
          call copy(cta,fcm(0,1),mm*nn)
@@ -82,7 +82,7 @@ c-----------------------------------------------------------------------
 
          inquire (file='ops/t0',exist=ifexist)
          if (ifexist) call read_serial(ut,nb+1,'ops/t0 ',wk,nid)
-         call check_conv_err(cl,ut)
+         call check_conv_err(cl,cta,ctb,ctc,cp_tw,ut)
       endif
 
       if (nid.eq.0) write(6,*) 'exit cp_als'
@@ -92,7 +92,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine check_conv_err(cl,uu)
+      subroutine check_conv_err(cl,fac_a,fac_b,fac_c,cp_weight,uu)
 
       include 'SIZE'
       include 'TOTAL'
@@ -101,6 +101,8 @@ c-----------------------------------------------------------------------
       real cu(nb)
       real uu(0:nb)
       real cu_diff(nb), cu_err
+      real fac_a((nb+1)*ntr),fac_b((nb+1)*ntr)
+      real fac_c((nb+1)*ntr),cp_weight(ntr)
       real cl(ic1:ic2,jc1:jc2,kc1:kc2)
       real cm(ic1:ic2,jc1:jc2)
       real bcu(ntr)
@@ -110,11 +112,11 @@ c-----------------------------------------------------------------------
 
       call rzero(cu,nb)
       do kk=1,ntr
-         bcu(kk) = vlsc2(uu,cub(1+(kk-1)*(nb+1)),nb+1)
-         cuu(kk) = vlsc2(u,cuc(1+(kk-1)*(nb+1)),nb+1)
+         bcu(kk) = vlsc2(uu,fac_b(1+(kk-1)*(nb+1)),nb+1)
+         cuu(kk) = vlsc2(u,fac_c(1+(kk-1)*(nb+1)),nb+1)
       enddo
-      call col4(tmp,bcu,cuu,cp_uw,ntr) 
-      call mxm(cua,nb+1,tmp,ntr,tmpcu,1)
+      call col4(tmp,bcu,cuu,cp_weight,ntr) 
+      call mxm(fac_a,nb+1,tmp,ntr,tmpcu,1)
 
       call rzero(cu,nb)
       if (ncloc.ne.0) then
