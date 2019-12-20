@@ -1421,6 +1421,7 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
       include 'AVG'
+      include 'INPUT'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
