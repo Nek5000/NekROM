@@ -1456,6 +1456,8 @@ c-----------------------------------------------------------------------
 
       character*3 cstr
 
+      return
+
       vmin=vlmin(u,nb+1)
       vmax=vlmax(u,nb+1)
       vmean=vlsum(u,nb+1)/(nb+1.)
@@ -1478,6 +1480,8 @@ c-----------------------------------------------------------------------
       character*3 cstr
 
       real a(nn)
+
+      return
 
       vmin=vlmin(a,nn)
       vmax=vlmax(a,nn)
