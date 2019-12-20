@@ -524,7 +524,7 @@ c-----------------------------------------------------------------------
 
       if (ifbuoy) then
          call mxm(but0,nb+1,ut,nb+1,tmp2(0),1)
-         call add2s2(tmp1(1),tmp2(1),ad_ra,nb)
+         call add2s2(tmp1(1),tmp2(1),-ad_ra,nb)
       else if (ifforce) then
          call add2(tmp1(1),rg(1),nb)
       endif
