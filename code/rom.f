@@ -1426,7 +1426,7 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       common /scrread/ tab((lb+1)**2)
-      common /scruz/ wk1(lt),wk2(lt),wk3(lt)
+      common /scrk/ wk1(lt),wk2(lt),wk3(lt)
 
       logical iftmp
 
@@ -1446,6 +1446,13 @@ c-----------------------------------------------------------------------
          iftmp=ifxyo
          ifxyo=.true.
          call outpost(gx,gy,gz,pavg,tavg,'ggg')
+         call opcolv(gx,gy,gz,
+
+         call invcol3(wk1,gx,bm1,n)
+         call invcol3(wk2,gy,bm1,n)
+         call invcol3(wk3,gz,bm1,n)
+
+         call outpost(wk1,wk2,wk3,pavg,tavg,'ggg')
          ifxyo=iftmp
          call dump_serial(b,(nb+1)**2,'ops/but ',nid)
       else
