@@ -1446,7 +1446,6 @@ c-----------------------------------------------------------------------
          iftmp=ifxyo
          ifxyo=.true.
          call outpost(gx,gy,gz,pavg,tavg,'ggg')
-         call opcolv(gx,gy,gz,
 
          call invcol3(wk1,gx,bm1,n)
          call invcol3(wk2,gy,bm1,n)
