@@ -1427,6 +1427,8 @@ c-----------------------------------------------------------------------
       common /scrread/ tab((lb+1)**2)
       common /scruz/ wk1(lt),wk2(lt),wk3(lt)
 
+      logical iftmp
+
       real b(0:nb,0:nb)
 
       character*128 fname
@@ -1439,7 +1441,11 @@ c-----------------------------------------------------------------------
             if (nio.eq.0) write (6,*) i,j,b(i,j),'but0'
          enddo
          enddo
+
+         iftmp=ifxyo
+         ifxyo=.true.
          call outpost(gx,gy,gz,pavg,tavg,'ggg')
+         ifxyo=iftmp
          call dump_serial(b,(nb+1)**2,'ops/but ',nid)
       else
          fname='ops/but '
