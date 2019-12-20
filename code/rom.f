@@ -1434,6 +1434,8 @@ c-----------------------------------------------------------------------
 
       character*128 fname
 
+      n=lx1*ly1*lz1*nelv
+
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
          do j=0,nb
          do i=0,nb
