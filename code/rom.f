@@ -23,11 +23,14 @@ c-----------------------------------------------------------------------
          call rom_setup
       endif
 
+      call checker('baa',ad_step)
+
       ad_step = istep
       jfield=ifield
       ifield=1
 
       ifmult=.not.ifrom(2).and.ifheat
+
 
       if (rmode.ne.'OFF') then
       if (ifmult) then
@@ -35,8 +38,11 @@ c-----------------------------------------------------------------------
      $   'error: running rom_update with ifflow = .true.$',nelv)
          if (istep.gt.0) then
             call bdfext_step
+            call checker('bba',ad_step)
             call post
+            call checker('bca',ad_step)
             call reconv(vx,vy,vz,u) ! reconstruct velocity to be used in h-t
+            call checker('bda',ad_step)
          endif
       else
          if (nio.eq.0) write (6,*) 'starting rom_step loop',ad_nsteps
@@ -196,8 +202,15 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelt
 
+      call checker('aaa',ad_step)
+
       call rom_init_params
+
+      call checker('aba',ad_step)
+
       call rom_init_fields
+
+      call checker('aca',ad_step)
 
       inquire (file='ops/evec',exist=ifexist)
       if (ifexist) then
@@ -211,20 +224,33 @@ c-----------------------------------------------------------------------
          call setevec
       endif
 
+      call checker('ada',ad_step)
+
       call setbases
+
+      call checker('aea',ad_step)
       call setops
+      call checker('afa',ad_step)
       call setu
+      call checker('aga',ad_step)
 
       call setf
+      call checker('aha',ad_step)
 
       call setqoi
+      call checker('aia',ad_step)
       call setmisc
+      call checker('aja',ad_step)
       if (ifei) call set_sigma
+      call checker('aka',ad_step)
       if (ifplay) call set_trace
+      call checker('ala',ad_step)
 
       if (nio.eq.0) write (6,*) 'end range setup'
 
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF') call dump_misc
+
+      call checker('ama',ad_step)
 
       time=ttime
 
@@ -724,6 +750,9 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
          write (6,*) 'rp_ls         ',ls
          write (6,*) 'rp_lsu        ',lsu
          write (6,*) 'rp_lst        ',lst
+         write (6,*) ' '
+         write (6,*) 'rp_ad_re      ',ad_re
+         write (6,*) 'rp_ad_pe      ',ad_pe
          write (6,*) ' '
          write (6,*) 'rp_isolve     ',isolve
          write (6,*) 'rp_ips        ',ips
@@ -1392,15 +1421,21 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
       include 'AVG'
+      include 'INPUT'
+      include 'MASS'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
       common /scrread/ tab((lb+1)**2)
-      common /scruz/ wk1(lt),wk2(lt),wk3(lt)
+      common /scrk/ wk1(lt),wk2(lt),wk3(lt)
+
+      logical iftmp
 
       real b(0:nb,0:nb)
 
       character*128 fname
+
+      n=lx1*ly1*lz1*nelv
 
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
          do j=0,nb
@@ -1410,7 +1445,17 @@ c-----------------------------------------------------------------------
             if (nio.eq.0) write (6,*) i,j,b(i,j),'but0'
          enddo
          enddo
+
+         iftmp=ifxyo
+         ifxyo=.true.
          call outpost(gx,gy,gz,pavg,tavg,'ggg')
+
+         call invcol3(wk1,gx,bm1,n)
+         call invcol3(wk2,gy,bm1,n)
+         call invcol3(wk3,gz,bm1,n)
+
+         call outpost(wk1,wk2,wk3,pavg,tavg,'ggg')
+         ifxyo=iftmp
          call dump_serial(b,(nb+1)**2,'ops/but ',nid)
       else
          fname='ops/but '

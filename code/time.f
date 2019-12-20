@@ -25,6 +25,8 @@ c-----------------------------------------------------------------------
       rhs(0,1)=1.
       rhs(0,2)=1.
 
+      call checker('bab',ad_step)
+
 c     if (icount.le.2) then
       if (.false.) then
          if (ifrom(1)) call setr_v(rhs(1,1),icount)
@@ -48,9 +50,12 @@ c     if (icount.le.2) then
          return
       endif
 
+      call checker('bac',ad_step)
+
       if (ifrom(2)) then
          if (ad_step.le.3) then
             ttime=dnekclock()
+            call checker('bad',ad_step)
             call seth(hlm(1,2),at,bt,1./ad_pe)
             if (ad_step.eq.3)
      $         call dump_serial(hlm(1,2),nb*nb,'ops/ht ',nid)
@@ -71,6 +76,7 @@ c     if (icount.le.2) then
                enddo
             endif
             lu_time=lu_time+dnekclock()-ttime
+            call checker('bae',ad_step)
             call update_k
          endif
 
@@ -82,6 +88,7 @@ c     if (icount.le.2) then
             call mxm(hinv(1,2),nb,rhstmp(1),nb,rhs(1,2),1)
             call mxm(rhs(1,2),1,wt(1,2),nb,rhstmp(1),nb)
             call copy(rhs(1,2),rhstmp(1),nb)
+            call checker('baf',ad_step)
          else
             scopt='tcopt'
             call mxm(ut,nb+1,ad_alpha(1,icount),icount,utmp1,1)
@@ -105,16 +112,20 @@ c     if (icount.le.2) then
          endif
       endif
 
+      call checker('bag',ad_step)
+
       if (ifrom(1)) then
          if (ad_step.le.3) then
             ttime=dnekclock()
             call seth(hlm,au,bu,1./ad_re)
+         call checker('bah',ad_step)
             if (ad_step.eq.3) call dump_serial(hlm,nb*nb,'ops/hu ',nid)
             do j=1,nb-nplay
             do i=1,nb-nplay
                hlm(i+(j-1)*(nb-nplay),1)=hlm(i+nplay+(j+nplay-1)*nb,1)
             enddo
             enddo
+         call checker('bai',ad_step)
             if (ifdecpl) then
                call copy(hinv,hlm,(nb-nplay)**2)
                call diag(hinv,wt,rhs(1,1),nb)
@@ -128,6 +139,7 @@ c     if (icount.le.2) then
             lu_time=lu_time+dnekclock()-ttime
             call update_k
          endif
+         call checker('baj',ad_step)
 
          call setr_v(rhs(1,1),icount)
 
@@ -158,6 +170,7 @@ c     if (icount.le.2) then
             call mxm(rhstmp(1),1,wt,nb,rhs(1,1),nb)
 
          endif
+         call checker('bak',ad_step)
          solve_time=solve_time+dnekclock()-ttime
          if (nplay.gt.0) then
             do i=1,nplay
@@ -511,7 +524,7 @@ c-----------------------------------------------------------------------
 
       if (ifbuoy) then
          call mxm(but0,nb+1,ut,nb+1,tmp2(0),1)
-         call add2s2(tmp1(1),tmp2(1),ad_ra,nb)
+         call add2s2(tmp1(1),tmp2(1),-ad_ra,nb)
       else if (ifforce) then
          call add2(tmp1(1),rg(1),nb)
       endif
