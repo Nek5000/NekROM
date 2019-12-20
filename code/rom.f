@@ -751,6 +751,9 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
          write (6,*) 'rp_lsu        ',lsu
          write (6,*) 'rp_lst        ',lst
          write (6,*) ' '
+         write (6,*) 'rp_ad_re      ',ad_re
+         write (6,*) 'rp_ad_pe      ',ad_pe
+         write (6,*) ' '
          write (6,*) 'rp_isolve     ',isolve
          write (6,*) 'rp_ips        ',ips
          write (6,*) 'rp_ifavg0     ',ifavg0
