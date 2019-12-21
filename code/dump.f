@@ -399,3 +399,29 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine dump_snaps
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      logical iftmp,iftmp2
+
+      iftmp=ifxyo
+      iftmp2=ifpo
+
+      ifxyo=.true.
+      ifpo=.false.
+
+      do i=1,ns
+         call outpost(us0(1,1,i),us0(1,2,i),us0(1,ldim,i),
+     $      pr,ts0(1,i),'sna')
+         ifxyo=.false.
+      enddo
+
+      ifxyo=iftmp
+      ifpo=iftmp2
+
+      return
+      end
+c-----------------------------------------------------------------------
