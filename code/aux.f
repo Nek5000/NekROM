@@ -697,10 +697,10 @@ C--------------------------------------------------------------------
       return
       end
 C--------------------------------------------------------------------
-      subroutine invmat(a,b,c,iwk,n)
+      subroutine invmat(a,b,c,iwk1,iwk2,n)
 
       real a(n,n),b(n,n),c(n,n)
-      integer iwk1(n)
+      integer iwk1(n),iwk2(n)
 
       if (n.gt.0) then
          call rzero(a,n*n)
@@ -711,8 +711,23 @@ C--------------------------------------------------------------------
 
          call copy(b,c,n*n)
 
-         call dgetrf(n,n,b,n,iwk,info)
-         call dgetrs('N',n,n,b,n,iwk,a,n,info)
+         call checkera('im1',a,n*n,ad_step)
+         call checkera('im2',b,n*n,ad_step)
+         call checkera('im3',c,n*n,ad_step)
+
+         call lu(b,n,n,iwk1,iwk2)
+c        call dgetrf(n,n,b,n,iwk1,info)
+
+         call checkera('im4',a,n*n,ad_step)
+         call checkera('im5',b,n*n,ad_step)
+         call checkera('im6',c,n*n,ad_step)
+
+         call solve(a,b,n,n,n,iwk1,iwk2)
+c        call dgetrs('N',n,n,b,n,iwk1,a,n,info)
+
+         call checkera('im7',a,n*n,ad_step)
+         call checkera('im8',b,n*n,ad_step)
+         call checkera('im9',c,n*n,ad_step)
       endif
 
       return
@@ -1317,8 +1332,8 @@ c-----------------------------------------------------------------------
 
       common /invevf/ buinv(lb*lb),btinv(lb*lb)
 
-      call invmat(buinv,rtmp1,bu,itmp1,nb)
-      call invmat(btinv,rtmp1,bt,itmp1,nb)
+      call invmat(buinv,rtmp1,bu,itmp1,itmp2,nb)
+      call invmat(btinv,rtmp1,bt,itmp1,itmp2,nb)
 
       return
       end
@@ -1449,6 +1464,31 @@ c-----------------------------------------------------------------------
       vprod=1.
       do i=0,nb
          vprod=vprod*u(i)
+      enddo
+
+      if (nio.eq.0) write (6,1) vmin,vmax,vmean,vprod,cstr,myind
+    1 format('check ',1p4e13.5,1x,a,1x,i8)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine checkera(cstr,a,nn,myind)
+
+      include 'SIZE'
+      include 'MOR'
+
+      character*3 cstr
+
+      real a(nn)
+
+      return
+
+      vmin=vlmin(a,nn)
+      vmax=vlmax(a,nn)
+      vmean=vlsum(a,nn)/(nn*1.)
+      vprod=1.
+      do i=1,nn
+         vprod=vprod*a(i)
       enddo
 
       if (nio.eq.0) write (6,1) vmin,vmax,vmean,vprod,cstr,myind
