@@ -24,11 +24,6 @@ c     parameters and common blocks for MOR
      $               pic(lx1*ly1*lz1*lelm),
      $               tic(lx1*ly1*lz1*lelm)
 
-      common /morubt/ ubt(lx1*ly1*lz1*lelm,0:lub)
-      common /morvbt/ vbt(lx1*ly1*lz1*lelm,0:lub)
-      common /morwbt/ wbt(lx1*ly1*lz1*lelm,0:lub)
-      common /mortbt/ tbt(lx1*ly1*lz1*lelm,0:ltb)
-
       common /morcoef/ uk(0:lub,lsu),tk(0:ltb,lst),timek(lcs)
       common /morcoef2/ ukp(0:lub,lsu),tkp(0:ltb,lst)
 
