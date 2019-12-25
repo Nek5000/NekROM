@@ -850,7 +850,9 @@ c-----------------------------------------------------------------------
          inquire (file=fname1,exist=alist)
          if (alist) then
             call push_sol(vx,vy,vz,pr,t)
+            ttime=time
             call auto_averager(fname1)
+            time=ttime
             call copy_sol(uavg,vavg,wavg,pavg,tavg,vx,vy,vz,pr,t)
             call pop_sol(vx,vy,vz,pr,t)
          endif
