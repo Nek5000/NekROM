@@ -101,6 +101,8 @@ c-----------------------------------------------------------------------
       real ck(0:nb,ls),usnap(lt,ldim,ls),
      $     uub(lt,0:nb),vvb(lt,0:nb),wwb(lt,0:nb)
 
+      n=lx1*ly1*lz1*nelt
+
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
          if (ips.eq.'H10') then
             do j=1,ns
