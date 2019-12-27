@@ -87,6 +87,7 @@ c     parameters and common blocks for MOR
       common /mortmp/ ctmp((lub*(lub+1)*(lub+1))/lpmin+1)
       common /moritmp/ itmp1(lub),itmp2(lub)
       common /morrtmp/ rtmp1(lub,lub),rtmp2(lb,lb),rtmp3(lb,lb)
+      common /morstmp/ stmp(lb+1,ls)
 
       common /morfld/ wm1(lx1*ly1*lz1*lelm)
       common /morqoi/ rnus,rdgx(0:lub),rdgy(0:lub),rdgz(0:lub)
