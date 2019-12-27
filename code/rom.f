@@ -513,8 +513,6 @@ c-----------------------------------------------------------------------
 
       logical ifexist
 
-      common /scrmisc/ wk((lb+1)*ls)
-
       if (nio.eq.0) write (6,*) 'begin range setup'
 
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
