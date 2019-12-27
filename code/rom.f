@@ -528,10 +528,12 @@ c-----------------------------------------------------------------------
          if (nio.eq.0) write (6,*) 'proj_time:',dnekclock()-proj_time
       else if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
          inquire (file='ops/uk',exist=ifexist)
-         if (ifexist) call read_serial(uk,(mb+1)*ns,'ops/uk ',rtmp1,nid)
+         if (ifexist)
+     $      call read_mat_serial(uk,nb+1,ns,'ops/uk ',mb+1,ns,rtmp1,nid)
 
          inquire (file='ops/tk',exist=ifexist)
-         if (ifexist) call read_serial(tk,(mb+1)*ns,'ops/tk ',rtmp1,nid)
+         if (ifexist)
+     $      call read_mat_serial(tk,nb+1,ns,'ops/tk ',mb+1,ns,rtmp1,nid)
       endif
 
       if (ifpod(1)) then
