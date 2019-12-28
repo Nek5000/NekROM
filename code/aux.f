@@ -538,7 +538,7 @@ c-----------------------------------------------------------------------
                d= umax(j)-umin(j)
                umin(j) = umin(j) - ep * d
                umax(j) = umax(j) + ep * d
-               if (nio.eq.0) write (6,*) j,umin(j),umax(j)
+               if (nio.eq.0) write (6,*) j,umin(j),umax(j),'uminmax'
             enddo
          endif
 
@@ -573,7 +573,7 @@ c-----------------------------------------------------------------------
                d= tmax(j)-tmin(j)
                tmin(j) = tmin(j) - ep * d
                tmax(j) = tmax(j) + ep * d
-               if (nio.eq.0) write (6,*) j,tmin(j),tmax(j)
+               if (nio.eq.0) write (6,*) j,tmin(j),tmax(j),'tminmax'
             enddo
          endif
 

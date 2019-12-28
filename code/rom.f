@@ -461,7 +461,7 @@ c-----------------------------------------------------------------------
             d= upmax(j)-upmin(j)
             upmin(j) = upmin(j) - ep * d
             upmax(j) = upmax(j) + ep * d
-            if (nio.eq.0) write (6,*) j,upmin(j),upmax(j)
+            if (nio.eq.0) write (6,*) j,upmin(j),upmax(j),'upminmax'
          enddo
 
          ! compute distance between umax and umin
@@ -469,7 +469,7 @@ c-----------------------------------------------------------------------
 
          if (nio.eq.0) then
             do i=1,nb
-               write (6,*) i,updis(i)
+               write (6,*) i,updis(i),'updis'
             enddo
          endif
       endif   
@@ -487,14 +487,14 @@ c-----------------------------------------------------------------------
             d= tpmax(j)-tpmin(j)
             tpmin(j) = tpmin(j) - ep * d
             tpmax(j) = tpmax(j) + ep * d
-            if (nio.eq.0) write (6,*) j,tpmin(j),tpmax(j)
+            if (nio.eq.0) write (6,*) j,tpmin(j),tpmax(j),'tpminmax'
          enddo
 
          ! compute distance between tmax and tmin
          call sub3(tpdis,tpmax,tpmin,nb)
          if (nio.eq.0) then
             do i=1,nb
-               write (6,*) i,tpdis(i)
+               write (6,*) i,tpdis(i),'tpdis'
             enddo
          endif
 
