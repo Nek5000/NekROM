@@ -547,7 +547,7 @@ c-----------------------------------------------------------------------
 
          if (nio.eq.0) then
             do i=1,nb
-               write (6,*) i,udis(i)
+               write (6,*) i,udis(i),'udis'
             enddo
          endif
          if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
@@ -581,7 +581,7 @@ c-----------------------------------------------------------------------
          call sub3(tdis,tmax,tmin,nb)
          if (nio.eq.0) then
             do i=1,nb
-               write (6,*) i,tdis(i)
+               write (6,*) i,tdis(i),'tdis'
             enddo
          endif
 
