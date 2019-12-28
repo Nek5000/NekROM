@@ -538,7 +538,7 @@ c-----------------------------------------------------------------------
                d= umax(j)-umin(j)
                umin(j) = umin(j) - ep * d
                umax(j) = umax(j) + ep * d
-               if (nio.eq.0) write (6,*) j,umin(j),umax(j)
+               if (nio.eq.0) write (6,*) j,umin(j),umax(j),'uminmax'
             enddo
          endif
 
@@ -547,7 +547,7 @@ c-----------------------------------------------------------------------
 
          if (nio.eq.0) then
             do i=1,nb
-               write (6,*) i,udis(i)
+               write (6,*) i,udis(i),'udis'
             enddo
          endif
          if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
@@ -573,7 +573,7 @@ c-----------------------------------------------------------------------
                d= tmax(j)-tmin(j)
                tmin(j) = tmin(j) - ep * d
                tmax(j) = tmax(j) + ep * d
-               if (nio.eq.0) write (6,*) j,tmin(j),tmax(j)
+               if (nio.eq.0) write (6,*) j,tmin(j),tmax(j),'tminmax'
             enddo
          endif
 
@@ -581,7 +581,7 @@ c-----------------------------------------------------------------------
          call sub3(tdis,tmax,tmin,nb)
          if (nio.eq.0) then
             do i=1,nb
-               write (6,*) i,tdis(i)
+               write (6,*) i,tdis(i),'tdis'
             enddo
          endif
 
