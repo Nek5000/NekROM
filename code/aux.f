@@ -41,6 +41,8 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
+      common /scrk1/ tbt(lt)
+
       real tt(lt)
 
       n=lx1*ly1*lz1*nelt
