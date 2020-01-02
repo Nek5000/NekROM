@@ -527,11 +527,11 @@ c-----------------------------------------------------------------------
       else if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
          inquire (file='ops/uk',exist=ifexist)
          if (ifexist)
-     $      call read_mat_serial(uk,nb+1,ns,'ops/uk ',mb+1,ns,stmp,nid)
+     $      call read_mat_serial(uk,lb+1,ns,'ops/uk ',mb+1,ns,stmp,nid)
 
          inquire (file='ops/tk',exist=ifexist)
          if (ifexist)
-     $      call read_mat_serial(tk,nb+1,ns,'ops/tk ',mb+1,ns,stmp,nid)
+     $      call read_mat_serial(tk,lb+1,ns,'ops/tk ',mb+1,ns,stmp,nid)
       endif
 
       if (ifpod(1)) then
