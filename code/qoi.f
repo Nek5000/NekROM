@@ -916,10 +916,11 @@ c-----------------------------------------------------------------------
       save    icalld,nelx,nely,nprofile
       data    icalld /0/
 
-      n  = lx1*ly1*lz1*nelt
-      nv = lx1*ly1*lz1*nelv
       character*12 filename
       integer iunit
+
+      n  = lx1*ly1*lz1*nelt
+      nv = lx1*ly1*lz1*nelv
 
       if (icalld.eq.0) then
          icalld = 1
