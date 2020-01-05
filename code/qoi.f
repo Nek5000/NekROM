@@ -819,6 +819,34 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine find_nely(nely)
+      include 'SIZE'
+      include 'TOTAL'
+      integer e,f
+
+      n=lx1*ly1*lz1*nelt
+
+      xmin = glmin(xm1,n)
+      xmax = glmax(xm1,n)
+
+      dxmin = xmax-xmin
+      do e=1,nelt
+         dx    = xm1(nx1,1,1,e)-xm1(1,1,1,e)
+         dxmin = min(dxmin,dx)
+      enddo
+      dxmin = glmin(dxmin,1) ! Min across all processors
+
+      nely=0
+      xtop = xmin+dxmin
+      do e=1,nelt
+         xmid = xm1(2,1,1,e)
+         if (xmid.lt.xtop) nely = nely+1
+      enddo
+      nely = iglsum(nely,1) ! Sum across all processors
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine interp_t(scalar,xyz,n,s)
 c
 c     evaluate scalar for list of points xyz
@@ -871,6 +899,64 @@ c
 
       return
       end
+c-----------------------------------------------------------------------
+      subroutine average_in_y ! Y averages yield functions of x
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter(lt=lx1*ly1*lz1*lelt)
+      common /myavg/ ubar(lt),vbar(lt),wbar(lt),tbar(lt)
+      common /myavi/ igs_x,igs_y,igs_z,igs_xy
+
+      parameter (lprof=201)
+      common /mypts/ xyz(ldim,lprof),scalar(lprof)
+
+      integer icalld,nelx,nely,nprofile
+      save    icalld,nelx,nely,nprofile
+      data    icalld /0/
+
+      n  = lx1*ly1*lz1*nelt
+      nv = lx1*ly1*lz1*nelv
+      character*12 filename
+      integer iunit
+
+      if (icalld.eq.0) then
+         icalld = 1
+
+         call find_nely(nely)
+         nelx = nelgt/nely
+         call gtpp_gs_setup(igs_y,nelx,nely,1,2) ! Contract in (x & y)
+
+         call domain_size(xmn,xmx,ymn,ymx,zmn,zmx)
+         nprofile = lprof
+         dx = (xmx-xmn)/(nprofile-1)
+         ymid = (ymn+ymx)/2
+         do i=1,nprofile
+            xyz(1,i)=xmn + dx*(i-1) ! Pertub off of centerline (better for interpolation)
+            xyz(2,i)=ymid + .0001
+         enddo
+         if (nid.gt.0) nprofile=0  !!! ONLY Node 0 initiates the interpolation!
+
+      endif
+
+        do i=0,nb
+        call planar_avg(tbar,tb(1,i) ,igs_y) ! Contract in x+y: work=f(z)
+        call interp_t(scalar,xyz,nprofile,tbar)
+        
+        write(filename,'("q",I0,".dat")')i
+        open(unit=iunit+100,file=filename,status='unknown')
+        if (nid.eq.0) write(iunit+100,*) ' '
+        if (nid.eq.0) write(iunit+100,20)(time,xyz(1,k),
+     $  scalar(k),k=1,nprofile)
+        close(unit=iunit+100)
+        enddo
+   20   format(1p3e15.6)  ! time, z , tbar
+
+
+      return
+      end
+
 c-----------------------------------------------------------------------
       subroutine average_in_xy ! X-Y averages yield functions of Z
       include 'SIZE'
