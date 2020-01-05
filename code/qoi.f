@@ -1,3 +1,5 @@
+#define INTP_NMAX 4000
+#define LPART INTP_NMAX /* max number of particles per MPI rank */
 c-----------------------------------------------------------------------
       subroutine cint(fd,px,py,pz)
 
@@ -785,6 +787,143 @@ c-----------------------------------------------------------------------
       if (ldim.eq.3) wbar=vlsc2(ww,w,nb+1)/vol
 
       if (nio.eq.0) write (6,*) ad_step,time,ubar,'ubar'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine find_nelx(nelx)
+      include 'SIZE'
+      include 'TOTAL'
+      integer e,f
+
+      n=lx1*ly1*lz1*nelt
+
+      ymin = glmin(ym1,n)
+      ymax = glmax(ym1,n)
+
+      dymin = ymax-ymin
+      do e=1,nelt
+         dy    = ym1(1,ny1,1,e)-ym1(1,1,1,e)
+         dymin = min(dymin,dy)
+      enddo
+      dymin = glmin(dymin,1) ! Min across all processors
+
+      nelx=0
+      ytop = ymin+dymin
+      do e=1,nelt
+         ymid = ym1(1,2,1,e)
+         if (ymid.lt.ytop) nelx = nelx+1
+      enddo
+      nelx = iglsum(nelx,1) ! Sum across all processors
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine interp_t(scalar,xyz,n,s)
+c
+c     evaluate scalar for list of points xyz
+c
+      include 'SIZE'
+      include 'TOTAL'
+
+      real scalar(n),xyz(ldim,n)
+      real s(lx1,ly1,lz1,lelt)
+
+      real    rwk(INTP_NMAX,ldim+1) ! r, s, t, dist2
+      integer iwk(INTP_NMAX,3)      ! code, proc, el
+      save    rwk, iwk
+
+      integer intp_h
+      save    intp_h
+
+      common /rwk_intp/ 
+     $       fwrk(lx1*ly1*lz1*lelt,ldim),
+     $       fpts(ldim*INTP_NMAX),
+     $       pts(ldim*INTP_NMAX)
+
+      integer icalld,e
+      save    icalld
+      data    icalld /0/
+
+      nxyz  = nx1*ny1*nz1
+      ntot  = nxyz*nelt
+
+      if (n.gt.INTP_NMAX) call exitti ('n > INTP_NMAX in interp_v!$',n)
+      
+      if (nelgt.ne.nelgv) call exitti
+     $   ('nelgt.ne.nelgv not yet supported in interp_v!$',nelgv)
+
+      do i=1,n ! ? not moving -> save?
+         pts(i)     = xyz(1,i)
+         pts(i + n) = xyz(2,i)
+         if (if3d) pts(i + n*2) = xyz(3,i)
+      enddo
+
+      if (icalld.eq.0) then
+        icalld = 1
+        call interp_setup(intp_h,0.0,0,nelt)
+      endif
+
+      ! interpolate
+      call interp_nfld(scalar,s,1,pts(1),pts(1+n),pts(2*n+1),
+     $                 n,iwk,rwk,INTP_NMAX,.true.,intp_h)
+
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine average_in_xy ! X-Y averages yield functions of Z
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter(lt=lx1*ly1*lz1*lelt)
+      common /myavg/ ubar(lt),vbar(lt),wbar(lt),tbar(lt)
+      common /myavi/ igs_x,igs_y,igs_z,igs_xy
+
+      parameter (lprof=201)
+      common /mypts/ xyz(ldim,lprof),scalar(lprof)
+
+      integer icalld,nelxy,nprofile
+      save    icalld,nelxy,nprofile
+      data    icalld /0/
+
+      character*12 filename
+      integer iunit
+
+      n  = lx1*ly1*lz1*nelt
+      nv = lx1*ly1*lz1*nelv
+
+      if (icalld.eq.0) then
+         icalld = 1
+
+         call find_nelx(nelx)
+         nely = nelgt/nelx
+         call gtpp_gs_setup(igs_x,nelx,nely,1,1) ! Contract in (x & y)
+
+         call domain_size(xmn,xmx,ymn,ymx,zmn,zmx)
+         nprofile = lprof
+         dy = (ymx-ymn)/(nprofile-1)
+         xmid = (xmn+xmx)/2
+         do i=1,nprofile
+            xyz(1,i)=xmid + .0001  ! Pertub off of centerline (better for interpolation)
+            xyz(2,i)=ymn + dy*(i-1)
+         enddo
+         if (nid.gt.0) nprofile=0  !!! ONLY Node 0 initiates the interpolation!
+      endif
+
+        do i=0,nb
+        call planar_avg(tbar,tb(1,i) ,igs_x) ! Contract in x+y: work=f(z)
+        call interp_t(scalar,xyz,nprofile,tbar)
+        
+        write(filename,'("q",I0,".dat")')i
+        open(unit=iunit+100,file=filename,status='unknown')
+        if (nid.eq.0) write(iunit+100,*) ' '
+        if (nid.eq.0) write(iunit+100,20)(time,xyz(2,k),
+     $  scalar(k),k=1,nprofile)
+        close(unit=iunit+100)
+        enddo
+   20   format(1p3e15.6)  ! time, z , tbar
 
       return
       end
