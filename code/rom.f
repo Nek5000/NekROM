@@ -744,6 +744,10 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
       endif
 
       if (nio.eq.0) then
+         write (6,*) 'param(2)      ',param(2)
+         write (6,*) 'param(8)      ',param(8)
+         write (6,*) 'rp_re         ',ad_re
+         write (6,*) 'rp_pe         ',ad_pe
          write (6,*) 'rp_nb         ',nb
          write (6,*) 'rp_lub        ',lub
          write (6,*) 'rp_ltb        ',ltb
