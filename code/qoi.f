@@ -367,6 +367,45 @@ c-----------------------------------------------------------------------
          else
          call read_serial(qwall,nb+1,'qoi/qwall ',rtmp1,nid)
          endif
+      else if (inus.eq.5) then
+         call rone(ones,lx1*ly1*lz1*nelt)
+         if (rmode.ne.'ON ') then
+         do i=0,nb
+            call gradm1(tx,ty,tz,tb(1,i))
+
+            eps=1.e-3
+            ta=0.
+            a=0.
+            do ie=1,nelt
+            do ifc=1,ldim*2
+               call facind(kx1,kx2,ky1,ky2,kz1,kz2,lx1,ly1,lz1,ifc)
+               if (cbc(ifc,ie,2).eq.'t  ') then
+                  x1=xm1(kx1,ky1,kz1,ie)
+                  x2=xm1(kx2,ky2,kz2,ie)
+                  y1=ym1(kx1,ky1,kz1,ie)
+                  y2=ym1(kx2,ky2,kz2,ie)
+                  z1=zm1(kx1,ky1,kz1,ie)
+                  z2=zm1(kx2,ky2,kz2,ie)
+                  xa=.5*(x1+x2)
+                  ya=.5*(y1+y2)
+                  za=.5*(z1+z2)
+                  if (xa.gt.(0.5-eps)) then
+                     ta=ta+facint_v(tx,area,ifc,ie)
+                     a=a+facint_v(ones,area,ifc,ie)
+                  endif
+               endif
+            enddo
+            enddo
+
+            ta=glsum(ta,1)
+            a=glsum(a,1)
+            write(6,*)a,'surface area'
+            qwall(i)=ta/2
+         enddo
+         call dump_serial(qwall,nb+1,'qoi/qwall ',nid)
+         else
+         call read_serial(qwall,nb+1,'qoi/qwall ',rtmp1,nid)
+         endif
       endif
 
       return
@@ -647,6 +686,9 @@ c-----------------------------------------------------------------------
          rnus=ad_pe*diam*h
          if (nio.eq.0) write (6,1) ad_step,time,twall,tbulk,rnus
       else if (inus.eq.4) then
+         rnus=vlsc2(qwall,ut,nb+1)
+         if (nio.eq.0) write (6,*) ad_step,time,rnus,'nus'
+      else if (inus.eq.5) then
          rnus=vlsc2(qwall,ut,nb+1)
          if (nio.eq.0) write (6,*) ad_step,time,rnus,'nus'
       endif
