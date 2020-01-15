@@ -30,7 +30,7 @@ before_install:
   - $MOR_DIR/tests/julia-init
 
   # Setup Nek5000
-  - git clone --single-branch -b master https://github.com/kent0/Nek5000
+  - git clone --single-branch -b presolve-fix https://github.com/kent0/Nek5000
   - export SOURCE_ROOT=$MOR_DIR/Nek5000
   - (cd Nek5000/tools; ./maketools genmap)
 
