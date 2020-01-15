@@ -984,7 +984,7 @@ c-----------------------------------------------------------------------
       endif
 
         do i=0,nb
-        call planar_avg(tbar,tb(1,i) ,igs_y) ! Contract in x+y: work=f(z)
+c       call planar_avg(tbar,tb(1,i) ,igs_y) ! Contract in x+y: work=f(z)
         call interp_t(scalar,xyz,nprofile,tbar)
         
         write(filename,'("q",I0,".dat")')i
@@ -1042,7 +1042,7 @@ c-----------------------------------------------------------------------
       endif
 
         do i=0,nb
-        call planar_avg(tbar,tb(1,i) ,igs_x) ! Contract in x+y: work=f(z)
+c       call planar_avg(tbar,tb(1,i) ,igs_x) ! Contract in x+y: work=f(z)
         call interp_t(scalar,xyz,nprofile,tbar)
         
         write(filename,'("q",I0,".dat")')i
