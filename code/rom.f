@@ -349,7 +349,12 @@ c-----------------------------------------------------------------------
          call sets(st0,tb,'ops/ct ')
       endif
 
-      if (ifbuoy.and.ifrom(1).and.ifrom(2)) call setbut(but0)
+c     if (ifbuoy.and.ifrom(1).and.ifrom(2)) call setbut(but0)
+      if (ifbuoy.and.ifrom(1).and.ifrom(2)) then
+         call setbut_xyz(but0_x,but0_y,but0_z)
+         call setbut0
+      endif
+
 
       ifield=jfield
 
@@ -1410,8 +1415,11 @@ c-----------------------------------------------------------------------
 
       call rone(binv,n)
       call invcol2(binv,bm1,n)
+      call rone(ones,n)
 
-      ad_ra=sqrt(op_glsc2_wt(gx,gy,gz,gx,gy,gz,binv)/glsum(bm1,n))
+c     ad_ra=sqrt(op_glsc2_wt(gx,gy,gz,gx,gy,gz,binv)/glsum(bm1,n))
+      ad_ra=sqrt(op_glsc2_wt(gx,gy,gz,gx,gy,gz,binv)
+     $          /op_glsc2_wt(ones,ones,ones,ones,ones,ones,bm1))
       if (nio.eq.0) write (6,*) ad_ra,'ad_ra'
       s=1./ad_ra
       call opcmult(gx,gy,gz,s)
@@ -1466,6 +1474,103 @@ c-----------------------------------------------------------------------
          call read_mat_serial(but0,nb+1,nb+1,fname,mb+1,nb+1,tab,nid)
       endif
 
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine setbut_xyz(b_x,b_y,b_z)
+
+      include 'SIZE'
+      include 'MOR'
+      include 'AVG'
+      include 'INPUT'
+      include 'MASS'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /scrread/ tab((lb+1)**2)
+      common /scrk/ wk1(lt),wk2(lt),wk3(lt)
+
+      logical iftmp
+
+      real b_x(0:nb,0:nb)
+      real b_y(0:nb,0:nb)
+      real b_z(0:nb,0:nb)
+
+      character*128 fname
+
+      n=lx1*ly1*lz1*nelv
+
+c     call cmult(gx,1./sqrt(2.),n)
+c     call cmult(gy,1./sqrt(2.),n)
+
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
+         do j=0,nb
+         do i=0,nb
+            b_x(i,j)=glsc3(ub(1,i),gx,tb(1,j),n)
+            b_y(i,j)=glsc3(vb(1,i),gy,tb(1,j),n)
+            if (ldim.eq.3) then
+               b_z(i,j)=glsc3(wb(1,i),gz,tb(1,j),n)
+            endif
+            if (nio.eq.0) write (6,*) i,j,b_x(i,j),'but0'
+         enddo
+         enddo
+
+         iftmp=ifxyo
+         ifxyo=.true.
+         call outpost(gx,gy,gz,pavg,tavg,'ggg')
+
+         call invcol3(wk1,gx,bm1,n)
+         call invcol3(wk2,gy,bm1,n)
+         call invcol3(wk3,gz,bm1,n)
+
+         call outpost(wk1,wk2,wk3,pavg,tavg,'ggg')
+         ifxyo=iftmp
+         call dump_serial(b_x,(nb+1)**2,'ops/but_x ',nid)
+         call dump_serial(b_y,(nb+1)**2,'ops/but_y ',nid)
+         if (ldim.eq.3) then
+            call dump_serial(b_z,(nb+1)**2,'ops/but_z ',nid)
+         endif
+      else
+         fname='ops/but_x '
+         if (nio.eq.0) write (6,*) 'reading but_x...'
+         call read_mat_serial(but0_x,nb+1,nb+1,fname,mb+1,nb+1,tab,nid)
+         fname='ops/but_y '
+         if (nio.eq.0) write (6,*) 'reading but_y...'
+         call read_mat_serial(but0_y,nb+1,nb+1,fname,mb+1,nb+1,tab,nid)
+         if (ldim.eq.3) then
+            fname='ops/but_z '
+            if (nio.eq.0) write (6,*) 'reading but_z...'
+            call read_mat_serial(but0_z,nb+1,nb+1,fname,mb+1,nb+1,
+     $                           tab,nid)
+         endif
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine setbut0
+
+      include 'SIZE'
+      include 'MOR'
+      include 'AVG'
+      include 'INPUT'
+      include 'MASS'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /scrread/ tab((lb+1)**2)
+      common /scrk/ wk1(lt),wk2(lt),wk3(lt)
+
+      character*128 fname
+
+      n=lx1*ly1*lz1*nelv
+
+      call add3s2(but0,but0_x,but0_y,sin(bu_angle),
+     $            cos(bu_angle),(nb+1)**2)
+
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
+         call dump_serial(but0,(nb+1)**2,'ops/but ',nid)
+      endif
       return
       end
 c-----------------------------------------------------------------------
