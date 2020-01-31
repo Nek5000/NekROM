@@ -130,11 +130,14 @@ c     parameters and common blocks for MOR
      $               sigma(lres,lres),alphaj(6),betaj(6),
      $               sigtmp(lres,lres)
 
-      common /eiivar/ nres
+      common /eiivar/ nres,nres_u,nres_t
       common /eivar/ res,eierr
 
-      common /eiresu/ xi_u(lx1*ly1*lz1*lelm,ldim,lres),theta_u(lres),
-     $                sigma_u(lres,lres)
+      common /eiresu/ xi_u(lx1*ly1*lz1*lelm,ldim,lres_u),
+     $                xi_t(lx1*ly1*lz1*lelm,lres_t),
+     $                sigma_u(lres_t,lres_t),sigma_t(lres_u,lres_u)
+      common /eirhs/ riesz_ru(lx1*ly1*lz1*lelm,ldim,lres_u),
+     $               riesz_rt(lx1*ly1*lz1*lelm,lres_t)
 
       ! Flags
 
