@@ -49,6 +49,48 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine c_avei
+
+      include 'SIZE'
+      include 'MOR'
+
+      common /ccres/ cdiff(0:lb)
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      call set_theta_ns
+
+      res=0.
+
+      do j=1,nres
+      do i=1,nres
+         res=res+sigma(i,j)*theta(i)*theta(j)
+      enddo
+      enddo
+
+      res=sqrt(res)
+
+      eierr=0.
+
+      call sub3(cdiff,ua,uas,nb+1)
+      call mxm(bu0,nb+1,cdiff,nb+1,ctmp,1)
+
+      do i=0,nb
+      do j=0,nb
+         eierr=eierr+bu0(1+i+(nb+1)*j)*(ua(i)-uas(i))*(ua(j)-uas(j))
+      enddo
+      enddo
+
+      eierr=sqrt(eierr)
+
+      if (res.le.0) call exitti('negative semidefinite residual$',n)
+
+      if (nid.eq.0) write (6,*) 'res:',res
+      if (nid.eq.0) write (6,*) 'err:',eierr
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine set_xi_poisson
 
       include 'SIZE'
@@ -292,6 +334,9 @@ c-----------------------------------------------------------------------
       else if (eqn.eq.'NSE') then
          nres=(nb+1)*2+(nb+1)**2
          if (ifbuoy) nres=nres+nb+1
+      else if (eqn.eq.'SNSE') then
+         nres=(nb+1)*2+(nb+1)**2
+         if (ifbuoy) nres=nres+nb+1
       endif
 
       if (nres.gt.lres) call exitti('nres > lres$',nres)
@@ -319,6 +364,8 @@ c-----------------------------------------------------------------------
          else if (eqn.eq.'NSE') then
             ifield=1
             call set_xi_ns
+         else if (eqn.eq.'SNSE') then
+            call set_rr_ns
          endif
 
          if (ifield.eq.2) then
@@ -651,7 +698,7 @@ c-----------------------------------------------------------------------
      $                riesz_ru(1,ldim,l1))
          l1=l1+1
       enddo
-      write(6,*)l1,'lres_u_1'
+      if (nid.eq.0) write(6,*)l1,'lres_u_1'
 
       l2=1
       do i=0,nb
@@ -663,25 +710,33 @@ c-----------------------------------------------------------------------
          call chsign(riesz_rt(1,l2),n) 
          l2=l2+1
       enddo
-      write(6,*)l2,'lres_t_1'
+      if (nid.eq.0) write(6,*)l2,'lres_t_1'
 
       do i=0,nb
          ifield=1
          call opcopy(riesz_ru(1,1,l1),riesz_ru(1,2,l1)
      $               ,riesz_ru(1,ldim,l1)
      $               ,tb(1,i),zeros,zeros)
+         call opcolv(riesz_ru(1,1,l1),riesz_ru(1,2,l1),
+     $               riesz_ru(1,ldim,l1),bm1)
+         call opchsgn(riesz_ru(1,1,l1),riesz_ru(1,2,l1),
+     $                riesz_ru(1,ldim,l1))
          l1=l1+1
       enddo
-      write(6,*)l1,'lres_u_2'
+      if (nid.eq.0) write(6,*)l1,'lres_u_2'
 
       do i=0,nb
          ifield=1
          call opcopy(riesz_ru(1,1,l1),riesz_ru(1,2,l1)
      $               ,riesz_ru(1,ldim,l1)
      $               ,zeros,tb(1,i),zeros)
+         call opcolv(riesz_ru(1,1,l1),riesz_ru(1,2,l1),
+     $               riesz_ru(1,ldim,l1),bm1)
+         call opchsgn(riesz_ru(1,1,l1),riesz_ru(1,2,l1),
+     $                riesz_ru(1,ldim,l1))
          l1=l1+1
       enddo
-      write(6,*)l1,'lres_u_3'
+      if (nid.eq.0) write(6,*)l1,'lres_u_3'
 
       do j=0,nb
          do i=0,nb
@@ -705,8 +760,8 @@ c-----------------------------------------------------------------------
             l2=l2+1
          enddo
       enddo
-      write(6,*)l1,'lres_u_4'
-      write(6,*)l2,'lres_t_2'
+      if (nid.eq.0) write(6,*)l1,'lres_u_4'
+      if (nid.eq.0) write(6,*)l2,'lres_t_2'
 
       if (nio.eq.0) write (6,*) 'exit set_rhs'
 
@@ -747,19 +802,19 @@ c     boundary condition of the problem
      $               riesz_ru(1,1,l1),riesz_ru(1,2,l1),
      $               riesz_ru(1,ldim,l1),
      $               ones,ones,tolhv,nmaxv)               
-         write(6,*)'riesz_u',l1,'completed'
+         if (nid.eq.0) write(6,*)'riesz_u',l1,'completed'
          ifield=2
          call hsolve  ('TEMP',xi_t(1,l2),riesz_rt(1,l2),ones,ones
      $                   ,tmask(1,1,1,1,ifield-1)
      $                   ,tmult(1,1,1,1,ifield-1)
      $                   ,imesh,tolht(ifield),nmxt(ifield-1),1
      $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
-         write(6,*)'riesz_t',l2,'completed'
+         if (nid.eq.0) write(6,*)'riesz_t',l2,'completed'
          l1=l1+1
          l2=l2+1
       enddo
-      write(6,*)l1,'lres_u_1'
-      write(6,*)l2,'lres_t_1'
+      if (nid.eq.0) write(6,*)l1,'lres_u_1'
+      if (nid.eq.0) write(6,*)l2,'lres_t_1'
 
       do i=0,nb
          ifield=1
@@ -767,10 +822,10 @@ c     boundary condition of the problem
      $               riesz_ru(1,1,l1),riesz_ru(1,2,l1),
      $               riesz_ru(1,ldim,l1),
      $               ones,ones,tolhv,nmaxv)               
-         write(6,*)'riesz_u',l1,'completed'
+         if (nid.eq.0) write(6,*)'riesz_u',l1,'completed'
          l1=l1+1
       enddo
-      write(6,*)l1,'lres_u_2'
+      if (nid.eq.0) write(6,*)l1,'lres_u_2'
 
       do i=0,nb
          ifield=1
@@ -778,10 +833,10 @@ c     boundary condition of the problem
      $               riesz_ru(1,1,l1),riesz_ru(1,2,l1),
      $               riesz_ru(1,ldim,l1),
      $               ones,ones,tolhv,nmaxv)               
-         write(6,*)'riesz_u',l1,'completed'
+         if (nid.eq.0) write(6,*)'riesz_u',l1,'completed'
          l1=l1+1
       enddo
-      write(6,*)l1,'lres_u_3'
+      if (nid.eq.0) write(6,*)l1,'lres_u_3'
 
       do j=0,nb
          do i=0,nb
@@ -790,7 +845,7 @@ c     boundary condition of the problem
      $               riesz_ru(1,1,l1),riesz_ru(1,2,l1),
      $               riesz_ru(1,ldim,l1),
      $               ones,ones,tolhv,nmaxv)               
-            write(6,*)'riesz_u',l1,'completed'
+            if (nid.eq.0) write(6,*)'riesz_u',l1,'completed'
             ifield=2
             call hsolve  ('TEMP',xi_t(1,l2),riesz_rt(1,l2),ones,ones
      $                   ,tmask(1,1,1,1,ifield-1)
@@ -799,11 +854,11 @@ c     boundary condition of the problem
      $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
             l1=l1+1
             l2=l2+1
-            write(6,*)'riesz_t',l2,'completed'
+            if (nid.eq.0) write(6,*)'riesz_t',l2,'completed'
          enddo
       enddo
-      write(6,*)l1,'lres_u_4'
-      write(6,*)l2,'lres_t_2'
+      if (nid.eq.0) write(6,*)l1,'lres_u_4'
+      if (nid.eq.0) write(6,*)l2,'lres_t_2'
 
       if ((l1-1).gt.nres_u) then
          call exitti('increase nres_u$',l1-1)
@@ -896,6 +951,13 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelv
 
+      if (nio.eq.0) write (6,*) 'inside set_crs'
+
+      call rone(ones,n)
+      call rzero(zeros,n)
+
+      if (nio.eq.0) write (6,*) 'exiting set_crs'
+
       return
       end
 c-----------------------------------------------------------------------
@@ -907,10 +969,61 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
+      real wk1(lt)
+
       n=lx1*ly1*lz1*nelv
 
-c     do i=0,nb
-c     enddo
+      l1=1
+      do i=0,nb
+         call cfill(wk1,uu(i),n)
+         call opadd2col (res_u(1,1),res_u(1,2),res_u(1,ldim),
+     $                   riesz_ru(1,1,l1),riesz_ru(1,2,l1),
+     $                   riesz_ru(1,ldim,l1),wk1)
+         l1=l1+1 
+      enddo
+
+      do i=0,nb
+         call cfill(wk1,uu(i),n)
+         call opadd2col (res_u(1,1),res_u(1,2),res_u(1,ldim),
+     $                   riesz_ru(1,1,l1),riesz_ru(1,2,l1),
+     $                   riesz_ru(1,ldim,l1),wk1)
+         l1=l1+1 
+      enddo
+
+      do i=0,nb
+         call cfill(wk1,uu(i),n)
+         call opadd2col (res_u(1,1),res_u(1,2),res_u(1,ldim),
+     $                   riesz_ru(1,1,l1),riesz_ru(1,2,l1),
+     $                   riesz_ru(1,ldim,l1),wk1)
+         l1=l1+1 
+      enddo
+
+      do j=0,nb
+         do i=0,nb
+            call cfill(wk1,uu(j),n)
+            call cmult(wk1,uu(i),n)
+            call opadd2col (res_u(1,1),res_u(1,2),res_u(1,ldim),
+     $                   riesz_ru(1,1,l1),riesz_ru(1,2,l1),
+     $                   riesz_ru(1,ldim,l1),wk1)
+            l1=l1+1 
+         enddo
+      enddo
+
+      l2=1
+      do i=0,nb
+         call cfill(wk1,uu(i+nb+1),n)
+         call add2col2(res_t,riesz_rt(1,l2),wk1,n)
+         l2=l2+1
+      enddo
+
+      do j=0,nb
+         do i=0,nb
+            call cfill(wk1,uu(j),n)
+            call cmult(wk1,uu(i+nb+1),n)
+            call add2col2(res_t,riesz_rt(1,l2),wk1,n)
+            l2=l2+1 
+         enddo
+      enddo
 
       return
       end
