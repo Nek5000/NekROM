@@ -815,6 +815,56 @@ c     boundary condition of the problem
       return
       end
 c-----------------------------------------------------------------------
+      subroutine csigma_u(aa)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real aa(1:nres_u,1:nres_u)
+
+      n=lx1*ly1*lz1*nelv
+
+      do i=1,nres_u
+         do j=1,nres_u
+            aa(i,j) = h10vip(riesz_ru(1,1,i),riesz_ru(1,2,i),
+     $                          riesz_ru(1,ldim,i),riesz_ru(1,1,j),
+     $                          riesz_ru(1,2,j),riesz_ru(1,ldim,j))
+            aa(i,j) = aa(i,j) + wl2vip(riesz_ru(1,1,i),
+     $                          riesz_ru(1,2,i),
+     $                          riesz_ru(1,ldim,i),riesz_ru(1,1,j),
+     $                          riesz_ru(1,2,j),riesz_ru(1,ldim,j))
+         enddo
+         if (nid.eq.0) write (6,*) i,aa(1,i),'sigma_u'
+      enddo
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine csigma_t(aa)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real aa(1:nres_t,1:nres_t)
+
+      n=lx1*ly1*lz1*nelv
+
+      do i=1,nres_t
+         do j=1,nres_t
+            aa(i,j) = h10sip(riesz_rt(1,i),riesz_rt(1,j))
+            aa(i,j) = aa(i,j) + 
+     $                wl2sip(riesz_rt(1,i),riesz_rt(1,j))
+         enddo
+         if (nid.eq.0) write (6,*) i,aa(1,i),'sigma_t'
+      enddo
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine set_sigma_new
 
       include 'SIZE'
@@ -825,31 +875,42 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelv
       
-      l1=1
-      l2=1
-      do i=1,nres_u
-         do j=1,nres_u
-            sigma_u(i,j) = h10vip(riesz_ru(1,1,i),riesz_ru(1,2,i),
-     $                          riesz_ru(1,ldim,i),riesz_ru(1,1,j),
-     $                          riesz_ru(1,2,j),riesz_ru(1,ldim,j))
-            sigma_u(i,j) = sigma_u(i,j) + wl2vip(riesz_ru(1,1,i),
-     $                          riesz_ru(1,2,i),
-     $                          riesz_ru(1,ldim,i),riesz_ru(1,1,j),
-     $                          riesz_ru(1,2,j),riesz_ru(1,ldim,j))
-         enddo
-            write (6,*) i,sigma_u(1,i),'sigma_u'
-      enddo
+      if (nio.eq.0) write (6,*) 'inside set_sigma_new'
 
-      do i=1,nres_t
-         do j=1,nres_t
-            sigma_t(i,j) = h10sip(riesz_rt(1,i),riesz_rt(1,j))
-            sigma_t(i,j) = sigma_t(i,j) + 
-     $                   wl2sip(riesz_rt(1,i),riesz_rt(1,j))
-         enddo
-            write (6,*) i,sigma_t(1,i),'sigma_t'
-      enddo
-      call dump_serial(sigma_u,(nres_u)**2,'ops/sigma_u',nid)
-      call dump_serial(sigma_t,(nres_t)**2,'ops/sigma_t',nid)
+      call csigma_u(sigma_u)
+      call csigma_t(sigma_t)
+      call dump_serial(sigma_u,(nres_u)**2,'ops/sigma_u ',nid)
+      call dump_serial(sigma_t,(nres_t)**2,'ops/sigma_t ',nid)
+
+      if (nio.eq.0) write (6,*) 'exiting set_sigma_new'
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine crd
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      n=lx1*ly1*lz1*nelv
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine cres_new(uu)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      n=lx1*ly1*lz1*nelv
+
+c     do i=0,nb
+c     enddo
 
       return
       end
