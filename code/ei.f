@@ -804,10 +804,15 @@ c     boundary condition of the problem
      $               ones,ones,tolhv,nmaxv)               
          if (nid.eq.0) write(6,*)'riesz_u',l1,'completed'
          ifield=2
+c        call hsolve  ('TEMP',xi_t(1,l2),riesz_rt(1,l2),ones,ones
+c    $                   ,tmask(1,1,1,1,ifield-1)
+c    $                   ,tmult(1,1,1,1,ifield-1)
+c    $                   ,imesh,tolht(ifield),nmxt(ifield-1),1
+c    $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
          call hsolve  ('TEMP',xi_t(1,l2),riesz_rt(1,l2),ones,ones
      $                   ,tmask(1,1,1,1,ifield-1)
      $                   ,tmult(1,1,1,1,ifield-1)
-     $                   ,imesh,tolht(ifield),nmxt(ifield-1),1
+     $                   ,imesh,tolht(ifield),nmxh,1
      $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
          if (nid.eq.0) write(6,*)'riesz_t',l2,'completed'
          l1=l1+1
@@ -847,10 +852,15 @@ c     boundary condition of the problem
      $               ones,ones,tolhv,nmaxv)               
             if (nid.eq.0) write(6,*)'riesz_u',l1,'completed'
             ifield=2
+c           call hsolve  ('TEMP',xi_t(1,l2),riesz_rt(1,l2),ones,ones
+c    $                   ,tmask(1,1,1,1,ifield-1)
+c    $                   ,tmult(1,1,1,1,ifield-1)
+c    $                   ,imesh,tolht(ifield),nmxt(ifield-1),1
+c    $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
             call hsolve  ('TEMP',xi_t(1,l2),riesz_rt(1,l2),ones,ones
      $                   ,tmask(1,1,1,1,ifield-1)
      $                   ,tmult(1,1,1,1,ifield-1)
-     $                   ,imesh,tolht(ifield),nmxt(ifield-1),1
+     $                   ,imesh,tolht(ifield),nmxh,1
      $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
             l1=l1+1
             l2=l2+1
