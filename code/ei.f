@@ -680,6 +680,9 @@ c-----------------------------------------------------------------------
       n=lx1*ly1*lz1*nelv
 
       if (nio.eq.0) write (6,*) 'inside set_rhs'
+
+      call rone(ones,n)
+      call rzero(zeros,n)
       
       l1=1
       do i=0,nb
@@ -687,9 +690,9 @@ c-----------------------------------------------------------------------
          ifield=1
          call opcopy(wk1,wk2,wk3,ub(1,i),vb(1,i),wb(1,i))
          call axhelm(riesz_ru(1,1,l1),wk1,ones,zeros,1,1)
-         call axhelm(riesz_ru(1,2,l1),wk2,ones,zeros,1,1)
+         call axhelm(riesz_ru(1,2,l1),wk2,ones,zeros,1,2)
          if (ldim.eq.3) then
-            call axhelm(riesz_ru(1,ldim,l1),wk1,ones,zeros,1,1)
+            call axhelm(riesz_ru(1,ldim,l1),wk3,ones,zeros,1,3)
          endif
          call cmult(riesz_ru(1,1,l1),param(2),n)
          call cmult(riesz_ru(1,2,l1),param(2),n)
