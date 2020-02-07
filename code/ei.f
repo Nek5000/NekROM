@@ -675,7 +675,7 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /screi/ wk1(lt),wk2(lt),wk3(lt),wk4(lt),wk5(lt)
+      common /screi/ wk1(lt),wk2(lt),wk3(lt),wk4(lt),wk5(lt),wk6(lt)
 
       n=lx1*ly1*lz1*nelv
 
@@ -697,6 +697,9 @@ c-----------------------------------------------------------------------
          call cmult(riesz_ru(1,1,l1),param(2),n)
          call cmult(riesz_ru(1,2,l1),param(2),n)
          if (ldim.eq.3) call cmult(riesz_ru(1,ldim,l1),param(2),n)
+         call opgrad(wk4,wk5,wk6,pb(1,0))
+         call opadd2(riesz_ru(1,1,l1),riesz_ru(1,2,l1),
+     $               riesz_ru(1,ldim,l1),wk4,wk5,wk6)
          call opchsgn(riesz_ru(1,1,l1),riesz_ru(1,2,l1),
      $                riesz_ru(1,ldim,l1))
          l1=l1+1
