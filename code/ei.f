@@ -1034,9 +1034,13 @@ c    $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
          write(6,*)t1,t2,t3,t4,'t1,t2,t3,t4'
          dual_norm(i) = t1+t2+t3+t4
          dual_norm(i) = sqrt(dual_norm(i))
-         write(6,*)i,dual_norm(i),'dual_norm in for v and t'
-         write(6,*)i,sqrt(t1+t2),'dual_norm in for v'
-         write(6,*)i,sqrt(t3+t4),'dual_norm in for t'
+         write(6,*)i,ts_an(i),'angle'
+         write(6,*)i,dual_norm(i),
+     $            'dual_norm H1 norm for the coupled system'
+         write(6,*)i,sqrt(t1+t2),
+     $            'dual_norm H1 norm for the velocity'
+         write(6,*)i,sqrt(t3+t4),
+     $            'dual_norm H1 norm for the temperature'
 
       enddo
       call dump_serial(dual_norm,num_ts,'./dual_norm ',nid)
@@ -1332,17 +1336,16 @@ c     call opsub2(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),wk1,wk2,wk3)
       ifield=2
       ifld1 = ifield-1
       napproxt(1,ifld1) = laxtt
-      call hsolve  ('TEMP',eh_t,res_t,ones,ones
-     $                   ,tmask(1,1,1,1,ifield-1)
-     $                   ,tmult(1,1,1,1,ifield-1)
-     $                   ,imesh,tolht(ifield),nmxt(ifield-1),1
-     $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
-      write(6,*)'here'
 c     call hsolve  ('TEMP',eh_t,res_t,ones,ones
 c    $                   ,tmask(1,1,1,1,ifield-1)
 c    $                   ,tmult(1,1,1,1,ifield-1)
-c    $                   ,imesh,tolht(ifield),nmxh,1
+c    $                   ,imesh,tolht(ifield),nmxt(ifield-1),1
 c    $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
+      call hsolve  ('TEMP',eh_t,res_t,ones,ones
+     $                   ,tmask(1,1,1,1,ifield-1)
+     $                   ,tmult(1,1,1,1,ifield-1)
+     $                   ,imesh,tolht(ifield),nmxh,1
+     $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
 
       ifield=1
       t1 = h10vip(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
