@@ -971,10 +971,10 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      integer num_ts
       real uu((nb+1)*2*num_ts),wk(2*(lb+1)*num_ts)
       real ts_an(num_ts)
       real dual_norm(num_ts),tmp(lt)
+      integer num_ts
       logical ifexist
 
       n=lx1*ly1*lz1*nelv
@@ -992,77 +992,51 @@ c-----------------------------------------------------------------------
       call rzero(dual_norm,num_ts)
       do i=1,num_ts
 
-      write(6,*)i,ts_an(i),'angle'
-      call cres_new(uu(1+(i-1)*(nb+1)*2),ts_an(i))
-c     call cres_new1(angle)
-      do ii=1,(nb+1)*2*num_ts
-         write(6,*)ii,uu(ii),ts_an(i)
-      enddo
+         write(6,*)i,ts_an(i),'angle'
+         call cres_new(uu(1+(i-1)*(nb+1)*2),ts_an(i))
+         do ii=1,(nb+1)*2*num_ts
+            write(6,*)ii,uu(ii),ts_an(i)
+         enddo
 
-      call rone(ones,n)
-      call rzero(zeros,n)
-c     call outpost(res_u(1,1),res_u(1,2),res_u(1,ldim),
-c    $            pr,res_t,'her')
-      ifield=1
-      tolhv=1e-8
-      tolht(2)=1e-8
-c     nmxv=1000
-      call ophinv(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
-     $            res_u(1,1),res_u(1,2),res_u(1,ldim),
-     $            ones,ones,tolhv,nmxv)      
-c     call bcdirvc  (eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
-c    $               v1mask,v2mask,v3mask)
+         call rone(ones,n)
+         call rzero(zeros,n)
+         ifield=1
+         tolhv=1e-8
+         tolht(2)=1e-8
+c        nmxv=1000
+         call ophinv(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
+     $               res_u(1,1),res_u(1,2),res_u(1,ldim),
+     $               ones,ones,tolhv,nmxv)      
 
-      ifield=2
-      ifld1 = ifield-1
-      napproxt(1,ifld1) = laxtt
+         ifield=2
+         ifld1 = ifield-1
+         napproxt(1,ifld1) = laxtt
 c     call hsolve  ('TEMP',eh_t,res_t,ones,ones
 c    $                   ,tmask(1,1,1,1,ifield-1)
 c    $                   ,tmult(1,1,1,1,ifield-1)
 c    $                   ,imesh,tolht(ifield),nmxt(ifield-1),1
 c    $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
-      call hsolve  ('TEMP',eh_t,res_t,ones,ones
+         call hsolve  ('TEMP',eh_t,res_t,ones,ones
      $                   ,tmask(1,1,1,1,ifield-1)
      $                   ,tmult(1,1,1,1,ifield-1)
      $                   ,imesh,tolht(ifield),nmxh,1
      $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
-c     call outpost(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),pr,eh_t,'her')
-c     call col2(eh_t,bm1,n)
-c     call outpost(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),pr,eh_t,'her')
 
-c     write(6,*)imesh,tolht(ifield),nmxt(ifield-1)
-c     ifield=1
-c     call bcdirsc (eh_t)
-c     call outpost(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),pr,res_t,'her')
-c     call copy(tmp,tb(1,0),n)
-c     do ii=1,n
-c     write(6,*)ii,tmask(ii,1,1,1,1),tmask(ii,1,1,1,2),
-c    $            tmask(ii,1,1,1,3),'tmask'
-c     enddo
-c     do ii=1,n
-c     write(6,*)ii,tmult(ii,1,1,1,1),tmult(ii,1,1,1,2),
-c    $            tmult(ii,1,1,1,3),'tmult'
-c     enddo
-c     call col2(eh_t,tmask(1,1,1,1,3),n)
-c     call outpost(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),tb(1,0),tmp,'her')
-      ifield=1
-      t1 = h10vip(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
+         ifield=1
+         t1 = h10vip(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
      $         eh_u(1,1),eh_u(1,2),eh_u(1,ldim)) 
-      t2 = wl2vip(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
+         t2 = wl2vip(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
      $           eh_u(1,1),eh_u(1,2),eh_u(1,ldim)) 
-      ifield=2
-      t3 = h10sip(eh_t,eh_t) 
-      t4 = wl2sip(eh_t,eh_t)  
+         ifield=2
+         t3 = h10sip(eh_t,eh_t) 
+         t4 = wl2sip(eh_t,eh_t)  
       
-      dual_norm(i) = t1+t2+t3+t4
-      write(6,*)t1,t2,t3,t4,'t1,t2,t3,t4'
-c     dual_norm(i) = h10vip(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
-c    $                   eh_u(1,1),eh_u(1,2),eh_u(1,ldim)) +
-c    $               h10sip(eh_t,eh_t) 
-      dual_norm(i) = sqrt(dual_norm(i))
-      write(6,*)i,dual_norm(i),'dual_norm in for v and t'
-      write(6,*)i,sqrt(t1+t2),'dual_norm in for v'
-      write(6,*)i,sqrt(t3+t4),'dual_norm in for t'
+         write(6,*)t1,t2,t3,t4,'t1,t2,t3,t4'
+         dual_norm(i) = t1+t2+t3+t4
+         dual_norm(i) = sqrt(dual_norm(i))
+         write(6,*)i,dual_norm(i),'dual_norm in for v and t'
+         write(6,*)i,sqrt(t1+t2),'dual_norm in for v'
+         write(6,*)i,sqrt(t3+t4),'dual_norm in for t'
 
       enddo
       call dump_serial(dual_norm,num_ts,'./dual_norm ',nid)
