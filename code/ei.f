@@ -697,9 +697,9 @@ c-----------------------------------------------------------------------
          call cmult(riesz_ru(1,1,l1),param(2),n)
          call cmult(riesz_ru(1,2,l1),param(2),n)
          if (ldim.eq.3) call cmult(riesz_ru(1,ldim,l1),param(2),n)
-         call opgrad(wk4,wk5,wk6,pb(1,0))
-         call opadd2(riesz_ru(1,1,l1),riesz_ru(1,2,l1),
-     $               riesz_ru(1,ldim,l1),wk4,wk5,wk6)
+c        call opgrad(wk4,wk5,wk6,pb(1,0))
+c        call opadd2(riesz_ru(1,1,l1),riesz_ru(1,2,l1),
+c    $               riesz_ru(1,ldim,l1),wk4,wk5,wk6)
          call opchsgn(riesz_ru(1,1,l1),riesz_ru(1,2,l1),
      $                riesz_ru(1,ldim,l1))
          l1=l1+1
@@ -768,6 +768,12 @@ c-----------------------------------------------------------------------
       enddo
       if (nid.eq.0) write(6,*)l1,'lres_u_4'
       if (nid.eq.0) write(6,*)l2,'lres_t_2'
+
+      ! add pressure residual
+      call opgrad(riesz_rp(1,1,1),riesz_rp(1,2,1),
+     $            riesz_rp(1,ldim,1),pb(1,0))
+      call opchsgn(riesz_rp(1,1,1),riesz_rp(1,2,1),
+     $                riesz_rp(1,ldim,1))
 
       if (nio.eq.0) write (6,*) 'exit set_rhs'
 
@@ -1021,6 +1027,11 @@ c    $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
      $                   ,tmult(1,1,1,1,ifield-1)
      $                   ,imesh,tolht(ifield),nmxh,1
      $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
+c        call ophinv(eh_p(1,1),eh_p(1,2),eh_p(1,ldim),
+c    $            riesz_rp(1,1,1),riesz_rp(1,2,1),riesz_rp(1,ldim,1),
+c    $            ones,ones,tolhv,nmxv)      
+c        call opadd2(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
+c    $               eh_p(1,1),eh_p(1,2),eh_p(1,ldim))    
 
          ifield=1
          t1 = h10vip(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
@@ -1080,6 +1091,9 @@ c-----------------------------------------------------------------------
          endif
          l1=l1+1 
       enddo
+      ! add pressure contribution
+      call opadd2(res_u(1,1),res_u(1,2),res_u(1,ldim),
+     $            riesz_rp(1,1,1),riesz_rp(1,2,1),riesz_rp(1,ldim,1))      
       write(6,*)l1,'l0'
 
       write(6,*)sin(angle*pi/180),'sin(angle*pi/180)'
