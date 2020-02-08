@@ -810,6 +810,8 @@ c     boundary condition of the problem
      $               ones,ones,tolhv,nmaxv)               
          if (nid.eq.0) write(6,*)'riesz_u',l1,'completed'
          ifield=2
+         ifld1 = ifield-1
+         napproxt(1,ifld1) = laxtt
 c        call hsolve  ('TEMP',xi_t(1,l2),riesz_rt(1,l2),ones,ones
 c    $                   ,tmask(1,1,1,1,ifield-1)
 c    $                   ,tmult(1,1,1,1,ifield-1)
@@ -858,6 +860,8 @@ c    $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
      $               ones,ones,tolhv,nmaxv)               
             if (nid.eq.0) write(6,*)'riesz_u',l1,'completed'
             ifield=2
+            ifld1 = ifield-1
+            napproxt(1,ifld1) = laxtt
 c           call hsolve  ('TEMP',xi_t(1,l2),riesz_rt(1,l2),ones,ones
 c    $                   ,tmask(1,1,1,1,ifield-1)
 c    $                   ,tmult(1,1,1,1,ifield-1)
@@ -957,27 +961,118 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine crd
+      subroutine crd(num_ts)
 
       include 'SIZE'
       include 'TOTAL'
+      include 'ORTHOT'
+      include 'CTIMER'
       include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
+      integer num_ts
+      real uu((nb+1)*2*num_ts),wk(2*(lb+1)*num_ts)
+      real ts_an(num_ts)
+      real dual_norm(num_ts),tmp(lt)
+      logical ifexist
+
       n=lx1*ly1*lz1*nelv
 
-      if (nio.eq.0) write (6,*) 'inside set_crs'
+      if (nio.eq.0) write (6,*) 'inside crd'
+
+      inquire (file='./rom.dat',exist=ifexist)
+      if (ifexist) call read_serial(uu,(nb+1)*2*num_ts,
+     $                  './rom.dat ',wk,nid)
+
+      inquire (file='./angle.dat',exist=ifexist)
+      if (ifexist) call read_serial(ts_an,num_ts,
+     $                  './angle.dat ',wk,nid)
+
+      call rzero(dual_norm,num_ts)
+      do i=1,num_ts
+
+      write(6,*)i,ts_an(i),'angle'
+      call cres_new(uu(1+(i-1)*(nb+1)*2),ts_an(i))
+c     call cres_new1(angle)
+      do ii=1,(nb+1)*2*num_ts
+         write(6,*)ii,uu(ii),ts_an(i)
+      enddo
 
       call rone(ones,n)
       call rzero(zeros,n)
+c     call outpost(res_u(1,1),res_u(1,2),res_u(1,ldim),
+c    $            pr,res_t,'her')
+      ifield=1
+      tolhv=1e-8
+      tolht(2)=1e-8
+c     nmxv=1000
+      call ophinv(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
+     $            res_u(1,1),res_u(1,2),res_u(1,ldim),
+     $            ones,ones,tolhv,nmxv)      
+c     call bcdirvc  (eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
+c    $               v1mask,v2mask,v3mask)
 
-      if (nio.eq.0) write (6,*) 'exiting set_crs'
+      ifield=2
+      ifld1 = ifield-1
+      napproxt(1,ifld1) = laxtt
+c     call hsolve  ('TEMP',eh_t,res_t,ones,ones
+c    $                   ,tmask(1,1,1,1,ifield-1)
+c    $                   ,tmult(1,1,1,1,ifield-1)
+c    $                   ,imesh,tolht(ifield),nmxt(ifield-1),1
+c    $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
+      call hsolve  ('TEMP',eh_t,res_t,ones,ones
+     $                   ,tmask(1,1,1,1,ifield-1)
+     $                   ,tmult(1,1,1,1,ifield-1)
+     $                   ,imesh,tolht(ifield),nmxh,1
+     $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
+c     call outpost(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),pr,eh_t,'her')
+c     call col2(eh_t,bm1,n)
+c     call outpost(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),pr,eh_t,'her')
+
+c     write(6,*)imesh,tolht(ifield),nmxt(ifield-1)
+c     ifield=1
+c     call bcdirsc (eh_t)
+c     call outpost(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),pr,res_t,'her')
+c     call copy(tmp,tb(1,0),n)
+c     do ii=1,n
+c     write(6,*)ii,tmask(ii,1,1,1,1),tmask(ii,1,1,1,2),
+c    $            tmask(ii,1,1,1,3),'tmask'
+c     enddo
+c     do ii=1,n
+c     write(6,*)ii,tmult(ii,1,1,1,1),tmult(ii,1,1,1,2),
+c    $            tmult(ii,1,1,1,3),'tmult'
+c     enddo
+c     call col2(eh_t,tmask(1,1,1,1,3),n)
+c     call outpost(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),tb(1,0),tmp,'her')
+      ifield=1
+      t1 = h10vip(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
+     $         eh_u(1,1),eh_u(1,2),eh_u(1,ldim)) 
+      t2 = wl2vip(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
+     $           eh_u(1,1),eh_u(1,2),eh_u(1,ldim)) 
+      ifield=2
+      t3 = h10sip(eh_t,eh_t) 
+      t4 = wl2sip(eh_t,eh_t)  
+      
+      dual_norm(i) = t1+t2+t3+t4
+      write(6,*)t1,t2,t3,t4,'t1,t2,t3,t4'
+c     dual_norm(i) = h10vip(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
+c    $                   eh_u(1,1),eh_u(1,2),eh_u(1,ldim)) +
+c    $               h10sip(eh_t,eh_t) 
+      dual_norm(i) = sqrt(dual_norm(i))
+      write(6,*)i,dual_norm(i),'dual_norm in for v and t'
+      write(6,*)i,sqrt(t1+t2),'dual_norm in for v'
+      write(6,*)i,sqrt(t3+t4),'dual_norm in for t'
+
+      enddo
+      call dump_serial(dual_norm,num_ts,'./dual_norm ',nid)
+
+      if (nio.eq.0) write (6,*) 'exiting crd'
 
       return
       end
 c-----------------------------------------------------------------------
-      subroutine cres_new(uu)
+      subroutine cres_new(uu,angle)
 
       include 'SIZE'
       include 'TOTAL'
@@ -986,60 +1081,318 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       real wk1(lt)
+      real uu((nb+1)*2)
+      real angle
 
       n=lx1*ly1*lz1*nelv
+      write(6,*)nelt,nelv,lelm,'nelt,nelv'
+      pi  = 4.*atan(1.)
+
+      call rzero3(res_u(1,1),res_u(1,2),res_u(1,ldim),n)
+      call rzero(res_t,n)
 
       l1=1
-      do i=0,nb
+      do i=1,nb+1
+         write(6,*)i,uu(i),'u'
          call cfill(wk1,uu(i),n)
-         call opadd2col (res_u(1,1),res_u(1,2),res_u(1,ldim),
-     $                   riesz_ru(1,1,l1),riesz_ru(1,2,l1),
-     $                   riesz_ru(1,ldim,l1),wk1)
+         call add2col2(res_u(1,1),riesz_ru(1,1,l1),wk1,n)
+         call add2col2(res_u(1,2),riesz_ru(1,2,l1),wk1,n)
+         if (ldim.eq.3) then 
+            call add2col2(res_u(1,ldim),riesz_ru(1,ldim,l1),wk1,n)
+         endif
          l1=l1+1 
       enddo
+      write(6,*)l1,'l0'
 
-      do i=0,nb
-         call cfill(wk1,uu(i),n)
-         call opadd2col (res_u(1,1),res_u(1,2),res_u(1,ldim),
-     $                   riesz_ru(1,1,l1),riesz_ru(1,2,l1),
-     $                   riesz_ru(1,ldim,l1),wk1)
+      write(6,*)sin(angle*pi/180),'sin(angle*pi/180)'
+      do i=1,nb+1
+         write(6,*)i,uu(i+(nb+1)),'t'
+         call cfill(wk1,uu(i+(nb+1)),n)
+         call cmult(wk1,-sin(angle*pi/180),n)
+         call add2col2(res_u(1,1),riesz_ru(1,1,l1),wk1,n)
+         call add2col2(res_u(1,2),riesz_ru(1,2,l1),wk1,n)
+         if (ldim.eq.3) then 
+            call add2col2(res_u(1,ldim),riesz_ru(1,ldim,l1),wk1,n)
+         endif
          l1=l1+1 
       enddo
+      write(6,*)l1,'l1'
 
-      do i=0,nb
-         call cfill(wk1,uu(i),n)
-         call opadd2col (res_u(1,1),res_u(1,2),res_u(1,ldim),
-     $                   riesz_ru(1,1,l1),riesz_ru(1,2,l1),
-     $                   riesz_ru(1,ldim,l1),wk1)
+      write(6,*)cos(angle*pi/180),'cos(angle*pi/180)'
+      do i=1,nb+1
+         write(6,*)i,uu(i+(nb+1)),'t'
+         call cfill(wk1,uu(i+(nb+1)),n)
+         call cmult(wk1,-cos(angle*pi/180),n)
+         call add2col2(res_u(1,1),riesz_ru(1,1,l1),wk1,n)
+         call add2col2(res_u(1,2),riesz_ru(1,2,l1),wk1,n)
+         if (ldim.eq.3) then 
+            call add2col2(res_u(1,ldim),riesz_ru(1,ldim,l1),wk1,n)
+         endif
+c        call opadd2col (res_u(1,1),res_u(1,2),res_u(1,ldim),
+c    $                   riesz_ru(1,1,l1),riesz_ru(1,2,l1),
+c    $                   riesz_ru(1,ldim,l1),wk1)
          l1=l1+1 
       enddo
+      write(6,*)l1,'l2'
 
-      do j=0,nb
-         do i=0,nb
+      do j=1,nb+1
+         do i=1,nb+1
+            write(6,*)j,uu(j),i,uu(i),'u'
             call cfill(wk1,uu(j),n)
             call cmult(wk1,uu(i),n)
-            call opadd2col (res_u(1,1),res_u(1,2),res_u(1,ldim),
-     $                   riesz_ru(1,1,l1),riesz_ru(1,2,l1),
-     $                   riesz_ru(1,ldim,l1),wk1)
+            call add2col2(res_u(1,1),riesz_ru(1,1,l1),wk1,n)
+            call add2col2(res_u(1,2),riesz_ru(1,2,l1),wk1,n)
+            if (ldim.eq.3) then 
+               call add2col2(res_u(1,ldim),riesz_ru(1,ldim,l1),wk1,n)
+            endif
+c           call opadd2col (res_u(1,1),res_u(1,2),res_u(1,ldim),
+c    $                   riesz_ru(1,1,l1),riesz_ru(1,2,l1),
+c    $                   riesz_ru(1,ldim,l1),wk1)
             l1=l1+1 
          enddo
       enddo
+      write(6,*)l1,'l3'
 
       l2=1
-      do i=0,nb
+      do i=1,nb+1
+         write(6,*)i,uu(i+(nb+1)),'t'
          call cfill(wk1,uu(i+nb+1),n)
          call add2col2(res_t,riesz_rt(1,l2),wk1,n)
          l2=l2+1
       enddo
+      write(6,*)l2,'l4'
 
-      do j=0,nb
-         do i=0,nb
+      do j=1,nb+1
+         do i=1,nb+1
+            write(6,*)j,uu(j),i,uu(i+(nb+1)),'u','t'
             call cfill(wk1,uu(j),n)
             call cmult(wk1,uu(i+nb+1),n)
             call add2col2(res_t,riesz_rt(1,l2),wk1,n)
             l2=l2+1 
          enddo
       enddo
+      write(6,*)l2,'l5'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine cres_new1(angle)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real wk1(lt)
+      real angle
+
+      n=lx1*ly1*lz1*nelv
+      write(6,*)nelt,nelv,lelm,'nelt,nelv'
+      pi  = 4.*atan(1.)
+
+      call rzero3(res_u(1,1),res_u(1,2),res_u(1,ldim),n)
+      call rzero(res_t,n)
+
+      l1=1
+      do i=1,nb+1
+         call opcopy(res_u(1,1),res_u(1,2),res_u(1,ldim),
+     $               riesz_ru(1,1,l1),riesz_ru(1,2,l1),
+     $               riesz_ru(1,ldim,l1))
+         l1=l1+1 
+      enddo
+
+      write(6,*)sin(angle*pi/180),'sin(angle*pi/180)'
+      do i=1,nb+1
+         call cfill(wk1,-sin(angle*pi/180),n)
+         call add2col2(res_u(1,1),riesz_ru(1,1,l1),wk1,n)
+         call add2col2(res_u(1,2),riesz_ru(1,2,l1),wk1,n)
+         if (ldim.eq.3) then 
+            call add2col2(res_u(1,ldim),riesz_ru(1,ldim,l1),wk1,n)
+         endif
+         l1=l1+1 
+      enddo
+      write(6,*)l1,'l1'
+
+      write(6,*)cos(angle*pi/180),'cos(angle*pi/180)'
+      do i=1,nb+1
+         call cfill(wk1,-cos(angle*pi/180),n)
+         call add2col2(res_u(1,1),riesz_ru(1,1,l1),wk1,n)
+         call add2col2(res_u(1,2),riesz_ru(1,2,l1),wk1,n)
+         if (ldim.eq.3) then 
+            call add2col2(res_u(1,ldim),riesz_ru(1,ldim,l1),wk1,n)
+         endif
+         l1=l1+1 
+      enddo
+      write(6,*)l1,'l2'
+
+      do j=1,nb+1
+         do i=1,nb+1
+            call rone(wk1,n)
+            call add2col2(res_u(1,1),riesz_ru(1,1,l1),wk1,n)
+            call add2col2(res_u(1,2),riesz_ru(1,2,l1),wk1,n)
+            if (ldim.eq.3) then 
+               call add2col2(res_u(1,ldim),riesz_ru(1,ldim,l1),wk1,n)
+            endif
+            l1=l1+1 
+         enddo
+      enddo
+      write(6,*)l1,'l3'
+
+      l2=1
+      do i=1,nb+1
+         call rone(wk1,n)
+         call add2col2(res_t,riesz_rt(1,l2),wk1,n)
+         l2=l2+1
+      enddo
+      write(6,*)l2,'l4'
+
+      do j=1,nb+1
+         do i=1,nb+1
+            call rone(wk1,n)
+            call add2col2(res_t,riesz_rt(1,l2),wk1,n)
+            l2=l2+1 
+         enddo
+      enddo
+      write(6,*)l2,'l5'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine crd_test(num_ts)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'ORTHOT'
+      include 'CTIMER'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      integer num_ts
+      real uu((nb+1)*2*num_ts),wk(2*(lb+1)*num_ts)
+      real ts_an(num_ts)
+      real dual_norm(num_ts),tmp(lt)
+      real wk1(lt),wk2(lt),wk3(lt)
+      real wk4(lt),wk5(lt),wk6(lt)
+      real tt
+      logical ifexist
+      pi  = 4.*atan(1.)
+
+      n=lx1*ly1*lz1*nelv
+
+      if (nio.eq.0) write (6,*) 'inside crd'
+
+      inquire (file='./rom.dat',exist=ifexist)
+      if (ifexist) call read_serial(uu,(nb+1)*2*num_ts,
+     $                  './rom.dat ',wk,nid)
+
+      inquire (file='./angle.dat',exist=ifexist)
+      if (ifexist) call read_serial(ts_an,num_ts,
+     $                  './angle.dat ',wk,nid)
+
+      call rzero(dual_norm,num_ts)
+      do i=1,num_ts
+
+      write(6,*)i,ts_an(i),'angle'
+      call cres_new(uu(1+(i-1)*(nb+1)*2),ts_an(i))
+c     call cres_new1(angle)
+
+      call rone(ones,n)
+      call rzero(zeros,n)
+
+      ifield=1
+      tolhv=1e-8
+      tolht(2)=1e-8
+c     nmxv=1000
+      call ophinv(wk1,wk2,wk3,
+     $            riesz_ru(1,1,2),riesz_ru(1,2,2),riesz_ru(1,ldim,2),
+     $            ones,ones,tolhv,nmxv)      
+      ifield=1
+      t1 = h10vip(wk1,wk2,wk3,wk1,wk2,wk3)
+      t2 = wl2vip(wk1,wk2,wk3,wk1,wk2,wk3)
+      write(6,*)t1,t2,t1+t2,'first term'
+      call opcopy(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),wk1,wk2,wk3)
+
+      call cmult(riesz_ru(1,1,4),-sin(ts_an(i)*pi/180),n)
+      call cmult(riesz_ru(1,2,4),-sin(ts_an(i)*pi/180),n)
+      call ophinv(wk1,wk2,wk3,
+     $            riesz_ru(1,1,4),riesz_ru(1,2,4),riesz_ru(1,ldim,4),
+     $            ones,ones,tolhv,nmxv)      
+      ifield=1
+      t1 = h10vip(wk1,wk2,wk3,wk1,wk2,wk3)
+      t2 = wl2vip(wk1,wk2,wk3,wk1,wk2,wk3)
+      write(6,*)t1,t2,t1+t2,'second term'
+      call opadd2(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),wk1,wk2,wk3)
+
+      call cmult(riesz_ru(1,1,6),-cos(ts_an(i)*pi/180),n)
+      call cmult(riesz_ru(1,2,6),-cos(ts_an(i)*pi/180),n)
+      call ophinv(wk1,wk2,wk3,
+     $            riesz_ru(1,1,6),riesz_ru(1,2,6),riesz_ru(1,ldim,6),
+     $            ones,ones,tolhv,nmxv)      
+      ifield=1
+      t1 = h10vip(wk1,wk2,wk3,wk1,wk2,wk3)
+      t2 = wl2vip(wk1,wk2,wk3,wk1,wk2,wk3)
+      write(6,*)t1,t2,t1+t2,'third term'
+      call opadd2(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),wk1,wk2,wk3)
+
+      call ophinv(wk1,wk2,wk3,
+     $            riesz_ru(1,1,10),riesz_ru(1,2,10),riesz_ru(1,ldim,10),
+     $            ones,ones,tolhv,nmxv)      
+      ifield=1
+      t1 = h10vip(wk1,wk2,wk3,wk1,wk2,wk3)
+      t2 = wl2vip(wk1,wk2,wk3,wk1,wk2,wk3)
+      write(6,*)t1,t2,t1+t2,'fourth term'
+      call opadd2(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),wk1,wk2,wk3)
+
+c     call opgrad(wk4,wk5,wk6,pb(1,0))
+c     call ophinv(wk1,wk2,wk3,
+c    $            wk4,wk5,wk6,
+c    $            ones,ones,tolhv,nmxv)      
+      ifield=1
+c     t1 = h10vip(wk1,wk2,wk3,wk1,wk2,wk3)
+c     t2 = wl2vip(wk1,wk2,wk3,wk1,wk2,wk3)
+c     write(6,*)t1,t2,t1+t2,'pressure term'
+c     call opsub2(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),wk1,wk2,wk3)
+
+      ifield=2
+      ifld1 = ifield-1
+      napproxt(1,ifld1) = laxtt
+      call hsolve  ('TEMP',eh_t,res_t,ones,ones
+     $                   ,tmask(1,1,1,1,ifield-1)
+     $                   ,tmult(1,1,1,1,ifield-1)
+     $                   ,imesh,tolht(ifield),nmxt(ifield-1),1
+     $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
+      write(6,*)'here'
+c     call hsolve  ('TEMP',eh_t,res_t,ones,ones
+c    $                   ,tmask(1,1,1,1,ifield-1)
+c    $                   ,tmult(1,1,1,1,ifield-1)
+c    $                   ,imesh,tolht(ifield),nmxh,1
+c    $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
+
+      ifield=1
+      t1 = h10vip(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
+     $         eh_u(1,1),eh_u(1,2),eh_u(1,ldim)) 
+      t2 = wl2vip(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
+     $           eh_u(1,1),eh_u(1,2),eh_u(1,ldim)) 
+      ifield=2
+      t3 = h10sip(eh_t,eh_t) 
+      t4 = wl2sip(eh_t,eh_t)  
+      
+      dual_norm(i) = t1+t2+t3+t4
+      write(6,*)t1,t2,t3,t4,'t1,t2,t3,t4'
+c     dual_norm(i) = h10vip(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
+c    $                   eh_u(1,1),eh_u(1,2),eh_u(1,ldim)) +
+c    $               h10sip(eh_t,eh_t) 
+      dual_norm(i) = sqrt(dual_norm(i))
+      write(6,*)i,dual_norm(i),'dual_norm in for v and t'
+      write(6,*)i,sqrt(t1+t2),'dual_norm in for v'
+      write(6,*)i,sqrt(t3+t4),'dual_norm in for t'
+
+      enddo
+      call dump_serial(dual_norm,num_ts,'./dual_norm ',nid)
+
+      if (nio.eq.0) write (6,*) 'exiting crd'
 
       return
       end
