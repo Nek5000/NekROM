@@ -694,9 +694,8 @@ c-----------------------------------------------------------------------
          if (ldim.eq.3) then
             call axhelm(riesz_ru(1,ldim,l1),wk3,ones,zeros,1,3)
          endif
-         call cmult(riesz_ru(1,1,l1),param(2),n)
-         call cmult(riesz_ru(1,2,l1),param(2),n)
-         if (ldim.eq.3) call cmult(riesz_ru(1,ldim,l1),param(2),n)
+         call opcmult(riesz_ru(1,1,l1),riesz_ru(1,2,l1),
+     $                riesz_ru(1,ldim,l1),param(2))
 c        call opgrad(wk4,wk5,wk6,pb(1,0))
 c        call opadd2(riesz_ru(1,1,l1),riesz_ru(1,2,l1),
 c    $               riesz_ru(1,ldim,l1),wk4,wk5,wk6)
@@ -704,6 +703,9 @@ c    $               riesz_ru(1,ldim,l1),wk4,wk5,wk6)
      $                riesz_ru(1,ldim,l1))
          l1=l1+1
       enddo
+c        call opgrad(wk4,wk5,wk6,pb(1,1))
+c        call opsub2(riesz_ru(1,1,1),riesz_ru(1,2,1),
+c    $               riesz_ru(1,ldim,1),wk4,wk5,wk6)
       if (nid.eq.0) write(6,*)l1,'lres_u_1'
 
       l2=1
@@ -775,12 +777,8 @@ c    $               riesz_ru(1,ldim,l1),wk4,wk5,wk6)
       do i=1,nb
       call opgrad(riesz_rp(1,1,l3),riesz_rp(1,2,l3),
      $            riesz_rp(1,ldim,l3),pb(1,i))
-c     call opcolv(riesz_rp(1,1,l3),riesz_rp(1,2,l3),riesz_rp(1,ldim,l3),
-c    $            bm1)
       call opchsgn(riesz_rp(1,1,l3),riesz_rp(1,2,l3),
      $                riesz_rp(1,ldim,l3))
-c     call opadd2(riesz_ru(1,1,l3),riesz_ru(1,2,l3),riesz_ru(1,ldim,l3),
-c    $            riesz_rp(1,1,l3),riesz_rp(1,2,l3),riesz_rp(1,ldim,l3))
       l3=l3+1
       enddo
 
