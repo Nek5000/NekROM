@@ -917,13 +917,13 @@ c-----------------------------------------------------------------------
 
       do i=1,nres_u
          do j=1,nres_u
-            aa(i,j) = h10vip(riesz_ru(1,1,i),riesz_ru(1,2,i),
-     $                          riesz_ru(1,ldim,i),riesz_ru(1,1,j),
-     $                          riesz_ru(1,2,j),riesz_ru(1,ldim,j))
-            aa(i,j) = aa(i,j) + wl2vip(riesz_ru(1,1,i),
-     $                          riesz_ru(1,2,i),
-     $                          riesz_ru(1,ldim,i),riesz_ru(1,1,j),
-     $                          riesz_ru(1,2,j),riesz_ru(1,ldim,j))
+            aa(i,j) = h10vip(xi_u(1,1,i),xi_u(1,2,i),
+     $                          xi_u(1,ldim,i),xi_u(1,1,j),
+     $                          xi_u(1,2,j),xi_u(1,ldim,j))
+            aa(i,j) = aa(i,j) + wl2vip(xi_u(1,1,i),
+     $                          xi_u(1,2,i),
+     $                          xi_u(1,ldim,i),xi_u(1,1,j),
+     $                          xi_u(1,2,j),xi_u(1,ldim,j))
          enddo
          if (nid.eq.0) write (6,*) i,aa(1,i),'sigma_u'
       enddo
@@ -944,9 +944,9 @@ c-----------------------------------------------------------------------
 
       do i=1,nres_t
          do j=1,nres_t
-            aa(i,j) = h10sip(riesz_rt(1,i),riesz_rt(1,j))
+            aa(i,j) = h10sip(xi_t(1,i),xi_t(1,j))
             aa(i,j) = aa(i,j) + 
-     $                wl2sip(riesz_rt(1,i),riesz_rt(1,j))
+     $                wl2sip(xi_t(1,i),xi_t(1,j))
          enddo
          if (nid.eq.0) write (6,*) i,aa(1,i),'sigma_t'
       enddo
