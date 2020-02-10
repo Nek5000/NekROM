@@ -770,10 +770,19 @@ c    $               riesz_ru(1,ldim,l1),wk4,wk5,wk6)
       if (nid.eq.0) write(6,*)l2,'lres_t_2'
 
       ! add pressure residual
-      call opgrad(riesz_rp(1,1,1),riesz_rp(1,2,1),
-     $            riesz_rp(1,ldim,1),pb(1,0))
-      call opchsgn(riesz_rp(1,1,1),riesz_rp(1,2,1),
-     $                riesz_rp(1,ldim,1))
+      l3=1
+      call ifield=1
+      do i=1,nb
+      call opgrad(riesz_rp(1,1,l3),riesz_rp(1,2,l3),
+     $            riesz_rp(1,ldim,l3),pb(1,i))
+c     call opcolv(riesz_rp(1,1,l3),riesz_rp(1,2,l3),riesz_rp(1,ldim,l3),
+c    $            bm1)
+      call opchsgn(riesz_rp(1,1,l3),riesz_rp(1,2,l3),
+     $                riesz_rp(1,ldim,l3))
+c     call opadd2(riesz_ru(1,1,l3),riesz_ru(1,2,l3),riesz_ru(1,ldim,l3),
+c    $            riesz_rp(1,1,l3),riesz_rp(1,2,l3),riesz_rp(1,ldim,l3))
+      l3=l3+1
+      enddo
 
       if (nio.eq.0) write (6,*) 'exit set_rhs'
 
@@ -1013,6 +1022,11 @@ c        nmxv=1000
          call ophinv(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
      $               res_u(1,1),res_u(1,2),res_u(1,ldim),
      $               ones,ones,tolhv,nmxv)      
+         call ophinv(eh_p(1,1),eh_p(1,2),eh_p(1,ldim),
+     $               riesz_rp(1,1,1),riesz_rp(1,2,1),riesz_rp(1,ldim,1),
+     $               ones,ones,tolhv,nmxv)      
+         call opadd2(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
+     $               eh_p(1,1),eh_p(1,2),eh_p(1,ldim))
 
          ifield=2
          ifld1 = ifield-1
@@ -1027,11 +1041,6 @@ c    $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
      $                   ,tmult(1,1,1,1,ifield-1)
      $                   ,imesh,tolht(ifield),nmxh,1
      $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
-c        call ophinv(eh_p(1,1),eh_p(1,2),eh_p(1,ldim),
-c    $            riesz_rp(1,1,1),riesz_rp(1,2,1),riesz_rp(1,ldim,1),
-c    $            ones,ones,tolhv,nmxv)      
-c        call opadd2(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
-c    $               eh_p(1,1),eh_p(1,2),eh_p(1,ldim))    
 
          ifield=1
          t1 = h10vip(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),

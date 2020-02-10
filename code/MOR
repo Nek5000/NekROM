@@ -143,7 +143,7 @@ c     parameters and common blocks for MOR
      $                res_t(lx1*ly1*lz1*lelm)
       common /eirhs/ riesz_ru(lx1*ly1*lz1*lelm,ldim,lres_u),
      $               riesz_rt(lx1*ly1*lz1*lelm,lres_t),
-     $               riesz_rp(lx1*ly1*lz1*lelm,ldim,1)
+     $               riesz_rp(lx1*ly1*lz1*lelm,ldim,lres_u)
 
       ! Flags
 
