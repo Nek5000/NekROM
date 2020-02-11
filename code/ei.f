@@ -775,10 +775,8 @@ c    $               riesz_ru(1,ldim,1),wk4,wk5,wk6)
       l3=1
       call ifield=1
       do i=1,nb
-      call opgrad(riesz_rp(1,1,l3),riesz_rp(1,2,l3),
+      call opgradt(riesz_rp(1,1,l3),riesz_rp(1,2,l3),
      $            riesz_rp(1,ldim,l3),pb(1,i))
-      call opchsgn(riesz_rp(1,1,l3),riesz_rp(1,2,l3),
-     $                riesz_rp(1,ldim,l3))
       l3=l3+1
       enddo
 
