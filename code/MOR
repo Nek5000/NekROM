@@ -135,6 +135,7 @@ c     parameters and common blocks for MOR
 
       common /eiresu/ xi_u(lx1*ly1*lz1*lelm,ldim,lres_u),
      $                xi_t(lx1*ly1*lz1*lelm,lres_t),
+     $                xi_p(lx2*ly2*lz2*lelm,ldim,lres_u),
      $                sigma_u(lres_u**2),sigma_t(lres_t**2),
      $                eh_u(lx1*ly1*lz1*lelm,ldim),
      $                eh_t(lx1*ly1*lz1*lelm),

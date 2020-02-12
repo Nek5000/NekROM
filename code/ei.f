@@ -890,6 +890,13 @@ c    $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
       enddo
       if (nid.eq.0) write(6,*)l1,'lres_u_4'
       if (nid.eq.0) write(6,*)l2,'lres_t_2'
+      ifield=1
+      call ophinv(xi_u(1,1,l1),xi_u(1,2,l1),xi_u(1,ldim,l1),
+     $               riesz_rp(1,1,1),riesz_rp(1,2,1),
+     $               riesz_rp(1,ldim,1),
+     $               ones,ones,tolhv,nmaxv)               
+      l1=l1+1
+      if (nid.eq.0) write(6,*)'riesz_u',l1,'completed'
 
       if ((l1-1).gt.nres_u) then
          call exitti('increase nres_u$',l1-1)
@@ -1000,14 +1007,15 @@ c-----------------------------------------------------------------------
       if (ifexist) call read_serial(ts_an,num_ts,
      $                  './angle.dat ',wk,nid)
 
+      write(6,*)num_ts,'num_ts'
       call rzero(dual_norm,num_ts)
       do i=1,num_ts
 
          write(6,*)i,ts_an(i),'angle'
          call cres_new(uu(1+(i-1)*(nb+1)*2),ts_an(i))
-         do ii=1,(nb+1)*2*num_ts
-            write(6,*)ii,uu(ii),ts_an(i)
-         enddo
+c        do ii=1,(nb+1)*2*num_ts
+c           write(6,*)ii,uu(ii),ts_an(i)
+c        enddo
 
          call rone(ones,n)
          call rzero(zeros,n)
@@ -1018,11 +1026,11 @@ c        nmxv=1000
          call ophinv(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
      $               res_u(1,1),res_u(1,2),res_u(1,ldim),
      $               ones,ones,tolhv,nmxv)      
-         call ophinv(eh_p(1,1),eh_p(1,2),eh_p(1,ldim),
-     $               riesz_rp(1,1,1),riesz_rp(1,2,1),riesz_rp(1,ldim,1),
-     $               ones,ones,tolhv,nmxv)      
-         call opadd2(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
-     $               eh_p(1,1),eh_p(1,2),eh_p(1,ldim))
+c        call ophinv(eh_p(1,1),eh_p(1,2),eh_p(1,ldim),
+c    $               riesz_rp(1,1,1),riesz_rp(1,2,1),riesz_rp(1,ldim,1),
+c    $               ones,ones,tolhv,nmxv)      
+c        call opadd2(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
+c    $               eh_p(1,1),eh_p(1,2),eh_p(1,ldim))
 
          ifield=2
          ifld1 = ifield-1
@@ -1087,23 +1095,124 @@ c-----------------------------------------------------------------------
 
       l1=1
       do i=1,nb+1
-         write(6,*)i,uu(i),'u'
          call cfill(wk1,uu(i),n)
          call add2col2(res_u(1,1),riesz_ru(1,1,l1),wk1,n)
          call add2col2(res_u(1,2),riesz_ru(1,2,l1),wk1,n)
          if (ldim.eq.3) then 
             call add2col2(res_u(1,ldim),riesz_ru(1,ldim,l1),wk1,n)
          endif
+         ! add pressure contribution
+c        call add2col2(res_u(1,1),riesz_rp(1,1,l1),wk1,n)
+c        call add2col2(res_u(1,2),riesz_rp(1,2,l1),wk1,n)
+c        if (ldim.eq.3) then 
+c           call add2col2(res_u(1,ldim),riesz_rp(1,ldim,l1),wk1,n)
+c        endif
          l1=l1+1 
       enddo
-      ! add pressure contribution
-      call opadd2(res_u(1,1),res_u(1,2),res_u(1,ldim),
-     $            riesz_rp(1,1,1),riesz_rp(1,2,1),riesz_rp(1,ldim,1))      
       write(6,*)l1,'l0'
+      ! step 1
+c        call opadd2(res_u(1,1),res_u(1,2),res_u(1,ldim),
+c    $        riesz_rp(1,1,1),riesz_rp(1,2,1),riesz_rp(1,ldim,1))      
+      ! step 2 
+c     if (angle.gt.-45) then 
+c        call opadd2(res_u(1,1),res_u(1,2),res_u(1,ldim),
+c    $        riesz_rp(1,1,2),riesz_rp(1,2,2),riesz_rp(1,ldim,2))
+c     else
+c        call opadd2(res_u(1,1),res_u(1,2),res_u(1,ldim),
+c    $        riesz_rp(1,1,1),riesz_rp(1,2,1),riesz_rp(1,ldim,1))
+c     endif
+      ! step 3
+c     if (angle.gt.-45.and.angle.lt.45) then 
+c        call opadd2(res_u(1,1),res_u(1,2),res_u(1,ldim),
+c    $        riesz_rp(1,1,3),riesz_rp(1,2,3),riesz_rp(1,ldim,3))
+c     elseif(angle>45) then 
+c        call opadd2(res_u(1,1),res_u(1,2),res_u(1,ldim),
+c    $        riesz_rp(1,1,1),riesz_rp(1,2,1),riesz_rp(1,ldim,1))
+c     elseif(angle<-45) then 
+c        call opadd2(res_u(1,1),res_u(1,2),res_u(1,ldim),
+c    $        riesz_rp(1,1,2),riesz_rp(1,2,2),riesz_rp(1,ldim,2))
+c     endif
+      ! step 4
+c     if (angle.gt.-20.and.angle.lt.45) then 
+c        call opadd2(res_u(1,1),res_u(1,2),res_u(1,ldim),
+c    $        riesz_rp(1,1,4),riesz_rp(1,2,4),riesz_rp(1,ldim,4))
+c     elseif(angle>45) then 
+c        call opadd2(res_u(1,1),res_u(1,2),res_u(1,ldim),
+c    $        riesz_rp(1,1,2),riesz_rp(1,2,2),riesz_rp(1,ldim,2))
+c     elseif(angle<-65) then 
+c        call opadd2(res_u(1,1),res_u(1,2),res_u(1,ldim),
+c    $        riesz_rp(1,1,3),riesz_rp(1,2,3),riesz_rp(1,ldim,3))
+c     elseif(angle.gt.-65.and.angle<-20) then 
+c        call opadd2(res_u(1,1),res_u(1,2),res_u(1,ldim),
+c    $        riesz_rp(1,1,1),riesz_rp(1,2,1),riesz_rp(1,ldim,1))
+c     endif
+      ! step 5
+c     if (angle.gt.-20.and.angle.lt.20) then 
+c        call opadd2(res_u(1,1),res_u(1,2),res_u(1,ldim),
+c    $        riesz_rp(1,1,5),riesz_rp(1,2,5),riesz_rp(1,ldim,5))
+c     elseif(angle>65) then 
+c        call opadd2(res_u(1,1),res_u(1,2),res_u(1,ldim),
+c    $        riesz_rp(1,1,3),riesz_rp(1,2,3),riesz_rp(1,ldim,3))
+c     elseif(angle<-65) then 
+c        call opadd2(res_u(1,1),res_u(1,2),res_u(1,ldim),
+c    $        riesz_rp(1,1,4),riesz_rp(1,2,4),riesz_rp(1,ldim,4))
+c     elseif(angle.gt.-65.and.angle<-20) then 
+c        call opadd2(res_u(1,1),res_u(1,2),res_u(1,ldim),
+c    $        riesz_rp(1,1,2),riesz_rp(1,2,2),riesz_rp(1,ldim,2))
+c     elseif(angle.lt.65.and.angle>20) then 
+c        call opadd2(res_u(1,1),res_u(1,2),res_u(1,ldim),
+c    $        riesz_rp(1,1,1),riesz_rp(1,2,1),riesz_rp(1,ldim,1))
+c     endif
+
+      ! step 8
+c     if (angle.le.22.5.and.angle.gt.-22.5) then 
+c     if (angle.gt.-45) then 
+c     if (angle.gt.-45.and.angle.lt.45) then 
+c     if (angle>-30.and.angle.lt.-10) then 
+c        call opadd2(res_u(1,1),res_u(1,2),res_u(1,ldim),
+c    $        riesz_rp(1,1,1),riesz_rp(1,2,1),riesz_rp(1,ldim,1))
+c     elseif (angle.le.30.and.angle>10) then 
+c        call opadd2(res_u(1,1),res_u(1,2),res_u(1,ldim),
+c    $        riesz_rp(1,1,2),riesz_rp(1,2,2),riesz_rp(1,ldim,2))
+c     elseif (angle.le.-65) then 
+c        call opadd2(res_u(1,1),res_u(1,2),res_u(1,ldim),
+c    $        riesz_rp(1,1,6),riesz_rp(1,2,6),riesz_rp(1,ldim,6))
+c     elseif (angle>22.5.and.angle.lt.67.5) then 
+c        call opadd2(res_u(1,1),res_u(1,2),res_u(1,ldim),
+c    $        riesz_rp(1,1,4),riesz_rp(1,2,4),riesz_rp(1,ldim,4))      
+c     elseif (angle>67.5) then 
+c        write(6,*)'angle here',angle
+c        call opadd2(res_u(1,1),res_u(1,2),res_u(1,ldim),
+c    $        riesz_rp(1,1,3),riesz_rp(1,2,3),riesz_rp(1,ldim,3))      
+c     elseif (angle<-22.5.and.angle.gt.-62.5) then 
+c        call opadd2(res_u(1,1),res_u(1,2),res_u(1,ldim),
+c    $        riesz_rp(1,1,5),riesz_rp(1,2,5),riesz_rp(1,ldim,5))
+c     elseif (angle<-62.5.and.angle.gt.-85) then 
+c        call opadd2(res_u(1,1),res_u(1,2),res_u(1,ldim),
+c    $        riesz_rp(1,1,6),riesz_rp(1,2,6),riesz_rp(1,ldim,6))
+c     elseif (angle<-85) then 
+c        call opadd2(res_u(1,1),res_u(1,2),res_u(1,ldim),
+c    $        riesz_rp(1,1,2),riesz_rp(1,2,2),riesz_rp(1,ldim,2))      
+c     else
+c        call opadd2(res_u(1,1),res_u(1,2),res_u(1,ldim),
+c    $        riesz_rp(1,1,1),riesz_rp(1,2,1),riesz_rp(1,ldim,1))      
+c     elseif (angle<-45) then
+c     elseif (angle.ge.30.and.angle<65) then
+c        call opadd2(res_u(1,1),res_u(1,2),res_u(1,ldim),
+c    $        riesz_rp(1,1,3),riesz_rp(1,2,3),riesz_rp(1,ldim,3))
+c     elseif (angle>-10.and.angle.lt.10) then
+c        call opadd2(res_u(1,1),res_u(1,2),res_u(1,ldim),
+c    $        riesz_rp(1,1,7),riesz_rp(1,2,7),riesz_rp(1,ldim,7))
+c     elseif (angle>-65.and.angle.lt.-30) then
+c        call opadd2(res_u(1,1),res_u(1,2),res_u(1,ldim),
+c    $        riesz_rp(1,1,4),riesz_rp(1,2,4),riesz_rp(1,ldim,4))
+c     elseif (angle>65) then
+c        call opadd2(res_u(1,1),res_u(1,2),res_u(1,ldim),
+c    $        riesz_rp(1,1,5),riesz_rp(1,2,5),riesz_rp(1,ldim,5))
+c     endif
 
       write(6,*)sin(angle*pi/180),'sin(angle*pi/180)'
       do i=1,nb+1
-         write(6,*)i,uu(i+(nb+1)),'t'
          call cfill(wk1,uu(i+(nb+1)),n)
          call cmult(wk1,-sin(angle*pi/180),n)
          call add2col2(res_u(1,1),riesz_ru(1,1,l1),wk1,n)
@@ -1117,7 +1226,6 @@ c-----------------------------------------------------------------------
 
       write(6,*)cos(angle*pi/180),'cos(angle*pi/180)'
       do i=1,nb+1
-         write(6,*)i,uu(i+(nb+1)),'t'
          call cfill(wk1,uu(i+(nb+1)),n)
          call cmult(wk1,-cos(angle*pi/180),n)
          call add2col2(res_u(1,1),riesz_ru(1,1,l1),wk1,n)
@@ -1134,7 +1242,6 @@ c    $                   riesz_ru(1,ldim,l1),wk1)
 
       do j=1,nb+1
          do i=1,nb+1
-            write(6,*)j,uu(j),i,uu(i),'u'
             call cfill(wk1,uu(j),n)
             call cmult(wk1,uu(i),n)
             call add2col2(res_u(1,1),riesz_ru(1,1,l1),wk1,n)
@@ -1152,7 +1259,6 @@ c    $                   riesz_ru(1,ldim,l1),wk1)
 
       l2=1
       do i=1,nb+1
-         write(6,*)i,uu(i+(nb+1)),'t'
          call cfill(wk1,uu(i+nb+1),n)
          call add2col2(res_t,riesz_rt(1,l2),wk1,n)
          l2=l2+1
@@ -1161,7 +1267,6 @@ c    $                   riesz_ru(1,ldim,l1),wk1)
 
       do j=1,nb+1
          do i=1,nb+1
-            write(6,*)j,uu(j),i,uu(i+(nb+1)),'u','t'
             call cfill(wk1,uu(j),n)
             call cmult(wk1,uu(i+nb+1),n)
             call add2col2(res_t,riesz_rt(1,l2),wk1,n)
@@ -1384,6 +1489,316 @@ c    $               h10sip(eh_t,eh_t)
       write(6,*)i,dual_norm(i),'dual_norm in for v and t'
       write(6,*)i,sqrt(t1+t2),'dual_norm in for v'
       write(6,*)i,sqrt(t3+t4),'dual_norm in for t'
+
+      enddo
+      call dump_serial(dual_norm,num_ts,'./dual_norm ',nid)
+
+      if (nio.eq.0) write (6,*) 'exiting crd'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine set_rr_ns_divf
+
+c     Compute the divergence free
+c     riesz representators for steady Boussinesq 
+c     incompressible NS (quadratically nonlinear elliptic problem)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'ORTHOT'
+      include 'CTIMER'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /screi/ wk1(lt),wk2(lt),wk3(lt),wk4(lt),wk5(lt)
+
+      n=lx1*ly1*lz1*nelv
+
+      if (nio.eq.0) write (6,*) 'inside set_rr_ns'
+
+      call rone(ones,n)
+      call rzero(zeros,n)
+
+      l1=1
+      l2=1
+      do i=0,nb
+         ifield=1
+c        call opcopy(vx,vy,vz,riesz_ru(1,1,l1),riesz_ru(1,2,l1),
+c    $               riesz_ru(1,ldim,l1))    
+         
+         call unsteady_stoke_solve(xi_u(1,1,l1),xi_u(1,2,l1),
+     $       xi_u(1,ldim,l1),xi_p(1,ldim,l1),riesz_ru(1,1,l1),    
+     $       riesz_ru(1,2,l1),riesz_ru(1,ldim,l1))
+c        call opcopy(xi_u(1,1,l1),xi_u(1,2,l1),xi_u(1,ldim,l1),
+c    $               vx,vy,vz)
+         call exitt0
+         if (nid.eq.0) write(6,*)'riesz_u',l1,'completed'
+         ifield=2
+         ifld1 = ifield-1
+         napproxt(1,ifld1) = laxtt
+c        call hsolve  ('TEMP',xi_t(1,l2),riesz_rt(1,l2),ones,ones
+c    $                   ,tmask(1,1,1,1,ifield-1)
+c    $                   ,tmult(1,1,1,1,ifield-1)
+c    $                   ,imesh,tolht(ifield),nmxt(ifield-1),1
+c    $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
+         call hsolve  ('TEMP',xi_t(1,l2),riesz_rt(1,l2),ones,ones
+     $                   ,tmask(1,1,1,1,ifield-1)
+     $                   ,tmult(1,1,1,1,ifield-1)
+     $                   ,imesh,tolht(ifield),nmxh,1
+     $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
+         if (nid.eq.0) write(6,*)'riesz_t',l2,'completed'
+         l1=l1+1
+         l2=l2+1
+      enddo
+      if (nid.eq.0) write(6,*)l1,'lres_u_1'
+      if (nid.eq.0) write(6,*)l2,'lres_t_1'
+
+      do i=0,nb
+         ifield=1
+         call opcopy(vx,vy,vz,riesz_ru(1,1,l1),riesz_ru(1,2,l1),
+     $               riesz_ru(1,ldim,l1))    
+         call plan1(2)
+         call opcopy(xi_u(1,1,l1),xi_u(1,2,l1),xi_u(1,ldim,l1),
+     $               vx,vy,vz)
+         if (nid.eq.0) write(6,*)'riesz_u',l1,'completed'
+         l1=l1+1
+      enddo
+      if (nid.eq.0) write(6,*)l1,'lres_u_2'
+
+      do i=0,nb
+         ifield=1
+         call opcopy(vx,vy,vz,riesz_ru(1,1,l1),riesz_ru(1,2,l1),
+     $               riesz_ru(1,ldim,l1))    
+         call plan1(2)
+         call opcopy(xi_u(1,1,l1),xi_u(1,2,l1),xi_u(1,ldim,l1),
+     $               vx,vy,vz)
+         if (nid.eq.0) write(6,*)'riesz_u',l1,'completed'
+         l1=l1+1
+      enddo
+      if (nid.eq.0) write(6,*)l1,'lres_u_3'
+
+      do j=0,nb
+         do i=0,nb
+            ifield=1
+            call opcopy(vx,vy,vz,riesz_ru(1,1,l1),riesz_ru(1,2,l1),
+     $                  riesz_ru(1,ldim,l1))    
+            call plan1(2)
+            call opcopy(xi_u(1,1,l1),xi_u(1,2,l1),xi_u(1,ldim,l1),
+     $               vx,vy,vz)
+            if (nid.eq.0) write(6,*)'riesz_u',l1,'completed'
+            ifield=2
+            ifld1 = ifield-1
+            napproxt(1,ifld1) = laxtt
+c           call hsolve  ('TEMP',xi_t(1,l2),riesz_rt(1,l2),ones,ones
+c    $                   ,tmask(1,1,1,1,ifield-1)
+c    $                   ,tmult(1,1,1,1,ifield-1)
+c    $                   ,imesh,tolht(ifield),nmxt(ifield-1),1
+c    $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
+            call hsolve  ('TEMP',xi_t(1,l2),riesz_rt(1,l2),ones,ones
+     $                   ,tmask(1,1,1,1,ifield-1)
+     $                   ,tmult(1,1,1,1,ifield-1)
+     $                   ,imesh,tolht(ifield),nmxh,1
+     $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
+            l1=l1+1
+            l2=l2+1
+            if (nid.eq.0) write(6,*)'riesz_t',l2,'completed'
+         enddo
+      enddo
+      if (nid.eq.0) write(6,*)l1,'lres_u_4'
+      if (nid.eq.0) write(6,*)l2,'lres_t_2'
+c     ifield=1
+c     call ophinv(xi_u(1,1,l1),xi_u(1,2,l1),xi_u(1,ldim,l1),
+c    $               riesz_rp(1,1,1),riesz_rp(1,2,1),
+c    $               riesz_rp(1,ldim,1),
+c    $               ones,ones,tolhv,nmaxv)               
+c     l1=l1+1
+      if (nid.eq.0) write(6,*)'riesz_u',l1,'completed'
+
+      if ((l1-1).gt.nres_u) then
+         call exitti('increase nres_u$',l1-1)
+      endif
+      if ((l2-1).gt.nres_t) then
+         call exitti('increase nres_t$',l2-1)
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine unsteady_stoke_solve(ehu,ehv,ehw,ehp,rhs1,rhs2,rhs3)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'ORTHOT'
+      include 'CTIMER'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      parameter (ltt=lx2*ly2*lz2*lelt)
+
+      common /screi/ wk1(lt),wk2(lt),wk3(lt),wk4(lt),wk5(lt)
+      real ehu(lt),ehv(lt),ehw(lt)
+      real dv1(lt),dv2(lt),dv3(lt)
+      real ehp(ltt)
+      real h1(lt),h2(lt),h2inv(lt)
+      real rhs1(lt),rhs2(lt),rhs3(lt)
+      real tmp1(lt),tmp2(lt),tmp3(lt)
+      
+      real g1 (lt)
+      real g2 (lt)
+      real g3 (lt)
+      real wp(ltt)
+      logical IFSTUZ
+
+      n=lx1*ly1*lz1*nelv
+
+      if (nio.eq.0) write (6,*) 'inside steady_stoke solver'
+
+      IFSAV1 = IFTRAN
+      IFSAV2 = IFADVC(IFIELD)
+      IFTRAN = .FALSE.
+      IFADVC(IFIELD) = .FALSE.
+
+      call rzero(vx,n)
+      call rzero(vy,n)
+      call rzero(vz,n)
+      CALL BCDIRVC (VX,VY,VZ,v1mask,v2mask,v3mask)
+
+C        Check if steady state
+C
+         IFSTUZ = .FALSE.
+         CALL CONVUZ (IFSTUZ)
+C... no steady state
+         IFSTUZ = .FALSE.
+         IF (IFSTUZ) THEN
+            IF (NIO.EQ.0) WRITE (6,*) 
+     $      'Steady state reached in the fluid solver'
+            return
+         ENDIF
+C
+C        Uzawa decoupling: First, compute pressure.....
+C
+         ntot1  = lx1*ly1*lz1*nelv
+         ntot2  = lx2*ly2*lz2*nelv
+         call rzero(pr,ntot2)
+
+         intype = 0
+         if (iftran) intype = -1
+         call sethlm  (h1,h2,intype)
+         if (iftran)  call invers2 (h2inv,h2,ntot1)
+         call opcopy(bfx,bfy,bfz,rhs1,rhs2,rhs3)
+         call makeg   (   g1,g2,g3,h1,h2,intype)
+         call crespuz (wp,g1,g2,g3,h1,h2,h2inv,intype)
+         write(6,*)'a1'
+         call uzawa   (wp,h1,h2,h2inv,intype,icg)
+         write(6,*)'a2'
+         write(6,*)'icg',icg
+         if (icg.gt.0) call add2 (pr,wp,ntot2)
+
+C        .... then, compute velocity:
+         call cresvuz (tmp1,tmp2,tmp3)
+         call ophinv  (dv1,dv2,dv3,tmp1,tmp2,tmp3,h1,h2,tolhv,nmxv)
+         call opadd2  (vx,vy,vz,dv1,dv2,dv3)
+
+C     Set IFTRAN to true again
+C     Turn convection on again
+C
+      IFTRAN = IFSAV1
+      IFADVC(IFIELD) = IFSAV2
+
+      call opcopy(ehu,ehv,ehw,vx,vy,vz)
+      call copy(ehp,wp,ntot2)
+
+      if (nio.eq.0) write (6,*) 'exiting steady_stoke solver'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine crd_divf(num_ts)
+
+      ! make representation to be divergence free
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'ORTHOT'
+      include 'CTIMER'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real uu((nb+1)*2*num_ts),wk(2*(lb+1)*num_ts)
+      real ts_an(num_ts)
+      real dual_norm(num_ts),tmp(lt)
+      integer num_ts
+      logical ifexist
+
+      n=lx1*ly1*lz1*nelv
+      nn=lx2*ly2*lz2*nelv
+
+      if (nio.eq.0) write (6,*) 'inside crd'
+
+      inquire (file='./rom.dat',exist=ifexist)
+      if (ifexist) call read_serial(uu,(nb+1)*2*num_ts,
+     $                  './rom.dat ',wk,nid)
+
+      inquire (file='./angle.dat',exist=ifexist)
+      if (ifexist) call read_serial(ts_an,num_ts,
+     $                  './angle.dat ',wk,nid)
+
+      write(6,*)num_ts,'num_ts'
+      call rzero(dual_norm,num_ts)
+      do i=1,num_ts
+
+         write(6,*)i,ts_an(i),'angle'
+         call cres_new(uu(1+(i-1)*(nb+1)*2),ts_an(i))
+c        do ii=1,(nb+1)*2*num_ts
+c           write(6,*)ii,uu(ii),ts_an(i)
+c        enddo
+
+         call rone(ones,n)
+         call rzero(zeros,n)
+         ifield=1
+         tolhv=1e-8
+         tolht(2)=1e-8
+         call unsteady_stoke_solve(eh_u(1,1),eh_u(1,2),
+     $       eh_u(1,ldim),xi_p(1,1,1),res_u(1,1),
+     $       res_u(1,2),res_u(1,ldim))
+c        nmxv=1000
+c        call ophinv(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
+c    $               res_u(1,1),res_u(1,2),res_u(1,ldim),
+c    $               ones,ones,tolhv,nmxv)      
+
+         ifield=2
+         ifld1 = ifield-1
+         napproxt(1,ifld1) = laxtt
+         call hsolve  ('TEMP',eh_t,res_t,ones,ones
+     $                   ,tmask(1,1,1,1,ifield-1)
+     $                   ,tmult(1,1,1,1,ifield-1)
+     $                   ,imesh,tolht(ifield),nmxh,1
+     $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
+
+         ifield=1
+c        t5 = glsc3(xi_p(1,1,1),xi_p(1,1,1),bm2,nn)
+c        t5 = wl2sip(xi_p(1,1,1),xi_p(1,1,1))
+         t1 = h10vip(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
+     $         eh_u(1,1),eh_u(1,2),eh_u(1,ldim)) 
+         t2 = wl2vip(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
+     $           eh_u(1,1),eh_u(1,2),eh_u(1,ldim)) 
+         ifield=2
+         t3 = h10sip(eh_t,eh_t) 
+         t4 = wl2sip(eh_t,eh_t)  
+      
+         write(6,*)t1,t2,t3,t4,'t1,t2,t3,t4'
+         dual_norm(i) = t1+t2+t3+t4
+         dual_norm(i) = sqrt(dual_norm(i))
+         write(6,*)i,ts_an(i),'angle'
+         write(6,*)i,dual_norm(i),
+     $            'dual_norm H1 norm for the coupled system'
+         write(6,*)i,sqrt(t1+t2),
+     $            'dual_norm H1 norm for the velocity'
+         write(6,*)i,sqrt(t3+t4),
+     $            'dual_norm H1 norm for the temperature'
 
       enddo
       call dump_serial(dual_norm,num_ts,'./dual_norm ',nid)
