@@ -1529,7 +1529,7 @@ c        call opcopy(vx,vy,vz,riesz_ru(1,1,l1),riesz_ru(1,2,l1),
 c    $               riesz_ru(1,ldim,l1))    
          
          call unsteady_stoke_solve(xi_u(1,1,l1),xi_u(1,2,l1),
-     $       xi_u(1,ldim,l1),xi_p(1,ldim,l1),riesz_ru(1,1,l1),    
+     $       xi_u(1,ldim,l1),xi_p(1,l1),riesz_ru(1,1,l1),    
      $       riesz_ru(1,2,l1),riesz_ru(1,ldim,l1))
 c        call opcopy(xi_u(1,1,l1),xi_u(1,2,l1),xi_u(1,ldim,l1),
 c    $               vx,vy,vz)
@@ -1762,12 +1762,8 @@ c        enddo
          tolhv=1e-8
          tolht(2)=1e-8
          call unsteady_stoke_solve(eh_u(1,1),eh_u(1,2),
-     $       eh_u(1,ldim),xi_p(1,1,1),res_u(1,1),
+     $       eh_u(1,ldim),xi_p(1,1),res_u(1,1),
      $       res_u(1,2),res_u(1,ldim))
-c        nmxv=1000
-c        call ophinv(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
-c    $               res_u(1,1),res_u(1,2),res_u(1,ldim),
-c    $               ones,ones,tolhv,nmxv)      
 
          ifield=2
          ifld1 = ifield-1
@@ -1779,8 +1775,6 @@ c    $               ones,ones,tolhv,nmxv)
      $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
 
          ifield=1
-c        t5 = glsc3(xi_p(1,1,1),xi_p(1,1,1),bm2,nn)
-c        t5 = wl2sip(xi_p(1,1,1),xi_p(1,1,1))
          t1 = h10vip(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
      $         eh_u(1,1),eh_u(1,2),eh_u(1,ldim)) 
          t2 = wl2vip(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
