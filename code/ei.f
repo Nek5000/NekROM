@@ -1525,16 +1525,14 @@ c     incompressible NS (quadratically nonlinear elliptic problem)
       l2=1
       do i=0,nb
          ifield=1
-c        call opcopy(vx,vy,vz,riesz_ru(1,1,l1),riesz_ru(1,2,l1),
-c    $               riesz_ru(1,ldim,l1))    
-         
+         tolhv=1e-8
+         tolht(2)=1e-8
+c        nmxh=1000
          call unsteady_stoke_solve(xi_u(1,1,l1),xi_u(1,2,l1),
      $       xi_u(1,ldim,l1),xi_p(1,l1),riesz_ru(1,1,l1),    
      $       riesz_ru(1,2,l1),riesz_ru(1,ldim,l1))
-c        call opcopy(xi_u(1,1,l1),xi_u(1,2,l1),xi_u(1,ldim,l1),
-c    $               vx,vy,vz)
-         call exitt0
          if (nid.eq.0) write(6,*)'riesz_u',l1,'completed'
+
          ifield=2
          ifld1 = ifield-1
          napproxt(1,ifld1) = laxtt
@@ -1557,11 +1555,11 @@ c    $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
 
       do i=0,nb
          ifield=1
-         call opcopy(vx,vy,vz,riesz_ru(1,1,l1),riesz_ru(1,2,l1),
-     $               riesz_ru(1,ldim,l1))    
-         call plan1(2)
-         call opcopy(xi_u(1,1,l1),xi_u(1,2,l1),xi_u(1,ldim,l1),
-     $               vx,vy,vz)
+         tolhv=1e-8
+         tolht(2)=1e-8
+         call unsteady_stoke_solve(xi_u(1,1,l1),xi_u(1,2,l1),
+     $       xi_u(1,ldim,l1),xi_p(1,l1),riesz_ru(1,1,l1),    
+     $       riesz_ru(1,2,l1),riesz_ru(1,ldim,l1))
          if (nid.eq.0) write(6,*)'riesz_u',l1,'completed'
          l1=l1+1
       enddo
@@ -1569,11 +1567,11 @@ c    $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
 
       do i=0,nb
          ifield=1
-         call opcopy(vx,vy,vz,riesz_ru(1,1,l1),riesz_ru(1,2,l1),
-     $               riesz_ru(1,ldim,l1))    
-         call plan1(2)
-         call opcopy(xi_u(1,1,l1),xi_u(1,2,l1),xi_u(1,ldim,l1),
-     $               vx,vy,vz)
+         tolhv=1e-8
+         tolht(2)=1e-8
+         call unsteady_stoke_solve(xi_u(1,1,l1),xi_u(1,2,l1),
+     $       xi_u(1,ldim,l1),xi_p(1,l1),riesz_ru(1,1,l1),    
+     $       riesz_ru(1,2,l1),riesz_ru(1,ldim,l1))
          if (nid.eq.0) write(6,*)'riesz_u',l1,'completed'
          l1=l1+1
       enddo
@@ -1582,12 +1580,13 @@ c    $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
       do j=0,nb
          do i=0,nb
             ifield=1
-            call opcopy(vx,vy,vz,riesz_ru(1,1,l1),riesz_ru(1,2,l1),
-     $                  riesz_ru(1,ldim,l1))    
-            call plan1(2)
-            call opcopy(xi_u(1,1,l1),xi_u(1,2,l1),xi_u(1,ldim,l1),
-     $               vx,vy,vz)
+            tolhv=1e-8
+            tolht(2)=1e-8
+            call unsteady_stoke_solve(xi_u(1,1,l1),xi_u(1,2,l1),
+     $          xi_u(1,ldim,l1),xi_p(1,l1),riesz_ru(1,1,l1), 
+     $          riesz_ru(1,2,l1),riesz_ru(1,ldim,l1))
             if (nid.eq.0) write(6,*)'riesz_u',l1,'completed'
+
             ifield=2
             ifld1 = ifield-1
             napproxt(1,ifld1) = laxtt
@@ -1655,15 +1654,15 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'inside steady_stoke solver'
 
-      IFSAV1 = IFTRAN
-      IFSAV2 = IFADVC(IFIELD)
+c     IFSAV1 = IFTRAN
+c     IFSAV2 = IFADVC(IFIELD)
       IFTRAN = .FALSE.
       IFADVC(IFIELD) = .FALSE.
 
       call rzero(vx,n)
       call rzero(vy,n)
       call rzero(vz,n)
-      CALL BCDIRVC (VX,VY,VZ,v1mask,v2mask,v3mask)
+c     call bcdirvc (vx,vy,vz,v1mask,v2mask,v3mask)
 
 C        Check if steady state
 C
@@ -1689,25 +1688,24 @@ C
          if (iftran)  call invers2 (h2inv,h2,ntot1)
          call opcopy(bfx,bfy,bfz,rhs1,rhs2,rhs3)
          call makeg   (   g1,g2,g3,h1,h2,intype)
+c        tolhr=1e-8
          call crespuz (wp,g1,g2,g3,h1,h2,h2inv,intype)
-         write(6,*)'a1'
          call uzawa   (wp,h1,h2,h2inv,intype,icg)
-         write(6,*)'a2'
-         write(6,*)'icg',icg
          if (icg.gt.0) call add2 (pr,wp,ntot2)
 
 C        .... then, compute velocity:
          call cresvuz (tmp1,tmp2,tmp3)
          call ophinv  (dv1,dv2,dv3,tmp1,tmp2,tmp3,h1,h2,tolhv,nmxv)
-         call opadd2  (vx,vy,vz,dv1,dv2,dv3)
+c        call opadd2  (vx,vy,vz,dv1,dv2,dv3)
 
 C     Set IFTRAN to true again
 C     Turn convection on again
 C
-      IFTRAN = IFSAV1
-      IFADVC(IFIELD) = IFSAV2
+c     IFTRAN = IFSAV1
+c     IFADVC(IFIELD) = IFSAV2
 
-      call opcopy(ehu,ehv,ehw,vx,vy,vz)
+c     call opcopy(ehu,ehv,ehw,vx,vy,vz)
+      call opcopy(ehu,ehv,ehw,dv1,dv2,dv3)
       call copy(ehp,wp,ntot2)
 
       if (nio.eq.0) write (6,*) 'exiting steady_stoke solver'
@@ -1765,6 +1763,8 @@ c        enddo
      $       eh_u(1,ldim),xi_p(1,1),res_u(1,1),
      $       res_u(1,2),res_u(1,ldim))
 
+c        t5 = glsc3(xi_p(1,1),xi_p(1,1),bm2,nn)
+
          ifield=2
          ifld1 = ifield-1
          napproxt(1,ifld1) = laxtt
@@ -1783,8 +1783,8 @@ c        enddo
          t3 = h10sip(eh_t,eh_t) 
          t4 = wl2sip(eh_t,eh_t)  
       
-         write(6,*)t1,t2,t3,t4,'t1,t2,t3,t4'
-         dual_norm(i) = t1+t2+t3+t4
+         write(6,*)t1,t2,t3,t4,t5,'t1,t2,t3,t4,t5'
+         dual_norm(i) = t1+t2+t3+t4+t5
          dual_norm(i) = sqrt(dual_norm(i))
          write(6,*)i,ts_an(i),'angle'
          write(6,*)i,dual_norm(i),
