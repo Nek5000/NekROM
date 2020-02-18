@@ -14,8 +14,8 @@
       parameter (lk=1)   ! largest wave number for pdrag calculation
       parameter (lmsk=1) ! number of partitions
       parameter (lres=1) ! size of residual storage
-      parameter (lres_u=3*(lb+1)+(lb+1)**2) ! size of residual storage for vel
-      parameter (lres_t=(lb+1)+(lb+1)**2) ! size of residual storage for temp
+      parameter (lres_u=1) ! size of residual storage for vel
+      parameter (lres_t=1) ! size of residual storage for temp
 
       ! Auxiliary
 

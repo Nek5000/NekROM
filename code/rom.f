@@ -252,19 +252,19 @@ c     call average_in_y
       nres_t=(nb+1)+(nb+1)**2
       write(6,*)nres_u,'nres_u'
       write(6,*)nres_t,'nres_t'
-      if (nres_u.gt.lres_u) call exitti('nres_u > lres_u$',nres_u)
-      if (nres_u.le.0) call exitti('nres_u <= 0$',nres_u)
-      if (nres_t.gt.lres_t) call exitti('nres_t > lres_t$',nres_t)
-      if (nres_t.le.0) call exitti('nres_t <= 0$',nres_t)
+c     if (nres_u.gt.lres_u) call exitti('nres_u > lres_u$',nres_u)
+c     if (nres_u.le.0) call exitti('nres_u <= 0$',nres_u)
+c     if (nres_t.gt.lres_t) call exitti('nres_t > lres_t$',nres_t)
+c     if (nres_t.le.0) call exitti('nres_t <= 0$',nres_t)
 
 c     call exitt0
-      call set_rhs
+c     call set_rhs
 c     call crd_divf(num_ts)
 c     call crd(num_ts)
 c     call crd_test(num_ts)
-      call set_rr_ns_divf
+c     call set_rr_ns_divf
 c     call set_rr_ns
-      call set_sigma_new
+c     call set_sigma_new
 c     call exitt0
       call checker('aka',ad_step)
       if (ifplay) call set_trace
