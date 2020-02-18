@@ -192,6 +192,9 @@ c-----------------------------------------------------------------------
       include 'AVG'
 
       logical iftmp,ifexist
+      integer num_ts
+
+      num_ts=1
 
       if (nio.eq.0) write (6,*) 'inside rom_setup'
 
@@ -222,13 +225,15 @@ c-----------------------------------------------------------------------
       else
          call setgram
          call setevec
+         call checker('ada',ad_step)
+
+         call setbases
+
+         call checker('aea',ad_step)
       endif
 
-      call checker('ada',ad_step)
-
-      call setbases
-
-      call checker('aea',ad_step)
+c     call average_in_xy
+c     call average_in_y
       call setops
       call checker('afa',ad_step)
       call setu
@@ -242,6 +247,25 @@ c-----------------------------------------------------------------------
       call setmisc
       call checker('aja',ad_step)
       if (ifei) call set_sigma
+
+      nres_u=(nb+1)*3+(nb+1)**2
+      nres_t=(nb+1)+(nb+1)**2
+      write(6,*)nres_u,'nres_u'
+      write(6,*)nres_t,'nres_t'
+      if (nres_u.gt.lres_u) call exitti('nres_u > lres_u$',nres_u)
+      if (nres_u.le.0) call exitti('nres_u <= 0$',nres_u)
+      if (nres_t.gt.lres_t) call exitti('nres_t > lres_t$',nres_t)
+      if (nres_t.le.0) call exitti('nres_t <= 0$',nres_t)
+
+c     call exitt0
+      call set_rhs
+c     call crd_divf(num_ts)
+c     call crd(num_ts)
+c     call crd_test(num_ts)
+      call set_rr_ns_divf
+c     call set_rr_ns
+      call set_sigma_new
+c     call exitt0
       call checker('aka',ad_step)
       if (ifplay) call set_trace
       call checker('ala',ad_step)
