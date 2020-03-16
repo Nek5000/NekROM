@@ -1411,7 +1411,7 @@ c-----------------------------------------------------------------------
 
       common /scrra/ binv(lx1,ly1,lz1,lelt)
 
-      n=lx1*ly1*lz1*lelt
+      n=lx1*ly1*lz1*nelt
 
       call rone(binv,n)
       call invcol2(binv,bm1,n)
