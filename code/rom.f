@@ -1415,11 +1415,9 @@ c-----------------------------------------------------------------------
 
       call rone(binv,n)
       call invcol2(binv,bm1,n)
-      call rone(ones,n)
 
-c     ad_ra=sqrt(op_glsc2_wt(gx,gy,gz,gx,gy,gz,binv)/glsum(bm1,n))
-      ad_ra=sqrt(op_glsc2_wt(gx,gy,gz,gx,gy,gz,binv)
-     $          /op_glsc2_wt(ones,ones,ones,ones,ones,ones,bm1))
+      ad_ra=sqrt(op_glsc2_wt(gx,gy,gz,gx,gy,gz,binv)/glsum(bm1,n))
+
       if (nio.eq.0) write (6,*) ad_ra,'ad_ra'
       s=1./ad_ra
       call opcmult(gx,gy,gz,s)
