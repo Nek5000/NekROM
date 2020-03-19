@@ -270,7 +270,7 @@ c        call cubar
             enddo
          endif
 
-         if (rmode.ne.'ON ') then
+         if (rmode.ne.'ON '.and.rmode.ne.'CP ') then
             jstep=istep
             call reconv(vx,vy,vz,u)
             call opcopy(t1,t2,t3,vx,vy,vz)
