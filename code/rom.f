@@ -301,7 +301,8 @@ c-----------------------------------------------------------------------
       include 'MOR'
       include 'TSTEP'
 
-      logical iftmp
+      logical iftmp,ifexist
+      real wk(lb+1)
 
       if (nio.eq.0) write (6,*) 'inside setops'
 
@@ -313,13 +314,25 @@ c-----------------------------------------------------------------------
          ifield=1
          call seta(au,au0,'ops/au ')
          call setb(bu,bu0,'ops/bu ')
-         call setc(cul,'ops/cu ')
+         if (rmode.eq.'CP ') then 
+            inquire (file='ops/u0',exist=ifexist)
+            if (ifexist) call read_serial(u,nb+1,'ops/u0 ',wk,nid)
+            call set_cp(cul,'ops/cu ',cua,cub,cuc,cp_uw,u)
+         else
+            call setc(cul,'ops/cu ')
+         endif
       endif
       if (ifrom(2)) then
          ifield=2
          call seta(at,at0,'ops/at ')
          call setb(bt,bt0,'ops/bt ')
-         call setc(ctl,'ops/ct ')
+         if (rmode.eq.'CP ') then 
+            inquire (file='ops/t0',exist=ifexist)
+            if (ifexist) call read_serial(ut,nb+1,'ops/t0 ',wk,nid)
+            call set_cp(ctl,'ops/ct ',cta,ctb,ctc,cp_tw,ut)
+         else
+            call setc(ctl,'ops/ct ')
+         endif
          call sets(st0,tb,'ops/ct ')
       endif
 
@@ -595,7 +608,7 @@ c-----------------------------------------------------------------------
          rmode='ONB'
       else if (np173.eq.4) then
          rmode='CP '
-         ntr = 100 
+         max_tr = ltr
       else
          call exitti('unsupported param(173), exiting...$',np173)
       endif
@@ -608,7 +621,7 @@ c-----------------------------------------------------------------------
      $      call exitti('online ips does not match offline ips$',nb)
       endif
 
-      ifrecon=(rmode.ne.'ON ')
+      ifrecon=(rmode.ne.'ON '.and.rmode.ne.'CP ')
 
       ifei=nint(param(175)).ne.0
 
@@ -925,6 +938,12 @@ c     call cpart(ic1,ic2,jc1,jc2,kc1,kc2,ncloc,nb,np,nid+1) ! new indexing
          enddo
          enddo
       else if (rmode.eq.'CP ') then
+         ic1=1
+         ic2=nb
+         jc1=0
+         jc2=nb
+         kc1=0
+         kc2=nb
          do k=0,nb
          do j=0,mb
          do i=1,mb
@@ -935,11 +954,12 @@ c     call cpart(ic1,ic2,jc1,jc2,kc1,kc2,ncloc,nb,np,nid+1) ! new indexing
          enddo
          enddo
          enddo
-c        write(6,*)'check index',ic1,ic2,jc1,jc2,kc1,kc2
+         write(6,*)'check index',ic1,ic2,jc1,jc2,kc1,kc2,nid
+         call nekgsync
 
-c        tcp_time=dnekclock()
-c        call CP_ALS(cl,nb+1,ntr)
-c        cp_time=cp_time+dnekclock()-tcp_time
+         tcp_time=dnekclock()
+         call CP_ALS(cl,cua,cub,cuc,cp_uw,u,nb+1,ntr)
+         cp_time=cp_time+dnekclock()-tcp_time
 
          ! read in the cp decomposition
 c        call read_cp_weight
@@ -1173,7 +1193,7 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelv
 
-      if (rmode.eq.'ON ') then
+      if (rmode.eq.'ON '.or.rmode.eq.'CP ') then
          inquire (file='ops/u0',exist=ifexist)
          if (ifexist) call read_serial(u,nb+1,'ops/u0 ',wk,nid)
 
