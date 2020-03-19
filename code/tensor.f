@@ -202,7 +202,7 @@ c-----------------------------------------------------------------------
       if (nid.eq.0) write(6,*) 'inside cp_als'
 
       maxit = 500
-      cp_tol = 1e-5
+      cp_tol = 0.2
       pre_err = 1
 
       local_size = (ic2-ic1+1)*(jc2-jc1+1)*(kc2-kc1+1)
@@ -247,8 +247,9 @@ c     call exitt0
          fit = 1-relerr
          rel_diff = abs(pre_err-relerr)/pre_err
          pre_err = relerr
-         if (nid.eq.0) write(6,*) ii, rel_diff, relerr, 'relerr'
-         if (relerr.lt.cp_tol.OR.ii.ge.maxit.OR.rel_diff.le.1e-4) then
+         if (nid.eq.0) write(6,*) ii, rel_diff, relerr, nn, 
+     $   'relerr and rank'
+         if (relerr.lt.cp_tol.OR.ii.ge.maxit.OR.rel_diff.le.1e-5) then
             exit
          endif
       enddo
@@ -256,16 +257,14 @@ c     call exitt0
       call copy(cp_a,fcm(0,1),mm*nn)
       call copy(cp_b,fcm(0,2),mm*nn)
       call copy(cp_c,fcm(0,3),mm*nn)
-      call check_conv_err(cl,cp_a,cp_b,cp_c,cp_w,uu)
 
-      call nekgsync
 
       if (nid.eq.0) write(6,*) 'exit cp_als'
 
       return
       end
 c-----------------------------------------------------------------------
-      subroutine check_conv_err(cl,fac_a,fac_b,fac_c,cp_weight,uu)
+      subroutine check_conv_err(cu_err,cl,fac_a,fac_b,fac_c,cp_w,uu)
 
       include 'SIZE'
       include 'TOTAL'
@@ -275,7 +274,7 @@ c-----------------------------------------------------------------------
       real uu(0:nb)
       real cu_diff(nb), cu_err
       real fac_a((nb+1)*ntr),fac_b((nb+1)*ntr)
-      real fac_c((nb+1)*ntr),cp_weight(ntr)
+      real fac_c((nb+1)*ntr),cp_w(ntr)
       real cl(ic1:ic2,jc1:jc2,kc1:kc2)
       real cm(ic1:ic2,jc1:jc2)
       real bcu(ntr)
@@ -283,12 +282,13 @@ c-----------------------------------------------------------------------
       real tmp(ntr)
       real tmpcu(0:nb)
 
+
       call rzero(cu,nb)
       do kk=1,ntr
          bcu(kk) = vlsc2(uu,fac_b(1+(kk-1)*(nb+1)),nb+1)
          cuu(kk) = vlsc2(u,fac_c(1+(kk-1)*(nb+1)),nb+1)
       enddo
-      call col4(tmp,bcu,cuu,cp_weight,ntr) 
+      call col4(tmp,bcu,cuu,cp_w,ntr) 
       call mxm(fac_a,nb+1,tmp,ntr,tmpcu,1)
 
       call rzero(cu,nb)
@@ -302,12 +302,12 @@ c-----------------------------------------------------------------------
       
       call sub3(cu_diff,cu,tmpcu(0),nb)
       cu_err = sqrt(vlsc2(cu_diff,cu_diff,nb))
-      write(6,*)nid,cu_err,'cu_err'
-      
+      write(6,*) nid,cu_err,ntr,'cu_err',' ntr'
       write(6,*)'compare'
       do ii=1,nb
-         write(6,*)ii,cu(ii),tmpcu(ii-1),cu_diff(ii),'cu, tmpcu',nid
+         write(6,*)ii,cu_diff(ii),cu(ii),tmpcu(ii-1),'tmpcu'
       enddo
+
 
       return
       end
@@ -442,6 +442,9 @@ c-----------------------------------------------------------------------
       real cm2(ic1:ic2,ltr,kc1:kc2)
       integer mode,tr
 
+c     common /cp_share/ cm(1:lb,0:lb,ltr)
+c     common /cp_share/ cm(lb*(lb+1),ltr)
+
       if (mode.eq.1) then
 
          call rzero(lsr,mm*nn)
@@ -450,12 +453,19 @@ c-----------------------------------------------------------------------
             call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),
      $               fcm(kc1+(mm)*(tr-1),3),(kc2-kc1+1),cm(1,0,tr),1)
          enddo
+c        do tr=1,nn
+c           call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),
+c    $               fcm(kc1+(mm)*(tr-1),3),(kc2-kc1+1),cm(1,tr),1)
+c        enddo
 
          ! temporary mttkrp with factor matrix
          do tr=1,nn
             call mxm(cm(ic1,jc1,tr),(ic2-ic1+1),
      $               fcm(jc1+(mm)*(tr-1),2),(jc2-jc1+1),
      $               lsr(1+(mm)*(tr-1)),1)
+c           call mxm(cm(1,tr),(ic2-ic1+1),
+c    $               fcm(jc1+(mm)*(tr-1),2),(jc2-jc1+1),
+c    $               lsr(1+(mm)*(tr-1)),1)
          enddo
 
       elseif (mode.eq.2) then
@@ -472,6 +482,8 @@ c-----------------------------------------------------------------------
             do jj=jc1,jc2
                lsr((jj+1)+(mm)*(tr-1)) = vlsc2(cm(1,jj,tr),
      $         fcm(0+(mm)*(tr-1),1),mm)
+c              lsr((jj+1)+(mm)*(tr-1)) = vlsc2(cm(1+jj*(mm-1),tr),
+c    $         fcm(0+(mm)*(tr-1),1),mm-1)
             enddo
          enddo
 
@@ -615,7 +627,7 @@ c-----------------------------------------------------------------------
          enddo
          call mode_normalize(fcm(1,jj),mm,nn)
 
-         call check_normalize(fcm(1,jj),mm,nn)
+c        call check_normalize(fcm(1,jj),mm,nn)
       enddo
 
       return
