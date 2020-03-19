@@ -8,10 +8,13 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       real cl(lcglo)
+c     real cl(lcloc)
       real uu(0:nb)
       real cp_a((nb+1)*max_tr),cp_b((nb+1)*max_tr),cp_c((nb+1)*max_tr)
       real cp_w(max_tr)
+      real wk1((nb+1)*max_tr),wk2(max_tr),cu_err
       integer rank_list(2,max_tr),mm
+      integer glo_i,work
 
       character*128 fname
       character*128 fnlint
@@ -50,10 +53,46 @@ c-----------------------------------------------------------------------
       call nekgsync
 
       call set_rank(rank_list,mm)
-      do kk=1,2
-         ntr = rank_list(2,kk)
+      do kk=1,1
+c        ntr = rank_list(2,kk)
+         ntr = 10
          call CP_ALS(cl,cp_a,cp_b,cp_c,cp_w,uu,nb+1,ntr)
+         call check_conv_err(cu_err,cl,cp_a,cp_b,cp_c,cp_w,uu)
+
+         if (cu_err.le.1e-4) then
+            glo_i = nid
+         else 
+            glo_i = -1
+         endif
+         call igop(glo_i,work,'M  ',1)
+         if (glo_i.ge.0) then
+            exit
+         endif
       enddo
+
+      gloerr = glmin(cu_err,1)
+      write(6,*)'gloerr',gloerr,cu_err,nid
+      if (abs((gloerr-cu_err)).le.1e-12) then 
+         glo_i=nid
+      else 
+         glo_i=-1
+      endif
+      call igop(glo_i,work,'M  ',1)
+
+      if (nid.ne.glo_i) then 
+         write(6,*)glo_i,nid,'check'
+         call rzero(cp_a,(nb+1)*max_tr)
+         call rzero(cp_b,(nb+1)*max_tr)
+         call rzero(cp_c,(nb+1)*max_tr)
+         call rzero(cp_w,max_tr)
+         ntr = 0
+      endif
+      call nekgsync
+      call gop(cp_a,wk1,'+  ',(nb+1)*max_tr)
+      call gop(cp_b,wk1,'+  ',(nb+1)*max_tr)
+      call gop(cp_c,wk1,'+  ',(nb+1)*max_tr)
+      call gop(cp_w,wk2,'+  ',max_tr)
+      call igop(ntr,work,'M  ',1)
 
          ! read in the cp decomposition
 c        call read_cp_weight
@@ -80,6 +119,7 @@ c        enddo
       cp_time=cp_time+dnekclock()-tcp_time
       if (nio.eq.0) write (6,*) 'cp_time: ',cp_time
       if (nio.eq.0) write (6,*) 'lcglo=',lcglo
+      if (nio.eq.0) write (6,*) 'lcloc=',lcloc
 
       if (nio.eq.0) write (6,*) 'exiting set_cp'
 
@@ -101,9 +141,10 @@ c-----------------------------------------------------------------------
 
       call izero(rank_list,2*max_tr)
       if (nid.eq.0) then
-         do i=1,max_tr
+         do i=1,10
+            ii = i*10
             rank_list(1,i) = mod(i,np) ! destination processor
-            rank_list(2,i) = i         ! return location
+            rank_list(2,i) = ii         ! return location
          enddo
       endif
       ky = 1
@@ -133,6 +174,7 @@ c        write(6,*)i,rank_list(2,i),nid
 c     enddo
 c     endif
 c     call nekgsync
+c     call exitt0
    
       return
       end
