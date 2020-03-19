@@ -80,6 +80,12 @@ c     if (icount.le.2) then
          if (isolve.eq.0) then
             call mxm(wt(1,2),nb,rhs(1,2),nb,rhstmp(1),1)
             call mxm(hinv(1,2),nb,rhstmp(1),nb,rhs(1,2),1)
+            if (ifdecpl) then
+            do i=1,nb
+               if (rhs(i,1).gt.tpmax(i)) rhs(i,1)=tpmax(i)-tpdis(i)*eps
+               if (rhs(i,1).lt.tpmin(i)) rhs(i,1)=tpmin(i)+tpdis(i)*eps
+            enddo
+            endif
             call mxm(rhs(1,2),1,wt(1,2),nb,rhstmp(1),nb)
             call copy(rhs(1,2),rhstmp(1),nb)
          else
