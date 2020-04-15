@@ -1508,13 +1508,16 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       integer,parameter :: seed = 86456
+c     integer seed
       integer k
       real centroid(k)
       real cent_fld(lt,k)
-      real sample(19)
+      real sample(ls)
       real rnk(ls,k)
       real tmp(lt,k)
+      real tmpp(ls)
       real dist(k)
+      real num_sc(k)
       integer label(k) 
 
       character*128 fn
@@ -1523,6 +1526,7 @@ c-----------------------------------------------------------------------
       n=lx1*ly1*lz1*nelt
 
       ! initialize centroid
+      ! currently put here for same initialization
       call srand(seed)
       do i=1,k
          centroid(i) = rand()
@@ -1557,6 +1561,9 @@ c     do ipass=1,nsave
   127    format(a127)
       enddo
 
+      do kk=1,2
+      ! assign the closest sample to be centroid
+      ! currently does not have enough sample
       do i=1,k
          do j=1,ls
             if (abs(centroid(i)-sample(j))<5) then  
@@ -1568,7 +1575,6 @@ c     do ipass=1,nsave
          call copy(cent_fld(1,i),ts0(1,label(i)),n)
       enddo
 
-
       call rzero(rnk,ls*k)
       ! assign each samlpe to cluster
       do i=1,ls
@@ -1577,9 +1583,31 @@ c     do ipass=1,nsave
            dist(j) = glsc2(tmp(1,j),tmp(1,j),n)
          enddo
          write(6,*)minloc(dist),dist(1),dist(2)
+         do j=1,k
+            if (minloc(dist,1).eq.j) rnk(i,j) = 1
+         enddo
+      enddo
+
+         do j=1,k
+      do i=1,ls
+            write(6,*)i,j,rnk(i,j),'rnk'
+         enddo
+      enddo
+
+      call rone(tmpp,ls)
+      do i=1,k
+         num_sc(i) = glsc2(rnk(1,i),tmpp,ls)
+         write(6,*)i,num_sc(i)
+      enddo
+      ! compute new centroid
+      do i=1,k
+         call mxm(ts0,n,rnk(1,i),ls,cent_fld(1,i),1)
+         call cmult(cent_fld(1,i),1./num_sc(i),n)
+         write(6,*)glsc2(sample,rnk(1,i),ls)/num_sc(i)
+      enddo
+
       enddo
        
-
       return
 
   199 continue ! exception handle for file not found
