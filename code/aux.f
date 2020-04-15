@@ -1620,3 +1620,40 @@ c     do ipass=1,nsave
       return
       end
 c-----------------------------------------------------------------------
+      subroutine c_distortion_measure(obj_f,cent_fld,rnk,k)
+
+      ! Compute objective function (distortion measure)
+      ! J = \sum_{n=1}^N sum^K_{k=1} r_{nk} \|x_n - \nu_k\|^2
+      ! Sum of the squares of the distances of each data point to its
+      ! assigned vector \nu_k
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      integer k           ! number of clusters
+      integer rnk(ls,k)   ! binary indicator
+      real cent_fld(lt,k) ! centroid
+      real obj_f          ! objective function value
+      real tmp(lt,k)
+      real dist(k)
+
+      n=lx1*ly1*lz1*nelt
+
+      ! assign each samlpe to cluster
+      obj_f=0
+      do i=1,ls
+         do j=1,k
+            if (rnk(i,j).eq.1) then
+               call sub3(tmp(1,j),ts0(1,i),cent_fld(1,j),n)
+               dist(j) = glsc2(tmp(1,j),tmp(1,j),n)
+               obj_f = obj_f + dist(j)
+            endif
+         enddo
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
