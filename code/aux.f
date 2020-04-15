@@ -1499,3 +1499,96 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine k_mean(k,nsu,nsp,nst,fn)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      integer,parameter :: seed = 86456
+      integer k
+      real centroid(k)
+      real cent_fld(lt,k)
+      real sample(19)
+      real rnk(ls,k)
+      real tmp(lt,k)
+      real dist(k)
+      integer label(k) 
+
+      character*128 fn
+      character*128 fnlint
+
+      n=lx1*ly1*lz1*nelt
+
+      ! initialize centroid
+      call srand(seed)
+      do i=1,k
+         centroid(i) = rand()
+      enddo
+
+      ! scale up to parameter range
+      pmax = 180
+      pmin = 0
+      pdiff = pmax-pmin
+      do i=1,k
+         centroid(i) = pmin + pdiff*centroid(i)
+         write(6,*)i,centroid(i),nint(centroid(i))
+      enddo
+
+      ierr = 0
+      call lints(fnlint,fn,128)
+      if (nid.eq.0) open(77,file=fnlint,status='old',err=199)
+      ierr = iglmax(ierr,1)
+      if (ierr.gt.0) goto 199
+
+      nsave=max(max(nsu,nsp),nst)
+      write(6,*)'nsave',nsave
+      icount = 0
+c     do ipass=1,nsave
+      do ipass=1,ls
+         call blank(initc,127)
+         initc(1) = 'done '
+         if (nid.eq.0) read(77,127,end=998)initc(1) 
+         read(initc,'(f10.0)') sample(ipass)
+         write(6,*)sample(ipass)
+  998    call bcast(initc,127)
+  127    format(a127)
+      enddo
+
+      do i=1,k
+         do j=1,ls
+            if (abs(centroid(i)-sample(j))<5) then  
+               centroid(i) = sample(j)
+               write(6,*)i,centroid(i),sample(j)
+               label(i) = j
+            endif
+         enddo
+         call copy(cent_fld(1,i),ts0(1,label(i)),n)
+      enddo
+
+
+      call rzero(rnk,ls*k)
+      ! assign each samlpe to cluster
+      do i=1,ls
+         do j=1,k
+           call sub3(tmp(1,j),ts0(1,i),cent_fld(1,j),n)
+           dist(j) = glsc2(tmp(1,j),tmp(1,j),n)
+         enddo
+         write(6,*)minloc(dist),dist(1),dist(2)
+      enddo
+       
+
+      return
+
+  199 continue ! exception handle for file not found
+      ierr = 1
+      if (nid.eq.0) ierr = iglmax(ierr,1)
+      write (6,*) fnlint
+      call exitti('get_saved_fields did not find list file.$',ierr)
+
+
+      return
+      end
+c-----------------------------------------------------------------------
