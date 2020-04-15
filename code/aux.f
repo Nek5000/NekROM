@@ -1634,7 +1634,7 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       integer k           ! number of clusters
-      integer rnk(ls,k)   ! binary indicator
+      real rnk(ls,k)   ! binary indicator
       real cent_fld(lt,k) ! centroid
       real obj_f          ! objective function value
       real tmp(lt,k)
@@ -1646,7 +1646,7 @@ c-----------------------------------------------------------------------
       obj_f=0
       do i=1,ls
          do j=1,k
-            if (rnk(i,j).eq.1) then
+            if (abs(rnk(i,j)-1).le.1e-8) then
                call sub3(tmp(1,j),ts0(1,i),cent_fld(1,j),n)
                dist(j) = glsc2(tmp(1,j),tmp(1,j),n)
                obj_f = obj_f + dist(j)
