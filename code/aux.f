@@ -1499,7 +1499,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine k_mean(k,nsu,nsp,nst,fn)
+      subroutine k_mean(k,nsu,nsp,nst,fn,seed)
 
       ! K-means Clustering
 
@@ -1509,8 +1509,8 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      integer,parameter :: seed = 86456
-c     integer seed
+c     integer,parameter :: seed = 86456
+      integer seed
       integer k           ! number of clusters
       integer label(k) 
       integer itermax
@@ -1521,9 +1521,9 @@ c     integer seed
       real dist(k)
       real num_sc(k)
       real rnk(ls,k)      ! binary indicator
-      real obj_f          ! distortion measure 
       real tmp(lt,k)      ! dummy variable
       real tmpp(ls)       ! dummy variable
+      real obj_f          ! distortion measure 
 
       character*128 fn
       character*128 fnlint
@@ -1555,7 +1555,7 @@ c     integer seed
       if (ierr.gt.0) goto 199
 
       nsave=max(max(nsu,nsp),nst)
-      write(6,*)'nsave',nsave
+c     write(6,*)'nsave',nsave
       icount = 0
 c     do ipass=1,nsave
       do ipass=1,ls
@@ -1563,10 +1563,11 @@ c     do ipass=1,nsave
          initc(1) = 'done '
          if (nid.eq.0) read(77,127,end=998)initc(1) 
          read(initc,'(f10.0)') sample(ipass)
-         write(6,*)sample(ipass)
+c        write(6,*)sample(ipass)
   998    call bcast(initc,127)
   127    format(a127)
       enddo
+      close(77)
 
       do kk=1,itermax
          ! assign the closest sample to be centroid
@@ -1575,31 +1576,31 @@ c     do ipass=1,nsave
             do j=1,ls
                if (abs(centroid(i)-sample(j))<5) then  
                   centroid(i) = sample(j)
-                  write(6,*)i,centroid(i),sample(j)
+c                 write(6,*)i,centroid(i),sample(j)
                   label(i) = j
                endif
             enddo
             call copy(cent_fld(1,i),ts0(1,label(i)),n)
          enddo
 
-         call rzero(rnk,ls*k)
          ! assign each samlpe to cluster
+         call rzero(rnk,ls*k)
          do i=1,ls
             do j=1,k
               call sub3(tmp(1,j),ts0(1,i),cent_fld(1,j),n)
               dist(j) = glsc2(tmp(1,j),tmp(1,j),n)
             enddo
-            write(6,*)minloc(dist),dist(1),dist(2)
+c           write(6,*)minloc(dist),dist(1),dist(2)
             do j=1,k
                if (minloc(dist,1).eq.j) rnk(i,j) = 1
             enddo
          enddo
 
-         do j=1,k
-            do i=1,ls
-               write(6,*)i,j,rnk(i,j),'rnk'
-            enddo
-         enddo
+c        do j=1,k
+c           do i=1,ls
+c              write(6,*)i,j,rnk(i,j),'rnk'
+c           enddo
+c        enddo
 
          call c_distortion_measure(obj_f,cent_fld,rnk,k)
          write(6,*)kk,obj_f,'distortion measure E'
@@ -1607,8 +1608,9 @@ c     do ipass=1,nsave
          call rone(tmpp,ls)
          do i=1,k
             num_sc(i) = glsc2(rnk(1,i),tmpp,ls)
-            write(6,*)1./num_sc(i),num_sc(i),'num_sc'
+c           write(6,*)1./num_sc(i),num_sc(i),'num_sc'
          enddo
+
          ! compute new centroid
 c        do i=1,k
 c           write(6,*)glmax(cent_fld(1,i),n),'old max'
@@ -1625,12 +1627,24 @@ c        enddo
             enddo
             call cmult(cent_fld(1,i),1./num_sc(i),n)
             centroid(i) = glsc2(sample,rnk(1,i),ls)/num_sc(i)
-            write(6,*)i,centroid(i),'new centroid'
+c           write(6,*)i,centroid(i),'new centroid'
          enddo
          call c_distortion_measure(obj_f,cent_fld,rnk,k)
-         write(6,*)kk,obj_f,'distortion measure M'
-
+c        write(6,*)kk,obj_f,'distortion measure M'
       enddo
+
+      ! write out clusters
+      do j=1,k
+         write(6,*) 'cluster: ',j
+         do i=1,ls
+            if (abs(rnk(i,j)-1).le.1e-8) then
+               write(6,*) sample(i) 
+            endif
+         enddo
+      enddo
+
+      write(6,*) obj_f,'distortion for cluster: ',k
+
        
       return
 
