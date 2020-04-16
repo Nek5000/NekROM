@@ -1501,6 +1501,8 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine k_mean(k,nsu,nsp,nst,fn)
 
+      ! K-means Clustering
+
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
@@ -1509,21 +1511,25 @@ c-----------------------------------------------------------------------
 
       integer,parameter :: seed = 86456
 c     integer seed
-      integer k
-      real centroid(k)
-      real cent_fld(lt,k)
+      integer k           ! number of clusters
+      integer label(k) 
+      integer itermax
+
+      real centroid(k)    ! centroid parameter
+      real cent_fld(lt,k) ! centroid field
       real sample(ls)
-      real rnk(ls,k)
-      real tmp(lt,k)
-      real tmpp(ls)
       real dist(k)
       real num_sc(k)
-      integer label(k) 
+      real rnk(ls,k)      ! binary indicator
+      real obj_f          ! distortion measure 
+      real tmp(lt,k)      ! dummy variable
+      real tmpp(ls)       ! dummy variable
 
       character*128 fn
       character*128 fnlint
 
       n=lx1*ly1*lz1*nelt
+      itermax = 100
 
       ! initialize centroid
       ! currently put here for same initialization
@@ -1541,6 +1547,7 @@ c     integer seed
          write(6,*)i,centroid(i),nint(centroid(i))
       enddo
 
+      ! read sample.list
       ierr = 0
       call lints(fnlint,fn,128)
       if (nid.eq.0) open(77,file=fnlint,status='old',err=199)
@@ -1561,50 +1568,67 @@ c     do ipass=1,nsave
   127    format(a127)
       enddo
 
-      do kk=1,2
-      ! assign the closest sample to be centroid
-      ! currently does not have enough sample
-      do i=1,k
-         do j=1,ls
-            if (abs(centroid(i)-sample(j))<5) then  
-               centroid(i) = sample(j)
-               write(6,*)i,centroid(i),sample(j)
-               label(i) = j
-            endif
+      do kk=1,itermax
+         ! assign the closest sample to be centroid
+         ! currently does not have enough sample
+         do i=1,k
+            do j=1,ls
+               if (abs(centroid(i)-sample(j))<5) then  
+                  centroid(i) = sample(j)
+                  write(6,*)i,centroid(i),sample(j)
+                  label(i) = j
+               endif
+            enddo
+            call copy(cent_fld(1,i),ts0(1,label(i)),n)
          enddo
-         call copy(cent_fld(1,i),ts0(1,label(i)),n)
-      enddo
 
-      call rzero(rnk,ls*k)
-      ! assign each samlpe to cluster
-      do i=1,ls
-         do j=1,k
-           call sub3(tmp(1,j),ts0(1,i),cent_fld(1,j),n)
-           dist(j) = glsc2(tmp(1,j),tmp(1,j),n)
+         call rzero(rnk,ls*k)
+         ! assign each samlpe to cluster
+         do i=1,ls
+            do j=1,k
+              call sub3(tmp(1,j),ts0(1,i),cent_fld(1,j),n)
+              dist(j) = glsc2(tmp(1,j),tmp(1,j),n)
+            enddo
+            write(6,*)minloc(dist),dist(1),dist(2)
+            do j=1,k
+               if (minloc(dist,1).eq.j) rnk(i,j) = 1
+            enddo
          enddo
-         write(6,*)minloc(dist),dist(1),dist(2)
-         do j=1,k
-            if (minloc(dist,1).eq.j) rnk(i,j) = 1
-         enddo
-      enddo
 
          do j=1,k
-      do i=1,ls
-            write(6,*)i,j,rnk(i,j),'rnk'
+            do i=1,ls
+               write(6,*)i,j,rnk(i,j),'rnk'
+            enddo
          enddo
-      enddo
 
-      call rone(tmpp,ls)
-      do i=1,k
-         num_sc(i) = glsc2(rnk(1,i),tmpp,ls)
-         write(6,*)i,num_sc(i)
-      enddo
-      ! compute new centroid
-      do i=1,k
-         call mxm(ts0,n,rnk(1,i),ls,cent_fld(1,i),1)
-         call cmult(cent_fld(1,i),1./num_sc(i),n)
-         write(6,*)glsc2(sample,rnk(1,i),ls)/num_sc(i)
-      enddo
+         call c_distortion_measure(obj_f,cent_fld,rnk,k)
+         write(6,*)kk,obj_f,'distortion measure E'
+
+         call rone(tmpp,ls)
+         do i=1,k
+            num_sc(i) = glsc2(rnk(1,i),tmpp,ls)
+            write(6,*)1./num_sc(i),num_sc(i),'num_sc'
+         enddo
+         ! compute new centroid
+c        do i=1,k
+c           write(6,*)glmax(cent_fld(1,i),n),'old max'
+c           call mxm(ts0,n,rnk(1,i),ls,cent_fld(1,i),1)
+c           call cmult(cent_fld(1,i),1./num_sc(i),n)
+c           centroid(i) = glsc2(sample,rnk(1,i),ls)/num_sc(i)
+c           write(6,*)i,centroid(i),'new centroid'
+c           write(6,*)glmax(cent_fld(1,i),n),'new max'
+c        enddo
+         do i=1,k
+            call rzero(cent_fld,n*k)
+            do j=1,ls
+               call add2s2(cent_fld(1,i),ts0(1,j),rnk(j,i),n)
+            enddo
+            call cmult(cent_fld(1,i),1./num_sc(i),n)
+            centroid(i) = glsc2(sample,rnk(1,i),ls)/num_sc(i)
+            write(6,*)i,centroid(i),'new centroid'
+         enddo
+         call c_distortion_measure(obj_f,cent_fld,rnk,k)
+         write(6,*)kk,obj_f,'distortion measure M'
 
       enddo
        
@@ -1634,7 +1658,7 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       integer k           ! number of clusters
-      real rnk(ls,k)   ! binary indicator
+      real rnk(ls,k)      ! binary indicator
       real cent_fld(lt,k) ! centroid
       real obj_f          ! objective function value
       real tmp(lt,k)
