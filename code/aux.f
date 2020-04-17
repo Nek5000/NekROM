@@ -1509,7 +1509,6 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-c     integer,parameter :: seed = 86456
       integer seed
       integer k           ! number of clusters
       integer label(k) 
@@ -1529,7 +1528,7 @@ c     integer,parameter :: seed = 86456
       character*128 fnlint
 
       n=lx1*ly1*lz1*nelt
-      itermax = 100
+      itermax = 50
 
       ! initialize centroid
       ! currently put here for same initialization
@@ -1569,19 +1568,19 @@ c        write(6,*)sample(ipass)
       enddo
       close(77)
 
-      do kk=1,itermax
-         ! assign the closest sample to be centroid
-         ! currently does not have enough sample
-         do i=1,k
-            do j=1,ls
-               if (abs(centroid(i)-sample(j))<5) then  
-                  centroid(i) = sample(j)
-c                 write(6,*)i,centroid(i),sample(j)
-                  label(i) = j
-               endif
-            enddo
-            call copy(cent_fld(1,i),ts0(1,label(i)),n)
+      do i=1,k
+         do j=1,ls
+            if (abs(centroid(i)-sample(j))<5) then  
+               centroid(i) = sample(j)
+                  write(6,*)i,centroid(i),sample(j)
+               label(i) = j
+            endif
          enddo
+         call copy(cent_fld(1,i),ts0(1,label(i)),n)
+      enddo
+
+      ! minimize distortion measure
+      do kk=1,itermax
 
          ! assign each samlpe to cluster
          call rzero(rnk,ls*k)
@@ -1590,17 +1589,12 @@ c                 write(6,*)i,centroid(i),sample(j)
               call sub3(tmp(1,j),ts0(1,i),cent_fld(1,j),n)
               dist(j) = glsc2(tmp(1,j),tmp(1,j),n)
             enddo
-c           write(6,*)minloc(dist),dist(1),dist(2)
+            write(6,*)ls,minloc(dist),sample(i)
             do j=1,k
+               write(6,*)dist(j)
                if (minloc(dist,1).eq.j) rnk(i,j) = 1
             enddo
          enddo
-
-c        do j=1,k
-c           do i=1,ls
-c              write(6,*)i,j,rnk(i,j),'rnk'
-c           enddo
-c        enddo
 
          call c_distortion_measure(obj_f,cent_fld,rnk,k)
          write(6,*)kk,obj_f,'distortion measure E'
@@ -1629,13 +1623,26 @@ c        enddo
             centroid(i) = glsc2(sample,rnk(1,i),ls)/num_sc(i)
 c           write(6,*)i,centroid(i),'new centroid'
          enddo
+
+         ! assign the closest sample to be centroid
+         ! currently does not have enough sample
+         do i=1,k
+            do j=1,ls
+               if (abs(centroid(i)-sample(j))<5) then  
+                  centroid(i) = sample(j)
+c                 write(6,*)i,centroid(i),sample(j)
+                  label(i) = j
+               endif
+            enddo
+            call copy(cent_fld(1,i),ts0(1,label(i)),n)
+         enddo
          call c_distortion_measure(obj_f,cent_fld,rnk,k)
-c        write(6,*)kk,obj_f,'distortion measure M'
+         write(6,*)kk,obj_f,'distortion measure M'
       enddo
 
       ! write out clusters
       do j=1,k
-         write(6,*) 'cluster: ',j
+         write(6,*) 'cluster: ',j,' centroid: ', centroid(j)
          do i=1,ls
             if (abs(rnk(i,j)-1).le.1e-8) then
                write(6,*) sample(i) 
