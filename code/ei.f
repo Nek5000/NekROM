@@ -1801,3 +1801,289 @@ c        t5 = glsc3(xi_p(1,1),xi_p(1,1),bm2,nn)
 
       return
       end
+c-----------------------------------------------------------------------
+      subroutine set_rhs_unsteady
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /screi/ wk1(lt),wk2(lt),wk3(lt),wk4(lt),wk5(lt),wk6(lt)
+
+      n=lx1*ly1*lz1*nelv
+
+      if (nio.eq.0) write (6,*) 'inside set_rhs_unsteady'
+
+      call rone(ones,n)
+      call rzero(zeros,n)
+      
+      l1=1
+      do i=0,nb
+         ifield=1
+         call opcopy(riesz_ru(1,1,l1),riesz_ru(1,2,l1)
+     $               ,riesz_ru(1,ldim,l1)
+     $               ,ub(1,i),vb(1,i),wb(1,i))
+         call opcolv(riesz_ru(1,1,l1),riesz_ru(1,2,l1),
+     $               riesz_ru(1,ldim,l1),bm1)
+         call opchsgn(riesz_ru(1,1,l1),riesz_ru(1,2,l1),
+     $                riesz_ru(1,ldim,l1))
+         l1=l1+1
+      enddo
+      if (nid.eq.0) write(6,*)l1,'lres_u_1'
+
+      l2=1
+      do i=0,nb
+         ifield=2
+         call copy(riesz_rt(1,l2),tb(1,i),n)
+         call col2(riesz_rt(1,l2),bm1,n)
+         call chsign(riesz_rt(1,l2),n)
+         l2=l2+1
+      enddo
+      if (nid.eq.0) write(6,*)l2,'lres_t_1'
+
+      do i=0,nb
+         ! setup rhs for velocity representator
+         ifield=1
+         call opcopy(wk1,wk2,wk3,ub(1,i),vb(1,i),wb(1,i))
+         call axhelm(riesz_ru(1,1,l1),wk1,ones,zeros,1,1)
+         call axhelm(riesz_ru(1,2,l1),wk2,ones,zeros,1,2)
+         if (ldim.eq.3) then
+            call axhelm(riesz_ru(1,ldim,l1),wk3,ones,zeros,1,3)
+         endif
+         call opcmult(riesz_ru(1,1,l1),riesz_ru(1,2,l1),
+     $                riesz_ru(1,ldim,l1),param(2))
+         call opchsgn(riesz_ru(1,1,l1),riesz_ru(1,2,l1),
+     $                riesz_ru(1,ldim,l1))
+         l1=l1+1
+      enddo
+      if (nid.eq.0) write(6,*)l1,'lres_u_2'
+
+      do i=0,nb
+         ! setup rhs for temperature representator
+         ifield=2
+         call copy(wk4,tb(1,i),n)
+         call axhelm(riesz_rt(1,l2),wk4,ones,zeros,1,1)
+         call cmult(riesz_rt(1,l2),param(8),n)
+         call chsign(riesz_rt(1,l2),n) 
+         l2=l2+1
+      enddo
+      if (nid.eq.0) write(6,*)l2,'lres_t_2'
+
+      do i=0,nb
+         ifield=1
+         call opcopy(riesz_ru(1,1,l1),riesz_ru(1,2,l1)
+     $               ,riesz_ru(1,ldim,l1)
+     $               ,tb(1,i),zeros,zeros)
+         call opcolv(riesz_ru(1,1,l1),riesz_ru(1,2,l1),
+     $               riesz_ru(1,ldim,l1),bm1)
+         call opchsgn(riesz_ru(1,1,l1),riesz_ru(1,2,l1),
+     $                riesz_ru(1,ldim,l1))
+         l1=l1+1
+      enddo
+      if (nid.eq.0) write(6,*)l1,'lres_u_3'
+
+      do i=0,nb
+         ifield=1
+         call opcopy(riesz_ru(1,1,l1),riesz_ru(1,2,l1)
+     $               ,riesz_ru(1,ldim,l1)
+     $               ,zeros,tb(1,i),zeros)
+         call opcolv(riesz_ru(1,1,l1),riesz_ru(1,2,l1),
+     $               riesz_ru(1,ldim,l1),bm1)
+         call opchsgn(riesz_ru(1,1,l1),riesz_ru(1,2,l1),
+     $                riesz_ru(1,ldim,l1))
+         l1=l1+1
+      enddo
+      if (nid.eq.0) write(6,*)l1,'lres_u_4'
+
+      do j=0,nb
+         do i=0,nb
+         ifield=1
+            call convect_new(riesz_ru(1,1,l1),ub(1,i),.false.,
+     $                       ub(1,j),vb(1,j),wb(1,j),.false.)
+            call convect_new(riesz_ru(1,2,l1),vb(1,i),.false.,
+     $                       ub(1,j),vb(1,j),wb(1,j),.false.)
+            if (ldim.eq.3) then
+               call convect_new(riesz_ru(1,ldim,l1),wb(1,i),.false.,
+     $                          ub(1,j),vb(1,j),wb(1,j),.false.)
+            endif
+            call opchsgn(riesz_ru(1,1,l1),riesz_ru(1,2,l1),
+     $                   riesz_ru(1,ldim,l1))
+
+         ifield=2
+            call convect_new(riesz_rt(1,l2),tb(1,i),.false.,
+     $                       ub(1,j),vb(1,j),wb(1,j),.false.)
+            call chsign(riesz_rt(1,l2),n) 
+            l1=l1+1
+            l2=l2+1
+         enddo
+      enddo
+      if (nid.eq.0) write(6,*)l1,'lres_u_5'
+      if (nid.eq.0) write(6,*)l2,'lres_t_3'
+
+      ! add pressure residual
+      l3=1
+      call ifield=1
+      do i=1,nb
+      call opgradt(riesz_rp(1,1,l3),riesz_rp(1,2,l3),
+     $            riesz_rp(1,ldim,l3),pb(1,i))
+      l3=l3+1
+      enddo
+
+      if (nio.eq.0) write (6,*) 'exit set_rhs_unsteady'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine set_rr_uns_divf
+
+c     Compute the divergence free
+c     riesz representators for steady Boussinesq 
+c     incompressible NS (quadratically nonlinear elliptic problem)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'ORTHOT'
+      include 'CTIMER'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /screi/ wk1(lt),wk2(lt),wk3(lt),wk4(lt),wk5(lt)
+
+      n=lx1*ly1*lz1*nelv
+
+      if (nio.eq.0) write (6,*) 'inside set_rr_ns'
+
+      call rone(ones,n)
+      call rzero(zeros,n)
+
+      l1=1
+      l2=1
+      do i=0,nb
+         ifield=1
+         tolhv=1e-8
+         tolht(2)=1e-8
+c        nmxh=1000
+         call unsteady_stoke_solve(xi_u(1,1,l1),xi_u(1,2,l1),
+     $       xi_u(1,ldim,l1),xi_p(1,l1),riesz_ru(1,1,l1),    
+     $       riesz_ru(1,2,l1),riesz_ru(1,ldim,l1))
+         if (nid.eq.0) write(6,*)'riesz_u',l1,'completed'
+
+         ifield=2
+         ifld1 = ifield-1
+         napproxt(1,ifld1) = laxtt
+         call hsolve  ('TEMP',xi_t(1,l2),riesz_rt(1,l2),ones,ones
+     $                   ,tmask(1,1,1,1,ifield-1)
+     $                   ,tmult(1,1,1,1,ifield-1)
+     $                   ,imesh,tolht(ifield),nmxh,1
+     $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
+         if (nid.eq.0) write(6,*)'riesz_t',l2,'completed'
+         l1=l1+1
+         l2=l2+1
+      enddo
+      if (nid.eq.0) write(6,*)l1,'lres_u_1'
+      if (nid.eq.0) write(6,*)l2,'lres_t_1'
+
+      do i=0,nb
+         ifield=1
+         tolhv=1e-8
+         tolht(2)=1e-8
+c        nmxh=1000
+         call unsteady_stoke_solve(xi_u(1,1,l1),xi_u(1,2,l1),
+     $       xi_u(1,ldim,l1),xi_p(1,l1),riesz_ru(1,1,l1),    
+     $       riesz_ru(1,2,l1),riesz_ru(1,ldim,l1))
+         if (nid.eq.0) write(6,*)'riesz_u',l1,'completed'
+
+         ifield=2
+         ifld1 = ifield-1
+         napproxt(1,ifld1) = laxtt
+c        call hsolve  ('TEMP',xi_t(1,l2),riesz_rt(1,l2),ones,ones
+c    $                   ,tmask(1,1,1,1,ifield-1)
+c    $                   ,tmult(1,1,1,1,ifield-1)
+c    $                   ,imesh,tolht(ifield),nmxt(ifield-1),1
+c    $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
+         call hsolve  ('TEMP',xi_t(1,l2),riesz_rt(1,l2),ones,ones
+     $                   ,tmask(1,1,1,1,ifield-1)
+     $                   ,tmult(1,1,1,1,ifield-1)
+     $                   ,imesh,tolht(ifield),nmxh,1
+     $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
+         if (nid.eq.0) write(6,*)'riesz_t',l2,'completed'
+         l1=l1+1
+         l2=l2+1
+      enddo
+      if (nid.eq.0) write(6,*)l1,'lres_u_2'
+      if (nid.eq.0) write(6,*)l2,'lres_t_2'
+
+      do i=0,nb
+         ifield=1
+         tolhv=1e-8
+         tolht(2)=1e-8
+         call unsteady_stoke_solve(xi_u(1,1,l1),xi_u(1,2,l1),
+     $       xi_u(1,ldim,l1),xi_p(1,l1),riesz_ru(1,1,l1),    
+     $       riesz_ru(1,2,l1),riesz_ru(1,ldim,l1))
+         if (nid.eq.0) write(6,*)'riesz_u',l1,'completed'
+         l1=l1+1
+      enddo
+      if (nid.eq.0) write(6,*)l1,'lres_u_3'
+
+      do i=0,nb
+         ifield=1
+         tolhv=1e-8
+         tolht(2)=1e-8
+         call unsteady_stoke_solve(xi_u(1,1,l1),xi_u(1,2,l1),
+     $       xi_u(1,ldim,l1),xi_p(1,l1),riesz_ru(1,1,l1),    
+     $       riesz_ru(1,2,l1),riesz_ru(1,ldim,l1))
+         if (nid.eq.0) write(6,*)'riesz_u',l1,'completed'
+         l1=l1+1
+      enddo
+      if (nid.eq.0) write(6,*)l1,'lres_u_4'
+
+      do j=0,nb
+         do i=0,nb
+            ifield=1
+            tolhv=1e-8
+            tolht(2)=1e-8
+            call unsteady_stoke_solve(xi_u(1,1,l1),xi_u(1,2,l1),
+     $          xi_u(1,ldim,l1),xi_p(1,l1),riesz_ru(1,1,l1), 
+     $          riesz_ru(1,2,l1),riesz_ru(1,ldim,l1))
+            if (nid.eq.0) write(6,*)'riesz_u',l1,'completed'
+
+            ifield=2
+            ifld1 = ifield-1
+            napproxt(1,ifld1) = laxtt
+c           call hsolve  ('TEMP',xi_t(1,l2),riesz_rt(1,l2),ones,ones
+c    $                   ,tmask(1,1,1,1,ifield-1)
+c    $                   ,tmult(1,1,1,1,ifield-1)
+c    $                   ,imesh,tolht(ifield),nmxt(ifield-1),1
+c    $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
+            call hsolve  ('TEMP',xi_t(1,l2),riesz_rt(1,l2),ones,ones
+     $                   ,tmask(1,1,1,1,ifield-1)
+     $                   ,tmult(1,1,1,1,ifield-1)
+     $                   ,imesh,tolht(ifield),nmxh,1
+     $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
+            l1=l1+1
+            l2=l2+1
+            if (nid.eq.0) write(6,*)'riesz_t',l2,'completed'
+         enddo
+      enddo
+      if (nid.eq.0) write(6,*)l1,'lres_u_5'
+      if (nid.eq.0) write(6,*)l2,'lres_t_3'
+c     ifield=1
+c     call ophinv(xi_u(1,1,l1),xi_u(1,2,l1),xi_u(1,ldim,l1),
+c    $               riesz_rp(1,1,1),riesz_rp(1,2,1),
+c    $               riesz_rp(1,ldim,1),
+c    $               ones,ones,tolhv,nmaxv)               
+c     l1=l1+1
+      if (nid.eq.0) write(6,*)'riesz_u',l1,'completed'
+
+      if ((l1-1).gt.nres_u) then
+         call exitti('increase nres_u$',l1-1)
+      endif
+      if ((l2-1).gt.nres_t) then
+         call exitti('increase nres_t$',l2-1)
+      endif
+
+      return
+      end
