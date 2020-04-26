@@ -221,14 +221,14 @@ c-----------------------------------------------------------------------
       tttime=dnekclock()
 
       if (ifrom(1)) then
-         call setuavg(ua,u2a,u)
+         call setuavg(ua,u2a,ua_wol,u2a_wol,u)
          call setuj(uj,u2j,u)
          call count_gal(num_galu,anum_galu,rhstmp(1),upmax,upmin,
      $   1e-16,nb)
       endif
 
       if (ifrom(2)) then
-         call settavg(uta,uuta,utua,ut2a,u,ut)
+         call settavg(uta,uuta,utua,ut2a,uta_wol,utua_wol,u,ut)
          call settj(utj,uutj,utuj,uj,ut)
          call count_gal(num_galt,anum_galt,ut(1),tmax,tmin,1e-16,nb)
       endif
@@ -601,16 +601,19 @@ c              tmp2(i)=log(d)
       return
       end
 c-----------------------------------------------------------------------
-      subroutine setuavg(s1,s2,t1)
+      subroutine setuavg(s1,s2,s3,s4,t1)
 
       include 'SIZE'
       include 'MOR'
 
-      real s1(0:nb),s2(0:nb,0:nb),t1(0:nb)
+      real s1(0:nb),s2(0:nb,0:nb),s3(0:nb),s4(0:nb,0:nb)
+      real t1(0:nb)
 
       if (ad_step.eq.navg_step) then
          call rzero(s1,nb+1)
          call rzero(s2,(nb+1)**2)
+         call rzero(s3,(nb+1))
+         call rzero(s4,(nb+1)**2)
       endif
 
       call add2(s1,t1,nb+1)
@@ -625,17 +628,31 @@ c-----------------------------------------------------------------------
          s=1./real(ad_nsteps-(navg_step-1))
          call cmult(s1,s,nb+1)
          call cmult(s2,s,(nb+1)**2)
+         call copy(s3,s1,(nb+1))
+         call copy(s4,s2,(nb+1)**2)
+         do j=0,nb
+         do i=0,nb
+            s4(i,j)=s4(i,j)-(t1(i)*t1(j))/(1.*ad_nsteps)
+         enddo
+         enddo
+         do i=0,nb
+            s3(i)=s3(i)-t1(i)/(1.*ad_nsteps)
+         enddo
       endif
 
       return
       end
 c-----------------------------------------------------------------------
-      subroutine settavg(s1,s2,s3,s4,t1,t2)
+      subroutine settavg(s1,s2,s3,s4,s5,s6,t1,t2)
+
+      ! not sure what s2,s3,s4 for
 
       include 'SIZE'
       include 'MOR'
 
       real s1(0:nb),s2(0:nb,0:nb),s3(0:nb,0:nb),s4(0:nb,0:nb)
+      real s5(0:nb)
+      real s6(0:nb,0:nb)
       real t1(0:nb),t2(0:nb)
 
       if (ad_step.eq.navg_step) then
@@ -643,6 +660,8 @@ c-----------------------------------------------------------------------
          call rzero(s2,(nb+1)**2)
          call rzero(s3,(nb+1)**2)
          call rzero(s4,(nb+1)**2)
+         call rzero(s5,(nb+1))
+         call rzero(s6,(nb+1)**2)
       endif
 
       call add2(s1,ut,nb+1)
@@ -652,6 +671,7 @@ c-----------------------------------------------------------------------
          s2(i,j)=s2(i,j)+t1(i)*t2(j)
          s2(i,j)=s3(i,j)+t1(j)*t2(i)
          s2(i,j)=s4(i,j)+t2(j)*t2(i)
+         s6(i,j)=s6(i,j)+t1(j)*t2(i)
       enddo
       enddo
 
@@ -661,6 +681,16 @@ c-----------------------------------------------------------------------
          call cmult(s2,s,(nb+1)**2)
          call cmult(s3,s,(nb+1)**2)
          call cmult(s4,s,(nb+1)**2)
+         call copy(s5,s1,nb+1)
+         call cmult(s6,s,(nb+1)**2)
+         do i=0,nb
+            s5(i)=s5(i)-(t2(i))/(1.*ad_nsteps)
+         enddo
+         do j=0,nb
+         do i=0,nb
+            s6(i,j)=s6(i,j)-(t1(j)*t2(i))/(1.*ad_nsteps)
+         enddo
+         enddo
       endif
 
       return
