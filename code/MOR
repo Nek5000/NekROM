@@ -41,10 +41,12 @@ c     parameters and common blocks for MOR
 
       common /morbuoy/ bux,buy,buz,bu_angle
 
-      common /moruavg/ ua(0:lub),u2a((lub+1)**2),uas(0:lub),uvs(0:lub)
+      common /moruavg/ ua(0:lub),u2a((lub+1)**2),uas(0:lub),uvs(0:lub),
+     $                 u2a_wol((lub+1)**2),ua_wol(0:lub)
       common /mortavg/ uta(0:ltb),uuta((lub+1)*(ltb+1)),
      $                 utua((ltb+1)*(lub+1)),
-     $                 ut2a((ltb+1)*(ltb+1)),tas(0:ltb),tvs(0:ltb)
+     $                 ut2a((ltb+1)*(ltb+1)),tas(0:ltb),tvs(0:ltb),
+     $                 utua_wol((ltb+1)**2),uta_wol(0:ltb)
 
       common /mormsk/ dmask(lx1,ly1,lz1,lelm,lmsk+1)
 
@@ -137,6 +139,7 @@ c     parameters and common blocks for MOR
      $                xi_t(lx1*ly1*lz1*lelm,lres_t),
      $                xi_p(lx2*ly2*lz2*lelm,lres_u),
      $                sigma_u(lres_u**2),sigma_t(lres_t**2),
+     $                theta_u(lres_u),theta_t(lres_t),
      $                eh_u(lx1*ly1*lz1*lelm,ldim),
      $                eh_t(lx1*ly1*lz1*lelm),
      $                eh_p(lx1*ly1*lz1*lelm,ldim),
