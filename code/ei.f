@@ -1861,6 +1861,7 @@ c-----------------------------------------------------------------------
       call rone(ones,n)
       call rzero(zeros,n)
       
+      ! setup rhs for velocity representator
       l1=1
       do i=0,nb
          ifield=1
@@ -1876,7 +1877,6 @@ c-----------------------------------------------------------------------
       if (nid.eq.0) write(6,*)l1,'lres_u_1'
 
       do i=0,nb
-         ! setup rhs for velocity representator
          ifield=1
          call opcopy(wk1,wk2,wk3,ub(1,i),vb(1,i),wb(1,i))
          call axhelm(riesz_ru(1,1,l1),wk1,ones,zeros,1,1)
@@ -1936,6 +1936,7 @@ c-----------------------------------------------------------------------
       enddo
       if (nid.eq.0) write(6,*)l1,'lres_u_5'
 
+      ! setup rhs for temperature representator
       l2=1
       do i=0,nb
          ifield=2
@@ -1946,7 +1947,6 @@ c-----------------------------------------------------------------------
       enddo
       if (nid.eq.0) write(6,*)l2,'lres_t_1'
       do i=0,nb
-         ! setup rhs for temperature representator
          ifield=2
          call copy(wk4,tb(1,i),n)
          call axhelm(riesz_rt(1,l2),wk4,ones,zeros,1,1)
@@ -1975,7 +1975,7 @@ c-----------------------------------------------------------------------
       l3=l3+1
       enddo
 
-      if (nio.eq.0) write (6,*) 'exit set_rhs_unsteady'
+      if (nio.eq.0) write (6,*) 'exiting set_rhs_unsteady'
 
       return
       end
