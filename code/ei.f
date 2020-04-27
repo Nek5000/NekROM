@@ -965,15 +965,57 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
+      real t1(lres_u**2),t2(lres_t**2)
 
       n=lx1*ly1*lz1*nelv
       
       if (nio.eq.0) write (6,*) 'inside set_sigma_new'
 
-      call csigma_u(sigma_u)
-      call csigma_t(sigma_t)
-      call dump_serial(sigma_u,(nres_u)**2,'ops/sigma_u ',nid)
-      call dump_serial(sigma_t,(nres_t)**2,'ops/sigma_t ',nid)
+      ! nres_u and nres_t for steady NS + energy equations
+c     nres_u=(nb+1)*3+(nb+1)**2
+c     nres_t=(nb+1)+(nb+1)**2
+c     write(6,*)nres_u,'nres_u'
+c     write(6,*)nres_t,'nres_t'
+
+c     call exitt0
+c     call set_rhs
+c     call crd_divf(num_ts)
+c     call crd(num_ts)
+c     call crd_test(num_ts)
+c     call set_rr_ns_divf
+c     call set_rr_ns
+c     call set_sigma_new
+c     call exitt0
+c     call checker('aka',ad_step)
+
+      ! for steady NS + energy transport
+c     call set_rhs
+c     call set_rr_ns_divf
+c     call set_sigma_new
+
+      ! nres_u and nres_t for unsteady NS + energy equations
+      nres_u=(nb+1)*4+(nb+1)**2
+      nres_t=(nb+1)*2+(nb+1)**2
+      write(6,*)nres_u,'nres_u'
+      write(6,*)nres_t,'nres_t'
+
+      if (nres_u.gt.lres_u) call exitti('nres_u > lres_u$',nres_u)
+      if (nres_u.le.0) call exitti('nres_u <= 0$',nres_u)
+      if (nres_t.gt.lres_t) call exitti('nres_t > lres_t$',nres_t)
+      if (nres_t.le.0) call exitti('nres_t <= 0$',nres_t)
+
+      if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
+         call read_serial(sigma_u,(nres_u)**2,'ops/sigma_u ',t1,nid)
+         call read_serial(sigma_t,(nres_t)**2,'ops/sigma_t ',t2,nid)
+      else
+         ! for unsteady NS + energy transport
+         call set_rhs_unsteady
+         call set_rr_uns_divf
+         call csigma_u(sigma_u)
+         call csigma_t(sigma_t)
+         call dump_serial(sigma_u,(nres_u)**2,'ops/sigma_u ',nid)
+         call dump_serial(sigma_t,(nres_t)**2,'ops/sigma_t ',nid)
+      endif
 
       if (nio.eq.0) write (6,*) 'exiting set_sigma_new'
       return
@@ -1939,7 +1981,7 @@ c-----------------------------------------------------------------------
       subroutine set_rr_uns_divf
 
 c     Compute the divergence free
-c     riesz representators for steady Boussinesq 
+c     riesz representators for unsteady Boussinesq 
 c     incompressible NS (quadratically nonlinear elliptic problem)
 
       include 'SIZE'
@@ -1999,11 +2041,6 @@ c        nmxh=1000
          ifield=2
          ifld1 = ifield-1
          napproxt(1,ifld1) = laxtt
-c        call hsolve  ('TEMP',xi_t(1,l2),riesz_rt(1,l2),ones,ones
-c    $                   ,tmask(1,1,1,1,ifield-1)
-c    $                   ,tmult(1,1,1,1,ifield-1)
-c    $                   ,imesh,tolht(ifield),nmxt(ifield-1),1
-c    $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
          call hsolve  ('TEMP',xi_t(1,l2),riesz_rt(1,l2),ones,ones
      $                   ,tmask(1,1,1,1,ifield-1)
      $                   ,tmult(1,1,1,1,ifield-1)
@@ -2053,11 +2090,6 @@ c    $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
             ifield=2
             ifld1 = ifield-1
             napproxt(1,ifld1) = laxtt
-c           call hsolve  ('TEMP',xi_t(1,l2),riesz_rt(1,l2),ones,ones
-c    $                   ,tmask(1,1,1,1,ifield-1)
-c    $                   ,tmult(1,1,1,1,ifield-1)
-c    $                   ,imesh,tolht(ifield),nmxt(ifield-1),1
-c    $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
             call hsolve  ('TEMP',xi_t(1,l2),riesz_rt(1,l2),ones,ones
      $                   ,tmask(1,1,1,1,ifield-1)
      $                   ,tmult(1,1,1,1,ifield-1)
@@ -2070,12 +2102,7 @@ c    $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
       enddo
       if (nid.eq.0) write(6,*)l1,'lres_u_5'
       if (nid.eq.0) write(6,*)l2,'lres_t_3'
-c     ifield=1
-c     call ophinv(xi_u(1,1,l1),xi_u(1,2,l1),xi_u(1,ldim,l1),
-c    $               riesz_rp(1,1,1),riesz_rp(1,2,1),
-c    $               riesz_rp(1,ldim,1),
-c    $               ones,ones,tolhv,nmaxv)               
-c     l1=l1+1
+
       if (nid.eq.0) write(6,*)'riesz_u',l1,'completed'
 
       if ((l1-1).gt.nres_u) then
@@ -2084,6 +2111,122 @@ c     l1=l1+1
       if ((l2-1).gt.nres_t) then
          call exitti('increase nres_t$',l2-1)
       endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine set_theta_uns
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      n=lx1*ly1*lz1*nelv
+
+      call set_betaj
+      call set_alphaj
+
+      l1=1
+      ! time derivative
+      call mxm(uj,nb+1,betaj,6,theta_u(l1),1)
+
+      l1=l1+nb+1
+
+      ! diffusion term
+      do i=0,nb
+         theta_u(l1)=param(2)*ua(i)
+         l1=l1+1
+      enddo
+
+      ! buoyancy term
+      if (ifbuoy) then
+         call mxm(utj,(nb+1),alphaj,6,theta_u(l1),1)
+         do i=0,nb
+            theta_u(l1)=-sin(bu_angle)*ad_ra*(theta_u(l1)+uta_wol(i))
+            l1=l1+1
+         enddo
+         call mxm(utj,(nb+1),alphaj,6,theta_u(l1),1)
+         do i=0,nb
+            theta_u(l1)=-cos(bu_angle)*ad_ra*(theta_u(l1)+uta_wol(i))
+            l1=l1+1
+         enddo
+      endif
+
+      ! convection
+      ! Order of u2j does not matter since it is symmetric
+      call mxm(u2j,(nb+1)**2,alphaj,6,theta_u(l1),1)
+      do j=0,nb
+      do i=0,nb
+         theta_u(l1)=theta_u(l1)+u2a_wol(1+i+(nb+1)*j)
+         l1=l1+1
+      enddo
+      enddo
+
+      do i=1,nres_u
+         if (nio.eq.0) write (6,*) theta_u(i),'theta_u'
+      enddo
+
+      l2=1
+      call mxm(utj,nb+1,betaj,6,theta_t(l2),1)
+
+      l2=l2+nb+1
+
+      do i=0,nb
+         theta_t(l2)=param(8)*uta(i)
+         l2=l2+1
+      enddo
+
+      ! i for temperture, j for velocity, j should change to k
+      call mxm(utuj,(nb+1)**2,alphaj,6,theta_t(l2),1)
+      do j=0,nb
+      do i=0,nb
+         theta_t(l2)=theta_t(l2)+utua_wol(1+i+(nb+1)*j)
+         l2=l2+1
+      enddo
+      enddo
+
+      do i=1,nres_t
+         if (nio.eq.0) write (6,*) theta_t(i),'theta_t'
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine cres_uns(aa,bb)
+
+      include 'SIZE'
+      include 'MOR'
+
+      common /ccres/ cdiff(0:lb)
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real aa(1:nres_u,1:nres_u)
+      real bb(1:nres_t,1:nres_t)
+
+      call set_theta_uns
+
+      res=0.
+
+      do j=1,nres_u
+      do i=1,nres_u
+         res=res+aa(i,j)*theta_u(i)*theta_u(j)
+      enddo
+      enddo
+
+      do j=1,nres_t
+      do i=1,nres_t
+         res=res+bb(i,j)*theta_t(i)*theta_t(j)
+      enddo
+      enddo
+
+      res=sqrt(res)
+
+      if (res.le.0) call exitti('negative semidefinite residual$',n)
+
+      if (nid.eq.0) write (6,*) 'res:',res
 
       return
       end

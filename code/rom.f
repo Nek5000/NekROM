@@ -135,7 +135,10 @@ c        cts='rkck  '
 
     2 continue
 
-      if (ifei) call cres
+      if (ifei.and.rmode.ne.'OFF') then
+         call cres_uns(sigma_u,sigma_t)
+c        call cres
+      endif
 
       ifield=jfield
 
@@ -212,6 +215,10 @@ c-----------------------------------------------------------------------
       call checker('aba',ad_step)
 
       call rom_init_fields
+c     do k=2,10
+c     call k_mean(k,nsu,nsp,nst,'sample.list ',k)
+c     enddo
+c     call exitt0
 
       call checker('aca',ad_step)
 
@@ -246,27 +253,12 @@ c     call average_in_y
       call checker('aia',ad_step)
       call setmisc
       call checker('aja',ad_step)
-      if (ifei) call set_sigma
 
-      nres_u=(nb+1)*3+(nb+1)**2
-      nres_t=(nb+1)+(nb+1)**2
-      write(6,*)nres_u,'nres_u'
-      write(6,*)nres_t,'nres_t'
-c     if (nres_u.gt.lres_u) call exitti('nres_u > lres_u$',nres_u)
-c     if (nres_u.le.0) call exitti('nres_u <= 0$',nres_u)
-c     if (nres_t.gt.lres_t) call exitti('nres_t > lres_t$',nres_t)
-c     if (nres_t.le.0) call exitti('nres_t <= 0$',nres_t)
+      if (ifei) then
+c        call set_sigma
+         call set_sigma_new
+      endif
 
-c     call exitt0
-c     call set_rhs
-c     call crd_divf(num_ts)
-c     call crd(num_ts)
-c     call crd_test(num_ts)
-c     call set_rr_ns_divf
-c     call set_rr_ns
-c     call set_sigma_new
-c     call exitt0
-      call checker('aka',ad_step)
       if (ifplay) call set_trace
       call checker('ala',ad_step)
 
