@@ -1875,16 +1875,6 @@ c-----------------------------------------------------------------------
       enddo
       if (nid.eq.0) write(6,*)l1,'lres_u_1'
 
-      l2=1
-      do i=0,nb
-         ifield=2
-         call copy(riesz_rt(1,l2),tb(1,i),n)
-         call col2(riesz_rt(1,l2),bm1,n)
-         call chsign(riesz_rt(1,l2),n)
-         l2=l2+1
-      enddo
-      if (nid.eq.0) write(6,*)l2,'lres_t_1'
-
       do i=0,nb
          ! setup rhs for velocity representator
          ifield=1
@@ -1901,17 +1891,6 @@ c-----------------------------------------------------------------------
          l1=l1+1
       enddo
       if (nid.eq.0) write(6,*)l1,'lres_u_2'
-
-      do i=0,nb
-         ! setup rhs for temperature representator
-         ifield=2
-         call copy(wk4,tb(1,i),n)
-         call axhelm(riesz_rt(1,l2),wk4,ones,zeros,1,1)
-         call cmult(riesz_rt(1,l2),param(8),n)
-         call chsign(riesz_rt(1,l2),n) 
-         l2=l2+1
-      enddo
-      if (nid.eq.0) write(6,*)l2,'lres_t_2'
 
       do i=0,nb
          ifield=1
@@ -1952,16 +1931,39 @@ c-----------------------------------------------------------------------
             endif
             call opchsgn(riesz_ru(1,1,l1),riesz_ru(1,2,l1),
      $                   riesz_ru(1,ldim,l1))
+            l1=l1+1
+         enddo
+      enddo
+      if (nid.eq.0) write(6,*)l1,'lres_u_5'
 
+      l2=1
+      do i=0,nb
+         ifield=2
+         call copy(riesz_rt(1,l2),tb(1,i),n)
+         call col2(riesz_rt(1,l2),bm1,n)
+         call chsign(riesz_rt(1,l2),n)
+         l2=l2+1
+      enddo
+      if (nid.eq.0) write(6,*)l2,'lres_t_1'
+      do i=0,nb
+         ! setup rhs for temperature representator
+         ifield=2
+         call copy(wk4,tb(1,i),n)
+         call axhelm(riesz_rt(1,l2),wk4,ones,zeros,1,1)
+         call cmult(riesz_rt(1,l2),param(8),n)
+         call chsign(riesz_rt(1,l2),n) 
+         l2=l2+1
+      enddo
+      if (nid.eq.0) write(6,*)l2,'lres_t_2'
+      do j=0,nb
+         do i=0,nb
          ifield=2
             call convect_new(riesz_rt(1,l2),tb(1,i),.false.,
      $                       ub(1,j),vb(1,j),wb(1,j),.false.)
             call chsign(riesz_rt(1,l2),n) 
-            l1=l1+1
             l2=l2+1
          enddo
       enddo
-      if (nid.eq.0) write(6,*)l1,'lres_u_5'
       if (nid.eq.0) write(6,*)l2,'lres_t_3'
 
       ! add pressure residual
@@ -2125,6 +2127,10 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelv
 
+      if (nio.eq.0) write (6,*) 'inside set_theta_uns'
+
+      call rzero(theta_u,lres_u)
+      call rzero(theta_t,lres_t)
       call set_betaj
       call set_alphaj
 
@@ -2136,7 +2142,7 @@ c-----------------------------------------------------------------------
 
       ! diffusion term
       do i=0,nb
-         theta_u(l1)=param(2)*ua(i)
+         theta_u(l1)=ua(i)
          l1=l1+1
       enddo
 
@@ -2174,7 +2180,7 @@ c-----------------------------------------------------------------------
       l2=l2+nb+1
 
       do i=0,nb
-         theta_t(l2)=param(8)*uta(i)
+         theta_t(l2)=uta(i)
          l2=l2+1
       enddo
 
@@ -2191,6 +2197,8 @@ c-----------------------------------------------------------------------
          if (nio.eq.0) write (6,*) theta_t(i),'theta_t'
       enddo
 
+      if (nio.eq.0) write (6,*) 'exitng set_theta_uns'
+
       return
       end
 c-----------------------------------------------------------------------
@@ -2199,8 +2207,6 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
 
-      common /ccres/ cdiff(0:lb)
-
       parameter (lt=lx1*ly1*lz1*lelt)
 
       real aa(1:nres_u,1:nres_u)
@@ -2208,21 +2214,25 @@ c-----------------------------------------------------------------------
 
       call set_theta_uns
 
+      res_uu=0.
+      res_tt=0.
       res=0.
 
       do j=1,nres_u
       do i=1,nres_u
-         res=res+aa(i,j)*theta_u(i)*theta_u(j)
+         res_uu=res_uu+aa(i,j)*theta_u(i)*theta_u(j)
       enddo
       enddo
+      if (nid.eq.0)write(6,*)'res_u',sqrt(res_uu)
 
       do j=1,nres_t
       do i=1,nres_t
-         res=res+bb(i,j)*theta_t(i)*theta_t(j)
+         res_tt=res_tt+bb(i,j)*theta_t(i)*theta_t(j)
       enddo
       enddo
+      if (nid.eq.0)write(6,*)'res_t',sqrt(res_tt)
 
-      res=sqrt(res)
+      res=sqrt(res_uu+res_tt)
 
       if (res.le.0) call exitti('negative semidefinite residual$',n)
 
