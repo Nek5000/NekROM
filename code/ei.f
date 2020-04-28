@@ -966,6 +966,7 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
       real t1(lres_u**2),t2(lres_t**2)
+      real wk1(lt)
 
       n=lx1*ly1*lz1*nelv
       
@@ -1005,8 +1006,12 @@ c     call set_sigma_new
       if (nres_t.le.0) call exitti('nres_t <= 0$',nres_t)
 
       if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
-         call read_serial(sigma_u,(nres_u)**2,'ops/sigma_u ',t1,nid)
-         call read_serial(sigma_t,(nres_t)**2,'ops/sigma_t ',t2,nid)
+         if (nio.eq.0) write (6,*) 'reading sigma_u...'
+         call read_sigma_u_serial(sigma_u,nres_u,nres_u,'ops/sigma_u ',
+     $                        lres_u,nres_u,(lb+1),(nb+1),wk1,nid)
+         if (nio.eq.0) write (6,*) 'reading sigma_t...'
+         call read_sigma_t_serial(sigma_t,nres_t,nres_t,'ops/sigma_t ',
+     $                        lres_t,nres_t,(lb+1),(nb+1),wk1,nid)
       else
          ! for unsteady NS + energy transport
          call set_rhs_unsteady
