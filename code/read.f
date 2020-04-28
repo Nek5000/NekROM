@@ -368,3 +368,378 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine read_sigma_u_serial(a,n1,n2,fname,m1,m2,m3,m4,wk,nid)
+
+      character*128 fname
+      character*128 fntrunc
+
+      real a(n1,n2),wk(n1*n2)
+
+      if (nid.eq.0) then
+         call blank(fntrunc,128)
+         len=ltruncr(fname,128)
+         call chcopy(fntrunc,fname,len)
+         call read_sigma_u_serial_helper(a,n1,n2,fntrunc,m1,m2,m3,m4)
+      else
+         call rzero(a,n1*n2)
+      endif
+
+      call gop(a,wk,'+  ',n1*n2)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine read_sigma_u_serial_helper(a,n1,n2,fname,m1,m2,m3,m4)
+
+      real a(n1,n2)
+      character*128 fname
+
+      open (unit=12,file=fname)
+
+      l1=1
+      l2=1
+      do j=1,m3
+      do i=1,m3
+         read (12,*) b
+         if (j.le.m4.and.i.le.m4) then
+            a(l1,l2)=b
+            l1=l1+1
+         endif
+      enddo
+      write(6,*)'l1,l2',l1,l2
+      do i=1,m3
+         read (12,*) b
+         if (j.le.m4.and.i.le.m4) then
+            a(l1,l2)=b
+            l1=l1+1
+         endif
+      enddo
+      write(6,*)'l1,l2',l1,l2
+      do i=1,m3
+         read (12,*) b
+         if (j.le.m4.and.i.le.m4) then
+            a(l1,l2)=b
+            l1=l1+1
+         endif
+      enddo
+      write(6,*)'l1,l2',l1,l2
+      do i=1,m3
+         read (12,*) b
+         if (j.le.m4.and.i.le.m4) then
+            a(l1,l2)=b
+            l1=l1+1
+         endif
+      enddo
+      write(6,*)'l1,l2',l1,l2
+      do k=1,m3
+         do i=1,m3
+         read (12,*) b
+         if (j.le.m4.and.i.le.m4) then
+            a(l1,l2)=b
+            l1=l1+1
+         endif
+         enddo
+      enddo
+      write(6,*)'l1,l2',l1,l2
+      if (j.le.m4) l2=l2+1
+      l1=1
+      enddo
+
+      do j=1,m3
+      do i=1,m3
+         read (12,*) b
+         if (j.le.m4.and.i.le.m4) then
+            a(l1,l2)=b
+            l1=l1+1
+         endif
+      enddo
+      do i=1,m3
+         read (12,*) b
+         if (j.le.m4.and.i.le.m4) then
+            a(l1,l2)=b
+            l1=l1+1
+         endif
+      enddo
+      do i=1,m3
+         read (12,*) b
+         if (j.le.m4.and.i.le.m4) then
+            a(l1,l2)=b
+            l1=l1+1
+         endif
+      enddo
+      do i=1,m3
+         read (12,*) b
+         if (j.le.m4.and.i.le.m4) then
+            a(l1,l2)=b
+            l1=l1+1
+         endif
+      enddo
+      do k=1,m3
+         do i=1,m3
+         read (12,*) b
+         if (j.le.m4.and.i.le.m4) then
+            a(l1,l2)=b
+            l1=l1+1
+         endif
+         enddo
+      enddo
+      if (j.le.m4) l2=l2+1
+      l1=1
+      enddo
+
+      do j=1,m3
+      do i=1,m3
+         read (12,*) b
+         if (j.le.m4.and.i.le.m4) then
+            a(l1,l2)=b
+            l1=l1+1
+         endif
+      enddo
+      do i=1,m3
+         read (12,*) b
+         if (j.le.m4.and.i.le.m4) then
+            a(l1,l2)=b
+            l1=l1+1
+         endif
+      enddo
+      do i=1,m3
+         read (12,*) b
+         if (j.le.m4.and.i.le.m4) then
+            a(l1,l2)=b
+            l1=l1+1
+         endif
+      enddo
+      do i=1,m3
+         read (12,*) b
+         if (j.le.m4.and.i.le.m4) then
+            a(l1,l2)=b
+            l1=l1+1
+         endif
+      enddo
+      do k=1,m3
+         do i=1,m3
+         read (12,*) b
+         if (j.le.m4.and.i.le.m4) then
+            a(l1,l2)=b
+            l1=l1+1
+         endif
+         enddo
+      enddo
+      if (j.le.m4) l2=l2+1
+      l1=1
+      enddo
+
+      do j=1,m3
+      do i=1,m3
+         read (12,*) b
+         if (j.le.m4.and.i.le.m4) then
+            a(l1,l2)=b
+            l1=l1+1
+         endif
+      enddo
+      do i=1,m3
+         read (12,*) b
+         if (j.le.m4.and.i.le.m4) then
+            a(l1,l2)=b
+            l1=l1+1
+         endif
+      enddo
+      do i=1,m3
+         read (12,*) b
+         if (j.le.m4.and.i.le.m4) then
+            a(l1,l2)=b
+            l1=l1+1
+         endif
+      enddo
+      do i=1,m3
+         read (12,*) b
+         if (j.le.m4.and.i.le.m4) then
+            a(l1,l2)=b
+            l1=l1+1
+         endif
+      enddo
+      do k=1,m3
+         do i=1,m3
+         read (12,*) b
+         if (j.le.m4.and.i.le.m4) then
+            a(l1,l2)=b
+            l1=l1+1
+         endif
+         enddo
+      enddo
+      if (j.le.m4) l2=l2+1
+      l1=1
+      enddo
+
+      do j=1,m3
+         do s=1,m3
+            do i=1,m3
+               read (12,*) b
+               if (s.le.m4.and.i.le.m4) then
+                  a(l1,l2)=b
+                  l1=l1+1
+               endif
+            enddo
+            do i=1,m3
+               read (12,*) b
+               if (s.le.m4.and.i.le.m4) then
+                  a(l1,l2)=b
+                  l1=l1+1
+               endif
+            enddo
+            do i=1,m3
+               read (12,*) b
+               if (s.le.m4.and.i.le.m4) then
+                  a(l1,l2)=b
+                  l1=l1+1
+               endif
+            enddo
+            do i=1,m3
+               read (12,*) b
+               if (s.le.m4.and.i.le.m4) then
+                  a(l1,l2)=b
+                  l1=l1+1
+               endif
+            enddo
+            do k=1,m3
+               do i=1,m3
+               read (12,*) b
+               if (s.le.m4.and.i.le.m4) then
+                  a(l1,l2)=b
+                  l1=l1+1
+               endif
+               enddo
+            enddo
+            if (s.le.m4) l2=l2+1
+            l1=1
+         enddo
+      enddo
+
+      close (unit=12)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine read_sigma_t_serial(a,n1,n2,fname,m1,m2,m3,m4,wk,nid)
+
+      character*128 fname
+      character*128 fntrunc
+
+      real a(n1,n2),wk(n1*n2)
+
+      if (nid.eq.0) then
+         call blank(fntrunc,128)
+         len=ltruncr(fname,128)
+         call chcopy(fntrunc,fname,len)
+         call read_sigma_t_serial_helper(a,n1,n2,fntrunc,m1,m2,m3,m4)
+      else
+         call rzero(a,n1*n2)
+      endif
+
+      call gop(a,wk,'+  ',n1*n2)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine read_sigma_t_serial_helper(a,n1,n2,fname,m1,m2,m3,m4)
+
+      real a(n1,n2)
+      character*128 fname
+
+      open (unit=12,file=fname)
+
+      l1=1
+      l2=1
+      do j=1,m3
+      do i=1,m3
+         read (12,*) b
+         if (j.le.m4.and.i.le.m4) then
+            a(l1,l2)=b
+            l1=l1+1
+         endif
+      enddo
+      write(6,*)'l1,l2',l1,l2
+      do i=1,m3
+         read (12,*) b
+         if (j.le.m4.and.i.le.m4) then
+            a(l1,l2)=b
+            l1=l1+1
+         endif
+      enddo
+      write(6,*)'l1,l2',l1,l2
+      do k=1,m3
+         do i=1,m3
+         read (12,*) b
+         if (j.le.m4.and.i.le.m4) then
+            a(l1,l2)=b
+            l1=l1+1
+         endif
+         enddo
+      enddo
+      write(6,*)'l1,l2',l1,l2
+      if (j.le.m4) l2=l2+1
+      l1=1
+      enddo
+
+      do j=1,m3
+      do i=1,m3
+         read (12,*) b
+         if (j.le.m4.and.i.le.m4) then
+            a(l1,l2)=b
+            l1=l1+1
+         endif
+      enddo
+      do i=1,m3
+         read (12,*) b
+         if (j.le.m4.and.i.le.m4) then
+            a(l1,l2)=b
+            l1=l1+1
+         endif
+      enddo
+      do k=1,m3
+         do i=1,m3
+         read (12,*) b
+         if (j.le.m4.and.i.le.m4) then
+            a(l1,l2)=b
+            l1=l1+1
+         endif
+         enddo
+      enddo
+      if (j.le.m4) l2=l2+1
+      l1=1
+      enddo
+
+      do j=1,m3
+         do s=1,m3
+            do i=1,m3
+               read (12,*) b
+               if (s.le.m4.and.i.le.m4) then
+                  a(l1,l2)=b
+                  l1=l1+1
+               endif
+            enddo
+            do i=1,m3
+               read (12,*) b
+               if (s.le.m4.and.i.le.m4) then
+                  a(l1,l2)=b
+                  l1=l1+1
+               endif
+            enddo
+            do k=1,m3
+               do i=1,m3
+               read (12,*) b
+               if (s.le.m4.and.i.le.m4) then
+                  a(l1,l2)=b
+                  l1=l1+1
+               endif
+               enddo
+            enddo
+            if (s.le.m4) l2=l2+1
+            l1=1
+         enddo
+      enddo
+
+      close (unit=12)
+
+      return
+      end
