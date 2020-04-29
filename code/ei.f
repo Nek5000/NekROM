@@ -920,6 +920,9 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelv
 
+      call nekgsync
+      csigma_u_start=dnekclock()
+
       do i=1,nres_u
          do j=1,nres_u
             aa(i,j) = h10vip(xi_u(1,1,i),xi_u(1,2,i),
@@ -932,6 +935,10 @@ c-----------------------------------------------------------------------
          enddo
          if (nid.eq.0) write (6,*) i,aa(1,i),'sigma_u'
       enddo
+
+      call nekgsync
+      if (nio.eq.0) write (6,*) 'csigma_u_time:',
+     $             dnekclock()-csigma_u_start
       return
       end
 c-----------------------------------------------------------------------
@@ -946,6 +953,9 @@ c-----------------------------------------------------------------------
       real aa(1:nres_t,1:nres_t)
 
       n=lx1*ly1*lz1*nelv
+      
+      call nekgsync
+      csigma_t_start=dnekclock()
 
       do i=1,nres_t
          do j=1,nres_t
@@ -955,6 +965,10 @@ c-----------------------------------------------------------------------
          enddo
          if (nid.eq.0) write (6,*) i,aa(1,i),'sigma_t'
       enddo
+
+      call nekgsync
+      if (nio.eq.0) write (6,*) 'csigma_t_time:',
+     $             dnekclock()-csigma_t_start
       return
       end
 c-----------------------------------------------------------------------
@@ -971,6 +985,9 @@ c-----------------------------------------------------------------------
       n=lx1*ly1*lz1*nelv
       
       if (nio.eq.0) write (6,*) 'inside set_sigma_new'
+
+      call nekgsync
+      sigma_time=dnekclock()
 
       ! nres_u and nres_t for steady NS + energy equations
 c     nres_u=(nb+1)*3+(nb+1)**2
@@ -1021,6 +1038,9 @@ c     call set_sigma_new
          call dump_serial(sigma_u,(nres_u)**2,'ops/sigma_u ',nid)
          call dump_serial(sigma_t,(nres_t)**2,'ops/sigma_t ',nid)
       endif
+
+      call nekgsync
+      if (nio.eq.0) write (6,*) 'sigma_time:',dnekclock()-ops_time
 
       if (nio.eq.0) write (6,*) 'exiting set_sigma_new'
       return
@@ -1863,6 +1883,9 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'inside set_rhs_unsteady'
 
+      call nekgsync
+      sru_start=dnekclock()
+
       call rone(ones,n)
       call rzero(zeros,n)
       
@@ -1980,6 +2003,10 @@ c-----------------------------------------------------------------------
       l3=l3+1
       enddo
 
+      call nekgsync
+      if (nio.eq.0) write (6,*) 'set_rhs_unsteady_time:',
+     $             dnekclock()-sru_start
+
       if (nio.eq.0) write (6,*) 'exiting set_rhs_unsteady'
 
       return
@@ -2004,6 +2031,9 @@ c     incompressible NS (quadratically nonlinear elliptic problem)
       n=lx1*ly1*lz1*nelv
 
       if (nio.eq.0) write (6,*) 'inside set_rr_ns'
+
+      call nekgsync
+      srru_start=dnekclock()
 
       call rone(ones,n)
       call rzero(zeros,n)
@@ -2118,6 +2148,10 @@ c        nmxh=1000
       if ((l2-1).gt.nres_t) then
          call exitti('increase nres_t$',l2-1)
       endif
+
+      call nekgsync
+      if (nio.eq.0) write (6,*) 'set_rr_uns_divf_time:',
+     $             dnekclock()-srru_start
 
       return
       end
