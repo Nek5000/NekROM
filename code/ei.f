@@ -1040,7 +1040,7 @@ c     call set_sigma_new
       endif
 
       call nekgsync
-      if (nio.eq.0) write (6,*) 'sigma_time:',dnekclock()-ops_time
+      if (nio.eq.0) write (6,*) 'sigma_time:',dnekclock()-sigma_time
 
       if (nio.eq.0) write (6,*) 'exiting set_sigma_new'
       return
