@@ -399,8 +399,8 @@ c-----------------------------------------------------------------------
 
             ta=glsum(ta,1)
             a=glsum(a,1)
-            write(6,*)a,'surface area'
             qwall(i)=ta/2
+            if(nio.eq.0) write(6,*)qwall(i),'surface'
          enddo
          call dump_serial(qwall,nb+1,'qoi/qwall ',nid)
          else

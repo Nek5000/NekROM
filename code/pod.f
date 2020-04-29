@@ -411,10 +411,21 @@ c-----------------------------------------------------------------------
 
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
          if (nb > 1) then 
-            do i=0,ldimt1
-               if (ifpod(i)) call
-     $            genevec(evec(1,1,i),eval(1,i),ug(1,1,i),i)
-            enddo
+c           do i=0,ldimt1
+c              if (ifpod(i)) then 
+c                 call genevec(evec(1,1,i),eval(1,i),ug(1,1,i),i)
+c                 call cnmax(eval(1,i),fname,i)
+c              endif
+c           enddo
+            if (ifpod(1)) then 
+               call genevec(evec(1,1,1),eval(1,1),ug(1,1,1),1)
+               call cnmax(eval(1,1),'ops/enlu ',1)
+               call cenpm(eval(1,1),'ops/enru ',1)
+            endif
+            if (ifpod(2)) then 
+               call genevec(evec(1,1,2),eval(1,2),ug(1,1,2),2)
+               call cnmax(eval(1,2),'ops/enlt ',2)
+            endif
          else
             if(nid.eq.0) write(6,*)'nb = 1, no POD'
             do i=0,ldimt1
@@ -633,6 +644,7 @@ c-----------------------------------------------------------------------
       common /scrgvec/ gc(ls,ls),wk(ls,ls)
 
       real gram(ls,ls),vec(ls,nb),val(ls)
+      real total,ena(ls),enl(ls)
 
       if (nio.eq.0) write (6,*) 'inside genevec'
 
@@ -926,6 +938,109 @@ c     call snorm(pb(1,0),n)
       if (nio.eq.0) write (6,*) 'bas_time:',dnekclock()-bas_time
 
       if (nio.eq.0) write (6,*) 'exiting setbases_gram'
+      return
+      end
+
+c-----------------------------------------------------------------------
+      subroutine cnmax(val,fname,ifld)
+
+      include 'SIZE'
+      include 'TSTEP'
+      include 'MOR'
+
+      integer icalld
+      save    icalld
+      data    icalld /0/
+      
+      real val(ls)
+      real total,ena(ls),enl(ls)
+      character*128 fname
+
+      if (nio.eq.0) write (6,*) 'inside cnmax'
+
+      call nekgsync
+
+      if (icalld.eq.0) then
+         icalld=1
+      endif
+
+c     total=vlsum(val,ls)
+      total=0
+      do i=1,ns
+         total=total+val(ns-i+1) 
+         if (nio.eq.0) write(6,*)i,total,val(ns-i+1),'total'
+      enddo
+      ena(1) = val(ns)
+      enl(1) = sqrt(total-ena(1))/sqrt(total)
+      do i=2,ns
+        ena(i)=ena(i-1)+val(ns-i+1)
+        enl(i) = sqrt(total-ena(i))/sqrt(total)
+        if (enl(i).le.1e-4) then 
+        if (icalld.eq.1) then
+           if (nio.eq.0) write(6,*)i,enl(i),'cnmax Nmax for field',ifld
+           icalld=2
+        endif
+        endif
+      enddo
+      
+      call dump_serial(enl,ns,fname,nid)
+
+      call nekgsync
+
+      icalld=0
+
+      if (nio.eq.0) write (6,*) 'exiting cnmax'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine cenpm(val,fname,ifld)
+
+      include 'SIZE'
+      include 'TSTEP'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      integer icalld
+      save    icalld
+      data    icalld /0/
+      
+      real val(ls)
+      real total,enr(ls)
+      character*128 fname
+
+      if (nio.eq.0) write (6,*) 'inside cenpm'
+
+      call nekgsync
+
+      if (icalld.eq.0) then
+         icalld=1
+      endif
+
+      total=0
+      do i=1,ns
+         total=total+val(ns-i+1) 
+         if (nio.eq.0) write(6,*)i,total,val(ns-i+1),'total'
+      enddo
+      do i=1,ns
+        enr(i)=val(ns-i+1)/total
+c       if (nio.eq.0) write(6,*)i,enr(i),'Nmax for field',ifld
+        if (enr(i).le.1e-3) then 
+        if (icalld.eq.1) then
+           if (nio.eq.0) write(6,*)i,enr(i),'cenpm Nmax for field',ifld
+           icalld=2
+        endif
+        endif
+      enddo
+      
+      call dump_serial(enr,ns,fname,nid)
+
+      call nekgsync
+
+      icalld=0
+
+      if (nio.eq.0) write (6,*) 'exiting cenpm'
 
       return
       end
