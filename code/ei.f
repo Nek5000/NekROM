@@ -1752,6 +1752,7 @@ C
          intype = 0
          if (iftran) intype = -1
          call sethlm  (h1,h2,intype)
+         call rone(h1,ntot1)
          if (iftran)  call invers2 (h2inv,h2,ntot1)
          call opcopy(bfx,bfy,bfz,rhs1,rhs2,rhs3)
          call makeg   (   g1,g2,g3,h1,h2,intype)
