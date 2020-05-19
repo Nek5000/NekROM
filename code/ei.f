@@ -772,13 +772,14 @@ c    $               riesz_ru(1,ldim,1),wk4,wk5,wk6)
       if (nid.eq.0) write(6,*)l2,'lres_t_2'
 
       ! add pressure residual
-      l3=1
-      call ifield=1
-      do i=1,nb
-      call opgradt(riesz_rp(1,1,l3),riesz_rp(1,2,l3),
-     $            riesz_rp(1,ldim,l3),pb(1,i))
-      l3=l3+1
-      enddo
+      ! Uncomment this part when the riesz is not divergence free
+c     l3=1
+c     call ifield=1
+c     do i=1,nb
+c     call opgradt(riesz_rp(1,1,l3),riesz_rp(1,2,l3),
+c    $            riesz_rp(1,ldim,l3),pb(1,i))
+c     l3=l3+1
+c     enddo
 
       if (nio.eq.0) write (6,*) 'exit set_rhs'
 
@@ -990,10 +991,10 @@ c-----------------------------------------------------------------------
       sigma_time=dnekclock()
 
       ! nres_u and nres_t for steady NS + energy equations
-c     nres_u=(nb+1)*3+(nb+1)**2
-c     nres_t=(nb+1)+(nb+1)**2
-c     write(6,*)nres_u,'nres_u'
-c     write(6,*)nres_t,'nres_t'
+      nres_u=(nb+1)*3+(nb+1)**2
+      nres_t=(nb+1)+(nb+1)**2
+      write(6,*)nres_u,'nres_u'
+      write(6,*)nres_t,'nres_t'
 
 c     call exitt0
 c     call set_rhs
@@ -1006,16 +1007,12 @@ c     call set_sigma_new
 c     call exitt0
 c     call checker('aka',ad_step)
 
-      ! for steady NS + energy transport
-c     call set_rhs
-c     call set_rr_ns_divf
-c     call set_sigma_new
 
       ! nres_u and nres_t for unsteady NS + energy equations
-      nres_u=(nb+1)*4+(nb+1)**2
-      nres_t=(nb+1)*2+(nb+1)**2
-      write(6,*)nres_u,'nres_u'
-      write(6,*)nres_t,'nres_t'
+c     nres_u=(nb+1)*4+(nb+1)**2
+c     nres_t=(nb+1)*2+(nb+1)**2
+c     write(6,*)nres_u,'nres_u'
+c     write(6,*)nres_t,'nres_t'
 
       if (nres_u.gt.lres_u) call exitti('nres_u > lres_u$',nres_u)
       if (nres_u.le.0) call exitti('nres_u <= 0$',nres_u)
@@ -1030,9 +1027,15 @@ c     call set_sigma_new
          call read_sigma_t_serial(sigma_t,nres_t,nres_t,'ops/sigma_t ',
      $                        lres_t,nres_t,(lb+1),(nb+1),wk1,nid)
       else
+
+         ! for steady NS + energy transport
+         call set_rhs
+         call set_sNS_divfrr
+c        call set_sigma_new
+
          ! for unsteady NS + energy transport
-         call set_rhs_unsteady
-         call set_rr_uns_divf
+c        call set_rhs_unsteady
+c        call set_rr_uns_divf
          call csigma_u(sigma_u)
          call csigma_t(sigma_t)
          call dump_serial(sigma_u,(nres_u)**2,'ops/sigma_u ',nid)
@@ -1565,7 +1568,7 @@ c    $               h10sip(eh_t,eh_t)
       return
       end
 c-----------------------------------------------------------------------
-      subroutine set_rr_ns_divf
+      subroutine set_sNS_divfrr
 
 c     Compute the divergence free
 c     riesz representators for steady Boussinesq 
@@ -1578,12 +1581,13 @@ c     incompressible NS (quadratically nonlinear elliptic problem)
       include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
+      real work(lx2*ly2*lz2*lelt)
 
       common /screi/ wk1(lt),wk2(lt),wk3(lt),wk4(lt),wk5(lt)
 
       n=lx1*ly1*lz1*nelv
 
-      if (nio.eq.0) write (6,*) 'inside set_rr_ns'
+      if (nio.eq.0) write (6,*) 'inside set_sNS_divfrr'
 
       call rone(ones,n)
       call rzero(zeros,n)
@@ -1596,7 +1600,7 @@ c     incompressible NS (quadratically nonlinear elliptic problem)
          tolht(2)=1e-8
 c        nmxh=1000
          call unsteady_stoke_solve(xi_u(1,1,l1),xi_u(1,2,l1),
-     $       xi_u(1,ldim,l1),xi_p(1,l1),riesz_ru(1,1,l1),    
+     $       xi_u(1,ldim,l1),work,riesz_ru(1,1,l1),    
      $       riesz_ru(1,2,l1),riesz_ru(1,ldim,l1))
          if (nid.eq.0) write(6,*)'riesz_u',l1,'completed'
 
@@ -1625,7 +1629,7 @@ c    $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
          tolhv=1e-8
          tolht(2)=1e-8
          call unsteady_stoke_solve(xi_u(1,1,l1),xi_u(1,2,l1),
-     $       xi_u(1,ldim,l1),xi_p(1,l1),riesz_ru(1,1,l1),    
+     $       xi_u(1,ldim,l1),work,riesz_ru(1,1,l1),    
      $       riesz_ru(1,2,l1),riesz_ru(1,ldim,l1))
          if (nid.eq.0) write(6,*)'riesz_u',l1,'completed'
          l1=l1+1
@@ -1637,7 +1641,7 @@ c    $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
          tolhv=1e-8
          tolht(2)=1e-8
          call unsteady_stoke_solve(xi_u(1,1,l1),xi_u(1,2,l1),
-     $       xi_u(1,ldim,l1),xi_p(1,l1),riesz_ru(1,1,l1),    
+     $       xi_u(1,ldim,l1),work,riesz_ru(1,1,l1),    
      $       riesz_ru(1,2,l1),riesz_ru(1,ldim,l1))
          if (nid.eq.0) write(6,*)'riesz_u',l1,'completed'
          l1=l1+1
@@ -1650,7 +1654,7 @@ c    $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
             tolhv=1e-8
             tolht(2)=1e-8
             call unsteady_stoke_solve(xi_u(1,1,l1),xi_u(1,2,l1),
-     $          xi_u(1,ldim,l1),xi_p(1,l1),riesz_ru(1,1,l1), 
+     $          xi_u(1,ldim,l1),work,riesz_ru(1,1,l1), 
      $          riesz_ru(1,2,l1),riesz_ru(1,ldim,l1))
             if (nid.eq.0) write(6,*)'riesz_u',l1,'completed'
 
@@ -1674,6 +1678,7 @@ c    $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
       enddo
       if (nid.eq.0) write(6,*)l1,'lres_u_4'
       if (nid.eq.0) write(6,*)l2,'lres_t_2'
+      ! umcomment this part if the riesz is not divergence free
 c     ifield=1
 c     call ophinv(xi_u(1,1,l1),xi_u(1,2,l1),xi_u(1,ldim,l1),
 c    $               riesz_rp(1,1,1),riesz_rp(1,2,1),
@@ -1688,6 +1693,8 @@ c     l1=l1+1
       if ((l2-1).gt.nres_t) then
          call exitti('increase nres_t$',l2-1)
       endif
+
+      if (nio.eq.0) write (6,*) 'exiting set_sNS_divfrr'
 
       return
       end
@@ -1828,7 +1835,7 @@ c        enddo
          tolhv=1e-8
          tolht(2)=1e-8
          call unsteady_stoke_solve(eh_u(1,1),eh_u(1,2),
-     $       eh_u(1,ldim),xi_p(1,1),res_u(1,1),
+     $       eh_u(1,ldim),work,res_u(1,1),
      $       res_u(1,2),res_u(1,ldim))
 
 c        t5 = glsc3(xi_p(1,1),xi_p(1,1),bm2,nn)
@@ -2263,14 +2270,14 @@ c-----------------------------------------------------------------------
          res_uu=res_uu+aa(i,j)*theta_u(i)*theta_u(j)
       enddo
       enddo
-      if (nid.eq.0)write(6,*)'res_u',sqrt(res_uu)
+      if (nid.eq.0)write(6,*)'res_u',res_uu
 
       do j=1,nres_t
       do i=1,nres_t
          res_tt=res_tt+bb(i,j)*theta_t(i)*theta_t(j)
       enddo
       enddo
-      if (nid.eq.0)write(6,*)'res_t',sqrt(res_tt)
+      if (nid.eq.0)write(6,*)'res_t',res_tt
 
       res=sqrt(res_uu+res_tt)
 
