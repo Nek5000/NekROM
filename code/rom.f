@@ -63,6 +63,7 @@ c        cts='rkck  '
             tnext=(tfinal-time)/ndump+time
          endif
 
+         time=0
          do i=1,ad_nsteps
             if (cts.eq.'bdfext') then
                call bdfext_step
