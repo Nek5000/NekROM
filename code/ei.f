@@ -984,6 +984,7 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
       real t1(lres_u**2),t2(lres_t**2)
       real wk1(lt)
+      logical ifsteady
 
       n=lx1*ly1*lz1*nelv
       
@@ -992,12 +993,27 @@ c-----------------------------------------------------------------------
       call nekgsync
       sigma_time=dnekclock()
 
-      ! nres_u and nres_t for steady NS + energy equations
-      nres_u=(nb+1)*3+(nb+1)**2
-      nres_t=(nb+1)+(nb+1)**2
-      write(6,*)nres_u,'nres_u'
-      write(6,*)nres_t,'nres_t'
+      ifsteady = .true.
 
+
+      if (ifsteady) then
+         ! nres_u and nres_t for steady NS + energy equations
+         nres_u=(nb+1)*3+(nb+1)**2
+         nres_t=(nb+1)+(nb+1)**2
+      else
+         ! nres_u and nres_t for unsteady NS + energy equations
+         nres_u=(nb+1)*4+(nb+1)**2
+         nres_t=(nb+1)*2+(nb+1)**2
+      endif
+      write(6,*)'nres_u: ',nres_u
+      write(6,*)'nres_t: ',nres_t
+      if (nres_u.gt.lres_u) call exitti('nres_u > lres_u$',nres_u)
+      if (nres_u.le.0) call exitti('nres_u <= 0$',nres_u)
+      if (nres_t.gt.lres_t) call exitti('nres_t > lres_t$',nres_t)
+      if (nres_t.le.0) call exitti('nres_t <= 0$',nres_t)
+
+
+      ! old version, later remove
 c     call exitt0
 c     call set_rhs
 c     call crd_divf(num_ts)
@@ -1009,18 +1025,6 @@ c     call set_sigma_new
 c     call exitt0
 c     call checker('aka',ad_step)
 
-
-      ! nres_u and nres_t for unsteady NS + energy equations
-c     nres_u=(nb+1)*4+(nb+1)**2
-c     nres_t=(nb+1)*2+(nb+1)**2
-c     write(6,*)nres_u,'nres_u'
-c     write(6,*)nres_t,'nres_t'
-
-      if (nres_u.gt.lres_u) call exitti('nres_u > lres_u$',nres_u)
-      if (nres_u.le.0) call exitti('nres_u <= 0$',nres_u)
-      if (nres_t.gt.lres_t) call exitti('nres_t > lres_t$',nres_t)
-      if (nres_t.le.0) call exitti('nres_t <= 0$',nres_t)
-
       if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
          if (nio.eq.0) write (6,*) 'reading sigma_u...'
          call read_sigma_u_serial(sigma_u,nres_u,nres_u,'ops/sigma_u ',
@@ -1030,14 +1034,17 @@ c     write(6,*)nres_t,'nres_t'
      $                        lres_t,nres_t,(lb+1),(nb+1),wk1,nid)
       else
 
-         ! for steady NS + energy transport
-         call set_rhs
-         call set_sNS_divfrr
-c        call set_sigma_new
+         if (ifsteady) then
+            ! for steady NS + energy transport
+            call set_rhs
+            call set_sNS_divfrr
 
-         ! for unsteady NS + energy transport
-c        call set_rhs_unsteady
-c        call set_rr_uns_divf
+         else
+            ! for unsteady NS + energy transport
+            call set_rhs_unsteady
+            call set_rr_uns_divf
+         endif
+
          call csigma_u(sigma_u)
          call csigma_t(sigma_t)
          call dump_serial(sigma_u,(nres_u)**2,'ops/sigma_u ',nid)
