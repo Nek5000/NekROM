@@ -788,8 +788,9 @@ c     enddo
 c-----------------------------------------------------------------------
       subroutine set_rr_ns
 
-c     Compute the riesz representators for steady Boussinesq 
-c     incompressible NS (quadratically nonlinear elliptic problem)
+c     Compute the nondivergence free riesz representators for steady 
+c     Boussinesq incompressible NS 
+c     (quadratically nonlinear elliptic problem)
 c     L2 might not be correct......
 c     Currently we consider H1 norm
 c     Might be able to use H1 semi-norm depending on the 
@@ -891,12 +892,13 @@ c    $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
       enddo
       if (nid.eq.0) write(6,*)l1,'lres_u_4'
       if (nid.eq.0) write(6,*)l2,'lres_t_2'
-      ifield=1
-      call ophinv(xi_u(1,1,l1),xi_u(1,2,l1),xi_u(1,ldim,l1),
-     $               riesz_rp(1,1,1),riesz_rp(1,2,1),
-     $               riesz_rp(1,ldim,1),
-     $               ones,ones,tolhv,nmaxv)               
-      l1=l1+1
+      ! need to allocate riesz_rp 
+c     ifield=1
+c     call ophinv(xi_u(1,1,l1),xi_u(1,2,l1),xi_u(1,ldim,l1),
+c    $               riesz_rp(1,1,1),riesz_rp(1,2,1),
+c    $               riesz_rp(1,ldim,1),
+c    $               ones,ones,tolhv,nmaxv)               
+c     l1=l1+1
       if (nid.eq.0) write(6,*)'riesz_u',l1,'completed'
 
       if ((l1-1).gt.nres_u) then
@@ -2003,13 +2005,16 @@ c-----------------------------------------------------------------------
       if (nid.eq.0) write(6,*)l2,'lres_t_3'
 
       ! add pressure residual
-      l3=1
-      call ifield=1
-      do i=1,nb
-      call opgradt(riesz_rp(1,1,l3),riesz_rp(1,2,l3),
-     $            riesz_rp(1,ldim,l3),pb(1,i))
-      l3=l3+1
-      enddo
+      ! Uncomment this part when the riesz is not divergence free
+      ! if the riesz is divergence free, we do not need pressure
+      ! residual
+c     l3=1
+c     call ifield=1
+c     do i=1,nb
+c     call opgradt(riesz_rp(1,1,l3),riesz_rp(1,2,l3),
+c    $            riesz_rp(1,ldim,l3),pb(1,i))
+c     l3=l3+1
+c     enddo
 
       call nekgsync
       if (nio.eq.0) write (6,*) 'set_rhs_unsteady_time:',
@@ -2033,6 +2038,7 @@ c     incompressible NS (quadratically nonlinear elliptic problem)
       include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
+      real work(lx2*ly2*lz2*lelt)
 
       common /screi/ wk1(lt),wk2(lt),wk3(lt),wk4(lt),wk5(lt)
 
@@ -2054,7 +2060,7 @@ c     incompressible NS (quadratically nonlinear elliptic problem)
          tolht(2)=1e-8
 c        nmxh=1000
          call unsteady_stoke_solve(xi_u(1,1,l1),xi_u(1,2,l1),
-     $       xi_u(1,ldim,l1),xi_p(1,l1),riesz_ru(1,1,l1),    
+     $       xi_u(1,ldim,l1),work,riesz_ru(1,1,l1),    
      $       riesz_ru(1,2,l1),riesz_ru(1,ldim,l1))
          if (nid.eq.0) write(6,*)'riesz_u',l1,'completed'
 
@@ -2079,7 +2085,7 @@ c        nmxh=1000
          tolht(2)=1e-8
 c        nmxh=1000
          call unsteady_stoke_solve(xi_u(1,1,l1),xi_u(1,2,l1),
-     $       xi_u(1,ldim,l1),xi_p(1,l1),riesz_ru(1,1,l1),    
+     $       xi_u(1,ldim,l1),work,riesz_ru(1,1,l1),    
      $       riesz_ru(1,2,l1),riesz_ru(1,ldim,l1))
          if (nid.eq.0) write(6,*)'riesz_u',l1,'completed'
 
@@ -2103,7 +2109,7 @@ c        nmxh=1000
          tolhv=1e-8
          tolht(2)=1e-8
          call unsteady_stoke_solve(xi_u(1,1,l1),xi_u(1,2,l1),
-     $       xi_u(1,ldim,l1),xi_p(1,l1),riesz_ru(1,1,l1),    
+     $       xi_u(1,ldim,l1),work,riesz_ru(1,1,l1),    
      $       riesz_ru(1,2,l1),riesz_ru(1,ldim,l1))
          if (nid.eq.0) write(6,*)'riesz_u',l1,'completed'
          l1=l1+1
@@ -2115,7 +2121,7 @@ c        nmxh=1000
          tolhv=1e-8
          tolht(2)=1e-8
          call unsteady_stoke_solve(xi_u(1,1,l1),xi_u(1,2,l1),
-     $       xi_u(1,ldim,l1),xi_p(1,l1),riesz_ru(1,1,l1),    
+     $       xi_u(1,ldim,l1),work,riesz_ru(1,1,l1),    
      $       riesz_ru(1,2,l1),riesz_ru(1,ldim,l1))
          if (nid.eq.0) write(6,*)'riesz_u',l1,'completed'
          l1=l1+1
@@ -2128,7 +2134,7 @@ c        nmxh=1000
             tolhv=1e-8
             tolht(2)=1e-8
             call unsteady_stoke_solve(xi_u(1,1,l1),xi_u(1,2,l1),
-     $          xi_u(1,ldim,l1),xi_p(1,l1),riesz_ru(1,1,l1), 
+     $          xi_u(1,ldim,l1),work,riesz_ru(1,1,l1), 
      $          riesz_ru(1,2,l1),riesz_ru(1,ldim,l1))
             if (nid.eq.0) write(6,*)'riesz_u',l1,'completed'
 

@@ -137,7 +137,6 @@ c     parameters and common blocks for MOR
 
       common /eiresu/ xi_u(lx1*ly1*lz1*lelm,ldim,lres_u),
      $                xi_t(lx1*ly1*lz1*lelm,lres_t),
-     $                xi_p(lx2*ly2*lz2*lelm,lres_u),
      $                sigma_u(lres_u**2),sigma_t(lres_t**2),
      $                theta_u(lres_u),theta_t(lres_t),
      $                eh_u(lx1*ly1*lz1*lelm,ldim),
@@ -146,8 +145,7 @@ c     parameters and common blocks for MOR
      $                res_u(lx1*ly1*lz1*lelm,ldim),
      $                res_t(lx1*ly1*lz1*lelm)
       common /eirhs/ riesz_ru(lx1*ly1*lz1*lelm,ldim,lres_u),
-     $               riesz_rt(lx1*ly1*lz1*lelm,lres_t),
-     $               riesz_rp(lx1*ly1*lz1*lelm,ldim,lres_u)
+     $               riesz_rt(lx1*ly1*lz1*lelm,lres_t)
 
       ! Flags
 
