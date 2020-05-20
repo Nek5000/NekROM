@@ -984,7 +984,7 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
       real t1(lres_u**2),t2(lres_t**2)
       real wk1(lt)
-      logical ifsteady
+      logical ifsteady, ifdebug
 
       n=lx1*ly1*lz1*nelv
       
@@ -994,7 +994,7 @@ c-----------------------------------------------------------------------
       sigma_time=dnekclock()
 
       ifsteady = .true.
-
+      ifdebug = .false.
 
       if (ifsteady) then
          ! nres_u and nres_t for steady NS + energy equations
@@ -1013,18 +1013,6 @@ c-----------------------------------------------------------------------
       if (nres_t.le.0) call exitti('nres_t <= 0$',nres_t)
 
 
-      ! old version, later remove
-c     call exitt0
-c     call set_rhs
-c     call crd_divf(num_ts)
-c     call crd(num_ts)
-c     call crd_test(num_ts)
-c     call set_rr_ns_divf
-c     call set_rr_ns
-c     call set_sigma_new
-c     call exitt0
-c     call checker('aka',ad_step)
-
       if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
          if (nio.eq.0) write (6,*) 'reading sigma_u...'
          call read_sigma_u_serial(sigma_u,nres_u,nres_u,'ops/sigma_u ',
@@ -1034,21 +1022,28 @@ c     call checker('aka',ad_step)
      $                        lres_t,nres_t,(lb+1),(nb+1),wk1,nid)
       else
 
-         if (ifsteady) then
-            ! for steady NS + energy transport
+         if (ifdebug) then
+            num_ts = 10 ! need to specify number of test samples
             call set_rhs
-            call set_sNS_divfrr
-
+            ! crd subroutine computes riesz representators directly
+            call crd_divf(num_ts)
+            call crd(num_ts)
+            call crd_test(num_ts)
          else
-            ! for unsteady NS + energy transport
-            call set_rhs_unsteady
-            call set_rr_uns_divf
+            if (ifsteady) then
+               ! for steady NS + energy transport
+               call set_rhs
+               call set_sNS_divfrr
+            else
+               ! for unsteady NS + energy transport
+               call set_rhs_unsteady
+               call set_rr_uns_divf
+            endif
+            call csigma_u(sigma_u)
+            call csigma_t(sigma_t)
+            call dump_serial(sigma_u,(nres_u)**2,'ops/sigma_u ',nid)
+            call dump_serial(sigma_t,(nres_t)**2,'ops/sigma_t ',nid)
          endif
-
-         call csigma_u(sigma_u)
-         call csigma_t(sigma_t)
-         call dump_serial(sigma_u,(nres_u)**2,'ops/sigma_u ',nid)
-         call dump_serial(sigma_t,(nres_t)**2,'ops/sigma_t ',nid)
       endif
 
       call nekgsync
