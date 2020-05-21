@@ -1598,7 +1598,6 @@ c     incompressible NS (quadratically nonlinear elliptic problem)
          ifield=1
          tolhv=1e-8
          tolht(2)=1e-8
-c        nmxh=1000
          call unsteady_stoke_solve(xi_u(1,1,l1),xi_u(1,2,l1),
      $       xi_u(1,ldim,l1),work,riesz_ru(1,1,l1),    
      $       riesz_ru(1,2,l1),riesz_ru(1,ldim,l1))
@@ -1607,15 +1606,10 @@ c        nmxh=1000
          ifield=2
          ifld1 = ifield-1
          napproxt(1,ifld1) = laxtt
-c        call hsolve  ('TEMP',xi_t(1,l2),riesz_rt(1,l2),ones,ones
-c    $                   ,tmask(1,1,1,1,ifield-1)
-c    $                   ,tmult(1,1,1,1,ifield-1)
-c    $                   ,imesh,tolht(ifield),nmxt(ifield-1),1
-c    $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
          call hsolve  ('TEMP',xi_t(1,l2),riesz_rt(1,l2),ones,ones
      $                   ,tmask(1,1,1,1,ifield-1)
      $                   ,tmult(1,1,1,1,ifield-1)
-     $                   ,imesh,tolht(ifield),nmxh,1
+     $                   ,imesh,tolht(ifield),nmxt(ifield-1),1
      $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
          if (nid.eq.0) write(6,*)'riesz_t',l2,'completed'
          l1=l1+1
@@ -1661,15 +1655,10 @@ c    $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
             ifield=2
             ifld1 = ifield-1
             napproxt(1,ifld1) = laxtt
-c           call hsolve  ('TEMP',xi_t(1,l2),riesz_rt(1,l2),ones,ones
-c    $                   ,tmask(1,1,1,1,ifield-1)
-c    $                   ,tmult(1,1,1,1,ifield-1)
-c    $                   ,imesh,tolht(ifield),nmxt(ifield-1),1
-c    $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
             call hsolve  ('TEMP',xi_t(1,l2),riesz_rt(1,l2),ones,ones
      $                   ,tmask(1,1,1,1,ifield-1)
      $                   ,tmult(1,1,1,1,ifield-1)
-     $                   ,imesh,tolht(ifield),nmxh,1
+     $                   ,imesh,tolht(ifield),nmxt(ifield-1),1
      $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
             l1=l1+1
             l2=l2+1
@@ -1678,6 +1667,7 @@ c    $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
       enddo
       if (nid.eq.0) write(6,*)l1,'lres_u_4'
       if (nid.eq.0) write(6,*)l2,'lres_t_2'
+
       ! umcomment this part if the riesz is not divergence free
 c     ifield=1
 c     call ophinv(xi_u(1,1,l1),xi_u(1,2,l1),xi_u(1,ldim,l1),
@@ -1685,7 +1675,7 @@ c    $               riesz_rp(1,1,1),riesz_rp(1,2,1),
 c    $               riesz_rp(1,ldim,1),
 c    $               ones,ones,tolhv,nmaxv)               
 c     l1=l1+1
-      if (nid.eq.0) write(6,*)'riesz_u',l1,'completed'
+c     if (nid.eq.0) write(6,*)'riesz_u',l1,'completed'
 
       if ((l1-1).gt.nres_u) then
          call exitti('increase nres_u$',l1-1)
