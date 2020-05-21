@@ -978,7 +978,6 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
-      real t1(lres_u**2),t2(lres_t**2)
       real wk1(lt)
       logical ifsteady, ifdebug
 
@@ -1001,21 +1000,24 @@ c-----------------------------------------------------------------------
          nres_u=(nb+1)*4+(nb+1)**2
          nres_t=(nb+1)*2+(nb+1)**2
       endif
+
       write(6,*)'nres_u: ',nres_u
       write(6,*)'nres_t: ',nres_t
+
       if (nres_u.gt.lres_u) call exitti('nres_u > lres_u$',nres_u)
       if (nres_u.le.0) call exitti('nres_u <= 0$',nres_u)
       if (nres_t.gt.lres_t) call exitti('nres_t > lres_t$',nres_t)
       if (nres_t.le.0) call exitti('nres_t <= 0$',nres_t)
 
-
       if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
+
          if (nio.eq.0) write (6,*) 'reading sigma_u...'
          call read_sigma_u_serial(sigma_u,nres_u,nres_u,'ops/sigma_u ',
      $                        lres_u,nres_u,(lb+1),(nb+1),wk1,nid)
          if (nio.eq.0) write (6,*) 'reading sigma_t...'
          call read_sigma_t_serial(sigma_t,nres_t,nres_t,'ops/sigma_t ',
      $                        lres_t,nres_t,(lb+1),(nb+1),wk1,nid)
+
       else
 
          if (ifdebug) then
@@ -1027,11 +1029,11 @@ c-----------------------------------------------------------------------
             call crd_test(num_ts)
          else
             if (ifsteady) then
-               ! for steady NS + energy transport
+               ! for steady NS with Bossinesq + energy transport
                call set_residual
                call set_sNS_divfrr
             else
-               ! for unsteady NS + energy transport
+               ! for unsteady NS with Bossinesq + energy transport
                call set_residual_unsteady
                call set_uNS_divfrr
             endif
@@ -1040,9 +1042,10 @@ c-----------------------------------------------------------------------
             call dump_serial(sigma_u,(nres_u)**2,'ops/sigma_u ',nid)
             call dump_serial(sigma_t,(nres_t)**2,'ops/sigma_t ',nid)
          endif
-      endif
 
+      endif
       call nekgsync
+
       if (nio.eq.0) write (6,*) 'sigma_time:',dnekclock()-sigma_time
 
       if (nio.eq.0) write (6,*) 'exiting set_sigma_new'
@@ -1753,7 +1756,6 @@ C
       if (iftran)  call invers2 (h2inv,h2,ntot1)
       call opcopy(bfx,bfy,bfz,rhs1,rhs2,rhs3)
       call makeg   (   g1,g2,g3,h1,h2,intype)
-c     tolhr=1e-8
       call crespuz (wp,g1,g2,g3,h1,h2,h2inv,intype)
       call uzawa   (wp,h1,h2,h2inv,intype,icg)
       if (icg.gt.0) call add2 (pr,wp,ntot2)
@@ -2263,20 +2265,20 @@ c-----------------------------------------------------------------------
          res_uu=res_uu+aa(i,j)*theta_u(i)*theta_u(j)
       enddo
       enddo
-      if (nid.eq.0)write(6,*)'res_u',res_uu
+      if (nid.eq.0)write(6,*)'velocity dual norm',res_uu
 
       do j=1,nres_t
       do i=1,nres_t
          res_tt=res_tt+bb(i,j)*theta_t(i)*theta_t(j)
       enddo
       enddo
-      if (nid.eq.0)write(6,*)'res_t',res_tt
+      if (nid.eq.0)write(6,*)'temp dual norm',res_tt
 
       res=sqrt(res_uu+res_tt)
 
-      if (res.le.0) call exitti('negative semidefinite residual$',n)
+      if (res.le.0) call exitti('negative semidefinite dual norm$',n)
 
-      if (nid.eq.0) write (6,*) 'res:',res
+      if (nid.eq.0) write (6,*) 'dual norm:',res
 
       return
       end
