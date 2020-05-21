@@ -1701,16 +1701,12 @@ c-----------------------------------------------------------------------
       parameter (ltt=lx2*ly2*lz2*lelt)
 
       common /screi/ wk1(lt),wk2(lt),wk3(lt),wk4(lt),wk5(lt)
-      real ehu(lt),ehv(lt),ehw(lt)
+      real ehu(lt),ehv(lt),ehw(lt),ehp(ltt)
       real dv1(lt),dv2(lt),dv3(lt)
-      real ehp(ltt)
       real h1(lt),h2(lt),h2inv(lt)
       real rhs1(lt),rhs2(lt),rhs3(lt)
       real tmp1(lt),tmp2(lt),tmp3(lt)
-      
-      real g1 (lt)
-      real g2 (lt)
-      real g3 (lt)
+      real g1(lt),g2(lt),g3(lt)
       real wp(ltt)
       logical IFSTUZ
 
@@ -1718,8 +1714,6 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'inside steady_stoke solver'
 
-c     IFSAV1 = IFTRAN
-c     IFSAV2 = IFADVC(IFIELD)
       IFTRAN = .FALSE.
       IFADVC(IFIELD) = .FALSE.
 
@@ -1728,48 +1722,40 @@ c     IFSAV2 = IFADVC(IFIELD)
       call rzero(vz,n)
 c     call bcdirvc (vx,vy,vz,v1mask,v2mask,v3mask)
 
-C        Check if steady state
+C     Check if steady state
 C
-         IFSTUZ = .FALSE.
-         CALL CONVUZ (IFSTUZ)
+      IFSTUZ = .FALSE.
+      CALL CONVUZ (IFSTUZ)
 C... no steady state
-         IFSTUZ = .FALSE.
-         IF (IFSTUZ) THEN
-            IF (NIO.EQ.0) WRITE (6,*) 
+      IFSTUZ = .FALSE.
+      IF (IFSTUZ) THEN
+         IF (NIO.EQ.0) WRITE (6,*) 
      $      'Steady state reached in the fluid solver'
             return
          ENDIF
 C
-C        Uzawa decoupling: First, compute pressure.....
+C     Uzawa decoupling: First, compute pressure.....
 C
-         ntot1  = lx1*ly1*lz1*nelv
-         ntot2  = lx2*ly2*lz2*nelv
-         call rzero(pr,ntot2)
+      ntot1  = lx1*ly1*lz1*nelv
+      ntot2  = lx2*ly2*lz2*nelv
+      call rzero(pr,ntot2)
 
-         intype = 0
-         if (iftran) intype = -1
-         call sethlm  (h1,h2,intype)
-         call rone(h1,ntot1)
-         if (iftran)  call invers2 (h2inv,h2,ntot1)
-         call opcopy(bfx,bfy,bfz,rhs1,rhs2,rhs3)
-         call makeg   (   g1,g2,g3,h1,h2,intype)
-c        tolhr=1e-8
-         call crespuz (wp,g1,g2,g3,h1,h2,h2inv,intype)
-         call uzawa   (wp,h1,h2,h2inv,intype,icg)
-         if (icg.gt.0) call add2 (pr,wp,ntot2)
+      intype = 0
+      if (iftran) intype = -1
+      call sethlm  (h1,h2,intype)
+      call rone(h1,ntot1)
+      if (iftran)  call invers2 (h2inv,h2,ntot1)
+      call opcopy(bfx,bfy,bfz,rhs1,rhs2,rhs3)
+      call makeg   (   g1,g2,g3,h1,h2,intype)
+c     tolhr=1e-8
+      call crespuz (wp,g1,g2,g3,h1,h2,h2inv,intype)
+      call uzawa   (wp,h1,h2,h2inv,intype,icg)
+      if (icg.gt.0) call add2 (pr,wp,ntot2)
 
-C        .... then, compute velocity:
-         call cresvuz (tmp1,tmp2,tmp3)
-         call ophinv  (dv1,dv2,dv3,tmp1,tmp2,tmp3,h1,h2,tolhv,nmxv)
-c        call opadd2  (vx,vy,vz,dv1,dv2,dv3)
+C     .... then, compute velocity:
+      call cresvuz (tmp1,tmp2,tmp3)
+      call ophinv  (dv1,dv2,dv3,tmp1,tmp2,tmp3,h1,h2,tolhv,nmxv)
 
-C     Set IFTRAN to true again
-C     Turn convection on again
-C
-c     IFTRAN = IFSAV1
-c     IFADVC(IFIELD) = IFSAV2
-
-c     call opcopy(ehu,ehv,ehw,vx,vy,vz)
       call opcopy(ehu,ehv,ehw,dv1,dv2,dv3)
       call copy(ehp,wp,ntot2)
 
