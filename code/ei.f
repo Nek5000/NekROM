@@ -1700,7 +1700,6 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
       parameter (ltt=lx2*ly2*lz2*lelt)
 
-      common /screi/ wk1(lt),wk2(lt),wk3(lt),wk4(lt),wk5(lt)
       real ehu(lt),ehv(lt),ehw(lt),ehp(ltt)
       real dv1(lt),dv2(lt),dv3(lt)
       real h1(lt),h2(lt),h2inv(lt)
@@ -1708,6 +1707,8 @@ c-----------------------------------------------------------------------
       real tmp1(lt),tmp2(lt),tmp3(lt)
       real g1(lt),g2(lt),g3(lt)
       real wp(ltt)
+      real div_check(lt)
+      real tmp(lt)
       logical IFSTUZ
 
       n=lx1*ly1*lz1*nelv
@@ -1716,6 +1717,11 @@ c-----------------------------------------------------------------------
 
       IFTRAN = .FALSE.
       IFADVC(IFIELD) = .FALSE.
+
+      ! set vdiff to be one so that the constant for stokes operator 
+      ! is correct
+      call copy(tmp,vdiff(1,1,1,1,ifield),n)
+      call rone(vdiff(1,1,1,1,ifield),n)
 
       call rzero(vx,n)
       call rzero(vy,n)
@@ -1757,7 +1763,13 @@ C     .... then, compute velocity:
       call ophinv  (dv1,dv2,dv3,tmp1,tmp2,tmp3,h1,h2,tolhv,nmxv)
 
       call opcopy(ehu,ehv,ehw,dv1,dv2,dv3)
+c     call opdiv(div_check,ehu,ehv,ehw)
+c     write(6,*)'check divergence of riesz'
+c     write(6,*)glmax(div_check,ntot1),glmin(div_check,ntot1)
       call copy(ehp,wp,ntot2)
+
+      ! set vdiff back to original value
+      call copy(vdiff(1,1,1,1,ifield-1),tmp,ntot1)
 
       if (nio.eq.0) write (6,*) 'exiting steady_stoke solver'
 
