@@ -1033,7 +1033,7 @@ c-----------------------------------------------------------------------
             else
                ! for unsteady NS + energy transport
                call set_residual_unsteady
-               call set_rr_uns_divf
+               call set_uNS_divfrr
             endif
             call csigma_u(sigma_u)
             call csigma_t(sigma_t)
@@ -2012,7 +2012,7 @@ c     enddo
       return
       end
 c-----------------------------------------------------------------------
-      subroutine set_rr_uns_divf
+      subroutine set_uNS_divfrr
 
 c     Compute the divergence free
 c     riesz representators for unsteady Boussinesq 
@@ -2031,7 +2031,7 @@ c     incompressible NS (quadratically nonlinear elliptic problem)
 
       n=lx1*ly1*lz1*nelv
 
-      if (nio.eq.0) write (6,*) 'inside set_rr_ns'
+      if (nio.eq.0) write (6,*) 'inside set_uNS_divfrr'
 
       call nekgsync
       srru_start=dnekclock()
@@ -2151,7 +2151,7 @@ c        nmxh=1000
       endif
 
       call nekgsync
-      if (nio.eq.0) write (6,*) 'set_rr_uns_divf_time:',
+      if (nio.eq.0) write (6,*) 'set_uNS_divfrr_time:',
      $             dnekclock()-srru_start
 
       return
