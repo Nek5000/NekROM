@@ -667,7 +667,9 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine set_rhs
+      subroutine set_residual
+
+c     Compute ROM residual for steady NS with Boussinesq 
 
       include 'SIZE'
       include 'TOTAL'
@@ -679,7 +681,7 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelv
 
-      if (nio.eq.0) write (6,*) 'inside set_rhs'
+      if (nio.eq.0) write (6,*) 'inside set_residual'
 
       call rone(ones,n)
       call rzero(zeros,n)
@@ -696,16 +698,10 @@ c-----------------------------------------------------------------------
          endif
          call opcmult(riesz_ru(1,1,l1),riesz_ru(1,2,l1),
      $                riesz_ru(1,ldim,l1),param(2))
-c        call opgrad(wk4,wk5,wk6,pb(1,0))
-c        call opadd2(riesz_ru(1,1,l1),riesz_ru(1,2,l1),
-c    $               riesz_ru(1,ldim,l1),wk4,wk5,wk6)
          call opchsgn(riesz_ru(1,1,l1),riesz_ru(1,2,l1),
      $                riesz_ru(1,ldim,l1))
          l1=l1+1
       enddo
-c        call opgrad(wk4,wk5,wk6,pb(1,1))
-c        call opsub2(riesz_ru(1,1,1),riesz_ru(1,2,1),
-c    $               riesz_ru(1,ldim,1),wk4,wk5,wk6)
       if (nid.eq.0) write(6,*)l1,'lres_u_1'
 
       l2=1
@@ -781,7 +777,7 @@ c    $            riesz_rp(1,ldim,l3),pb(1,i))
 c     l3=l3+1
 c     enddo
 
-      if (nio.eq.0) write (6,*) 'exit set_rhs'
+      if (nio.eq.0) write (6,*) 'exit set_residual'
 
       return
       end
@@ -1024,7 +1020,7 @@ c-----------------------------------------------------------------------
 
          if (ifdebug) then
             num_ts = 10 ! need to specify number of test samples
-            call set_rhs
+            call set_residual
             ! crd subroutine computes riesz representators directly
             call crd_divf(num_ts)
             call crd(num_ts)
@@ -1032,7 +1028,7 @@ c-----------------------------------------------------------------------
          else
             if (ifsteady) then
                ! for steady NS + energy transport
-               call set_rhs
+               call set_residual
                call set_sNS_divfrr
             else
                ! for unsteady NS + energy transport
