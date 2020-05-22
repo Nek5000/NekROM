@@ -640,7 +640,7 @@ c-----------------------------------------------------------------------
       alphaj(5)=-ad_alpha(2,3)-ad_alpha(3,3)
       alphaj(6)=0.
 
-      call cmult(alphaj,1./(1.*ad_nsteps),6)
+      call cmult(alphaj,1./(1.*(ad_nsteps-navg_step+1)),6)
 
       return
       end
@@ -662,7 +662,7 @@ c-----------------------------------------------------------------------
       betaj(5)=ad_beta(0+1,3)+ad_beta(1+1,3)
       betaj(6)=ad_beta(0+1,3)
 
-      call cmult(betaj,1./(ad_dt*ad_nsteps),6)
+      call cmult(betaj,1./(ad_dt*(ad_nsteps-navg_step+1)),6)
 
       return
       end
@@ -2174,22 +2174,23 @@ c-----------------------------------------------------------------------
 
       call rzero(theta_u,lres_u)
       call rzero(theta_t,lres_t)
+
       call set_betaj
       call set_alphaj
 
+      ! time derivative (done)
       l1=1
-      ! time derivative
       call mxm(uj,nb+1,betaj,6,theta_u(l1),1)
 
       l1=l1+nb+1
 
-      ! diffusion term
+      ! diffusion term (done)
       do i=0,nb
          theta_u(l1)=ua(i)
          l1=l1+1
       enddo
 
-      ! buoyancy term
+      ! buoyancy term (done)
       if (ifbuoy) then
          call mxm(utj,(nb+1),alphaj,6,theta_u(l1),1)
          do i=0,nb
@@ -2203,7 +2204,7 @@ c-----------------------------------------------------------------------
          enddo
       endif
 
-      ! convection
+      ! convection (done)
       ! Order of u2j does not matter since it is symmetric
       call mxm(u2j,(nb+1)**2,alphaj,6,theta_u(l1),1)
       do j=0,nb
@@ -2228,6 +2229,7 @@ c-----------------------------------------------------------------------
       enddo
 
       ! i for temperture, j for velocity, j should change to k
+      ! should use utuj, in utuj, velocity uses j index
       call mxm(utuj,(nb+1)**2,alphaj,6,theta_t(l2),1)
       do j=0,nb
       do i=0,nb

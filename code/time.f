@@ -632,11 +632,11 @@ c-----------------------------------------------------------------------
          call copy(s4,s2,(nb+1)**2)
          do j=0,nb
          do i=0,nb
-            s4(i,j)=s4(i,j)-(t1(i)*t1(j))/(1.*ad_nsteps)
+            s4(i,j)=s4(i,j)-(t1(i)*t1(j))/(1.*(ad_nsteps-navg_step+1))
          enddo
          enddo
          do i=0,nb
-            s3(i)=s3(i)-t1(i)/(1.*ad_nsteps)
+            s3(i)=s3(i)-t1(i)/(1.*(ad_nsteps-navg_step+1))
          enddo
       endif
 
@@ -684,11 +684,11 @@ c-----------------------------------------------------------------------
          call copy(s5,s1,nb+1)
          call cmult(s6,s,(nb+1)**2)
          do i=0,nb
-            s5(i)=s5(i)-(t2(i))/(1.*ad_nsteps)
+            s5(i)=s5(i)-(t2(i))/(1.*(ad_nsteps-navg_step+1))
          enddo
          do j=0,nb
          do i=0,nb
-            s6(i,j)=s6(i,j)-(t1(j)*t2(i))/(1.*ad_nsteps)
+            s6(i,j)=s6(i,j)-(t1(j)*t2(i))/(1.*(ad_nsteps-navg_step+1))
          enddo
          enddo
       endif
