@@ -2268,14 +2268,14 @@ c-----------------------------------------------------------------------
          res_uu=res_uu+aa(i,j)*theta_u(i)*theta_u(j)
       enddo
       enddo
-      if (nid.eq.0)write(6,*)'velocity dual norm',res_uu
+      if (nid.eq.0)write(6,*)'velocity dual norm',sqrt(res_uu)
 
       do j=1,nres_t
       do i=1,nres_t
          res_tt=res_tt+bb(i,j)*theta_t(i)*theta_t(j)
       enddo
       enddo
-      if (nid.eq.0)write(6,*)'temp dual norm',res_tt
+      if (nid.eq.0)write(6,*)'temp dual norm',sqrt(res_tt)
 
       res=sqrt(res_uu+res_tt)
 
