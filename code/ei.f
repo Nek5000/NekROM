@@ -1609,10 +1609,11 @@ c     incompressible NS (quadratically nonlinear elliptic problem)
          ifield=2
          ifld1 = ifield-1
          napproxt(1,ifld1) = laxtt
+         ! nmxt does not supported in nek5000 master branch
          call hsolve  ('TEMP',xi_t(1,l2),riesz_rt(1,l2),ones,ones
      $                   ,tmask(1,1,1,1,ifield-1)
      $                   ,tmult(1,1,1,1,ifield-1)
-     $                   ,imesh,tolht(ifield),nmxt(ifield-1),1
+     $                   ,imesh,tolht(ifield),nmxh,1
      $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
          if (nid.eq.0) write(6,*)'riesz_t',l2,'completed'
          l1=l1+1
@@ -1661,7 +1662,7 @@ c     incompressible NS (quadratically nonlinear elliptic problem)
             call hsolve  ('TEMP',xi_t(1,l2),riesz_rt(1,l2),ones,ones
      $                   ,tmask(1,1,1,1,ifield-1)
      $                   ,tmult(1,1,1,1,ifield-1)
-     $                   ,imesh,tolht(ifield),nmxt(ifield-1),1
+     $                   ,imesh,tolht(ifield),nmxh,1
      $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
             l1=l1+1
             l2=l2+1
