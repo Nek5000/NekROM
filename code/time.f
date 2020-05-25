@@ -608,6 +608,7 @@ c-----------------------------------------------------------------------
 
       real s1(0:nb),s2(0:nb,0:nb),s3(0:nb),s4(0:nb,0:nb)
       real t1(0:nb)
+      real tmp(0:nb)
 
       if (ad_step.eq.navg_step) then
          call rzero(s1,nb+1)
@@ -624,20 +625,43 @@ c-----------------------------------------------------------------------
       enddo
       enddo
 
+      if (rfilter.eq.'LER'.and.rbf.gt.0) then 
+         call copy(tmp,t1,nb+1)
+         call pod_proj(tmp(1),rbf)
+         do j=0,nb
+         do i=0,nb
+            s4(i,j)=s4(i,j)+t1(i)*tmp(j)
+         enddo
+         enddo
+      endif
+
       if (ad_step.eq.ad_nsteps) then
          s=1./real(ad_nsteps-(navg_step-1))
          call cmult(s1,s,nb+1)
          call cmult(s2,s,(nb+1)**2)
          call copy(s3,s1,(nb+1))
-         call copy(s4,s2,(nb+1)**2)
-         do j=0,nb
-         do i=0,nb
-            s4(i,j)=s4(i,j)-(t1(i)*t1(j))/(1.*(ad_nsteps-navg_step+1))
-         enddo
-         enddo
          do i=0,nb
             s3(i)=s3(i)-t1(i)/(1.*(ad_nsteps-navg_step+1))
          enddo
+
+         if (rfilter.eq.'LER'.and.rbf.gt.0) then 
+            call copy(tmp,t1,nb+1)
+            call pod_proj(tmp(1),rbf)
+            do j=0,nb
+            do i=0,nb
+               s4(i,j)=s4(i,j)-
+     $               (t1(i)*tmp(j))/(1.*(ad_nsteps-navg_step+1))
+            enddo
+            enddo
+         else
+            call copy(s4,s2,(nb+1)**2)
+            do j=0,nb
+            do i=0,nb
+               s4(i,j)=s4(i,j)-
+     $            (t1(i)*t1(j))/(1.*(ad_nsteps-navg_step+1))
+            enddo
+            enddo
+         endif
       endif
 
       return
@@ -702,6 +726,7 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       real s1(0:nb,6),s2(0:nb,0:nb,6),t1(0:nb,3)
+      real s3(0:nb,6)
 
       if (ad_step.eq.(navg_step+1)) then
          call copy(s1(0,1),t1(0,3),nb+1)
@@ -712,9 +737,19 @@ c-----------------------------------------------------------------------
          call copy(s1(0,4),t1(0,3),nb+1)
          call copy(s1(0,5),t1(0,2),nb+1)
          call copy(s1(0,6),t1(0,1),nb+1)
-         do k=1,6
-            call mxm(s1(0,k),nb+1,s1(0,k),1,s2(0,0,k),nb+1)
-         enddo
+         if (rfilter.eq.'LER'.and.rbf.gt.0) then 
+            do k=1,6
+               call copy(s3(0,k),s1(0,k),nb+1)
+               call pod_proj(s3(1,k),rbf)
+            enddo
+            do k=1,6
+               call mxm(s1(0,k),nb+1,s3(0,k),1,s2(0,0,k),nb+1)
+            enddo
+         else
+            do k=1,6
+               call mxm(s1(0,k),nb+1,s1(0,k),1,s2(0,0,k),nb+1)
+            enddo
+         endif
       endif
 
       return
