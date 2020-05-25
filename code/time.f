@@ -647,6 +647,7 @@ c-----------------------------------------------------------------------
          if (rfilter.eq.'LER'.and.rbf.gt.0) then 
             call copy(tmp,t1,nb+1)
             call pod_proj(tmp(1),rbf)
+            call cmult(s4,s,(nb+1)**2)
             do j=0,nb
             do i=0,nb
                s4(i,j)=s4(i,j)-
