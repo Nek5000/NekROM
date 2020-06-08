@@ -1773,7 +1773,7 @@ c     write(6,*)'check divergence of riesz'
 c     write(6,*)glmax(div_check,ntot1),glmin(div_check,ntot1)
 
       ! set vdiff back to original value
-      call copy(vdiff(1,1,1,1,ifield-1),tmp,ntot1)
+      call copy(vdiff(1,1,1,1,ifield),tmp,ntot1)
 
       if (nio.eq.0) write (6,*) 'exiting steady_stoke solver'
 
