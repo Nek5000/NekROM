@@ -136,9 +136,13 @@ c        cts='rkck  '
 
     2 continue
 
-      if (ifei.and.rmode.ne.'OFF') then
+      if (ifei.and.rmode.ne.'OFF'.and.nint(param(175)).eq.1) then
          call cres_uns(sigma_u,sigma_t)
 c        call cres
+      endif
+
+      if (nint(param(175)).eq.2) then
+         call c_rieszrd_uns
       endif
 
       ifield=jfield

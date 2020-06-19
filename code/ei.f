@@ -1018,6 +1018,8 @@ c-----------------------------------------------------------------------
          call read_sigma_t_serial(sigma_t,nres_t,nres_t,'ops/sigma_t ',
      $                        lres_t,nres_t,(lb+1),(nb+1),wk1,nid)
 
+      else if (nint(param(175)).eq.2) then
+         goto 199
       else
 
          if (ifdebug) then
@@ -1044,6 +1046,8 @@ c-----------------------------------------------------------------------
          endif
 
       endif
+
+  199 continue
       call nekgsync
 
       if (nio.eq.0) write (6,*) 'sigma_time:',dnekclock()-sigma_time
@@ -2282,6 +2286,219 @@ c-----------------------------------------------------------------------
       if (res.le.0) call exitti('negative semidefinite dual norm$',n)
 
       if (nid.eq.0) write (6,*) 'dual norm:',res
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine c_rieszrd_uns
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'ORTHOT'
+      include 'CTIMER'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /screi/ wk1(lt),wk2(lt),wk3(lt),wk4(lt),wk5(lt),wk6(lt)
+
+      real work(lx2*ly2*lz2*lelt)
+
+      n=lx1*ly1*lz1*nelv
+
+      if (nio.eq.0) write (6,*) 'inside c_rieszrd_uns'
+
+      call nekgsync
+
+      call set_theta_uns
+
+      call opzero(res_u(1,1),res_u(1,2),res_u(1,ldim))
+      call rzero(res_t,n)
+
+      ! use res_u and res_t for the velocity and temperature residual
+      ! setup res_u for velocity representator
+      l1=1
+      do i=0,nb
+         ifield=1
+         call opcopy(wk1,wk2,wk3,ub(1,i),vb(1,i),wb(1,i))
+         call opcolv(wk1,wk2,wk3,bm1)
+         call opchsgn(wk1,wk2,wk3)
+
+         call cfill(wk4,theta_u(l1),n)
+         call add2col2(res_u(1,1),wk1,wk4,n)
+         call add2col2(res_u(1,2),wk2,wk4,n)
+         if (ldim.eq.3) then
+            call add2col2(res_u(1,ldim),wk3,wk4,n)
+         endif
+         l1=l1+1
+      enddo
+      if (nid.eq.0) write(6,*)l1,'lres_u_1'
+
+      do i=0,nb
+         ifield=1
+         call opcopy(wk4,wk5,wk6,ub(1,i),vb(1,i),wb(1,i))
+         call axhelm(wk1,wk4,ones,zeros,1,1)
+         call axhelm(wk2,wk5,ones,zeros,1,2)
+         if (ldim.eq.3) then
+            call axhelm(wk3,wk6,ones,zeros,1,3)
+         endif
+         call opcmult(wk1,wk2,wk3,param(2))
+         call opchsgn(wk1,wk2,wk3)
+
+         call cfill(wk4,theta_u(l1),n)
+         call add2col2(res_u(1,1),wk1,wk4,n)
+         call add2col2(res_u(1,2),wk2,wk4,n)
+         if (ldim.eq.3) then
+            call add2col2(res_u(1,ldim),wk3,wk4,n)
+         endif
+         l1=l1+1
+      enddo
+      if (nid.eq.0) write(6,*)l1,'lres_u_2'
+
+      do i=0,nb
+         ifield=1
+         call opcopy(wk1,wk2,wk3,tb(1,i),zeros,zeros)
+         call opcolv(wk1,wk2,wk3,bm1)
+         call opchsgn(wk1,wk2,wk3)
+
+         call cfill(wk4,theta_u(l1),n)
+         call add2col2(res_u(1,1),wk1,wk4,n)
+         call add2col2(res_u(1,2),wk2,wk4,n)
+         if (ldim.eq.3) then
+            call add2col2(res_u(1,ldim),wk3,wk4,n)
+         endif
+         l1=l1+1
+      enddo
+      if (nid.eq.0) write(6,*)l1,'lres_u_3'
+
+      do i=0,nb
+         ifield=1
+         call opcopy(wk1,wk2,wk3,zeros,tb(1,i),zeros)
+         call opcolv(wk1,wk2,wk3,bm1)
+         call opchsgn(wk1,wk2,wk3)
+
+         call cfill(wk4,theta_u(l1),n)
+         call add2col2(res_u(1,1),wk1,wk4,n)
+         call add2col2(res_u(1,2),wk2,wk4,n)
+         if (ldim.eq.3) then
+            call add2col2(res_u(1,ldim),wk3,wk4,n)
+         endif
+         l1=l1+1
+      enddo
+      if (nid.eq.0) write(6,*)l1,'lres_u_4'
+
+      do j=0,nb
+         do i=0,nb
+         ifield=1
+            call convect_new(wk1,ub(1,i),.false.,
+     $                       ub(1,j),vb(1,j),wb(1,j),.false.)
+            call convect_new(wk2,vb(1,i),.false.,
+     $                       ub(1,j),vb(1,j),wb(1,j),.false.)
+            if (ldim.eq.3) then
+               call convect_new(wk3,wb(1,i),.false.,
+     $                          ub(1,j),vb(1,j),wb(1,j),.false.)
+            endif
+            call opchsgn(wk1,wk2,wk3)
+
+            call cfill(wk4,theta_u(l1),n)
+            call add2col2(res_u(1,1),wk1,wk4,n)
+            call add2col2(res_u(1,2),wk2,wk4,n)
+            if (ldim.eq.3) then
+               call add2col2(res_u(1,ldim),wk3,wk4,n)
+            endif
+            l1=l1+1
+         enddo
+      enddo
+      if (nid.eq.0) write(6,*)l1,'lres_u_5'
+
+      ! setup res_t for temperature representator
+      l2=1
+      do i=0,nb
+         ifield=2
+         call copy(wk1,tb(1,i),n)
+         call col2(wk1,bm1,n)
+         call chsign(wk1,n)
+
+         call cfill(wk2,theta_t(l2),n)
+         call add2col2(res_t,wk1,wk2,n)
+         l2=l2+1
+      enddo
+      if (nid.eq.0) write(6,*)l2,'lres_t_1'
+      do i=0,nb
+         ifield=2
+         call copy(wk2,tb(1,i),n)
+         call axhelm(wk1,wk2,ones,zeros,1,1)
+         call cmult(wk1,param(8),n)
+         call chsign(wk1,n) 
+
+         call cfill(wk2,theta_t(l2),n)
+         call add2col2(res_t,wk1,wk2,n)
+         l2=l2+1
+      enddo
+      if (nid.eq.0) write(6,*)l2,'lres_t_2'
+      do j=0,nb
+         do i=0,nb
+            ifield=2
+            call convect_new(wk1,tb(1,i),.false.,
+     $                       ub(1,j),vb(1,j),wb(1,j),.false.)
+            call chsign(wk1,n) 
+
+            call cfill(wk2,theta_t(l2),n)
+            call add2col2(res_t,wk1,wk2,n)
+            l2=l2+1
+         enddo
+      enddo
+      if (nid.eq.0) write(6,*)l2,'lres_t_3'
+
+
+      ! solve two stokes problem, one for velocity and one for temp
+      call rone(ones,n)
+      call rzero(zeros,n)
+
+      ifield=1
+      tolhv=1e-8
+      tolht(2)=1e-8
+      call steady_stoke_solve(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
+     $     work,res_u(1,1),res_u(1,2),res_u(1,ldim))
+      if (nid.eq.0) write(6,*)'riesz_u completed'
+
+      ifield=2
+      ifld1 = ifield-1
+      napproxt(1,ifld1) = laxtt
+      call hsolve  ('TEMP',eh_t,res_t,ones,ones
+     $             ,tmask(1,1,1,1,ifield-1)
+     $             ,tmult(1,1,1,1,ifield-1)
+     $             ,imesh,tolht(ifield),nmxh,1
+     $             ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
+      if (nid.eq.0) write(6,*)'riesz_t completed'
+
+      ifield=1
+      t1 = h10vip(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
+     $         eh_u(1,1),eh_u(1,2),eh_u(1,ldim)) 
+      t2 = wl2vip(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
+     $           eh_u(1,1),eh_u(1,2),eh_u(1,ldim)) 
+      ifield=2
+      t3 = h10sip(eh_t,eh_t) 
+      t4 = wl2sip(eh_t,eh_t)  
+
+      res_uu=0.
+      res_uu=sqrt(t1+t2)
+
+      res_tt=0.
+      res_tt=sqrt(t3+t4)
+
+      res=0.
+      res=sqrt(t1+t2+t3+t4)
+
+      if (nid.eq.0)write(6,*)'velocity dual norm',sqrt(res_uu)
+      if (nid.eq.0)write(6,*)'temp dual norm',sqrt(res_tt)
+
+      if (res.le.0) call exitti('negative semidefinite dual norm$',n)
+
+      if (nid.eq.0) write (6,*) 'dual norm:',res
+
+      call nekgsync
+      if (nio.eq.0) write (6,*) 'exiting c_rieszrd_uns'
 
       return
       end
