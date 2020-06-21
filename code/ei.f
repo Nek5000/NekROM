@@ -2482,10 +2482,10 @@ c-----------------------------------------------------------------------
       t4 = wl2sip(eh_t,eh_t)  
 
       res_uu=0.
-      res_uu=sqrt(t1+t2)
+      res_uu=(t1+t2)
 
       res_tt=0.
-      res_tt=sqrt(t3+t4)
+      res_tt=(t3+t4)
 
       res=0.
       res=sqrt(t1+t2+t3+t4)
