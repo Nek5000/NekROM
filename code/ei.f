@@ -1004,10 +1004,12 @@ c-----------------------------------------------------------------------
       write(6,*)'nres_u: ',nres_u
       write(6,*)'nres_t: ',nres_t
 
-      if (nres_u.gt.lres_u) call exitti('nres_u > lres_u$',nres_u)
-      if (nres_u.le.0) call exitti('nres_u <= 0$',nres_u)
-      if (nres_t.gt.lres_t) call exitti('nres_t > lres_t$',nres_t)
-      if (nres_t.le.0) call exitti('nres_t <= 0$',nres_t)
+      if (nint(param(175)).ne.2) then
+         if (nres_u.gt.lres_u) call exitti('nres_u > lres_u$',nres_u)
+         if (nres_u.le.0) call exitti('nres_u <= 0$',nres_u)
+         if (nres_t.gt.lres_t) call exitti('nres_t > lres_t$',nres_t)
+         if (nres_t.le.0) call exitti('nres_t <= 0$',nres_t)
+      endif
 
       if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
 
