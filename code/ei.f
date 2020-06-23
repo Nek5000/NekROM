@@ -2334,6 +2334,7 @@ c     call set_theta_uns
          call opchsgn(wk1,wk2,wk3)
 
          call cfill(wk4,coef(i),n)
+         if (nid.eq.0) write(6,*)coef(i),'theta_u'
          call add2col2(res_u(1,1),wk1,wk4,n)
          call add2col2(res_u(1,2),wk2,wk4,n)
          if (ldim.eq.3) then
@@ -2356,6 +2357,7 @@ c     call set_theta_uns
 
          coef(i)=ua(i)
          call cfill(wk4,coef(i),n)
+         if (nid.eq.0) write(6,*)coef(i),'theta_u'
          call add2col2(res_u(1,1),wk1,wk4,n)
          call add2col2(res_u(1,2),wk2,wk4,n)
          if (ldim.eq.3) then
@@ -2374,6 +2376,7 @@ c     call set_theta_uns
 
          coef(i)=-sin(bu_angle)*ad_ra*(coef(i)+uta_wol(i))
          call cfill(wk4,coef(i),n)
+         if (nid.eq.0) write(6,*)coef(i),'theta_u'
          call add2col2(res_u(1,1),wk1,wk4,n)
          call add2col2(res_u(1,2),wk2,wk4,n)
          if (ldim.eq.3) then
@@ -2392,6 +2395,7 @@ c     call set_theta_uns
 
          coef(i)=-cos(bu_angle)*ad_ra*(coef(i)+uta_wol(i))
          call cfill(wk4,coef(i),n)
+         if (nid.eq.0) write(6,*)coef(i),'theta_u'
          call add2col2(res_u(1,1),wk1,wk4,n)
          call add2col2(res_u(1,2),wk2,wk4,n)
          if (ldim.eq.3) then
@@ -2415,9 +2419,10 @@ c     call set_theta_uns
             endif
             call opchsgn(wk1,wk2,wk3)
 
-            coef2(1+i+(nb+1)*j)=coef2(1+i+(nb+1)*j)
+            coef2(i+(nb+1)*j)=coef2(i+(nb+1)*j)
      $                         +u2a_wol(1+i+(nb+1)*j)
-            call cfill(wk4,coef2(1+i+(nb+1)*j),n)
+            if (nid.eq.0) write(6,*)coef2(i+(nb+1)*j),'theta_u'
+            call cfill(wk4,coef2(i+(nb+1)*j),n)
             call add2col2(res_u(1,1),wk1,wk4,n)
             call add2col2(res_u(1,2),wk2,wk4,n)
             if (ldim.eq.3) then
@@ -2464,9 +2469,9 @@ c     call set_theta_uns
      $                       ub(1,j),vb(1,j),wb(1,j),.false.)
             call chsign(wk1,n) 
 
-            coef2(1+i+(nb+1)*j)=coef2(1+i+(nb+1)*j)
+            coef2(i+(nb+1)*j)=coef2(i+(nb+1)*j)
      $                         +utua_wol(1+i+(nb+1)*j)
-            call cfill(wk2,coef2(1+i+(nb+1)*j),n)
+            call cfill(wk2,coef2(i+(nb+1)*j),n)
             call add2col2(res_t,wk1,wk2,n)
             l2=l2+1
          enddo
