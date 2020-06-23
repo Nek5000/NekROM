@@ -990,6 +990,7 @@ c-----------------------------------------------------------------------
 
       ifsteady = .true.
       ifdebug = .false.
+      ifsteady = .false.
 
       if (ifsteady) then
          ! nres_u and nres_t for steady NS + energy equations
