@@ -1012,7 +1012,8 @@ c-----------------------------------------------------------------------
          if (nres_t.le.0) call exitti('nres_t <= 0$',nres_t)
       endif
 
-      if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
+      if (rmode.eq.'ON '.or.rmode.eq.'ONB'.and.nint(param(175)).ne.2) 
+     $   then
 
          if (nio.eq.0) write (6,*) 'reading sigma_u...'
          call read_sigma_u_serial(sigma_u,nres_u,nres_u,'ops/sigma_u ',
@@ -2306,6 +2307,8 @@ c-----------------------------------------------------------------------
       common /screi/ wk1(lt),wk2(lt),wk3(lt),wk4(lt),wk5(lt),wk6(lt)
 
       real work(lx2*ly2*lz2*lelt)
+      real coef(0:nb)
+      real coef2(0:(nb+1)**2-1)
 
       n=lx1*ly1*lz1*nelv
 
@@ -2313,7 +2316,9 @@ c-----------------------------------------------------------------------
 
       call nekgsync
 
-      call set_theta_uns
+c     call set_theta_uns
+      call set_betaj
+      call set_alphaj
 
       call opzero(res_u(1,1),res_u(1,2),res_u(1,ldim))
       call rzero(res_t,n)
@@ -2321,13 +2326,14 @@ c-----------------------------------------------------------------------
       ! use res_u and res_t for the velocity and temperature residual
       ! setup res_u for velocity representator
       l1=1
+      call mxm(uj,nb+1,betaj,6,coef,1)
       do i=0,nb
          ifield=1
          call opcopy(wk1,wk2,wk3,ub(1,i),vb(1,i),wb(1,i))
          call opcolv(wk1,wk2,wk3,bm1)
          call opchsgn(wk1,wk2,wk3)
 
-         call cfill(wk4,theta_u(l1),n)
+         call cfill(wk4,coef(i),n)
          call add2col2(res_u(1,1),wk1,wk4,n)
          call add2col2(res_u(1,2),wk2,wk4,n)
          if (ldim.eq.3) then
@@ -2348,7 +2354,8 @@ c-----------------------------------------------------------------------
          call opcmult(wk1,wk2,wk3,param(2))
          call opchsgn(wk1,wk2,wk3)
 
-         call cfill(wk4,theta_u(l1),n)
+         coef(i)=ua(i)
+         call cfill(wk4,coef(i),n)
          call add2col2(res_u(1,1),wk1,wk4,n)
          call add2col2(res_u(1,2),wk2,wk4,n)
          if (ldim.eq.3) then
@@ -2358,13 +2365,15 @@ c-----------------------------------------------------------------------
       enddo
       if (nid.eq.0) write(6,*)l1,'lres_u_2'
 
+      call mxm(utj,(nb+1),alphaj,6,coef,1)
       do i=0,nb
          ifield=1
          call opcopy(wk1,wk2,wk3,tb(1,i),zeros,zeros)
          call opcolv(wk1,wk2,wk3,bm1)
          call opchsgn(wk1,wk2,wk3)
 
-         call cfill(wk4,theta_u(l1),n)
+         coef(i)=-sin(bu_angle)*ad_ra*(coef(i)+uta_wol(i))
+         call cfill(wk4,coef(i),n)
          call add2col2(res_u(1,1),wk1,wk4,n)
          call add2col2(res_u(1,2),wk2,wk4,n)
          if (ldim.eq.3) then
@@ -2374,13 +2383,15 @@ c-----------------------------------------------------------------------
       enddo
       if (nid.eq.0) write(6,*)l1,'lres_u_3'
 
+      call mxm(utj,(nb+1),alphaj,6,coef,1)
       do i=0,nb
          ifield=1
          call opcopy(wk1,wk2,wk3,zeros,tb(1,i),zeros)
          call opcolv(wk1,wk2,wk3,bm1)
          call opchsgn(wk1,wk2,wk3)
 
-         call cfill(wk4,theta_u(l1),n)
+         coef(i)=-cos(bu_angle)*ad_ra*(coef(i)+uta_wol(i))
+         call cfill(wk4,coef(i),n)
          call add2col2(res_u(1,1),wk1,wk4,n)
          call add2col2(res_u(1,2),wk2,wk4,n)
          if (ldim.eq.3) then
@@ -2390,6 +2401,7 @@ c-----------------------------------------------------------------------
       enddo
       if (nid.eq.0) write(6,*)l1,'lres_u_4'
 
+      call mxm(u2j,(nb+1)**2,alphaj,6,coef2,1)
       do j=0,nb
          do i=0,nb
          ifield=1
@@ -2403,7 +2415,9 @@ c-----------------------------------------------------------------------
             endif
             call opchsgn(wk1,wk2,wk3)
 
-            call cfill(wk4,theta_u(l1),n)
+            coef2(1+i+(nb+1)*j)=coef2(1+i+(nb+1)*j)
+     $                         +u2a_wol(1+i+(nb+1)*j)
+            call cfill(wk4,coef2(1+i+(nb+1)*j),n)
             call add2col2(res_u(1,1),wk1,wk4,n)
             call add2col2(res_u(1,2),wk2,wk4,n)
             if (ldim.eq.3) then
@@ -2416,13 +2430,14 @@ c-----------------------------------------------------------------------
 
       ! setup res_t for temperature representator
       l2=1
+      call mxm(utj,nb+1,betaj,6,coef,1)
       do i=0,nb
          ifield=2
          call copy(wk1,tb(1,i),n)
          call col2(wk1,bm1,n)
          call chsign(wk1,n)
 
-         call cfill(wk2,theta_t(l2),n)
+         call cfill(wk2,coef(i),n)
          call add2col2(res_t,wk1,wk2,n)
          l2=l2+1
       enddo
@@ -2434,11 +2449,14 @@ c-----------------------------------------------------------------------
          call cmult(wk1,param(8),n)
          call chsign(wk1,n) 
 
-         call cfill(wk2,theta_t(l2),n)
+         coef(i)=uta(i)
+         call cfill(wk2,coef(i),n)
          call add2col2(res_t,wk1,wk2,n)
          l2=l2+1
       enddo
       if (nid.eq.0) write(6,*)l2,'lres_t_2'
+
+      call mxm(utuj,(nb+1)**2,alphaj,6,coef2,1)
       do j=0,nb
          do i=0,nb
             ifield=2
@@ -2446,7 +2464,9 @@ c-----------------------------------------------------------------------
      $                       ub(1,j),vb(1,j),wb(1,j),.false.)
             call chsign(wk1,n) 
 
-            call cfill(wk2,theta_t(l2),n)
+            coef2(1+i+(nb+1)*j)=coef2(1+i+(nb+1)*j)
+     $                         +utua_wol(1+i+(nb+1)*j)
+            call cfill(wk2,coef2(1+i(nb+1)*j,n)
             call add2col2(res_t,wk1,wk2,n)
             l2=l2+1
          enddo
