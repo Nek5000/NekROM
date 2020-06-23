@@ -2466,7 +2466,7 @@ c     call set_theta_uns
 
             coef2(1+i+(nb+1)*j)=coef2(1+i+(nb+1)*j)
      $                         +utua_wol(1+i+(nb+1)*j)
-            call cfill(wk2,coef2(1+i(nb+1)*j,n)
+            call cfill(wk2,coef2(1+i+(nb+1)*j),n)
             call add2col2(res_t,wk1,wk2,n)
             l2=l2+1
          enddo
