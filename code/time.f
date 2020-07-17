@@ -86,6 +86,12 @@ c     if (icount.le.2) then
          if (isolve.eq.0) then
             call mxm(wt(1,2),nb,rhs(1,2),nb,rhstmp(1),1)
             call mxm(hinv(1,2),nb,rhstmp(1),nb,rhs(1,2),1)
+            if (ifdecpl) then
+            do i=1,nb
+               if (rhs(i,1).gt.tpmax(i)) rhs(i,1)=tpmax(i)-tpdis(i)*eps
+               if (rhs(i,1).lt.tpmin(i)) rhs(i,1)=tpmin(i)+tpdis(i)*eps
+            enddo
+            endif
             call mxm(rhs(1,2),1,wt(1,2),nb,rhstmp(1),nb)
             call copy(rhs(1,2),rhstmp(1),nb)
             call checker('baf',ad_step)
@@ -290,7 +296,7 @@ c        call cubar
             enddo
          endif
 
-         if (rmode.ne.'ON ') then
+         if (rmode.ne.'ON '.and.rmode.ne.'CP ') then
             jstep=istep
             call reconv(vx,vy,vz,u)
             call opcopy(t1,t2,t3,vx,vy,vz)
@@ -379,6 +385,10 @@ c-----------------------------------------------------------------------
       real uu(0:nb)
       real cl(ic1:ic2,jc1:jc2,kc1:kc2)
       real cm(ic1:ic2,jc1:jc2)
+      real bcu(ntr)
+      real cuu(ntr)
+      real tmp(ntr)
+      real tmpcu(0:nb)
 
       common /scrc/ work(max(lub,ltb))
 
@@ -396,17 +406,16 @@ c-----------------------------------------------------------------------
       if (ifcintp) then
          call mxm(cintp,n,uu,n+1,cu,1)
       else if (rmode.eq.'CP ') then
-         call rzero(cu,nb)
-         do kk=1,ltr
-            bcu(kk) = vlsc2(uu,cub(1+(kk-1)*(lub+1)),nb+1)
-            cuu(kk) = vlsc2(u,cuc(1+(kk-1)*(lub+1)),nb+1)
-         enddo
-         do kk=1,ltr
-            do i=1,nb
-               cu(i)=cu(i)+cp_w(kk)*cua(i+(kk-1)*(lub))*bcu(kk)*cuu(kk)
-            enddo
-         enddo
 
+         call rzero(cu,nb)
+         do kk=1,ntr
+            bcu(kk) = vlsc2(uu,cub(1+(kk-1)*(nb+1)),nb+1)
+            cuu(kk) = vlsc2(u,cuc(1+(kk-1)*(nb+1)),nb+1)
+         enddo
+         call col4(tmp,bcu,cuu,cp_uw,ntr) 
+         call mxm(cua,nb+1,tmp,ntr,tmpcu,1)
+
+         call copy(cu,tmpcu,nb)
          ! debug checking
 c        do kk=1,ltr
 c           do k=1,nb+1
@@ -465,6 +474,52 @@ c        enddo
       return
       end
 c-----------------------------------------------------------------------
+      subroutine evalc3(cu,fac_a,fac_b,fac_c,cp_weight,uu)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      real cu(nb)
+      real uu(0:nb)
+      real ucft(0:nb)
+      real fac_a((nb+1)*ntr),fac_b((nb+1)*ntr)
+      real fac_c((nb+1)*ntr),cp_weight(ntr)
+      real bcu(ntr)
+      real cuu(ntr)
+      real tmp(ntr)
+      real tmpcu(0:nb)
+
+      common /scrc/ work(max(lub,ltb))
+
+      integer icalld
+      save    icalld
+      data    icalld /0/
+
+      if (icalld.eq.0) then
+         evalc_time=0.
+         icalld=1
+      endif
+
+      stime=dnekclock()
+
+      call rzero(cu,nb)
+      do kk=1,ntr
+         bcu(kk) = vlsc2(uu,fac_b(1+(kk-1)*(nb+1)),nb+1)
+         cuu(kk) = vlsc2(u,fac_c(1+(kk-1)*(nb+1)),nb+1)
+      enddo
+      call col4(tmp,bcu,cuu,cp_weight,ntr) 
+      call mxm(fac_a,nb+1,tmp,ntr,tmpcu,1)
+
+      call copy(cu,tmpcu,nb)
+
+      call nekgsync
+
+      evalc_time=evalc_time+dnekclock()-stime
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine setcintp
       call exitti('called deprecated subroutine setcintp$',1)
       return
@@ -490,7 +545,11 @@ c-----------------------------------------------------------------------
          rhs(i)=rhs(i)+s*at0(1+i)
       enddo
 
-      call evalc(tmp(1),ctmp,ctl,ut)
+      if (rmode.eq.'CP ') then
+         call evalc3(tmp(1),cta,ctb,ctc,cp_tw,ut)
+      else
+         call evalc(tmp(1),ctmp,ctl,ut)
+      endif
 c     call add2(tmp(1),st0(1),nb)
 
       call shift3(ctr,tmp(1),nb)
@@ -532,8 +591,12 @@ c-----------------------------------------------------------------------
          rhs(i)=rhs(i)+s*au0(1+i)
       enddo
 
+      if (rmode.eq.'CP ') then
+         call evalc3(tmp1(1),cua,cub,cuc,cp_uw,u)
+      else
+         call evalc(tmp1(1),ctmp,cul,u)
+      endif
 
-      call evalc(tmp1(1),ctmp,cul,u)
       call chsign(tmp1(1),nb)
       call checkera('ba5',tmp1(1),nb,ad_step)
 

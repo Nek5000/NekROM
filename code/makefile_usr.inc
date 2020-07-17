@@ -13,5 +13,5 @@ $(OBJDIR)/read.o   :$(MOR_DIR)/code/read.f   MOR LMOR;  $(FC) -c $(FL2) $< -o $@
 $(OBJDIR)/rk.o     :$(MOR_DIR)/code/rk.f     MOR LMOR;  $(FC) -c $(FL2) $< -o $@
 $(OBJDIR)/rom.o    :$(MOR_DIR)/code/rom.f    MOR LMOR;  $(FC) -c $(FL2) $< -o $@
 $(OBJDIR)/time.o   :$(MOR_DIR)/code/time.f   MOR LMOR;  $(FC) -c $(FL2) $< -o $@
-
+$(OBJDIR)/tensor.o :$(MOR_DIR)/code/tensor.f MOR LMOR;  $(FC) -c $(FL2) $< -o $@
 $(OBJDIR)/unit.o   :$(MOR_DIR)/tests/unit.f  MOR LMOR;  $(FC) -c $(FL2) $< -o $@

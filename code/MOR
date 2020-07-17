@@ -166,7 +166,8 @@ c     parameters and common blocks for MOR
       real last_time,misc_time,lu_time,
      $     copt_time,quasi_time,lnsrch_time,
      $     ulast_time,tlast_time,postu_time,postt_time
-     $     compf_time,compgf_time,invhm_time
+     $     compf_time,compgf_time,invhm_time,
+     $     cp_time
 
       common /mortime/ step_time,last_time,misc_time,evalc_time,
      $                 solve_time,lu_time,
@@ -174,7 +175,8 @@ c     parameters and common blocks for MOR
      $                 tstep_time,tlast_time,tsolve_time,
      $                 ustep_time,ulast_time,
      $                 postu_time,postt_time,post_time
-     $                 compf_time,compgf_time,invhm_time
+     $                 compf_time,compgf_time,invhm_time,
+     $                 cp_time
 
       integer ucopt_count,tcopt_count
       real num_galu,num_galt
@@ -199,6 +201,11 @@ c     parameters and common blocks for MOR
       common /morifilt/  rbf
 
       ! Tensor Decomposition 
-      real cua,cub,cuc,cp_w
-      common /cp_decomp/ cua(lub*ltr),cub((lub+1)*ltr),cuc((lub+1)*ltr),
-     $                   cp_w(ltr)
+      real cua,cub,cuc,cp_uw
+      real cta,ctb,ctc,cp_tw
+      integer ntr,max_tr
+      common /cp_decomp/ cua((lub+1)*ltr),cub((lub+1)*ltr),
+     $                   cuc((lub+1)*ltr),cp_uw(ltr),
+     $                   cta((lub+1)*ltr),ctb((lub+1)*ltr),
+     $                   ctc((lub+1)*ltr),cp_tw(ltr)
+      common /cp_rank/ ntr,max_tr

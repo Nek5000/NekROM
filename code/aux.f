@@ -457,54 +457,6 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine comp_hyperpar
-
-      include 'SIZE'
-      include 'MOR'
-
-      parameter (lt=lx1*ly1*lz1*lelt)
-
-      real ep
-      real uw(lt),vw(lt),ww(lt)
-      real tmp1(nb),tmp2(nb),delta(nb)
-      real work(ls,nb)
-
-      ! eps is the free parameter
-      ! 1e-2 is used in the paper
-      ep = 1e-2
-
-      n  = lx1*ly1*lz1*nelt
-
-      do j=1,nb                    ! compute hyper-parameter
-         call axhelm(uw,ub(1,j),ones,zeros,1,1)
-         call axhelm(vw,vb(1,j),ones,zeros,1,1)
-         if (ldim.eq.3) call axhelm(ww,wb(1,j),ones,zeros,1,1)
-         do i=1,ls
-            work(i,j) = glsc2(us0(1,1,i),uw,n)+glsc2(us0(1,2,i),vw,n)
-            if (ldim.eq.3) work(i,j)=work(i,j)+glsc2(us0(1,ldim,i),ww,n)
-         enddo
-         tmp1(j) = vlmin(work(1,j),ls)
-         tmp2(j) = vlmax(work(1,j),ls)
-         delta(j) = tmp2(j)-tmp1(j)
-         umin(j) = tmp1(j) - ep * delta(j)
-         umax(j) = tmp2(j) + ep * delta(j)
-         write(6,*) j,umin(j),umax(j)
-      enddo
-
-      ! compute distance between umax and umin
-      call sub3(udis,umax,umin,nb)
-      if (nid.eq.0) then
-         do i=1,nb
-            write(6,*)i,udis(i)
-         enddo
-      endif
-
-      call dump_serial(umin,nb,'ops/umin ',nid)
-      call dump_serial(umax,nb,'ops/umax ',nid)
-
-      return
-      end
-c-----------------------------------------------------------------------
       subroutine hyperpar
 
       include 'SIZE'

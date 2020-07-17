@@ -348,7 +348,8 @@ c-----------------------------------------------------------------------
       include 'MOR'
       include 'TSTEP'
 
-      logical iftmp
+      logical iftmp,ifexist
+      real wk(lb+1)
 
       if (nio.eq.0) write (6,*) 'inside setops'
 
@@ -360,13 +361,25 @@ c-----------------------------------------------------------------------
          ifield=1
          call seta(au,au0,'ops/au ')
          call setb(bu,bu0,'ops/bu ')
-         call setc(cul,'ops/cu ')
+         if (rmode.eq.'CP ') then 
+            inquire (file='ops/u0',exist=ifexist)
+            if (ifexist) call read_serial(u,nb+1,'ops/u0 ',wk,nid)
+            call set_cp(cul,'ops/cu ',cua,cub,cuc,cp_uw,u)
+         else
+            call setc(cul,'ops/cu ')
+         endif
       endif
       if (ifrom(2)) then
          ifield=2
          call seta(at,at0,'ops/at ')
          call setb(bt,bt0,'ops/bt ')
-         call setc(ctl,'ops/ct ')
+         if (rmode.eq.'CP ') then 
+            inquire (file='ops/t0',exist=ifexist)
+            if (ifexist) call read_serial(ut,nb+1,'ops/t0 ',wk,nid)
+            call set_cp(ctl,'ops/ct ',cta,ctb,ctc,cp_tw,ut)
+         else
+            call setc(ctl,'ops/ct ')
+         endif
          call sets(st0,tb,'ops/ct ')
       endif
 
@@ -550,7 +563,7 @@ c-----------------------------------------------------------------------
 
          call nekgsync
          if (nio.eq.0) write (6,*) 'proj_time:',dnekclock()-proj_time
-      else if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
+      else if (rmode.eq.'ON '.or.rmode.eq.'ONB'.or.rmode.eq.'CP') then
          inquire (file='ops/uk',exist=ifexist)
          if (ifexist)
      $      call read_mat_serial(uk,lb+1,ns,'ops/uk ',mb+1,ns,stmp,nid)
@@ -645,11 +658,12 @@ c-----------------------------------------------------------------------
          rmode='ONB'
       else if (np173.eq.4) then
          rmode='CP '
+         max_tr = ltr
       else
          call exitti('unsupported param(173), exiting...$',np173)
       endif
 
-      if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
+      if (rmode.eq.'ON '.or.rmode.eq.'ONB'.or.rmode.eq.'CP ') then
          open (unit=10,file='ops/ips')
          read (10,*) chartmp
          close (unit=10)
@@ -657,7 +671,7 @@ c-----------------------------------------------------------------------
      $      call exitti('online ips does not match offline ips$',nb)
       endif
 
-      ifrecon=(rmode.ne.'ON ')
+      ifrecon=(rmode.ne.'ON '.and.rmode.ne.'CP ')
 
       ifei=nint(param(175)).ne.0
 
@@ -981,40 +995,32 @@ c     call cpart(ic1,ic2,jc1,jc2,kc1,kc2,ncloc,nb,np,nid+1) ! new indexing
          enddo
          enddo
       else if (rmode.eq.'CP ') then
+         ic1=1
+         ic2=nb
+         jc1=0
+         jc2=nb
+         kc1=0
+         kc2=nb
+         do k=0,nb
+         do j=0,mb
+         do i=1,mb
+            cel=0.
+            if (nid.eq.0) read(100,*) cel
+            cel=glsum(cel,1)
+            call setc_local(cl,cel,ic1,ic2,jc1,jc2,kc1,kc2,i,j,k)
+         enddo
+         enddo
+         enddo
+         write(6,*)'check index',ic1,ic2,jc1,jc2,kc1,kc2,nid
+         call nekgsync
+
+         tcp_time=dnekclock()
+         call CP_ALS(cl,cua,cub,cuc,cp_uw,u,nb+1,ntr)
+         cp_time=cp_time+dnekclock()-tcp_time
+
          ! read in the cp decomposition
-         if (nid.eq.0) open (unit=100,file='./ops/lambda')
-         do kk=1,ltr
-            cel=0.
-            read(100,*) cel 
-            cp_w(kk) = cel
-         enddo
-         call rzero(cua,lub*ltr)
-         if (nid.eq.0) open (unit=100,file='./ops/cua')
-         do kk=1,ltr
-         do i=1,nb
-            cel=0.
-            read(100,*) cel 
-            cua(i+(kk-1)*lub) = cel
-         enddo
-         enddo
-         call rzero(cub,(lub+1)*ltr)
-         if (nid.eq.0) open (unit=100,file='./ops/cub')
-         do kk=1,ltr
-         do i=1,nb+1
-            cel=0.
-            read(100,*) cel 
-            cub(i+(kk-1)*(lub+1)) = cel
-         enddo
-         enddo
-         call rzero(cuc,(lub+1)*ltr)
-         if (nid.eq.0) open (unit=100,file='./ops/cuc')
-         do kk=1,ltr
-         do i=1,nb+1
-            cel=0.
-            read(100,*) cel 
-            cuc(i+(kk-1)*(lub+1)) = cel
-         enddo
-         enddo
+c        call read_cp_weight
+c        call read_cp_mode
 
          ! debug purpose
          ! forming the tensor
@@ -1244,7 +1250,7 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelv
 
-      if (rmode.eq.'ON ') then
+      if (rmode.eq.'ON '.or.rmode.eq.'CP ') then
          inquire (file='ops/u0',exist=ifexist)
          if (ifexist) call read_serial(u,nb+1,'ops/u0 ',wk,nid)
 
@@ -1398,6 +1404,7 @@ c-----------------------------------------------------------------------
          write (6,*) 'rom_time:    ',rom_time
          write (6,*) 'postu_time:  ',postu_time
          write (6,*) 'postt_time:  ',postt_time
+         write (6,*) 'cp_time:     ',cp_time
       endif
 
       call dump_serial(u,nb+1,'ops/uf ',nid)
@@ -1432,15 +1439,13 @@ c-----------------------------------------------------------------------
 
       common /scrra/ binv(lx1,ly1,lz1,lelt)
 
-      n=lx1*ly1*lz1*lelt
+      n=lx1*ly1*lz1*nelt
 
       call rone(binv,n)
       call invcol2(binv,bm1,n)
-      call rone(ones,n)
 
-c     ad_ra=sqrt(op_glsc2_wt(gx,gy,gz,gx,gy,gz,binv)/glsum(bm1,n))
-      ad_ra=sqrt(op_glsc2_wt(gx,gy,gz,gx,gy,gz,binv)
-     $          /op_glsc2_wt(ones,ones,ones,ones,ones,ones,bm1))
+      ad_ra=sqrt(op_glsc2_wt(gx,gy,gz,gx,gy,gz,binv)/glsum(bm1,n))
+
       if (nio.eq.0) write (6,*) ad_ra,'ad_ra'
       s=1./ad_ra
       call opcmult(gx,gy,gz,s)
