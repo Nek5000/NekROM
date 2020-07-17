@@ -25,6 +25,8 @@ c-----------------------------------------------------------------------
       rhs(0,1)=1.
       rhs(0,2)=1.
 
+      call checker('bab',ad_step)
+
 c     if (icount.le.2) then
       if (.false.) then
          if (ifrom(1)) call setr_v(rhs(1,1),icount)
@@ -48,9 +50,12 @@ c     if (icount.le.2) then
          return
       endif
 
+      call checker('bac',ad_step)
+
       if (ifrom(2)) then
          if (ad_step.le.3) then
             ttime=dnekclock()
+            call checker('bad',ad_step)
             call seth(hlm(1,2),at,bt,1./ad_pe)
             if (ad_step.eq.3)
      $         call dump_serial(hlm(1,2),nb*nb,'ops/ht ',nid)
@@ -64,13 +69,14 @@ c     if (icount.le.2) then
                call diag(hinv(1,2),wt(1,2),rhs(1,2),nb)
             else
                call invmat(hinv(1,2),hlu(1,2),hlm(1,2),
-     $         ihlu(1,2),nb-nplay)
+     $         ihlu(1,2),ihlu2(1,2),nb-nplay)
                call rzero(wt(1,2),(nb-nplay)**2)
                do i=1,nb-nplay
                   wt(i+(nb-nplay)*(i-1),2)=1.
                enddo
             endif
             lu_time=lu_time+dnekclock()-ttime
+            call checker('bae',ad_step)
             call update_k
          endif
 
@@ -88,6 +94,7 @@ c     if (icount.le.2) then
             endif
             call mxm(rhs(1,2),1,wt(1,2),nb,rhstmp(1),nb)
             call copy(rhs(1,2),rhstmp(1),nb)
+            call checker('baf',ad_step)
          else
             scopt='tcopt'
             call mxm(ut,nb+1,ad_alpha(1,icount),icount,utmp1,1)
@@ -111,21 +118,28 @@ c     if (icount.le.2) then
          endif
       endif
 
+      call checker('bag',ad_step)
+
       if (ifrom(1)) then
          if (ad_step.le.3) then
             ttime=dnekclock()
             call seth(hlm,au,bu,1./ad_re)
+            call checkera('bah',hlm,nb*nb,ad_step)
             if (ad_step.eq.3) call dump_serial(hlm,nb*nb,'ops/hu ',nid)
             do j=1,nb-nplay
             do i=1,nb-nplay
                hlm(i+(j-1)*(nb-nplay),1)=hlm(i+nplay+(j+nplay-1)*nb,1)
             enddo
             enddo
+            call checkera('bai',hlm,nb*nb,ad_step)
+            if (nio.eq.0) write (6,*) 'check ifdecpl',ifdecpl,'cp3'
             if (ifdecpl) then
                call copy(hinv,hlm,(nb-nplay)**2)
                call diag(hinv,wt,rhs(1,1),nb)
             else
-               call invmat(hinv,hlu,hlm,ihlu,nb-nplay)
+               call invmat(hinv,hlu,hlm,ihlu,ihlu2,nb-nplay)
+            if (nio.eq.0) write (6,*) 'check nplay',nplay,'cp3'
+               call checkera('baj',hinv,nb*nb,ad_step)
                call rzero(wt,(nb-nplay)**2)
                do i=1,nb-nplay
                   wt(i+(nb-nplay)*(i-1),1)=1.
@@ -140,7 +154,9 @@ c     if (icount.le.2) then
          ttime=dnekclock()
          if ((isolve.eq.0).or.(icopt.eq.2)) then ! standard matrix inversion
             call mxm(wt,nb,rhs(1,1),nb,rhstmp(1),1)
+            call checkera('bak',rhstmp(1),nb,ad_step)
             call mxm(hinv,nb,rhstmp(1),nb,rhs(1,1),1)
+            call checkera('bal',hinv(1,1),nb*nb,ad_step)
             if (ifdecpl) then
             do i=1,nb
                if (rhs(i,1).gt.upmax(i)) rhs(i,1)=upmax(i)-updis(i)*eps
@@ -148,6 +164,7 @@ c     if (icount.le.2) then
             enddo
             endif
             call mxm(rhs(1,1),1,wt,nb,rhstmp(1),nb)
+            call checkera('bam',rhstmp(1),nb,ad_step)
             call copy(rhs(1,1),rhstmp(1),nb)
          else 
             scopt='ucopt'
@@ -164,6 +181,7 @@ c     if (icount.le.2) then
             call mxm(rhstmp(1),1,wt,nb,rhs(1,1),nb)
 
          endif
+         call checkera('ban',rhstmp(1),nb,ad_step)
          solve_time=solve_time+dnekclock()-ttime
          if (nplay.gt.0) then
             do i=1,nplay
@@ -173,7 +191,9 @@ c     if (icount.le.2) then
       endif
 
       if (ifrom(2)) call shift3(ut,rhs(0,2),nb+1)
+         call checker('bal',ad_step)
       if (ifrom(1)) call shift3(u,rhs,nb+1)
+         call checker('bao',ad_step)
 
       ustep_time=ustep_time+dnekclock()-ulast_time
 
@@ -359,9 +379,10 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
+      common /evalctmp/ ucft(0:lb),bcu(ltr),cuu(ltr)
+
       real cu(nb)
       real uu(0:nb)
-      real ucft(0:nb)
       real cl(ic1:ic2,jc1:jc2,kc1:kc2)
       real cm(ic1:ic2,jc1:jc2)
       real bcu(ntr)
@@ -553,10 +574,16 @@ c-----------------------------------------------------------------------
 
       real rhs(nb)
 
+      call checkera('ba1',rhs,nb,ad_step)
+
       call mxm(u,nb+1,ad_beta(2,icount),3,tmp1,1)
+      call checkera('ba2',tmp1,nb,ad_step)
       call mxm(bu,nb,tmp1(1),nb,rhs,1)
+      call checkera('ba3',rhs,nb,ad_step)
 
       call cmult(rhs,-1.0/ad_dt,nb)
+
+      call checkera('ba4',rhs,nb,ad_step)
 
       s=-1.0/ad_re
 
@@ -569,20 +596,24 @@ c-----------------------------------------------------------------------
       else
          call evalc(tmp1(1),ctmp,cul,u)
       endif
+
       call chsign(tmp1(1),nb)
+      call checkera('ba5',tmp1(1),nb,ad_step)
 
       if (ifbuoy) then
          call mxm(but0,nb+1,ut,nb+1,tmp2(0),1)
-         call add2s2(tmp1(1),tmp2(1),ad_ra,nb)
+         call add2s2(tmp1(1),tmp2(1),-ad_ra,nb)
       else if (ifforce) then
          call add2(tmp1(1),rg(1),nb)
       endif
 
       call shift3(fu,tmp1(1),nb)
 
+
       call mxm(fu,nb,ad_alpha(1,icount),3,tmp1(1),1)
 
       call add2(rhs,tmp1(1),nb)
+      call checkera('ba5',rhs,nb,ad_step)
 
       ! artificial viscosity
 

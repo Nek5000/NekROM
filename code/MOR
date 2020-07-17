@@ -24,11 +24,6 @@ c     parameters and common blocks for MOR
      $               pic(lx1*ly1*lz1*lelm),
      $               tic(lx1*ly1*lz1*lelm)
 
-      common /morubt/ ubt(lx1*ly1*lz1*lelm,0:lub)
-      common /morvbt/ vbt(lx1*ly1*lz1*lelm,0:lub)
-      common /morwbt/ wbt(lx1*ly1*lz1*lelm,0:lub)
-      common /mortbt/ tbt(lx1*ly1*lz1*lelm,0:ltb)
-
       common /morcoef/ uk(0:lub,lsu),tk(0:ltb,lst),timek(lcs)
       common /morcoef2/ ukp(0:lub,lsu),tkp(0:ltb,lst)
 
@@ -44,7 +39,7 @@ c     parameters and common blocks for MOR
      $                  gz(lx1*ly1*lz1*lelm),
      $                  qq(lx1*ly1*lz1*lelm)
 
-      common /morbuoy/ bux,buy,buz
+      common /morbuoy/ bux,buy,buz,bu_angle
 
       common /moruavg/ ua(0:lub),u2a((lub+1)**2),uas(0:lub),uvs(0:lub)
       common /mortavg/ uta(0:ltb),uuta((lub+1)*(ltb+1)),
@@ -58,7 +53,7 @@ c     parameters and common blocks for MOR
 
       common /morfops/ hlm(lb**2,2),hinv(lb**2,2),hlu(lb**2,2),
      $                 wt(lb**2,2)
-      common /morifops/ ihlu(lb,2)
+      common /morifops/ ihlu(lb,2),ihlu2(lb,2)
 
       common /morvops/ au0((lub+1)**2),bu0((lub+1)**2),
      $                 au(lub**2),bu(lub**2),cul((lcloc-1)*lmu+1)
@@ -71,6 +66,8 @@ c     parameters and common blocks for MOR
       common /morbc/ gn(lx1,ly1,lz1,lelt)
 
       common /morcpl/ but0((lub+1)*(ltb+1)),buc(lub*(ltb+1)),cintp(1)
+      common /morrb/ but0_x((lub+1)*(ltb+1)),but0_y((lub+1)*(ltb+1)),
+     $               but0_z((lub+1)*(ltb+1))
 
       common /morvsol/ u(0:(lub+1)*3-1),uj(0:lub,6),
      $                 u2((lub+1)**2),u2j(0:lub,0:lub,6)
@@ -92,6 +89,7 @@ c     parameters and common blocks for MOR
       common /mortmp/ ctmp((lub*(lub+1)*(lub+1))/lpmin+1)
       common /moritmp/ itmp1(lub),itmp2(lub)
       common /morrtmp/ rtmp1(lub,lub),rtmp2(lb,lb),rtmp3(lb,lb)
+      common /morstmp/ stmp(lb+1,ls)
 
       common /morfld/ wm1(lx1*ly1*lz1*lelm)
       common /morqoi/ rnus,rdgx(0:lub),rdgy(0:lub),rdgz(0:lub)

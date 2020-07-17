@@ -16,7 +16,7 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelt
 
-      ifrecon=.true.
+      if (rmode.ne.'ON ') ifrecon=.true.
 
       if (rmode.eq.'ONB'.or.rmode.eq.'CP ') then
          call loadbases
@@ -96,10 +96,27 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
+      common /scrgg/ uu(lt),vv(lt),ww(lt)
+
       real ck(0:nb,ls),usnap(lt,ldim,ls),
      $     uub(lt,0:nb),vvb(lt,0:nb),wwb(lt,0:nb)
 
+      n=lx1*ly1*lz1*nelt
+
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
+c        if (ips.eq.'H10') then
+c           do j=1,ns
+c              call axhelm(uu,usnap(1,1,j),ones,zeros,1,1)
+c              call axhelm(vv,usnap(1,2,j),ones,zeros,1,2)
+c              if (ldim.eq.3)
+c    $            call axhelm(ww,usnap(1,ldim,j),ones,zeros,1,3)
+c              ck(0,j)=1.
+c              do i=1,nb
+c                 ck(i,j)=glsc2(uu,uub(1,i),n)+glsc2(vv,vvb(1,i),n)
+c                 if (ldim.eq.3) ck(i,j)=ck(i,j)+glsc2(ww,wwb(1,i),n)
+c              enddo
+c           enddo
+c        else
          do i=1,ns
             if (nio.eq.0) write (6,*) 'pv2k: ',i,'/',ns
             nio=-1
@@ -107,6 +124,7 @@ c-----------------------------------------------------------------------
      $           uub,vvb,wwb)
             nio=nid
          enddo
+c        endif
       else
          ! implement read here
       endif

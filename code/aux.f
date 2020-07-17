@@ -41,6 +41,8 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
+      common /scrk1/ tbt(lt)
+
       real tt(lt)
 
       n=lx1*ly1*lz1*nelt
@@ -455,54 +457,6 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine comp_hyperpar
-
-      include 'SIZE'
-      include 'MOR'
-
-      parameter (lt=lx1*ly1*lz1*lelt)
-
-      real ep
-      real uw(lt),vw(lt),ww(lt)
-      real tmp1(nb),tmp2(nb),delta(nb)
-      real work(ls,nb)
-
-      ! eps is the free parameter
-      ! 1e-2 is used in the paper
-      ep = 1e-2
-
-      n  = lx1*ly1*lz1*nelt
-
-      do j=1,nb                    ! compute hyper-parameter
-         call axhelm(uw,ub(1,j),ones,zeros,1,1)
-         call axhelm(vw,vb(1,j),ones,zeros,1,1)
-         if (ldim.eq.3) call axhelm(ww,wb(1,j),ones,zeros,1,1)
-         do i=1,ls
-            work(i,j) = glsc2(us0(1,1,i),uw,n)+glsc2(us0(1,2,i),vw,n)
-            if (ldim.eq.3) work(i,j)=work(i,j)+glsc2(us0(1,ldim,i),ww,n)
-         enddo
-         tmp1(j) = vlmin(work(1,j),ls)
-         tmp2(j) = vlmax(work(1,j),ls)
-         delta(j) = tmp2(j)-tmp1(j)
-         umin(j) = tmp1(j) - ep * delta(j)
-         umax(j) = tmp2(j) + ep * delta(j)
-         write(6,*) j,umin(j),umax(j)
-      enddo
-
-      ! compute distance between umax and umin
-      call sub3(udis,umax,umin,nb)
-      if (nid.eq.0) then
-         do i=1,nb
-            write(6,*)i,udis(i)
-         enddo
-      endif
-
-      call dump_serial(umin,nb,'ops/umin ',nid)
-      call dump_serial(umax,nb,'ops/umax ',nid)
-
-      return
-      end
-c-----------------------------------------------------------------------
       subroutine hyperpar
 
       include 'SIZE'
@@ -538,7 +492,7 @@ c-----------------------------------------------------------------------
                d= umax(j)-umin(j)
                umin(j) = umin(j) - ep * d
                umax(j) = umax(j) + ep * d
-               if (nio.eq.0) write (6,*) j,umin(j),umax(j)
+               if (nio.eq.0) write (6,*) j,umin(j),umax(j),'uminmax'
             enddo
          endif
 
@@ -547,7 +501,7 @@ c-----------------------------------------------------------------------
 
          if (nio.eq.0) then
             do i=1,nb
-               write (6,*) i,udis(i)
+               write (6,*) i,udis(i),'udis'
             enddo
          endif
          if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
@@ -573,7 +527,7 @@ c-----------------------------------------------------------------------
                d= tmax(j)-tmin(j)
                tmin(j) = tmin(j) - ep * d
                tmax(j) = tmax(j) + ep * d
-               if (nio.eq.0) write (6,*) j,tmin(j),tmax(j)
+               if (nio.eq.0) write (6,*) j,tmin(j),tmax(j),'tminmax'
             enddo
          endif
 
@@ -581,7 +535,7 @@ c-----------------------------------------------------------------------
          call sub3(tdis,tmax,tmin,nb)
          if (nio.eq.0) then
             do i=1,nb
-               write (6,*) i,tdis(i)
+               write (6,*) i,tdis(i),'tdis'
             enddo
          endif
 
@@ -697,10 +651,10 @@ C--------------------------------------------------------------------
       return
       end
 C--------------------------------------------------------------------
-      subroutine invmat(a,b,c,iwk,n)
+      subroutine invmat(a,b,c,iwk1,iwk2,n)
 
       real a(n,n),b(n,n),c(n,n)
-      integer iwk1(n)
+      integer iwk1(n),iwk2(n)
 
       if (n.gt.0) then
          call rzero(a,n*n)
@@ -711,8 +665,23 @@ C--------------------------------------------------------------------
 
          call copy(b,c,n*n)
 
-         call dgetrf(n,n,b,n,iwk,info)
-         call dgetrs('N',n,n,b,n,iwk,a,n,info)
+         call checkera('im1',a,n*n,ad_step)
+         call checkera('im2',b,n*n,ad_step)
+         call checkera('im3',c,n*n,ad_step)
+
+         call lu(b,n,n,iwk1,iwk2)
+c        call dgetrf(n,n,b,n,iwk1,info)
+
+         call checkera('im4',a,n*n,ad_step)
+         call checkera('im5',b,n*n,ad_step)
+         call checkera('im6',c,n*n,ad_step)
+
+         call solve(a,b,n,n,n,iwk1,iwk2)
+c        call dgetrs('N',n,n,b,n,iwk1,a,n,info)
+
+         call checkera('im7',a,n*n,ad_step)
+         call checkera('im8',b,n*n,ad_step)
+         call checkera('im9',c,n*n,ad_step)
       endif
 
       return
@@ -1317,8 +1286,8 @@ c-----------------------------------------------------------------------
 
       common /invevf/ buinv(lb*lb),btinv(lb*lb)
 
-      call invmat(buinv,rtmp1,bu,itmp1,nb)
-      call invmat(btinv,rtmp1,bt,itmp1,nb)
+      call invmat(buinv,rtmp1,bu,itmp1,itmp2,nb)
+      call invmat(btinv,rtmp1,bt,itmp1,itmp2,nb)
 
       return
       end
@@ -1430,6 +1399,54 @@ c-----------------------------------------------------------------------
       do i=1,n
          h(i,i)=1./wk(i)
       enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine checker(cstr,myind)
+
+      include 'SIZE'
+      include 'MOR'
+
+      character*3 cstr
+
+      return
+
+      vmin=vlmin(u,nb+1)
+      vmax=vlmax(u,nb+1)
+      vmean=vlsum(u,nb+1)/(nb+1.)
+      vprod=1.
+      do i=0,nb
+         vprod=vprod*u(i)
+      enddo
+
+      if (nio.eq.0) write (6,1) vmin,vmax,vmean,vprod,cstr,myind
+    1 format('check ',1p4e13.5,1x,a,1x,i8)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine checkera(cstr,a,nn,myind)
+
+      include 'SIZE'
+      include 'MOR'
+
+      character*3 cstr
+
+      real a(nn)
+
+      return
+
+      vmin=vlmin(a,nn)
+      vmax=vlmax(a,nn)
+      vmean=vlsum(a,nn)/(nn*1.)
+      vprod=1.
+      do i=1,nn
+         vprod=vprod*a(i)
+      enddo
+
+      if (nio.eq.0) write (6,1) vmin,vmax,vmean,vprod,cstr,myind
+    1 format('check ',1p4e13.5,1x,a,1x,i8)
 
       return
       end

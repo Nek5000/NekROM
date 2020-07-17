@@ -17,6 +17,25 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine idump_serial(a,n,fname,nid)
+
+      integer a(n)
+
+      character*128 fname
+      character*128 fntrunc
+
+      if (nid.eq.0) then
+         call blank(fntrunc,128)
+
+         len=ltruncr(fname,128)
+         call chcopy(fntrunc,fname,len)
+
+         call idump_serial_helper(a,n,fntrunc)
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine dump_serial(a,n,fname,nid)
 
       real a(n)
@@ -76,9 +95,9 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine dump_serial_helper(a,n,fname)
+      subroutine idump_serial_helper(a,n,fname)
 
-      real a(n)
+      integer a(n)
 
       character*128 fname
 
@@ -89,6 +108,24 @@ c-----------------------------------------------------------------------
       enddo
 
       close (unit=12)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine dump_serial_helper(a,n,fname)
+
+      real a(n)
+
+      character*128 fname
+
+      open (unit=12,file=fname)
+
+      do i=1,n
+         write (12,1) a(i)
+      enddo
+
+      close (unit=12)
+    1 format(1pe24.16)
 
       return
       end
@@ -358,6 +395,32 @@ c-----------------------------------------------------------------------
 
       call nekgsync
       if (nio.eq.0) write (6,*) 'dmisc_time:',dnekclock()-dmisc_time
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine dump_snaps
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      logical iftmp,iftmp2
+
+      iftmp=ifxyo
+      iftmp2=ifpo
+
+      ifxyo=.true.
+      ifpo=.false.
+
+      do i=1,ns
+         call outpost(us0(1,1,i),us0(1,2,i),us0(1,ldim,i),
+     $      pr,ts0(1,i),'sna')
+         ifxyo=.false.
+      enddo
+
+      ifxyo=iftmp
+      ifpo=iftmp2
 
       return
       end

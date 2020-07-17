@@ -23,11 +23,14 @@ c-----------------------------------------------------------------------
          call rom_setup
       endif
 
+      call checker('baa',ad_step)
+
       ad_step = istep
       jfield=ifield
       ifield=1
 
       ifmult=.not.ifrom(2).and.ifheat
+
 
       if (rmode.ne.'OFF') then
       if (ifmult) then
@@ -35,8 +38,11 @@ c-----------------------------------------------------------------------
      $   'error: running rom_update with ifflow = .true.$',nelv)
          if (istep.gt.0) then
             call bdfext_step
+            call checker('bba',ad_step)
             call post
+            call checker('bca',ad_step)
             call reconv(vx,vy,vz,u) ! reconstruct velocity to be used in h-t
+            call checker('bda',ad_step)
          endif
       else
          if (nio.eq.0) write (6,*) 'starting rom_step loop',ad_nsteps
@@ -196,8 +202,15 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelt
 
+      call checker('aaa',ad_step)
+
       call rom_init_params
+
+      call checker('aba',ad_step)
+
       call rom_init_fields
+
+      call checker('aca',ad_step)
 
       inquire (file='ops/evec',exist=ifexist)
       if (ifexist) then
@@ -211,20 +224,33 @@ c-----------------------------------------------------------------------
          call setevec
       endif
 
+      call checker('ada',ad_step)
+
       call setbases
+
+      call checker('aea',ad_step)
       call setops
+      call checker('afa',ad_step)
       call setu
+      call checker('aga',ad_step)
 
       call setf
+      call checker('aha',ad_step)
 
       call setqoi
+      call checker('aia',ad_step)
       call setmisc
+      call checker('aja',ad_step)
       if (ifei) call set_sigma
+      call checker('aka',ad_step)
       if (ifplay) call set_trace
+      call checker('ala',ad_step)
 
       if (nio.eq.0) write (6,*) 'end range setup'
 
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF') call dump_misc
+
+      call checker('ama',ad_step)
 
       time=ttime
 
@@ -336,7 +362,12 @@ c-----------------------------------------------------------------------
          call sets(st0,tb,'ops/ct ')
       endif
 
-      if (ifbuoy.and.ifrom(1).and.ifrom(2)) call setbut(but0)
+c     if (ifbuoy.and.ifrom(1).and.ifrom(2)) call setbut(but0)
+      if (ifbuoy.and.ifrom(1).and.ifrom(2)) then
+         call setbut_xyz(but0_x,but0_y,but0_z)
+         call setbut0
+      endif
+
 
       ifield=jfield
 
@@ -426,7 +457,6 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       real ep
-      real wk(nb)
 
       call nekgsync
       hpar_time=dnekclock()
@@ -449,7 +479,7 @@ c-----------------------------------------------------------------------
             d= upmax(j)-upmin(j)
             upmin(j) = upmin(j) - ep * d
             upmax(j) = upmax(j) + ep * d
-            if (nio.eq.0) write (6,*) j,upmin(j),upmax(j)
+            if (nio.eq.0) write (6,*) j,upmin(j),upmax(j),'upminmax'
          enddo
 
          ! compute distance between umax and umin
@@ -457,7 +487,7 @@ c-----------------------------------------------------------------------
 
          if (nio.eq.0) then
             do i=1,nb
-               write (6,*) i,updis(i)
+               write (6,*) i,updis(i),'updis'
             enddo
          endif
       endif   
@@ -475,14 +505,14 @@ c-----------------------------------------------------------------------
             d= tpmax(j)-tpmin(j)
             tpmin(j) = tpmin(j) - ep * d
             tpmax(j) = tpmax(j) + ep * d
-            if (nio.eq.0) write (6,*) j,tpmin(j),tpmax(j)
+            if (nio.eq.0) write (6,*) j,tpmin(j),tpmax(j),'tpminmax'
          enddo
 
          ! compute distance between tmax and tmin
          call sub3(tpdis,tpmax,tpmin,nb)
          if (nio.eq.0) then
             do i=1,nb
-               write (6,*) i,tpdis(i)
+               write (6,*) i,tpdis(i),'tpdis'
             enddo
          endif
 
@@ -500,7 +530,6 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       logical ifexist
-      real wk((lb+1)*ns)
 
       if (nio.eq.0) write (6,*) 'begin range setup'
 
@@ -515,10 +544,12 @@ c-----------------------------------------------------------------------
          if (nio.eq.0) write (6,*) 'proj_time:',dnekclock()-proj_time
       else if (rmode.eq.'ON '.or.rmode.eq.'ONB'.or.rmode.eq.'CP') then
          inquire (file='ops/uk',exist=ifexist)
-         if (ifexist) call read_serial(uk,(mb+1)*ns,'ops/uk ',wk,nid)
+         if (ifexist)
+     $      call read_mat_serial(uk,lb+1,ns,'ops/uk ',mb+1,ns,stmp,nid)
 
          inquire (file='ops/tk',exist=ifexist)
-         if (ifexist) call read_serial(tk,(mb+1)*ns,'ops/tk ',wk,nid)
+         if (ifexist)
+     $      call read_mat_serial(tk,lb+1,ns,'ops/tk ',mb+1,ns,stmp,nid)
       endif
 
       if (ifpod(1)) then
@@ -546,8 +577,6 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       character*3 chartmp
-
-      real a(1),b(1)
 
       if (nio.eq.0) write (6,*) 'inside rom_init_params'
 
@@ -653,6 +682,7 @@ c-----------------------------------------------------------------------
       ifcintp=.false.
       ifavisc=.false.
       ifdecpl=.false.
+      if (nio.eq.0) write (6,*) 'check ifdecpl',ifdecpl,'cp1'
 
       ifsub0=.true.
       if (param(197).ne.0.) ifsub0=.false.
@@ -724,11 +754,11 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
       call compute_BDF_coef(ad_alpha,ad_beta)
 
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
-         a(1)=nb*1.
-         call dump_serial(a,1,'ops/nb ',nid)
+         rtmp1(1,1)=nb*1.
+         call dump_serial(rtmp1(1,1),1,'ops/nb ',nid)
       else
-         call read_serial(a,1,'ops/nb ',b,nid)
-         mb=a(1)
+         call read_serial(rtmp1(1,1),1,'ops/nb ',b,nid)
+         mb=rtmp1(1,1)
          if (mb.lt.nb) call exitti('mb less than nb, exiting...$',mb)
       endif
 
@@ -740,6 +770,9 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
          write (6,*) 'rp_ls         ',ls
          write (6,*) 'rp_lsu        ',lsu
          write (6,*) 'rp_lst        ',lst
+         write (6,*) ' '
+         write (6,*) 'rp_ad_re      ',ad_re
+         write (6,*) 'rp_ad_pe      ',ad_pe
          write (6,*) ' '
          write (6,*) 'rp_isolve     ',isolve
          write (6,*) 'rp_ips        ',ips
@@ -820,6 +853,7 @@ c-----------------------------------------------------------------------
       if (ifrom(2)) call copy(tic,t,n)
 
       ns = ls
+      ! ns should be set in get_saved_fields
 
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
          fname1='file.list '
@@ -835,7 +869,9 @@ c-----------------------------------------------------------------------
          inquire (file=fname1,exist=alist)
          if (alist) then
             call push_sol(vx,vy,vz,pr,t)
+            ttime=time
             call auto_averager(fname1)
+            time=ttime
             call copy_sol(uavg,vavg,wavg,pavg,tavg,vx,vy,vz,pr,t)
             call pop_sol(vx,vy,vz,pr,t)
          endif
@@ -905,7 +941,7 @@ c-----------------------------------------------------------------------
 
       common /scrcwk/ wk(lcloc),wk2(0:lub)
 
-      real cl(lcloc),icl(3,lcloc)
+      real cl(lcloc)
 
       character*128 fname
       character*128 fnlint
@@ -1322,9 +1358,7 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
 
-      common /romup/ rom_time
-
-      real t1(0:nb),t2(0:nb)
+      common /romup/ rom_time,t1(0:lb) ,t2(0:lb)
 
       if (nio.eq.0) write (6,*) 'final...'
       if (nid.eq.0) then
@@ -1384,12 +1418,13 @@ c-----------------------------------------------------------------------
 
       common /scrra/ binv(lx1,ly1,lz1,lelt)
 
-      n=lx1*ly1*lz1*lelt
+      n=lx1*ly1*lz1*nelt
 
       call rone(binv,n)
       call invcol2(binv,bm1,n)
 
       ad_ra=sqrt(op_glsc2_wt(gx,gy,gz,gx,gy,gz,binv)/glsum(bm1,n))
+
       if (nio.eq.0) write (6,*) ad_ra,'ad_ra'
       s=1./ad_ra
       call opcmult(gx,gy,gz,s)
@@ -1402,15 +1437,21 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
       include 'AVG'
+      include 'INPUT'
+      include 'MASS'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
       common /scrread/ tab((lb+1)**2)
-      common /scruz/ wk1(lt),wk2(lt),wk3(lt)
+      common /scrk/ wk1(lt),wk2(lt),wk3(lt)
+
+      logical iftmp
 
       real b(0:nb,0:nb)
 
       character*128 fname
+
+      n=lx1*ly1*lz1*nelv
 
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
          do j=0,nb
@@ -1420,7 +1461,17 @@ c-----------------------------------------------------------------------
             if (nio.eq.0) write (6,*) i,j,b(i,j),'but0'
          enddo
          enddo
+
+         iftmp=ifxyo
+         ifxyo=.true.
          call outpost(gx,gy,gz,pavg,tavg,'ggg')
+
+         call invcol3(wk1,gx,bm1,n)
+         call invcol3(wk2,gy,bm1,n)
+         call invcol3(wk3,gz,bm1,n)
+
+         call outpost(wk1,wk2,wk3,pavg,tavg,'ggg')
+         ifxyo=iftmp
          call dump_serial(b,(nb+1)**2,'ops/but ',nid)
       else
          fname='ops/but '
@@ -1428,6 +1479,103 @@ c-----------------------------------------------------------------------
          call read_mat_serial(but0,nb+1,nb+1,fname,mb+1,nb+1,tab,nid)
       endif
 
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine setbut_xyz(b_x,b_y,b_z)
+
+      include 'SIZE'
+      include 'MOR'
+      include 'AVG'
+      include 'INPUT'
+      include 'MASS'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /scrread/ tab((lb+1)**2)
+      common /scrk/ wk1(lt),wk2(lt),wk3(lt)
+
+      logical iftmp
+
+      real b_x(0:nb,0:nb)
+      real b_y(0:nb,0:nb)
+      real b_z(0:nb,0:nb)
+
+      character*128 fname
+
+      n=lx1*ly1*lz1*nelv
+
+c     call cmult(gx,1./sqrt(2.),n)
+c     call cmult(gy,1./sqrt(2.),n)
+
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
+         do j=0,nb
+         do i=0,nb
+            b_x(i,j)=glsc3(ub(1,i),gx,tb(1,j),n)
+            b_y(i,j)=glsc3(vb(1,i),gy,tb(1,j),n)
+            if (ldim.eq.3) then
+               b_z(i,j)=glsc3(wb(1,i),gz,tb(1,j),n)
+            endif
+            if (nio.eq.0) write (6,*) i,j,b_x(i,j),'but0'
+         enddo
+         enddo
+
+         iftmp=ifxyo
+         ifxyo=.true.
+         call outpost(gx,gy,gz,pavg,tavg,'ggg')
+
+         call invcol3(wk1,gx,bm1,n)
+         call invcol3(wk2,gy,bm1,n)
+         call invcol3(wk3,gz,bm1,n)
+
+         call outpost(wk1,wk2,wk3,pavg,tavg,'ggg')
+         ifxyo=iftmp
+         call dump_serial(b_x,(nb+1)**2,'ops/but_x ',nid)
+         call dump_serial(b_y,(nb+1)**2,'ops/but_y ',nid)
+         if (ldim.eq.3) then
+            call dump_serial(b_z,(nb+1)**2,'ops/but_z ',nid)
+         endif
+      else
+         fname='ops/but_x '
+         if (nio.eq.0) write (6,*) 'reading but_x...'
+         call read_mat_serial(but0_x,nb+1,nb+1,fname,mb+1,nb+1,tab,nid)
+         fname='ops/but_y '
+         if (nio.eq.0) write (6,*) 'reading but_y...'
+         call read_mat_serial(but0_y,nb+1,nb+1,fname,mb+1,nb+1,tab,nid)
+         if (ldim.eq.3) then
+            fname='ops/but_z '
+            if (nio.eq.0) write (6,*) 'reading but_z...'
+            call read_mat_serial(but0_z,nb+1,nb+1,fname,mb+1,nb+1,
+     $                           tab,nid)
+         endif
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine setbut0
+
+      include 'SIZE'
+      include 'MOR'
+      include 'AVG'
+      include 'INPUT'
+      include 'MASS'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /scrread/ tab((lb+1)**2)
+      common /scrk/ wk1(lt),wk2(lt),wk3(lt)
+
+      character*128 fname
+
+      n=lx1*ly1*lz1*nelv
+
+      call add3s2(but0,but0_x,but0_y,sin(bu_angle),
+     $            cos(bu_angle),(nb+1)**2)
+
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
+         call dump_serial(but0,(nb+1)**2,'ops/but ',nid)
+      endif
       return
       end
 c-----------------------------------------------------------------------
