@@ -994,48 +994,6 @@ c     call cpart(ic1,ic2,jc1,jc2,kc1,kc2,ncloc,nb,np,nid+1) ! new indexing
          enddo
          enddo
          enddo
-      else if (rmode.eq.'CP ') then
-         ic1=1
-         ic2=nb
-         jc1=0
-         jc2=nb
-         kc1=0
-         kc2=nb
-         do k=0,nb
-         do j=0,mb
-         do i=1,mb
-            cel=0.
-            if (nid.eq.0) read(100,*) cel
-            cel=glsum(cel,1)
-            call setc_local(cl,cel,ic1,ic2,jc1,jc2,kc1,kc2,i,j,k)
-         enddo
-         enddo
-         enddo
-         write(6,*)'check index',ic1,ic2,jc1,jc2,kc1,kc2,nid
-         call nekgsync
-
-         tcp_time=dnekclock()
-         call CP_ALS(cl,cua,cub,cuc,cp_uw,u,nb+1,ntr)
-         cp_time=cp_time+dnekclock()-tcp_time
-
-         ! read in the cp decomposition
-c        call read_cp_weight
-c        call read_cp_mode
-
-         ! debug purpose
-         ! forming the tensor
-c        do kk=1,ltr
-c        do k=1,nb+1
-c        do j=1,nb+1
-c        do i=1,nb
-c           cl(i+(j-1)*(nb)+(k-1)*(nb+1)*(nb)) = 
-c    $      cl(i+(j-1)*(nb)+(k-1)*(nb+1)*(nb)) + 
-c    $      cp_w(kk)*cua(i+(kk-1)*lub)
-c    $      * cub(j+(kk-1)*(lub+1))*cuc(k+(kk-1)*(lub+1))
-c        enddo
-c        enddo
-c        enddo
-c        enddo
       else
          if (.not.ifaxis) then
             do i=0,nb

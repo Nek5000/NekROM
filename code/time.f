@@ -379,16 +379,12 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
-      common /evalctmp/ ucft(0:lb),bcu(ltr),cuu(ltr)
+      common /evalctmp/ ucft(0:lb)
 
       real cu(nb)
       real uu(0:nb)
       real cl(ic1:ic2,jc1:jc2,kc1:kc2)
       real cm(ic1:ic2,jc1:jc2)
-      real bcu(ntr)
-      real cuu(ntr)
-      real tmp(ntr)
-      real tmpcu(0:nb)
 
       common /scrc/ work(max(lub,ltb))
 
@@ -405,29 +401,6 @@ c-----------------------------------------------------------------------
 
       if (ifcintp) then
          call mxm(cintp,n,uu,n+1,cu,1)
-      else if (rmode.eq.'CP ') then
-
-         call rzero(cu,nb)
-         do kk=1,ntr
-            bcu(kk) = vlsc2(uu,cub(1+(kk-1)*(nb+1)),nb+1)
-            cuu(kk) = vlsc2(u,cuc(1+(kk-1)*(nb+1)),nb+1)
-         enddo
-         call col4(tmp,bcu,cuu,cp_uw,ntr) 
-         call mxm(cua,nb+1,tmp,ntr,tmpcu,1)
-
-         call copy(cu,tmpcu,nb)
-         ! debug checking
-c        do kk=1,ltr
-c           do k=1,nb+1
-c           do j=1,nb+1
-c           do i=1,nb
-c              cu(i)=cu(i)+cp_w(kk)*cua(i+(kk-1)*(lub))
-c    $         *cub(j+(kk-1)*(lub+1))*uu(j-1)
-c    $         *cuc(k+(kk-1)*(lub+1))*u(k-1)
-c           enddo
-c           enddo
-c           enddo
-c        enddo
       else
          call rzero(cu,nb)
          if (ncloc.ne.0) then
