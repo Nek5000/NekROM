@@ -2183,13 +2183,14 @@ c-----------------------------------------------------------------------
       call rzero(theta_u,lres_u)
       call rzero(theta_t,lres_t)
 
-      call set_betaj
-      call set_alphaj
+c     call set_betaj
+c     call set_alphaj
+      call set_betaj_new
+      call set_alphaj_new
 
       ! time derivative (done)
       l1=1
       call mxm(uj,nb+1,betaj,6,theta_u(l1),1)
-
       l1=l1+nb+1
 
       ! diffusion term (done)
@@ -2221,14 +2222,17 @@ c-----------------------------------------------------------------------
          l1=l1+1
       enddo
       enddo
+      
 
+      if (l1.ne.nres_u+1) then
+         call exitti('theta_u term missing...$',l1)
+      endif
       do i=1,nres_u
          if (nio.eq.0) write (6,*) theta_u(i),'theta_u'
       enddo
 
       l2=1
       call mxm(utj,nb+1,betaj,6,theta_t(l2),1)
-
       l2=l2+nb+1
 
       do i=0,nb
@@ -2246,6 +2250,9 @@ c-----------------------------------------------------------------------
       enddo
       enddo
 
+      if (l2.ne.nres_t+1) then
+         call exitti('theta_t term missing...$',l2)
+      endif
       do i=1,nres_t
          if (nio.eq.0) write (6,*) theta_t(i),'theta_t'
       enddo
@@ -2530,3 +2537,42 @@ c     call set_theta_uns
 
       return
       end
+c-----------------------------------------------------------------------
+      subroutine set_alphaj_new
+
+      include 'SIZE'
+      include 'MOR'
+
+      ! ad_alpha(3,3)
+
+      alphaj(1)=-ad_alpha(1,3)-ad_alpha(2,3)
+      alphaj(2)=-ad_alpha(1,3)
+      alphaj(3)=0.
+      alphaj(4)=-ad_alpha(3,3)
+      alphaj(5)=-ad_alpha(2,3)-ad_alpha(3,3)
+      alphaj(6)=-1.
+
+      call cmult(alphaj,1./(1.*(ad_nsteps-navg_step+1)),6)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine set_betaj_new
+
+      include 'SIZE'
+      include 'MOR'
+
+      ! ad_beta(4,3)
+
+      betaj(1)=ad_beta(3+1,3)
+      betaj(2)=ad_beta(2+1,3)+ad_beta(3+1,3)
+      betaj(3)=ad_beta(1+1,3)+ad_beta(2+1,3)+ad_beta(3+1,3)
+      betaj(4)=ad_beta(0+1,3)+ad_beta(1+1,3)+ad_beta(2+1,3)
+      betaj(5)=ad_beta(0+1,3)+ad_beta(1+1,3)
+      betaj(6)=ad_beta(0+1,3)
+
+      call cmult(betaj,1./(ad_dt*(ad_nsteps-navg_step+1)),6)
+
+      return
+      end
+c-----------------------------------------------------------------------
