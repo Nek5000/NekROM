@@ -1132,7 +1132,6 @@ c-----------------------------------------------------------------------
       do j=0,nb
       do i=0,nb
          s2(i,j)=s2(i,j)+t1(i)*t1(j)
-         s4(i,j)=s4(i,j)+t1(i)*t1(j)
       enddo
       enddo
 
@@ -1145,6 +1144,12 @@ c-----------------------------------------------------------------------
             s4(i,j)=s4(i,j)+t1(i)*tmp(j)
          enddo
          enddo
+      else
+         do j=0,nb
+         do i=0,nb
+            s4(i,j)=s4(i,j)+t1(i)*t1(j)
+         enddo
+         enddo
       endif
 
       if (ad_step.eq.ad_nsteps) then
@@ -1153,19 +1158,6 @@ c-----------------------------------------------------------------------
          call cmult(s2,s,(nb+1)**2)
          call cmult(s3,s,nb+1)
          call cmult(s4,s,(nb+1)**2)
-
-         ! Leray has to be fixed
-         if (rfilter.eq.'LER'.and.rbf.gt.0) then 
-            call copy(tmp,t1,nb+1)
-            call pod_proj(tmp(1),rbf)
-            call cmult(s4,s,(nb+1)**2)
-            do j=0,nb
-            do i=0,nb
-               s4(i,j)=s4(i,j)-
-     $               (t1(i)*tmp(j))/(1.*(ad_nsteps-navg_step))
-            enddo
-            enddo
-         endif
       endif
 
       return
@@ -1181,6 +1173,7 @@ c-----------------------------------------------------------------------
       real s1(0:nb),s2(0:nb,0:nb),s3(0:nb,0:nb),s4(0:nb,0:nb)
       real s5(0:nb),s6(0:nb,0:nb)
       real t1(0:nb),t2(0:nb)
+      real tmp(0:nb)
 
       if (ad_step.eq.navg_step) then
          call rzero(s1,nb+1)
@@ -1201,9 +1194,24 @@ c-----------------------------------------------------------------------
          s2(i,j)=s2(i,j)+t1(i)*t2(j)
          s2(i,j)=s3(i,j)+t1(j)*t2(i)
          s2(i,j)=s4(i,j)+t2(j)*t2(i)
-         s6(i,j)=s6(i,j)+t1(j)*t2(i)
       enddo
       enddo
+      ! Leray has to be fixed
+      if (rfilter.eq.'LER'.and.rbf.gt.0) then 
+         call copy(tmp,t1,nb+1)
+         call pod_proj(tmp(1),rbf)
+         do j=0,nb
+         do i=0,nb
+            s6(i,j)=s6(i,j)+tmp(j)*t2(i)
+         enddo
+         enddo
+      else
+         do j=0,nb
+         do i=0,nb
+            s6(i,j)=s6(i,j)+t1(j)*t2(i)
+         enddo
+         enddo
+      endif
 
       if (ad_step.eq.ad_nsteps) then
          s=1./real(ad_nsteps-navg_step+1)
@@ -1273,6 +1281,13 @@ c-----------------------------------------------------------------------
          call copy(s1(0,4),t2(0,3),nb+1)
          call copy(s1(0,5),t2(0,2),nb+1)
          call copy(s1(0,6),t2(0,1),nb+1)
+         if (nid.eq.0) then 
+         do k=1,6
+         do j=0,nb
+            write(6,*)'t1',k,j,t1(j,k)
+         enddo
+         enddo
+         enddo
 
          do k=1,6
          do j=0,nb

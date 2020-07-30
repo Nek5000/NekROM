@@ -2324,8 +2324,8 @@ c-----------------------------------------------------------------------
       call nekgsync
 
 c     call set_theta_uns
-      call set_betaj
-      call set_alphaj
+      call set_betaj_new
+      call set_alphaj_new
 
       call opzero(res_u(1,1),res_u(1,2),res_u(1,ldim))
       call rzero(res_t,n)
