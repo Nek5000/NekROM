@@ -72,7 +72,8 @@ c     parameters and common blocks for MOR
      $               but0_z((lub+1)*(ltb+1))
 
       common /morvsol/ u(0:(lub+1)*3-1),uj(0:(lub+1)*6-1),
-     $                 u2((lub+1)**2),u2j(0:((lub+1)**2)*6-1)
+     $                 u2((lub+1)**2),u2j(0:((lub+1)**2)*6-1),
+     $                 ujfilter(0:(lub+1)*6-1)
 
 
       common /mortsol/ ut(0:(ltb+1)*3-1),utj(0:(ltb+1)*6-1),

@@ -230,7 +230,7 @@ c-----------------------------------------------------------------------
 c        call setuavg(ua,u2a,ua_wol,u2a_wol,u)
          call setuavg_new(ua,u2a,ua_wol,u2a_wol,u)
 c        call setuj(uj,u2j,u)
-         call setuj_new(uj,u2j,u)
+         call setuj_new(uj,u2j,ujfilter,u)
          call count_gal(num_galu,anum_galu,rhstmp(1),upmax,upmin,
      $   1e-16,nb)
       endif
@@ -239,7 +239,7 @@ c        call setuj(uj,u2j,u)
 c        call settavg(uta,uuta,utua,ut2a,uta_wol,utua_wol,u,ut)
          call settavg_new(uta,uuta,utua,ut2a,uta_wol,utua_wol,u,ut)
 c        call settj(utj,uutj,utuj,uj,ut)
-         call settj_new(utj,uutj,utuj,uj,ut)
+         call settj_new(utj,uutj,utuj,ujfilter,ut)
          call count_gal(num_galt,anum_galt,ut(1),tmax,tmin,1e-16,nb)
       endif
 
@@ -1226,7 +1226,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine setuj_new(s1,s2,t1)
+      subroutine setuj_new(s1,s2,s3,t1)
 
       include 'SIZE'
       include 'MOR'
@@ -1252,6 +1252,9 @@ c-----------------------------------------------------------------------
                call mxm(s1(0,k),nb+1,s3(0,k),1,s2(0,0,k),nb+1)
             enddo
          else
+            do k=1,6
+               call copy(s3(0,k),s1(0,k),nb+1)
+            enddo
             do k=1,6
                call mxm(s1(0,k),nb+1,s1(0,k),1,s2(0,0,k),nb+1)
             enddo
