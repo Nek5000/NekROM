@@ -71,6 +71,7 @@ c        ntr = rank_list(2,kk)
 
       gloerr = glmin(cu_err,1)
       write(6,*)'gloerr',gloerr,cu_err,nid
+
       if (abs((gloerr-cu_err)).le.1e-12) then 
          glo_i=nid
       else 
@@ -78,6 +79,8 @@ c        ntr = rank_list(2,kk)
       endif
       call igop(glo_i,work,'M  ',1)
 
+      ! processors which do not have the
+      ! lowest error reset factor matrices and weight
       if (nid.ne.glo_i) then 
          write(6,*)glo_i,nid,'check'
          call rzero(cp_a,(nb+1)*max_tr)
@@ -87,6 +90,7 @@ c        ntr = rank_list(2,kk)
          ntr = 0
       endif
       call nekgsync
+
       call gop(cp_a,wk1,'+  ',(nb+1)*max_tr)
       call gop(cp_b,wk1,'+  ',(nb+1)*max_tr)
       call gop(cp_c,wk1,'+  ',(nb+1)*max_tr)
@@ -116,6 +120,7 @@ c        enddo
       call nekgsync
 
       cp_time=cp_time+dnekclock()-tcp_time
+
       if (nio.eq.0) write (6,*) 'cp_time: ',cp_time
       if (nio.eq.0) write (6,*) 'lcglo=',lcglo
       if (nio.eq.0) write (6,*) 'lcloc=',lcloc
@@ -270,19 +275,17 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
-      real cu(nb)
-      real uu(0:nb)
-      real cu_diff(nb), cu_err
+      real cu_err
+      real cl(ic1:ic2,jc1:jc2,kc1:kc2)
       real fac_a((nb+1)*ntr),fac_b((nb+1)*ntr)
       real fac_c((nb+1)*ntr),cp_w(ntr)
-      real cl(ic1:ic2,jc1:jc2,kc1:kc2)
+      real uu(0:nb)
+      real cu(nb),cu_diff(nb)
       real cm(ic1:ic2,jc1:jc2)
-      real bcu(ntr)
-      real cuu(ntr)
-      real tmp(ntr)
+      real bcu(ntr),cuu(ntr),tmp(ntr)
       real tmpcu(0:nb)
 
-
+      ! approximated tensor-vector multiplication
       call rzero(cu,nb)
       do kk=1,ntr
          bcu(kk) = vlsc2(uu,fac_b(1+(kk-1)*(nb+1)),nb+1)
@@ -291,6 +294,7 @@ c-----------------------------------------------------------------------
       call col4(tmp,bcu,cuu,cp_w,ntr) 
       call mxm(fac_a,nb+1,tmp,ntr,tmpcu,1)
 
+      ! exact tensor-vector multiplication
       call rzero(cu,nb)
       do k=kc1,kc2
       do j=jc1,jc2
@@ -300,10 +304,14 @@ c-----------------------------------------------------------------------
       enddo
       enddo
       
+      ! difference
       call sub3(cu_diff,cu,tmpcu(0),nb)
+      ! error
       cu_err = sqrt(vlsc2(cu_diff,cu_diff,nb))
+
       write(6,*) nid,cu_err,ntr,'cu_err',' ntr'
       write(6,*)'compare'
+
       do ii=1,nb
          write(6,*)ii,cu_diff(ii),cu(ii),tmpcu(ii-1),'tmpcu'
       enddo
