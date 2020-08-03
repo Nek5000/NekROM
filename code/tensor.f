@@ -1,5 +1,5 @@
 c-----------------------------------------------------------------------
-      subroutine set_cp(cl,fname,cp_a,cp_b,cp_c,cp_w,uu)
+      subroutine set_cp(cp_a,cp_b,cp_c,cp_w,cl,fname,uu)
 
       include 'SIZE'
       include 'TOTAL'
@@ -7,11 +7,10 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real cl(lcglo)
-c     real cl(lcloc)
-      real uu(0:nb)
       real cp_a((nb+1)*max_tr),cp_b((nb+1)*max_tr),cp_c((nb+1)*max_tr)
       real cp_w(max_tr)
+      real cl(lcglo),uu(0:nb)
+c     real cl(lcloc)
       real wk1((nb+1)*max_tr),wk2(max_tr),cu_err
       integer rank_list(2,max_tr),mm
       integer glo_i,work
@@ -188,7 +187,7 @@ c-----------------------------------------------------------------------
       real cl(ic1:ic2,jc1:jc2,kc1:kc2)
       real fcm(0:mm*nn-1,3),fcmpm(nn*nn,3)
       real lsm(nn*nn,3),lsminv(nn*nn,3)
-      real tmp(nn*nn),tmp_wrk(nn)
+      real tmp(nn*nn),tmp_wrk1(nn),tmp_wrk2(nn)
       real lsr(mm*nn)
       real wk(lb+1)
       real cp_a(mm*nn),cp_b(mm*nn),cp_c(mm*nn),cp_w(nn)
@@ -233,7 +232,8 @@ c     call exitt0
          do mode=1,3
             call mttkrp(lsr,cl,fcm,mm,nn,mode)
             call set_lsm(lsm,fcmpm,mode,nn)
-            call invmat(lsminv(1,mode),tmp,lsm(1,mode),tmp_wrk,nn)
+            call invmat(lsminv(1,mode),tmp,lsm(1,mode)
+     $           ,tmp_wrk1,tmp_wrk2,nn)
             do jj=1,nn
                call mxm(lsr,mm,lsminv(1+(jj-1)*nn,mode),nn,
      $         fcm(0+(mm)*(jj-1),mode),1)
