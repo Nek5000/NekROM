@@ -620,9 +620,6 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine rand_initial(fcm,mm,nn)
 
-      include 'SIZE'
-      include 'TOTAL'
-
       real fcm(mm*nn,3)
       integer,parameter :: seed = 86456
   
@@ -633,7 +630,6 @@ c-----------------------------------------------------------------------
             fcm(ii,jj) = rand()
          enddo
          call mode_normalize(fcm(1,jj),mm,nn)
-
 c        call check_normalize(fcm(1,jj),mm,nn)
       enddo
 
