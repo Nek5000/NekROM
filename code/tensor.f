@@ -230,7 +230,7 @@ c     call nekgsync
 c     call exitt0
 
       do mode=2,3
-         call set_product_matrix(fcm(0,mode),fcmpm(1,mode),mm,nn)
+         call set_product_matrix(fcmpm(1,mode),fcm(0,mode),mm,nn)
       enddo
 
       do ii=1,maxit
@@ -245,7 +245,7 @@ c     call exitt0
             enddo
             call compute_cp_weight(cp_w,fcm(0,mode),mm,nn)
             call mode_normalize(fcm(0,mode),mm,nn)
-            call set_product_matrix(fcm(0,mode),fcmpm(1,mode),mm,nn)
+            call set_product_matrix(fcmpm(1,mode),fcm(0,mode),mm,nn)
          enddo
          call compute_relerr(relerr,lsr,fcm(0,3),lsm(1,3),
      $                       fcmpm(1,3),cp_w,norm_c,mm,nn)
@@ -622,7 +622,6 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'
       include 'TOTAL'
-      include 'MOR'
 
       real fcm(mm*nn,3)
       integer,parameter :: seed = 86456
@@ -655,7 +654,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine set_product_matrix(aa,bb,m,n)
+      subroutine set_product_matrix(bb,aa,m,n)
 
       real aa(m,n)
       real bb(n,n)
