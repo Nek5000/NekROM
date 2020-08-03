@@ -235,7 +235,7 @@ c     call exitt0
 
       do ii=1,maxit
          do mode=1,3
-            call mttkrp(lsr,cl,fcm,mm,nn,mode)
+            call mttkrp(lsr,cl,ic1,ic2,jc1,jc2,kc1,kc2,fcm,mm,nn,mode)
             call set_lsm(lsm,fcmpm,mode,nn)
             call invmat(lsminv(1,mode),tmp,lsm(1,mode)
      $           ,tmp_wrk1,tmp_wrk2,nn)
@@ -437,17 +437,18 @@ c        call compute_cp_weight(cp_w,fcm(0,3),lub+1,ltr)
       return
       end
 c-----------------------------------------------------------------------
-      subroutine mttkrp(lsr,cl,fcm,mm,nn,mode)
+      subroutine mttkrp(lsr,cl,ic1,ic2,jc1,jc2,kc1,kc2,fcm,mm,nn,mode)
+
+      ! matricezied tensor times khatri-rhao product
 
       include 'SIZE'
       include 'TOTAL'
-      include 'MOR'
 
       real lsr(mm*nn)
       real fcm(0:mm*nn-1,3)
       real cl(ic1:ic2,jc1:jc2,kc1:kc2)
-      real cm(ic1:ic2,jc1:jc2,ltr)
-      real cm2(ic1:ic2,ltr,kc1:kc2)
+      real cm(ic1:ic2,jc1:jc2,nn)
+      real cm2(ic1:ic2,nn,kc1:kc2)
       integer mode,tr
 
 c     common /cp_share/ cm(1:lb,0:lb,ltr)
