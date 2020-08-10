@@ -1,4 +1,4 @@
-# Coding Convention for MOR
+# Coding Conventions for MOR
 
 1. Capitalization
 
