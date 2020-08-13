@@ -555,27 +555,28 @@ c-----------------------------------------------------------------------
      $                          norm_c,mm,nn)
 
       real relerr,norm_c
-      real inner_prod,norm_approx 
       real lsr(mm,nn),lsm(nn,nn)
       real fcm(mm,nn),fcmpm(nn,nn)
+      real cp_weight(nn)
+
+      real inner_prod,norm_approx
       real tmp1(mm,nn),tmp2(nn,nn)
       real tmp3(nn),tmp4(nn)
       real tmp5(mm),tmp6(mm)
-      real cp_weight(nn)
       integer mm,nn
 
       inner_prod=0.
-      norm_approx=0.
-
+c     compute the inner product between approximated tensor and
+c     exact tensor
       do ii=1,nn
          call col3(tmp1(1,ii),lsr(1,ii),fcm(1,ii),mm)
       enddo
-
       call rone(tmp6,mm)
       call mxm(tmp1,mm,cp_weight,nn,tmp5,1)
-
       inner_prod = vlsc2(tmp6,tmp5,mm)
 
+      norm_approx=0.
+      ! compute the frobenius norm of the approximated tensor
       do ii=1,nn
          call col3(tmp2(1,ii),lsm(1,ii),fcmpm(1,ii),nn)
       enddo
@@ -584,8 +585,6 @@ c-----------------------------------------------------------------------
       norm_approx = vlsc2(tmp4,cp_weight,nn)
 
       relerr = sqrt((norm_c - 2*inner_prod + norm_approx)/(norm_c))
-
-
 
       return
       end
