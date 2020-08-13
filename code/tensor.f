@@ -788,3 +788,141 @@ c     kc1=0
 c     kc2=3
       return
       end
+c-----------------------------------------------------------------------
+      subroutine CP_ALS_new(cp_a,cp_b,cp_c,cp_w,cl,ic1,ic2,jc1,jc2,
+     $                      kc1,kc2,mm,nn)
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      real cp_a(mm*nn),cp_b(mm*nn),cp_c(mm*nn),cp_w(nn)
+      real cl(ic1:ic2,jc1:jc2,kc1:kc2)
+      real fcm(0:mm*nn-1,3),fcmpm(nn*nn,3)
+      real lsm(nn*nn,3),lsminv(nn*nn,3)
+      real tmp(nn*nn),tmp_wrk1(nn),tmp_wrk2(nn)
+      real lsr(mm*nn)
+      real relerr,norm_c,fit,cp_tol,pre_err,rel_diff
+
+      integer mode,maxit,local_size
+      integer mm,nn
+      logical ifexist
+
+      if (nid.eq.0) write(6,*) 'inside cp_als'
+
+      maxit = 500
+      cp_tol = 0.2
+      pre_err = 1
+
+      local_size = (ic2-ic1+1)*(jc2-jc1+1)*(kc2-kc1+1)
+      write(6,*)'local_size',local_size
+      norm_c = vlsc2(cl(ic1,jc1,kc1),cl(ic1,jc1,kc1),local_size)
+
+c     call rand_initial(fcm,mm,nn)
+      fcm(0,2) = 2.462367041809155e-01
+      fcm(1,2) = -7.446154603582491e-01
+      fcm(2,2) = -4.548131333805120e-01
+      fcm(3,2) = -4.219719367614321e-01
+      fcm(4,2) = 6.971777731506148e-01
+      fcm(5,2) =  2.328252785137057e-02
+      fcm(6,2) = -2.746641840505207e-01
+      fcm(7,2) =  6.617859642826085e-01
+      fcm(0,3) =  -4.923453104559560e-01
+      fcm(1,3) =  -1.237216589055276e-01
+      fcm(2,3) =   5.238771935385739e-01
+      fcm(3,3) =  -6.839895704466848e-01
+      fcm(4,3) =  -1.519039302253651e-01
+      fcm(5,3) =  -9.621725103385135e-01
+      fcm(6,3) =  -1.184340045130223e-01
+      fcm(7,3) =   1.926723719321975e-01
+
+      ! Compute A^TA
+      do mode=2,3
+         call set_product_matrix(fcmpm(1,mode),fcm(0,mode),mm,nn)
+      enddo
+
+      ! ALS
+      do ii=1,maxit
+         do mode=1,3
+            call mttkrp(lsr,cl,ic1,ic2,jc1,jc2,kc1,kc2,fcm,mm,nn,mode)
+            call set_lsm(lsm,fcmpm,mode,nn)
+            call invmat(lsminv(1,mode),tmp,lsm(1,mode)
+     $           ,tmp_wrk1,tmp_wrk2,nn)
+            do jj=1,nn
+               call mxm(lsr,mm,lsminv(1+(jj-1)*nn,mode),nn,
+     $         fcm(0+(mm)*(jj-1),mode),1)
+            enddo
+            call compute_cp_weight(cp_w,fcm(0,mode),mm,nn)
+            call mode_normalize(fcm(0,mode),mm,nn)
+            call set_product_matrix(fcmpm(1,mode),fcm(0,mode),mm,nn)
+         enddo
+
+         ! compute the relative error
+         call compute_relerr(relerr,lsr,fcm(0,3),lsm(1,3),
+     $                       fcmpm(1,3),cp_w,norm_c,mm,nn)
+         fit = 1-relerr
+         rel_diff = abs(pre_err-relerr)/pre_err
+
+         pre_err = relerr
+         if (nid.eq.0) write(6,1)'iter:', ii,'rel difference:',rel_diff,
+     $   'relative error:', relerr, 'rank:', nn
+         if (relerr.lt.cp_tol.OR.ii.ge.maxit.OR.rel_diff.le.1e-5) then
+            exit
+         endif
+      enddo
+
+      call copy(cp_a,fcm(0,1),mm*nn)
+      call copy(cp_b,fcm(0,2),mm*nn)
+      call copy(cp_c,fcm(0,3),mm*nn)
+
+    1 format(a,i4,x,a,1p1e13.5,x,a,1p1e13.5,x,a,i4)
+      if (nid.eq.0) write(6,*) 'exitting cp_als'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine set_c_slice(cj0,c0k,cl,ic1,ic2,jc1,jc2,kc1,kc2,nb)
+
+c     This subroutine extracts the two slices of the tensor C
+c     one is c(i,j,0) and the other is c(i,0,k)
+
+      real cl(ic1:ic2,jc1:jc2,kc1:kc2)
+      real cj0(ic1:ic2,jc1:jc2)
+      real c0k(ic1:ic2,kc1:kc2)
+
+      if (nid.eq.0) write(6,*) 'inside set_c_slice'
+
+      do j=0,nb
+      do i=1,nb
+         cj0(i,j) = cl(i,j,0)
+         write(6,*)i,j,cj0(i,j),'cj0'
+      enddo
+      enddo
+
+      do k=0,nb
+      do i=1,nb
+         c0k(i,k) = cl(i,0,k)
+         write(6,*)i,k,c0k(i,k),'c0k'
+      enddo
+      enddo
+
+      if (nid.eq.0) write(6,*) 'exitting set_c_slice'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine set_c_core(cl0,cl,ic1,ic2,jc1,jc2,kc1,kc2,nb)
+
+      real cl0(ic1:ic2,jc1+1:jc2,kc1+1:kc2)
+      real cl(ic1:ic2,jc1:jc2,kc1:kc2)
+      integer ic1,ic2,jc1,jc2,kc1,kc2,nb
+
+      do k=1,nb
+      do j=1,nb
+      do i=1,nb
+         cl0(i,j,k) = cl(i,j,k)
+      enddo
+      enddo
+      enddo
+
+      return
+      end
