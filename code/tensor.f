@@ -183,7 +183,7 @@ c     call exitt0
       return
       end
 c-----------------------------------------------------------------------
-      subroutine CP_ALS(cl,cp_a,cp_b,cp_c,cp_w,uu,mm,nn)
+      subroutine CP_ALS(cp_a,cp_b,cp_c,cp_w,cl,uu,mm,nn)
 
       include 'SIZE'
       include 'TOTAL'
