@@ -364,7 +364,7 @@ c-----------------------------------------------------------------------
          if (rmode.eq.'CP ') then 
             inquire (file='ops/u0',exist=ifexist)
             if (ifexist) call read_serial(u,nb+1,'ops/u0 ',wk,nid)
-            call set_cp(cua,cub,cuc,cp_uw,cul,'ops/cu ',u)
+            call set_cp(cua,cub,cuc,cp_uw,cuj0,cu0k,cul,'ops/cu ',u)
          else
             call setc(cul,'ops/cu ')
          endif
@@ -376,7 +376,7 @@ c-----------------------------------------------------------------------
          if (rmode.eq.'CP ') then 
             inquire (file='ops/t0',exist=ifexist)
             if (ifexist) call read_serial(ut,nb+1,'ops/t0 ',wk,nid)
-            call set_cp(cta,ctb,ctc,cp_tw,ctl,'ops/ct ',ut)
+            call set_cp(cta,ctb,ctc,cp_tw,ctj0,ct0k,ctl,'ops/ct ',ut)
          else
             call setc(ctl,'ops/ct ')
          endif

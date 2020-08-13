@@ -1,5 +1,5 @@
 c-----------------------------------------------------------------------
-      subroutine set_cp(cp_a,cp_b,cp_c,cp_w,cl,fname,uu)
+      subroutine set_cp(cp_a,cp_b,cp_c,cp_w,cj0,c0k,cl,fname,uu)
 
       include 'SIZE'
       include 'TOTAL'
@@ -9,8 +9,9 @@ c-----------------------------------------------------------------------
 
       real cp_a((nb+1)*max_tr),cp_b((nb+1)*max_tr),cp_c((nb+1)*max_tr)
       real cp_w(max_tr)
-      real cl(lcglo),uu(0:nb)
-c     real cl(lcloc)
+      real cl(lcglo),cl0(lcglo)
+      real uu(0:nb)
+      real cj0((nb+1)**2),c0k((nb+1)**2)
       real wk1((nb+1)*max_tr),wk2(max_tr),cu_err
       integer rank_list(2,max_tr),mm
       integer glo_i,work
