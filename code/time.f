@@ -497,6 +497,73 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine evalc4(cu,fac_a,fac_b,fac_c,cp_weight,cl,cj0,c0k,uu)
+
+c     This subroutine contracts the approximated tensor from CP
+c     decomposition with two vectors
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      real cu(nb)
+      real uu(0:nb)
+      real ucft(0:nb)
+      real fac_a((nb)*ntr),fac_b((nb)*ntr)
+      real fac_c((nb)*ntr),cp_weight(ntr)
+      real cj0(ic1:ic2,jc1:jc2),c0k(ic1:ic2,kc1:kc2)
+      real bcu(ntr),cuu(ntr),tmp(ntr)
+      real tmpcu(0:nb)
+      real cl(ic1:ic2,jc1:jc2,kc1:kc2)
+
+      common /scrc/ work(max(lub,ltb))
+
+      integer icalld
+      save    icalld
+      data    icalld /0/
+
+      if (icalld.eq.0) then
+         evalc_time=0.
+         icalld=1
+      endif
+
+      stime=dnekclock()
+
+      call rzero(cu,nb)
+      do kk=1,ntr
+         bcu(kk) = vlsc2(uu(1),fac_b(1+(kk-1)*(nb)),nb)
+         cuu(kk) = vlsc2(u(1),fac_c(1+(kk-1)*(nb)),nb)
+      enddo
+      call col4(tmp,bcu,cuu,cp_weight,ntr) 
+      call mxm(fac_a,nb,tmp,ntr,tmpcu(1),1)
+
+      do k=kc1,kc2
+      do i=ic1,ic2
+         cu(i)=cu(i)+c0k(i,k)*uu(0)*u(k)
+      enddo
+      enddo
+
+      do j=jc1,jc2
+      do i=ic1,ic2
+         cu(i)=cu(i)+cj0(i,j)*uu(j)*u(0)
+      enddo
+      enddo
+
+      write(6,*)cj0(i,0),c0k(i,0),'here check'
+      do i=ic1,ic2
+         cu(i)=cu(i)-cj0(i,0)*uu(0)*u(0)
+      enddo
+
+c     call copy(cu,tmpcu(1),nb)
+      call add2(cu,tmpcu(1),nb)
+
+      call nekgsync
+
+      evalc_time=evalc_time+dnekclock()-stime
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine setcintp
       call exitti('called deprecated subroutine setcintp$',1)
       return
