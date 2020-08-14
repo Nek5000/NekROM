@@ -451,17 +451,95 @@ c-----------------------------------------------------------------------
       real cm(ic1:ic2,jc1:jc2,nn)
       real cm2(ic1:ic2,nn,kc1:kc2)
       integer mode,tr
-
 c     common /cp_share/ cm(1:lb,0:lb,ltr)
 c     common /cp_share/ cm(lb*(lb+1),ltr)
 
+      call rzero(lsr,mm*nn)
       if (mode.eq.1) then
 
-         call rzero(lsr,mm*nn)
          ! construct temporary mttkrp
          do tr=1,nn
             call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),
-     $               fcm(kc1+(mm)*(tr-1),3),(kc2-kc1+1),cm(1,0,tr),1)
+     $               fcm(0+(mm)*(tr-1),3),(kc2-kc1+1),
+     $               cm(ic1,jc1,tr),1)
+         enddo
+
+         ! temporary mttkrp with factor matrix
+         do tr=1,nn
+            call mxm(cm(ic1,jc1,tr),(ic2-ic1+1),
+     $               fcm(0+(mm)*(tr-1),2),(jc2-jc1+1),
+     $               lsr(1+(mm)*(tr-1)),1)
+         enddo
+
+      elseif (mode.eq.2) then
+
+         ! construct temporary mttkrp
+         do tr=1,nn
+c           call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),
+c    $               fcm(kc1+(mm)*(tr-1),3),(kc2-kc1+1),cm(1,0,tr),1)
+            call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),
+     $               fcm(0+(mm)*(tr-1),3),(kc2-kc1+1),cm(ic1,jc1,tr),1)
+         enddo
+
+         ! temporary mttkrp with factor matrix
+         do tr=1,nn
+            do jj=jc1,jc2
+               ! without zero mode, no +1 for jj
+               lsr(jj+(mm)*(tr-1)) = vlsc2(cm(1,jj,tr),
+     $         fcm(0+(mm)*(tr-1),1),mm)
+            enddo
+         enddo
+
+      elseif (mode.eq.3) then
+
+         ! construct temporary mttkrp
+         do kk=kc1,kc2
+         do tr=1,nn
+            call mxm(cl(ic1,jc1,kk),(ic2-ic1+1),
+     $               fcm(0+(mm)*(tr-1),2),(jc2-jc1+1),
+     $               cm2(1,tr,kk),1)
+         enddo
+         enddo
+
+         ! temporary mttkrp with factor matrix
+         do tr=1,nn
+            do kk=kc1,kc2
+               ! without zero mode, no +1 for kk
+               lsr(kk+(mm)*(tr-1)) = vlsc2(cm2(1,tr,kk),
+     $         fcm(0+(mm)*(tr-1),1),mm)
+            enddo
+         enddo
+
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine mttkrp_old(lsr,cl,ic1,ic2,jc1,jc2,kc1,kc2,fcm,mm,nn,
+     $           mode)
+
+      ! matricezied tensor times khatri-rhao product
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      real lsr(mm*nn)
+      real fcm(0:mm*nn-1,3)
+      real cl(ic1:ic2,jc1:jc2,kc1:kc2)
+      real cm(ic1:ic2,jc1:jc2,nn)
+      real cm2(ic1:ic2,nn,kc1:kc2)
+      integer mode,tr
+c     common /cp_share/ cm(1:lb,0:lb,ltr)
+c     common /cp_share/ cm(lb*(lb+1),ltr)
+
+      call rzero(lsr,mm*nn)
+      if (mode.eq.1) then
+
+         ! construct temporary mttkrp
+         do tr=1,nn
+            call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),
+     $               fcm(0+(mm)*(tr-1),3),(kc2-kc1+1),
+     $               cm(ic1,jc1,tr),1)
          enddo
 c        do tr=1,nn
 c           call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),
@@ -471,8 +549,11 @@ c        enddo
          ! temporary mttkrp with factor matrix
          do tr=1,nn
             call mxm(cm(ic1,jc1,tr),(ic2-ic1+1),
-     $               fcm(jc1+(mm)*(tr-1),2),(jc2-jc1+1),
+     $               fcm(0+(mm)*(tr-1),2),(jc2-jc1+1),
      $               lsr(1+(mm)*(tr-1)),1)
+c           call mxm(cm(ic1,jc1,tr),(ic2-ic1+1),
+c    $               fcm(jc1+(mm)*(tr-1),2),(jc2-jc1+1),
+c    $               lsr(1+(mm)*(tr-1)),1)
 c           call mxm(cm(1,tr),(ic2-ic1+1),
 c    $               fcm(jc1+(mm)*(tr-1),2),(jc2-jc1+1),
 c    $               lsr(1+(mm)*(tr-1)),1)
@@ -480,18 +561,22 @@ c    $               lsr(1+(mm)*(tr-1)),1)
 
       elseif (mode.eq.2) then
 
-         call rzero(lsr,mm*nn)
          ! construct temporary mttkrp
          do tr=1,nn
+c           call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),
+c    $               fcm(kc1+(mm)*(tr-1),3),(kc2-kc1+1),cm(1,0,tr),1)
             call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),
-     $               fcm(kc1+(mm)*(tr-1),3),(kc2-kc1+1),cm(1,0,tr),1)
+     $               fcm(0+(mm)*(tr-1),3),(kc2-kc1+1),cm(ic1,jc1,tr),1)
          enddo
 
          ! temporary mttkrp with factor matrix
          do tr=1,nn
             do jj=jc1,jc2
-               lsr((jj+1)+(mm)*(tr-1)) = vlsc2(cm(1,jj,tr),
+               ! without zero mode, no +1 for jj
+               lsr(jj+1+(mm)*(tr-1)) = vlsc2(cm(1,jj,tr),
      $         fcm(0+(mm)*(tr-1),1),mm)
+c              lsr((jj+1)+(mm)*(tr-1)) = vlsc2(cm(1,jj,tr),
+c    $         fcm(0+(mm)*(tr-1),1),mm)
 c              lsr((jj+1)+(mm)*(tr-1)) = vlsc2(cm(1+jj*(mm-1),tr),
 c    $         fcm(0+(mm)*(tr-1),1),mm-1)
             enddo
@@ -499,21 +584,23 @@ c    $         fcm(0+(mm)*(tr-1),1),mm-1)
 
       elseif (mode.eq.3) then
 
-         call rzero(lsr,mm*nn)
-
          ! construct temporary mttkrp
          do kk=kc1,kc2
          do tr=1,nn
+c           call mxm(cl(ic1,jc1,kk),(ic2-ic1+1),
+c    $               fcm(jc1+(mm)*(tr-1),2),(jc2-jc1+1),
+c    $               cm2(1,tr,kk),1)
             call mxm(cl(ic1,jc1,kk),(ic2-ic1+1),
-     $               fcm(jc1+(mm)*(tr-1),2),(jc2-jc1+1),
-     $               cm2(1,tr,kk),1) 
+     $               fcm(0+(mm)*(tr-1),2),(jc2-jc1+1),
+     $               cm2(1,tr,kk),1)
          enddo
          enddo
 
          ! temporary mttkrp with factor matrix
          do tr=1,nn
             do kk=kc1,kc2
-               lsr((kk+1)+(mm)*(tr-1)) = vlsc2(cm2(1,tr,kk),
+               ! without zero mode, no +1 for kk
+               lsr(kk+1+(mm)*(tr-1)) = vlsc2(cm2(1,tr,kk),
      $         fcm(0+(mm)*(tr-1),1),mm)
             enddo
          enddo
