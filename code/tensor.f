@@ -1,6 +1,13 @@
 c-----------------------------------------------------------------------
       subroutine set_cp(cp_a,cp_b,cp_c,cp_w,cj0,c0k,cl,fname,uu)
 
+c     This subroutine requires fname and uu and
+c     returns cp_a, cp_b, cp_c ,cp_w, cj0, c0k, cl where
+c     cp_a, cp_b, cp_c, cp_w are the results of CPD (CP Decomposition),
+c     cp_a, cp_b and cp_c are the factor matrices and cp_w are
+c     the weights. cl is the tensor, cj0 and c0k represents the
+c     first frontal slice and first lateral slice.
+
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
