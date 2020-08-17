@@ -549,7 +549,6 @@ c     decomposition with two vectors
       enddo
       enddo
 
-      write(6,*)cj0(i,0),c0k(i,0),'here check'
       do i=ic1,ic2
          cu(i)=cu(i)-cj0(i,0)*uu(0)*u(0)
       enddo
@@ -590,7 +589,11 @@ c-----------------------------------------------------------------------
       enddo
 
       if (rmode.eq.'CP ') then
-         call evalc3(tmp(1),cta,ctb,ctc,cp_tw,ut)
+         if (ifcore) then 
+            call evalc4(tmp(1),cta,ctb,ctc,cp_tw,ctl,ctj0,ct0k,ut)
+         else
+            call evalc3(tmp(1),cta,ctb,ctc,cp_tw,ut)
+         endif 
       else
          call evalc(tmp(1),ctmp,ctl,ut)
       endif
@@ -636,7 +639,11 @@ c-----------------------------------------------------------------------
       enddo
 
       if (rmode.eq.'CP ') then
-         call evalc3(tmp1(1),cua,cub,cuc,cp_uw,u)
+         if (ifcore) then 
+            call evalc4(tmp1(1),cua,cub,cuc,cp_uw,cul,cuj0,cu0k,u)
+         else
+            call evalc3(tmp1(1),cua,cub,cuc,cp_uw,u)
+         endif 
       else
          call evalc(tmp1(1),ctmp,cul,u)
       endif
