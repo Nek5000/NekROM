@@ -1,6 +1,13 @@
 c-----------------------------------------------------------------------
       subroutine pod_proj(uu,r1,nn,msg)
 
+c     uu: output/input, vector to be filtered
+c     r1: input, number of modes to be filtered
+c     nn: input, length of vector uu
+c     msg: input, used as an indicator for
+c     different filter function. Currently, we
+c     support msg = step, linear, parabo, and cubic.
+
       real uu(nn)
       real a1,a2,a3,a4
       integer r1,nn,ncut
