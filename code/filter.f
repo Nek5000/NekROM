@@ -2,11 +2,16 @@ c-----------------------------------------------------------------------
       subroutine pod_proj(uu,r1,nn,msg)
 
       real uu(nn)
-      integer r1,nn
+      integer r1,nn,ncut
       character*6  msg
 
       if (msg.eq.'step  ') then
          call rzero(uu(nn-r1+1),r1)
+      elseif (msg.eq.'linear') then
+         ncut = nn-r1
+         do i=ncut+1,nn
+            uu(i) = (-uu(ncut)/r1)*(i-nn)
+         enddo
       endif
 
       return
