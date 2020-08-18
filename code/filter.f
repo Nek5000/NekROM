@@ -1,14 +1,13 @@
 c-----------------------------------------------------------------------
-      subroutine pod_proj(uu,r1)
+      subroutine pod_proj(uu,r1,nn,msg)
 
-      include 'SIZE'
-      include 'TOTAL'
-      include 'MOR'
+      real uu(nn)
+      integer r1,nn
+      character*6  msg
 
-      real uu(nb)
-      integer r1
-
-      call rzero(uu(nb-r1+1),r1)
+      if (msg.eq.'step  ') then
+         call rzero(uu(nn-r1+1),r1)
+      endif
 
       return
       end
@@ -56,4 +55,3 @@ c-----------------------------------------------------------------------
          
       return
       end
-c-----------------------------------------------------------------------

@@ -428,7 +428,7 @@ c-----------------------------------------------------------------------
                   if (rbf.lt.0) then
                      call pod_df(ucft(1))
                   else if (rbf.gt.0) then
-                     call pod_proj(ucft(1),rbf)
+                     call pod_proj(ucft(1),rbf,nb,'step  ')
                   endif
 
                   do k=kc1,kc2
@@ -741,7 +741,7 @@ c-----------------------------------------------------------------------
 
       if (rfilter.eq.'LER'.and.rbf.gt.0) then 
          call copy(tmp,t1,nb+1)
-         call pod_proj(tmp(1),rbf)
+         call pod_proj(tmp(1),rbf,nb,'step  ')
          do j=0,nb
          do i=0,nb
             s4(i,j)=s4(i,j)+t1(i)*tmp(j)
@@ -760,7 +760,7 @@ c-----------------------------------------------------------------------
 
          if (rfilter.eq.'LER'.and.rbf.gt.0) then 
             call copy(tmp,t1,nb+1)
-            call pod_proj(tmp(1),rbf)
+            call pod_proj(tmp(1),rbf,nb,'step  ')
             call cmult(s4,s,(nb+1)**2)
             do j=0,nb
             do i=0,nb
@@ -855,7 +855,7 @@ c-----------------------------------------------------------------------
          if (rfilter.eq.'LER'.and.rbf.gt.0) then 
             do k=1,6
                call copy(s3(0,k),s1(0,k),nb+1)
-               call pod_proj(s3(1,k),rbf)
+               call pod_proj(s3(1,k),rbf,nb,'step  ')
             enddo
             do k=1,6
                call mxm(s1(0,k),nb+1,s3(0,k),1,s2(0,0,k),nb+1)
@@ -1212,7 +1212,7 @@ c-----------------------------------------------------------------------
       ! Leray has to be fixed
       if (rfilter.eq.'LER'.and.rbf.gt.0) then 
          call copy(tmp,t1,nb+1)
-         call pod_proj(tmp(1),rbf)
+         call pod_proj(tmp(1),rbf,nb,'step  ')
          do j=0,nb
          do i=0,nb
             s4(i,j)=s4(i,j)+t1(i)*tmp(j)
@@ -1273,7 +1273,7 @@ c-----------------------------------------------------------------------
       ! Leray has to be fixed
       if (rfilter.eq.'LER'.and.rbf.gt.0) then 
          call copy(tmp,t1,nb+1)
-         call pod_proj(tmp(1),rbf)
+         call pod_proj(tmp(1),rbf,nb,'step  ')
          do j=0,nb
          do i=0,nb
             s6(i,j)=s6(i,j)+tmp(j)*t2(i)
@@ -1320,7 +1320,7 @@ c-----------------------------------------------------------------------
          if (rfilter.eq.'LER'.and.rbf.gt.0) then 
             do k=1,6
                call copy(s3(0,k),s1(0,k),nb+1)
-               call pod_proj(s3(1,k),rbf)
+               call pod_proj(s3(1,k),rbf,nb,'step ')
             enddo
             do k=1,6
                call mxm(s1(0,k),nb+1,s3(0,k),1,s2(0,0,k),nb+1)
