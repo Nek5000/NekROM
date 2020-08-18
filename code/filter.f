@@ -2,6 +2,7 @@ c-----------------------------------------------------------------------
       subroutine pod_proj(uu,r1,nn,msg)
 
       real uu(nn)
+      real a1,a2,a3,a4
       integer r1,nn,ncut
       character*6  msg
 
@@ -16,6 +17,15 @@ c-----------------------------------------------------------------------
          ncut = nn-r1
          do i=ncut+1,nn
             uu(i) = (-uu(ncut)/r1**2)*(i-ncut)**2 + uu(ncut)
+         enddo
+      elseif (msg.eq.'cubic ') then
+         ncut = nn-r1
+         a1 = 2
+         a2 = -3*(ncut+nn)
+         a3 = 6*ncut*nn
+         a4 = nn**3-3*nn**2*ncut
+         do i=ncut+1,nn
+            uu(i) = (a1*i**3+a2*i**2+a3*i+a4)*uu(ncut)/(ncut+nn)**3
          enddo
       endif
 
