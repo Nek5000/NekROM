@@ -12,6 +12,11 @@ c-----------------------------------------------------------------------
          do i=ncut+1,nn
             uu(i) = (-uu(ncut)/r1)*(i-nn)
          enddo
+      elseif (msg.eq.'parabo') then
+         ncut = nn-r1
+         do i=ncut+1,nn
+            uu(i) = (-uu(ncut)/r1**2)*(i-ncut)**2 + uu(ncut)
+         enddo
       endif
 
       return
