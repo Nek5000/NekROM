@@ -552,6 +552,8 @@ c-----------------------------------------------------------------------
 
          ! construct temporary mttkrp
          do tr=1,nn
+c           call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),
+c    $               fcm(kc1+(mm)*(tr-1),3),(kc2-kc1+1),cm(1,0,tr),1)
             call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),
      $               fcm(0+(mm)*(tr-1),3),(kc2-kc1+1),cm(ic1,jc1,tr),1)
          enddo
