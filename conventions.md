@@ -18,7 +18,7 @@ Brevity in subroutine naming is preferred, but not at the expense of clarity. Id
 
 5. Variables
 
-Variable names must be short, but common block variables should be descriptive.
+Variable names must be short, but common block variables should be descriptive. Vector variables in general should not be allocated inside a subroutine. Instead, they should be declared in a common block.
 
 6. Comments
 
