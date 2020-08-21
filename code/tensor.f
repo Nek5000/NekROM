@@ -230,8 +230,7 @@ c-----------------------------------------------------------------------
       real cp_res,cp_relres,cp_fit,cp_tol,pre_relres,reldiff
 
       integer tmp2(nn),tmp3(nn)
-      integer mode,maxit,local_size
-      integer mm,nn
+      integer mode,maxit,local_size,mm,nn
       logical ifexist
 
       real norm_c,norm_c0
@@ -997,8 +996,7 @@ c     factor matrices. It returns cp_a, cp_b, cp_c ,cp_w.
       real cp_res,cp_relres,cp_fit,cp_tol,pre_relres,reldiff
 
       integer tmp2(nn),tmp3(nn)
-      integer mode,maxit,local_size
-      integer mm,nn
+      integer mode,maxit,local_size,mm,nn
       logical ifexist
 
       real norm_c,norm_c0
