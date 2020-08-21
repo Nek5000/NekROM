@@ -24,6 +24,7 @@ c     first frontal slice and first lateral slice.
 
       common /scrconverr/ bcu(ltr),cuu(ltr),tmpbc(ltr),cu(lb+1),
      $                    cu_diff(lb+1),approx_cu(lb+1),cm((lb+1)**2)
+      common /scrmttkrp/ cmr((lb+1)**2*ltr),crm((lb+1)**2*ltr)
 
       real cp_a((nb+1)*max_tr),cp_b((nb+1)*max_tr)
       real cp_c((nb+1)*max_tr),cp_w(max_tr)
@@ -88,14 +89,16 @@ c        ntr = rank_list(2,kk)
          ntr = 2
          if (ifcore) then
             call als_core(cp_a,cp_b,cp_c,cp_w,fcm,fcmpm,lsm,lsminv,lsr,
-     $        tmp1,tmp2,tmp3,cl0,ic1,ic2,jc1+1,jc2,kc1+1,kc2,nb,ntr)
+     $                    tmp1,tmp2,tmp3,cmr,crm,
+     $                    cl0,ic1,ic2,jc1+1,jc2,kc1+1,kc2,nb,ntr)
 
             call check_conv_err(cu_err,cl0,cp_a,cp_b,cp_c,cp_w,uu(1),
      $                          bcu,cuu,tmpbc,cu,cu_diff,approx_cu,cm, 
      $                          ic1,ic2,jc1+1,jc2,kc1+1,kc2,nb,ntr)
          else
             call als(cp_a,cp_b,cp_c,cp_w,fcm,fcmpm,lsm,lsminv,lsr,
-     $        tmp1,tmp2,tmp3,cl,ic1,ic2,jc1,jc2,kc1,kc2,nb+1,ntr)
+     $               tmp1,tmp2,tmp3,cmr,crm,
+     $               cl,ic1,ic2,jc1,jc2,kc1,kc2,nb+1,ntr)
 
             call check_conv_err(cu_err,cl,cp_a,cp_b,cp_c,cp_w,uu,
      $                          bcu,cuu,tmpbc,cu,cu_diff,approx_cu,cm, 
@@ -228,7 +231,7 @@ c     call exitt0
       end
 c-----------------------------------------------------------------------
       subroutine als(cp_a,cp_b,cp_c,cp_w,fcm,fcmpm,lsm,lsminv,lsr,tmp1,
-     $               tmp2,tmp3,cl,ic1,ic2,jc1,jc2,kc1,kc2,mm,nn)
+     $               tmp2,tmp3,cmr,crm,cl,ic1,ic2,jc1,jc2,kc1,kc2,mm,nn)
 
 
       real cp_a(mm*nn),cp_b(mm*nn),cp_c(mm*nn),cp_w(nn)
@@ -236,6 +239,7 @@ c-----------------------------------------------------------------------
       real fcm(mm*nn,3),fcmpm(nn*nn,3)
       real lsm(nn*nn,3),lsminv(nn*nn,3),lsr(mm*nn)
       real tmp1(nn*nn)
+      real cmr(ic1:ic2,jc1:jc2,nn),crm(ic1:ic2,nn,kc1:kc2)
       real cp_res,cp_relres,cp_fit,cp_tol,pre_relres,reldiff
 
       integer tmp2(nn),tmp3(nn)
@@ -278,7 +282,8 @@ c     call exitt0
 
       do ii=1,maxit
          do mode=1,3
-            call mttkrp(lsr,cl,ic1,ic2,jc1,jc2,kc1,kc2,fcm,mm,nn,mode)
+            call mttkrp(lsr,cl,cmr,crm,ic1,ic2,jc1,jc2,kc1,kc2,
+     $                  fcm,mm,nn,mode)
             call set_lsm(lsm,fcmpm,mode,nn)
             call invmat(lsminv(1,mode),tmp1,lsm(1,mode)
      $           ,tmp2,tmp3,nn)
@@ -533,19 +538,17 @@ c        call compute_cp_weight(cp_w,fcm(0,3),lub+1,ltr)
       return
       end
 c-----------------------------------------------------------------------
-      subroutine mttkrp(lsr,cl,ic1,ic2,jc1,jc2,kc1,kc2,fcm,mm,nn,mode)
+      subroutine mttkrp(lsr,cl,cm,cm2,ic1,ic2,jc1,jc2,kc1,kc2,
+     $                  fcm,mm,nn,mode)
 
       ! matricized tensor times khatri-rhao product
 
-      include 'SIZE'
-      include 'TOTAL'
-
       real lsr(mm*nn)
-      real fcm(0:mm*nn-1,3)
       real cl(ic1:ic2,jc1:jc2,kc1:kc2)
       real cm(ic1:ic2,jc1:jc2,nn)
       real cm2(ic1:ic2,nn,kc1:kc2)
-      integer mode,tr
+      real fcm(0:mm*nn-1,3)
+      integer ic1,ic2,jc1,jc2,kc1,kc2,mode,tr
 
       call rzero(lsr,mm*nn)
       if (mode.eq.1) then
@@ -915,8 +918,8 @@ c     kc2=3
       end
 c-----------------------------------------------------------------------
       subroutine als_core(cp_a,cp_b,cp_c,cp_w,fcm,fcmpm,lsm,lsminv,lsr,
-     $                    tmp1,tmp2,tmp3,cl,ic1,ic2,jc1,jc2,kc1,kc2,mm,
-     $                    nn)
+     $                    tmp1,tmp2,tmp3,cmr,crm,cl,ic1,ic2,jc1,jc2,kc1,
+     $                    kc2,mm,nn)
 
 c     This subroutine requires tensor cl, indices ic1, ic2, jc1, jc2,
 c     kc1, kc2, mm and nn where mm and nn are the dimensions of the
@@ -927,6 +930,7 @@ c     factor matrices. It returns cp_a, cp_b, cp_c ,cp_w.
       real fcm(mm*nn,3),fcmpm(nn*nn,3)
       real lsm(nn*nn,3),lsminv(nn*nn,3),lsr(mm*nn)
       real tmp1(nn*nn)
+      real cmr(ic1:ic2,jc1:jc2,nn),crm(ic1:ic2,nn,kc1:kc2)
       real cp_res,cp_relres,cp_fit,cp_tol,pre_relres,reldiff
 
       integer tmp2(nn),tmp3(nn)
@@ -953,7 +957,8 @@ c     factor matrices. It returns cp_a, cp_b, cp_c ,cp_w.
       ! ALS
       do ii=1,maxit
          do mode=1,3
-            call mttkrp(lsr,cl,ic1,ic2,jc1,jc2,kc1,kc2,fcm,mm,nn,mode)
+            call mttkrp(lsr,cl,cmr,crm,ic1,ic2,jc1,jc2,kc1,kc2,
+     $                  fcm,mm,nn,mode)
             call set_lsm(lsm,fcmpm,mode,nn)
             call invmat(lsminv(1,mode),tmp1,lsm(1,mode)
      $           ,tmp2,tmp3,nn)
