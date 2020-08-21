@@ -17,8 +17,13 @@ c     first frontal slice and first lateral slice.
       common /scrals/ fcm(3*ltr*(lb+1)),fcmpm(3*ltr**2),
      $                lsm(3*ltr**2),lsminv(3*ltr**2),
      $                lsr(ltr*(lb+1))
+
       common /scrtens_norm/ norm_c,norm_c0
+
       common /scralstwrk/ tmp1(ltr**2),tmp2(ltr),tmp3(ltr)
+
+      common /scrconverr/ bcu(ltr),cuu(ltr),tmpbc(ltr),cu(lb+1),
+     $                    cu_diff(lb+1),approx_cu(lb+1),cm((lb+1)**2)
 
       real cp_a((nb+1)*max_tr),cp_b((nb+1)*max_tr)
       real cp_c((nb+1)*max_tr),cp_w(max_tr)
@@ -84,13 +89,17 @@ c        ntr = rank_list(2,kk)
          if (ifcore) then
             call als_core(cp_a,cp_b,cp_c,cp_w,fcm,fcmpm,lsm,lsminv,lsr,
      $        tmp1,tmp2,tmp3,cl0,ic1,ic2,jc1+1,jc2,kc1+1,kc2,nb,ntr)
+
             call check_conv_err(cu_err,cl0,cp_a,cp_b,cp_c,cp_w,uu(1),
-     $        ic1,ic2,jc1+1,jc2,kc1+1,kc2,nb,ntr)
+     $                          bcu,cuu,tmpbc,cu,cu_diff,approx_cu,cm, 
+     $                          ic1,ic2,jc1+1,jc2,kc1+1,kc2,nb,ntr)
          else
             call als(cp_a,cp_b,cp_c,cp_w,fcm,fcmpm,lsm,lsminv,lsr,
      $        tmp1,tmp2,tmp3,cl,ic1,ic2,jc1,jc2,kc1,kc2,nb+1,ntr)
+
             call check_conv_err(cu_err,cl,cp_a,cp_b,cp_c,cp_w,uu,
-     $        ic1,ic2,jc1,jc2,kc1,kc2,nb+1,ntr)
+     $                          bcu,cuu,tmpbc,cu,cu_diff,approx_cu,cm, 
+     $                          ic1,ic2,jc1,jc2,kc1,kc2,nb+1,ntr)
          endif
 
          if (cu_err.le.1e-4) then
@@ -306,8 +315,9 @@ c     call exitt0
       return
       end
 c-----------------------------------------------------------------------
-      subroutine check_conv_err(cu_err,cl,fac_a,fac_b,fac_c,cp_w,uu
-     $            ,ic1,ic2,jc1,jc2,kc1,kc2,mm,nn)
+      subroutine check_conv_err(cu_err,cl,fac_a,fac_b,fac_c,cp_w,uu,
+     $                          cu,cu_diff,approx_cu,cm,bcu,cuu,tmp,
+     $                          ic1,ic2,jc1,jc2,kc1,kc2,mm,nn)
 
       real cu_err
       real cl(ic1:ic2,jc1:jc2,kc1:kc2)
