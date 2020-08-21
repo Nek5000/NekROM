@@ -18,6 +18,7 @@ c     first frontal slice and first lateral slice.
      $                lsm(3*ltr**2),lsminv(3*ltr**2),
      $                lsr(ltr*(lb+1))
       common /scrtens_norm/ norm_c,norm_c0
+      common /scralstwrk/ tmp1(ltr**2),tmp2(ltr),tmp3(ltr)
 
       real cp_a((nb+1)*max_tr),cp_b((nb+1)*max_tr)
       real cp_c((nb+1)*max_tr),cp_w(max_tr)
@@ -82,12 +83,12 @@ c        ntr = rank_list(2,kk)
          ntr = 2
          if (ifcore) then
             call als_core(cp_a,cp_b,cp_c,cp_w,fcm,fcmpm,lsm,lsminv,lsr,
-     $        cl0,ic1,ic2,jc1+1,jc2,kc1+1,kc2,nb,ntr)
+     $        tmp1,tmp2,tmp3,cl0,ic1,ic2,jc1+1,jc2,kc1+1,kc2,nb,ntr)
             call check_conv_err(cu_err,cl0,cp_a,cp_b,cp_c,cp_w,uu(1),
      $        ic1,ic2,jc1+1,jc2,kc1+1,kc2,nb,ntr)
          else
             call als(cp_a,cp_b,cp_c,cp_w,fcm,fcmpm,lsm,lsminv,lsr,
-     $        cl,ic1,ic2,jc1,jc2,kc1,kc2,nb+1,ntr)
+     $        tmp1,tmp2,tmp3,cl,ic1,ic2,jc1,jc2,kc1,kc2,nb+1,ntr)
             call check_conv_err(cu_err,cl,cp_a,cp_b,cp_c,cp_w,uu,
      $        ic1,ic2,jc1,jc2,kc1,kc2,nb+1,ntr)
          endif
@@ -217,17 +218,18 @@ c     call exitt0
       return
       end
 c-----------------------------------------------------------------------
-      subroutine als(cp_a,cp_b,cp_c,cp_w,fcm,fcmpm,lsm,lsminv,lsr,cl,
-     $               ic1,ic2,jc1,jc2,kc1,kc2,mm,nn)
+      subroutine als(cp_a,cp_b,cp_c,cp_w,fcm,fcmpm,lsm,lsminv,lsr,tmp1,
+     $               tmp2,tmp3,cl,ic1,ic2,jc1,jc2,kc1,kc2,mm,nn)
 
 
       real cp_a(mm*nn),cp_b(mm*nn),cp_c(mm*nn),cp_w(nn)
       real cl(ic1:ic2,jc1:jc2,kc1:kc2)
       real fcm(mm*nn,3),fcmpm(nn*nn,3)
       real lsm(nn*nn,3),lsminv(nn*nn,3),lsr(mm*nn)
-      real tmp(nn*nn),tmp_wrk1(nn),tmp_wrk2(nn)
+      real tmp1(nn*nn)
       real cp_res,cp_relres,cp_fit,cp_tol,pre_relres,reldiff
 
+      integer tmp2(nn),tmp3(nn)
       integer mode,maxit,local_size
       integer mm,nn
       logical ifexist
@@ -270,8 +272,8 @@ c     call exitt0
          do mode=1,3
             call mttkrp(lsr,cl,ic1,ic2,jc1,jc2,kc1,kc2,fcm,mm,nn,mode)
             call set_lsm(lsm,fcmpm,mode,nn)
-            call invmat(lsminv(1,mode),tmp,lsm(1,mode)
-     $           ,tmp_wrk1,tmp_wrk2,nn)
+            call invmat(lsminv(1,mode),tmp1,lsm(1,mode)
+     $           ,tmp2,tmp3,nn)
             do jj=1,nn
                call mxm(lsr,mm,lsminv(1+(jj-1)*nn,mode),nn,
      $         fcm(1+(mm)*(jj-1),mode),1)
@@ -980,7 +982,8 @@ c     kc2=3
       end
 c-----------------------------------------------------------------------
       subroutine als_core(cp_a,cp_b,cp_c,cp_w,fcm,fcmpm,lsm,lsminv,lsr,
-     $                    cl,ic1,ic2,jc1,jc2,kc1,kc2,mm,nn)
+     $                    tmp1,tmp2,tmp3,cl,ic1,ic2,jc1,jc2,kc1,kc2,mm,
+     $                    nn)
 
 c     This subroutine requires tensor cl, indices ic1, ic2, jc1, jc2,
 c     kc1, kc2, mm and nn where mm and nn are the dimensions of the
@@ -990,9 +993,10 @@ c     factor matrices. It returns cp_a, cp_b, cp_c ,cp_w.
       real cl(ic1:ic2,jc1:jc2,kc1:kc2)
       real fcm(mm*nn,3),fcmpm(nn*nn,3)
       real lsm(nn*nn,3),lsminv(nn*nn,3),lsr(mm*nn)
-      real tmp(nn*nn),tmp_wrk1(nn),tmp_wrk2(nn)
+      real tmp1(nn*nn)
       real cp_res,cp_relres,cp_fit,cp_tol,pre_relres,reldiff
 
+      integer tmp2(nn),tmp3(nn)
       integer mode,maxit,local_size
       integer mm,nn
       logical ifexist
@@ -1019,8 +1023,8 @@ c     factor matrices. It returns cp_a, cp_b, cp_c ,cp_w.
          do mode=1,3
             call mttkrp(lsr,cl,ic1,ic2,jc1,jc2,kc1,kc2,fcm,mm,nn,mode)
             call set_lsm(lsm,fcmpm,mode,nn)
-            call invmat(lsminv(1,mode),tmp,lsm(1,mode)
-     $           ,tmp_wrk1,tmp_wrk2,nn)
+            call invmat(lsminv(1,mode),tmp1,lsm(1,mode)
+     $           ,tmp2,tmp3,nn)
             do jj=1,nn
                call mxm(lsr,mm,lsminv(1+(jj-1)*nn,mode),nn,
      $         fcm(1+(mm)*(jj-1),mode),1)
