@@ -15,11 +15,12 @@ c     first frontal slice and first lateral slice.
       parameter (lt=lx1*ly1*lz1*lelt)
 
       common /scrals/ fcm(3*ltr*(lb+1)),fcmpm(3*ltr**2),
-     $                lsm(3*ltr**2),lsminv(3*ltr**2),lsr(ltr*(lb+1))
+     $                lsm(3*ltr**2),lsminv(3*ltr**2),
+     $                lsr(ltr*(lb+1))
       common /scrtens_norm/ norm_c,norm_c0
 
-      real cp_a((nb+1)*max_tr),cp_b((nb+1)*max_tr),cp_c((nb+1)*max_tr)
-      real cp_w(max_tr)
+      real cp_a((nb+1)*max_tr),cp_b((nb+1)*max_tr)
+      real cp_c((nb+1)*max_tr),cp_w(max_tr)
       real cl(lcglo),cl0(lcglo)
       real uu(0:nb)
       real cj0((nb+1)**2),c0k((nb+1)**2)
@@ -268,8 +269,6 @@ c     call exitt0
       do ii=1,maxit
          do mode=1,3
             call mttkrp(lsr,cl,ic1,ic2,jc1,jc2,kc1,kc2,fcm,mm,nn,mode)
-c           call mttkrp_old(lsr,cl,ic1,ic2,jc1,jc2,kc1,kc2,fcm,mm,nn,
-c    $                     mode)
             call set_lsm(lsm,fcmpm,mode,nn)
             call invmat(lsminv(1,mode),tmp,lsm(1,mode)
      $           ,tmp_wrk1,tmp_wrk2,nn)
