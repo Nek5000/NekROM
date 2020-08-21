@@ -33,6 +33,7 @@ c     first frontal slice and first lateral slice.
       real cj0((nb+1)**2),c0k((nb+1)**2)
       real wk1((nb+1)*max_tr),wk2(max_tr)
       real norm_c,norm_c0,cu_err
+
       integer rank_list(2,max_tr),mm
       integer glo_i,work
 
@@ -258,8 +259,6 @@ c-----------------------------------------------------------------------
       local_size = (ic2-ic1+1)*(jc2-jc1+1)*(kc2-kc1+1)
       norm_c = vlsc2(cl(ic1,jc1,kc1),cl(ic1,jc1,kc1),local_size)
 
-      call rand_initial(fcm,mm,nn)
-
 c     if (nid.eq.0) then
 c     write(6,*)'processor 0'
 c        do ii=0,mm*nn-1
@@ -277,6 +276,7 @@ c     call nekgsync
 c     call exitt0
 
       do mode=2,3
+         call rand_initial(fcm(1,mode),mm,nn)
          call set_product_matrix(fcmpm(1,mode),fcm(1,mode),mm,nn)
       enddo
 
@@ -743,18 +743,16 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine rand_initial(fcm,mm,nn)
 
-      real fcm(mm*nn,3)
+      real fcm(mm*nn)
       integer,parameter :: seed = 86456
   
       call srand(seed)
       
-      do jj=2,3
-         do ii=1,mm*nn
-            fcm(ii,jj) = rand()
-         enddo
-         call mode_normalize(fcm(1,jj),mm,nn)
-c        call check_normalize(fcm(1,jj),mm,nn)
+      do ii=1,mm*nn
+         fcm(ii) = rand()
       enddo
+      call mode_normalize(fcm,mm,nn)
+c     call check_normalize(fcm(1,jj),mm,nn)
 
       return
       end
@@ -940,10 +938,9 @@ c     factor matrices. It returns cp_a, cp_b, cp_c ,cp_w.
       cp_tol = 0.2
       pre_relres = 1
 
-      call rand_initial(fcm,mm,nn)
-
       ! Compute A^TA
       do mode=2,3
+         call rand_initial(fcm(1,mode),mm,nn)
          call set_product_matrix(fcmpm(1,mode),fcm(1,mode),mm,nn)
       enddo
 
