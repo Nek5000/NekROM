@@ -686,32 +686,26 @@ c-----------------------------------------------------------------------
       real lsr(mm,nn),lsm(nn,nn)
       real fcm(mm,nn),fcmpm(nn,nn)
       real cp_weight(nn)
-      real norm_tens
-
-      real inner_prod,norm_approx
-      real tmp1(mm,nn),tmp2(nn,nn)
-      real tmp3(nn),tmp4(nn)
-      real tmp5(mm),tmp6(mm)
+      real norm_tens,inner_prod,norm_approx
       integer mm,nn
 
       inner_prod=0.
+
 c     compute the inner product between approximated tensor and
 c     exact tensor
       do ii=1,nn
-         call col3(tmp1(1,ii),lsr(1,ii),fcm(1,ii),mm)
+         call col2c(lsr(1,ii),fcm(1,ii),cp_weight(ii),mm)
       enddo
-      call rone(tmp6,mm)
-      call mxm(tmp1,mm,cp_weight,nn,tmp5,1)
-      inner_prod = vlsc2(tmp6,tmp5,mm)
+      inner_prod = vlsum(lsr,mm*nn)
 
       norm_approx=0.
-      ! compute the frobenius norm of the approximated tensor
-      do ii=1,nn
-         call col3(tmp2(1,ii),lsm(1,ii),fcmpm(1,ii),nn)
-      enddo
 
-      call mxm(tmp2,nn,cp_weight,nn,tmp4,1)
-      norm_approx = vlsc2(tmp4,cp_weight,nn)
+c     compute the frobenius norm of the approximated tensor
+      do ii=1,nn
+         call col2c(lsm(1,ii),fcmpm(1,ii),cp_weight(ii),nn)
+         call cmult(lsm(1,ii),cp_weight(ii),nn)
+      enddo
+      norm_approx = vlsum(lsm,nn**2)
 
       residual = sqrt((norm_tens - 2*inner_prod + norm_approx))
 
