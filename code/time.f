@@ -507,16 +507,13 @@ c     decomposition with two vectors
       include 'MOR'
 
       real cu(nb)
-      real uu(0:nb)
-      real ucft(0:nb)
       real fac_a((nb)*ntr),fac_b((nb)*ntr)
       real fac_c((nb)*ntr),cp_weight(ntr)
-      real cj0(ic1:ic2,jc1:jc2),c0k(ic1:ic2,kc1:kc2)
-      real bcu(ntr),cuu(ntr),tmp(ntr)
-      real tmpcu(0:nb)
       real cl(ic1:ic2,jc1:jc2,kc1:kc2)
+      real cj0(ic1:ic2,jc1:jc2),c0k(ic1:ic2,kc1:kc2)
+      real uu(0:nb)
 
-      common /scrc/ work(max(lub,ltb))
+      common /srcevalc4/ bcu(ltr),cuu(ltr),tmp(ltr),tmpcu(0:lb)
 
       integer icalld
       save    icalld
