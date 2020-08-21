@@ -20,10 +20,10 @@ c     first frontal slice and first lateral slice.
 
       common /scrtens_norm/ norm_c,norm_c0
 
-      common /scralstwrk/ tmp1(ltr**2),tmp2(ltr),tmp3(ltr)
+      common /scralstwrk/ tmp1(ltr**2),tmp2(ltr*(lb+1)),tmp3((lb+1)**2),
+     $                    tmp4(ltr),tmp5(ltr),tmp6(ltr),tmp7((lb+1)),
+     $                    tmp8((lb+1)),tmp9((lb+1))
 
-      common /scrconverr/ bcu(ltr),cuu(ltr),tmpbc(ltr),cu(lb+1),
-     $                    cu_diff(lb+1),approx_cu(lb+1),cm((lb+1)**2)
       common /scrmttkrp/ cmr((lb+1)**2*ltr),crm((lb+1)**2*ltr)
 
       real cp_a((nb+1)*max_tr),cp_b((nb+1)*max_tr)
@@ -89,11 +89,11 @@ c        ntr = rank_list(2,kk)
          ntr = 2
          if (ifcore) then
             call als_core(cp_a,cp_b,cp_c,cp_w,fcm,fcmpm,lsm,lsminv,lsr,
-     $                    tmp1,tmp2,tmp3,cmr,crm,
+     $                    tmp1,tmp4,tmp5,cmr,crm,
      $                    cl0,ic1,ic2,jc1+1,jc2,kc1+1,kc2,nb,ntr)
 
             call check_conv_err(cu_err,cl0,cp_a,cp_b,cp_c,cp_w,uu(1),
-     $                          bcu,cuu,tmpbc,cu,cu_diff,approx_cu,cm, 
+     $                          tmp4,tmp5,tmp6,tmp7,tmp8,tmp9,tmp3,
      $                          ic1,ic2,jc1+1,jc2,kc1+1,kc2,nb,ntr)
          else
             call als(cp_a,cp_b,cp_c,cp_w,fcm,fcmpm,lsm,lsminv,lsr,
@@ -101,7 +101,7 @@ c        ntr = rank_list(2,kk)
      $               cl,ic1,ic2,jc1,jc2,kc1,kc2,nb+1,ntr)
 
             call check_conv_err(cu_err,cl,cp_a,cp_b,cp_c,cp_w,uu,
-     $                          bcu,cuu,tmpbc,cu,cu_diff,approx_cu,cm, 
+     $                          tmp4,tmp5,tmp6,tmp7,tmp8,tmp9,tmp3,
      $                          ic1,ic2,jc1,jc2,kc1,kc2,nb+1,ntr)
          endif
 
@@ -321,7 +321,7 @@ c     call exitt0
       end
 c-----------------------------------------------------------------------
       subroutine check_conv_err(cu_err,cl,fac_a,fac_b,fac_c,cp_w,uu,
-     $                          cu,cu_diff,approx_cu,cm,bcu,cuu,tmp,
+     $                          bcu,cuu,tmp,cu,cu_diff,approx_cu,cm,
      $                          ic1,ic2,jc1,jc2,kc1,kc2,mm,nn)
 
       real cu_err
@@ -615,8 +615,8 @@ c    $               fcm(kc1+(mm)*(tr-1),3),(kc2-kc1+1),cm(1,0,tr),1)
 c-----------------------------------------------------------------------
       subroutine set_lsm(lsm,fcmpm,mode,nn)
 
-      real fcmpm(nn*nn,3)
       real lsm(nn*nn,3)
+      real fcmpm(nn*nn,3)
       integer mode,idx,nn
 
       ! Hadamard product
@@ -682,10 +682,11 @@ c-----------------------------------------------------------------------
       subroutine compute_residual(residual,lsr,fcm,lsm,fcmpm,cp_weight,
      $                          norm_tens,mm,nn)
 
-      real residual,norm_tens
+      real residual
       real lsr(mm,nn),lsm(nn,nn)
       real fcm(mm,nn),fcmpm(nn,nn)
       real cp_weight(nn)
+      real norm_tens
 
       real inner_prod,norm_approx
       real tmp1(mm,nn),tmp2(nn,nn)
@@ -719,8 +720,7 @@ c     exact tensor
 c-----------------------------------------------------------------------
       subroutine compute_cp_weight(cp_weight,aa,m,n)
 
-      real aa(m,n)
-      real cp_weight(n)
+      real cp_weight(n),aa(m,n)
       integer m,n
 
       do jj=1,n
@@ -781,8 +781,7 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine set_product_matrix(bb,aa,m,n)
 
-      real aa(m,n)
-      real bb(n,n)
+      real bb(n,n),aa(m,n)
 
       do jj=1,n
          do ii=1,n
