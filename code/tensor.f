@@ -87,7 +87,6 @@ c     first frontal slice and first lateral slice.
          norm_c0 = vlsc2(cl0,cl0,local_size)
       endif
 
-
       call set_rank(rank_list,mm)
       do kk=1,1
 c        ntr = rank_list(2,kk)
