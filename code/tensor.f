@@ -72,6 +72,9 @@ c     first frontal slice and first lateral slice.
       write(6,*)'check index',ic1,ic2,jc1,jc2,kc1,kc2,nid
       call nekgsync
 
+      if (ifquad) then
+         call force_skew(cl,ic1,ic2,jc1,jc2,kc1,kc2)
+      endif
       local_size = (ic2-ic1+1)*(jc2-jc1+1)*(kc2-kc1+1)
       write(6,*)'local_size',local_size
       norm_c = vlsc2(cl,cl,local_size)
@@ -84,20 +87,21 @@ c     first frontal slice and first lateral slice.
          norm_c0 = vlsc2(cl0,cl0,local_size)
       endif
 
+
       call set_rank(rank_list,mm)
       do kk=1,1
 c        ntr = rank_list(2,kk)
          ntr = 2
          if (ifcore) then
-            call als_core(cp_a,cp_b,cp_c,cp_w,fcm,fcmpm,lsm,lsminv,lsr,
-     $                    tmp1,tmp4,tmp5,cmr,crm,
-     $                    cl0,ic1,ic2,jc1+1,jc2,kc1+1,kc2,nb,ntr)
             if (ifquad) then
                call als_quad(cp_a,cp_b,cp_c,cp_w,fcm,fcmpm,lsm,lsminv,
      $                       lsr,tmp1,tmp2,tmp4,tmp5,cmr,crm,
      $                       cl0,ic1,ic2,jc1+1,jc2,kc1+1,kc2,nb,ntr)
+            else
+               call als_core(cp_a,cp_b,cp_c,cp_w,fcm,fcmpm,lsm,lsminv,
+     $                       lsr,tmp1,tmp4,tmp5,cmr,crm,
+     $                       cl0,ic1,ic2,jc1+1,jc2,kc1+1,kc2,nb,ntr)
             endif
-
             call check_conv_err(cu_err,cl0,cp_a,cp_b,cp_c,cp_w,uu(1),
      $                          tmp4,tmp5,tmp6,tmp7,tmp8,tmp9,tmp3,
      $                          ic1,ic2,jc1+1,jc2,kc1+1,kc2,nb,ntr)
@@ -105,7 +109,6 @@ c        ntr = rank_list(2,kk)
             call als(cp_a,cp_b,cp_c,cp_w,fcm,fcmpm,lsm,lsminv,lsr,
      $               tmp1,tmp2,tmp3,cmr,crm,
      $               cl,ic1,ic2,jc1,jc2,kc1,kc2,nb+1,ntr)
-
             call check_conv_err(cu_err,cl,cp_a,cp_b,cp_c,cp_w,uu,
      $                          tmp4,tmp5,tmp6,tmp7,tmp8,tmp9,tmp3,
      $                          ic1,ic2,jc1,jc2,kc1,kc2,nb+1,ntr)
@@ -1020,6 +1023,8 @@ c-----------------------------------------------------------------------
       real cl(ic1:ic2,jc1:jc2,kc1:kc2)
       integer ic1,ic2,jc1,jc2,kc1,kc2,nb
 
+      if (nid.eq.0) write(6,*) 'inside set_c_core'
+
       do k=1,nb
       do j=1,nb
       do i=1,nb
@@ -1027,6 +1032,8 @@ c-----------------------------------------------------------------------
       enddo
       enddo
       enddo
+
+      if (nid.eq.0) write(6,*) 'exitting set_c_core'
 
       return
       end
@@ -1056,7 +1063,6 @@ c     factor matrices. It returns cp_a, cp_b, cp_c ,cp_w.
 
       if (nid.eq.0) write(6,*) 'inside als_quad'
 
-      write(6,*)mm,nn
       maxit = 500
       cp_tol = 0.2
       pre_relres = 1
@@ -1067,7 +1073,6 @@ c     factor matrices. It returns cp_a, cp_b, cp_c ,cp_w.
       call copy(fcm(1,2),fcm((mm*nn/2)+1,1),mm*nn/2)
       call copy(fcm((mm*nn/2)+1,2),fcm(1,1),mm*nn/2)
       call chsign(fcm((mm*nn/2)+1,2),mm*nn/2)
-
 
       do mode=1,2
          call set_product_matrix(fcmpm(1,mode),fcm(1,mode),mm,nn)
@@ -1134,6 +1139,28 @@ c     factor matrices. It returns cp_a, cp_b, cp_c ,cp_w.
 
     1 format(a,i4,x,a,1p1e13.5,x,a,1p1e13.5,x,a,i4)
       if (nid.eq.0) write(6,*) 'exitting als_quad'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine force_skew(cl,ic1,ic2,jc1,jc2,kc1,kc2)
+
+      real cl(ic1:ic2,jc1:jc2,kc1:kc2)
+      real cl0t(jc1+1:jc2,ic1:ic2,kc1+1:kc2)
+      integer ic1,ic2,jc1,jc2,kc1,kc2
+
+      if (nid.eq.0) write(6,*) 'inside force_skew'
+
+      do k=kc1+1,kc2
+         call transpose(cl0t(1,1,k),(jc2-jc1),cl(1,1,k),(ic2-ic1+1))
+      do j=jc1+1,jc2
+      do i=ic1,ic2
+         cl(i,j,k) = 0.5*(cl(i,j,k)-cl0t(i,j,k))
+      enddo
+      enddo
+      enddo
+
+      if (nid.eq.0) write(6,*) 'exitting force_skew'
 
       return
       end
