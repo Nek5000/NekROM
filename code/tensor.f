@@ -263,22 +263,6 @@ c-----------------------------------------------------------------------
       cp_tol = 0.2
       pre_relres = 1
 
-c     if (nid.eq.0) then
-c     write(6,*)'processor 0'
-c        do ii=0,mm*nn-1
-c        write(6,*)ii,fcm(ii,2),fcm(ii,3),nid,'nid'
-c        enddo
-c     endif
-c     call nekgsync
-c     if (nid.eq.1) then
-c     write(6,*)'processor 1'
-c        do ii=0,mm*nn-1
-c        write(6,*)ii,fcm(ii,2),fcm(ii,3),nid,'nid'
-c        enddo
-c     endif
-c     call nekgsync
-c     call exitt0
-
       do mode=2,3
          call rand_initial(fcm(1,mode),mm,nn)
          call set_product_matrix(fcmpm(1,mode),fcm(1,mode),mm,nn)
@@ -575,8 +559,6 @@ c-----------------------------------------------------------------------
 
          ! construct temporary mttkrp
          do tr=1,nn
-c           call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),
-c    $               fcm(kc1+(mm)*(tr-1),3),(kc2-kc1+1),cm(1,0,tr),1)
             call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),
      $               fcm(0+(mm)*(tr-1),3),(kc2-kc1+1),cm(ic1,jc1,tr),1)
          enddo
