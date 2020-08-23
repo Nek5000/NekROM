@@ -428,7 +428,7 @@ c-----------------------------------------------------------------------
                   if (rbf.lt.0) then
                      call pod_df(ucft(1))
                   else if (rbf.gt.0) then
-                     call pod_proj(ucft(1),rbf)
+                     call pod_proj(ucft(1),rbf,nb,'step  ')
                   endif
 
                   do k=kc1,kc2
@@ -507,16 +507,13 @@ c     decomposition with two vectors
       include 'MOR'
 
       real cu(nb)
-      real uu(0:nb)
-      real ucft(0:nb)
       real fac_a((nb)*ntr),fac_b((nb)*ntr)
       real fac_c((nb)*ntr),cp_weight(ntr)
-      real cj0(ic1:ic2,jc1:jc2),c0k(ic1:ic2,kc1:kc2)
-      real bcu(ntr),cuu(ntr),tmp(ntr)
-      real tmpcu(0:nb)
       real cl(ic1:ic2,jc1:jc2,kc1:kc2)
+      real cj0(ic1:ic2,jc1:jc2),c0k(ic1:ic2,kc1:kc2)
+      real uu(0:nb)
 
-      common /scrc/ work(max(lub,ltb))
+      common /srcevalc4/ bcu(ltr),cuu(ltr),tmp(ltr),tmpcu(0:lb)
 
       integer icalld
       save    icalld
@@ -549,7 +546,6 @@ c     decomposition with two vectors
       enddo
       enddo
 
-      write(6,*)cj0(i,0),c0k(i,0),'here check'
       do i=ic1,ic2
          cu(i)=cu(i)-cj0(i,0)*uu(0)*u(0)
       enddo
@@ -590,7 +586,11 @@ c-----------------------------------------------------------------------
       enddo
 
       if (rmode.eq.'CP ') then
-         call evalc3(tmp(1),cta,ctb,ctc,cp_tw,ut)
+         if (ifcore) then 
+            call evalc4(tmp(1),cta,ctb,ctc,cp_tw,ctl,ctj0,ct0k,ut)
+         else
+            call evalc3(tmp(1),cta,ctb,ctc,cp_tw,ut)
+         endif 
       else
          call evalc(tmp(1),ctmp,ctl,ut)
       endif
@@ -636,7 +636,11 @@ c-----------------------------------------------------------------------
       enddo
 
       if (rmode.eq.'CP ') then
-         call evalc3(tmp1(1),cua,cub,cuc,cp_uw,u)
+         if (ifcore) then 
+            call evalc4(tmp1(1),cua,cub,cuc,cp_uw,cul,cuj0,cu0k,u)
+         else
+            call evalc3(tmp1(1),cua,cub,cuc,cp_uw,u)
+         endif 
       else
          call evalc(tmp1(1),ctmp,cul,u)
       endif
@@ -734,7 +738,7 @@ c-----------------------------------------------------------------------
 
       if (rfilter.eq.'LER'.and.rbf.gt.0) then 
          call copy(tmp,t1,nb+1)
-         call pod_proj(tmp(1),rbf)
+         call pod_proj(tmp(1),rbf,nb,'step  ')
          do j=0,nb
          do i=0,nb
             s4(i,j)=s4(i,j)+t1(i)*tmp(j)
@@ -753,7 +757,7 @@ c-----------------------------------------------------------------------
 
          if (rfilter.eq.'LER'.and.rbf.gt.0) then 
             call copy(tmp,t1,nb+1)
-            call pod_proj(tmp(1),rbf)
+            call pod_proj(tmp(1),rbf,nb,'step  ')
             call cmult(s4,s,(nb+1)**2)
             do j=0,nb
             do i=0,nb
@@ -848,7 +852,7 @@ c-----------------------------------------------------------------------
          if (rfilter.eq.'LER'.and.rbf.gt.0) then 
             do k=1,6
                call copy(s3(0,k),s1(0,k),nb+1)
-               call pod_proj(s3(1,k),rbf)
+               call pod_proj(s3(1,k),rbf,nb,'step  ')
             enddo
             do k=1,6
                call mxm(s1(0,k),nb+1,s3(0,k),1,s2(0,0,k),nb+1)
@@ -1205,7 +1209,7 @@ c-----------------------------------------------------------------------
       ! Leray has to be fixed
       if (rfilter.eq.'LER'.and.rbf.gt.0) then 
          call copy(tmp,t1,nb+1)
-         call pod_proj(tmp(1),rbf)
+         call pod_proj(tmp(1),rbf,nb,'step  ')
          do j=0,nb
          do i=0,nb
             s4(i,j)=s4(i,j)+t1(i)*tmp(j)
@@ -1266,7 +1270,7 @@ c-----------------------------------------------------------------------
       ! Leray has to be fixed
       if (rfilter.eq.'LER'.and.rbf.gt.0) then 
          call copy(tmp,t1,nb+1)
-         call pod_proj(tmp(1),rbf)
+         call pod_proj(tmp(1),rbf,nb,'step  ')
          do j=0,nb
          do i=0,nb
             s6(i,j)=s6(i,j)+tmp(j)*t2(i)
@@ -1313,7 +1317,7 @@ c-----------------------------------------------------------------------
          if (rfilter.eq.'LER'.and.rbf.gt.0) then 
             do k=1,6
                call copy(s3(0,k),s1(0,k),nb+1)
-               call pod_proj(s3(1,k),rbf)
+               call pod_proj(s3(1,k),rbf,nb,'step ')
             enddo
             do k=1,6
                call mxm(s1(0,k),nb+1,s3(0,k),1,s2(0,0,k),nb+1)

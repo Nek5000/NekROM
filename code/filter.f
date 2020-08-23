@@ -1,14 +1,40 @@
 c-----------------------------------------------------------------------
-      subroutine pod_proj(uu,r1)
+      subroutine pod_proj(uu,r1,nn,msg)
 
-      include 'SIZE'
-      include 'TOTAL'
-      include 'MOR'
+c     uu: output/input, vector to be filtered
+c     r1: input, number of modes to be filtered
+c     nn: input, length of vector uu
+c     msg: input, used as an indicator for
+c     different filter function. Currently, we
+c     support msg = step, linear, parabo, and cubic.
 
-      real uu(nb)
-      integer r1
+      real uu(nn)
+      real a1,a2,a3,a4
+      integer r1,nn,ncut
+      character*6  msg
 
-      call rzero(uu(nb-r1+1),r1)
+      if (msg.eq.'step  ') then
+         call rzero(uu(nn-r1+1),r1)
+      elseif (msg.eq.'linear') then
+         ncut = nn-r1
+         do i=ncut+1,nn
+            uu(i) = (-uu(ncut)/r1)*(i-nn)
+         enddo
+      elseif (msg.eq.'parabo') then
+         ncut = nn-r1
+         do i=ncut+1,nn
+            uu(i) = (-uu(ncut)/r1**2)*(i-ncut)**2 + uu(ncut)
+         enddo
+      elseif (msg.eq.'cubic ') then
+         ncut = nn-r1
+         a1 = 2
+         a2 = -3*(ncut+nn)
+         a3 = 6*ncut*nn
+         a4 = nn**3-3*nn**2*ncut
+         do i=ncut+1,nn
+            uu(i) = (a1*i**3+a2*i**2+a3*i+a4)*uu(ncut)/(ncut+nn)**3
+         enddo
+      endif
 
       return
       end
@@ -56,4 +82,3 @@ c-----------------------------------------------------------------------
          
       return
       end
-c-----------------------------------------------------------------------
