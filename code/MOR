@@ -162,7 +162,7 @@ c     parameters and common blocks for MOR
      $                  ifcdrag,ifrms,ifread,ifforce,ifpod,
      $                  ifbuoy,ifrom,ifcintp,iffastc,ifcnuss,ifctke,
      $                  iffasth,ifavisc,ifsource,ifei,ifsub0,ifrecon,
-     $                  iftneu,ifdecpl,ifcore
+     $                  iftneu,ifdecpl,ifcore,ifquad
 
       real last_time,misc_time,lu_time,
      $     copt_time,quasi_time,lnsrch_time,
