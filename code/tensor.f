@@ -1073,7 +1073,7 @@ c     factor matrices. It returns cp_a, cp_b, cp_c ,cp_w.
 
       call copy(tmp2,fcm(1,1),mm*nn)
       ! ALS with quad factor
-      do ii=1,10!maxit
+      do ii=1,maxit
             call mttkrp(lsr,cl,cmr,crm,ic1,ic2,jc1,jc2,kc1,kc2,
      $                  fcm,mm,nn,3)
             call set_lsm(lsm,fcmpm,3,nn)
