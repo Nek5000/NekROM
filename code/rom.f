@@ -731,6 +731,7 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
       ifcintp=.false.
 
       ifcore=.false.
+      ifquad=.true.
 
       nplay=nint(param(196))
 

@@ -89,10 +89,15 @@ c     first frontal slice and first lateral slice.
 c        ntr = rank_list(2,kk)
          ntr = 2
          if (ifcore) then
-            call als_core(cp_a,cp_b,cp_c,cp_w,fcm,fcmpm,lsm,lsminv,lsr,
-     $                    tmp1,tmp4,tmp5,cmr,crm,
-     $                    cl0,ic1,ic2,jc1+1,jc2,kc1+1,kc2,nb,ntr)
-
+            if (ifquad) then
+               call als_quad(cp_a,cp_b,cp_c,cp_w,fcm,fcmpm,lsm,lsminv,
+     $                       lsr,tmp1,tmp2,tmp4,tmp5,cmr,crm,
+     $                       cl0,ic1,ic2,jc1+1,jc2,kc1+1,kc2,nb,ntr)
+            else
+               call als_core(cp_a,cp_b,cp_c,cp_w,fcm,fcmpm,lsm,lsminv,
+     $                       lsr,tmp1,tmp4,tmp5,cmr,crm,
+     $                       cl0,ic1,ic2,jc1+1,jc2,kc1+1,kc2,nb,ntr)
+            endif
             call check_conv_err(cu_err,cl0,cp_a,cp_b,cp_c,cp_w,uu(1),
      $                          tmp4,tmp5,tmp6,tmp7,tmp8,tmp9,tmp3,
      $                          ic1,ic2,jc1+1,jc2,kc1+1,kc2,nb,ntr)
