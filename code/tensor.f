@@ -72,6 +72,9 @@ c     first frontal slice and first lateral slice.
       write(6,*)'check index',ic1,ic2,jc1,jc2,kc1,kc2,nid
       call nekgsync
 
+      if (ifquad) then
+         call force_skew(cl,ic1,ic2,jc1,jc2,kc1,kc2)
+      endif
       local_size = (ic2-ic1+1)*(jc2-jc1+1)*(kc2-kc1+1)
       write(6,*)'local_size',local_size
       norm_c = vlsc2(cl,cl,local_size)
@@ -89,10 +92,15 @@ c     first frontal slice and first lateral slice.
 c        ntr = rank_list(2,kk)
          ntr = 2
          if (ifcore) then
-            call als_core(cp_a,cp_b,cp_c,cp_w,fcm,fcmpm,lsm,lsminv,lsr,
-     $                    tmp1,tmp4,tmp5,cmr,crm,
-     $                    cl0,ic1,ic2,jc1+1,jc2,kc1+1,kc2,nb,ntr)
-
+            if (ifquad) then
+               call als_quad(cp_a,cp_b,cp_c,cp_w,fcm,fcmpm,lsm,lsminv,
+     $                       lsr,tmp1,tmp2,tmp4,tmp5,cmr,crm,
+     $                       cl0,ic1,ic2,jc1+1,jc2,kc1+1,kc2,nb,ntr)
+            else
+               call als_core(cp_a,cp_b,cp_c,cp_w,fcm,fcmpm,lsm,lsminv,
+     $                       lsr,tmp1,tmp4,tmp5,cmr,crm,
+     $                       cl0,ic1,ic2,jc1+1,jc2,kc1+1,kc2,nb,ntr)
+            endif
             call check_conv_err(cu_err,cl0,cp_a,cp_b,cp_c,cp_w,uu(1),
      $                          tmp4,tmp5,tmp6,tmp7,tmp8,tmp9,tmp3,
      $                          ic1,ic2,jc1+1,jc2,kc1+1,kc2,nb,ntr)
@@ -244,8 +252,7 @@ c-----------------------------------------------------------------------
       real cp_res,cp_relres,cp_fit,cp_tol,pre_relres,reldiff
 
       integer tmp2(nn),tmp3(nn)
-      integer mode,maxit,local_size,mm,nn
-      logical ifexist
+      integer mode,maxit,mm,nn
 
       real norm_c,norm_c0
       common /scrtens_norm/ norm_c,norm_c0
@@ -255,25 +262,6 @@ c-----------------------------------------------------------------------
       maxit = 500
       cp_tol = 0.2
       pre_relres = 1
-
-      local_size = (ic2-ic1+1)*(jc2-jc1+1)*(kc2-kc1+1)
-      norm_c = vlsc2(cl(ic1,jc1,kc1),cl(ic1,jc1,kc1),local_size)
-
-c     if (nid.eq.0) then
-c     write(6,*)'processor 0'
-c        do ii=0,mm*nn-1
-c        write(6,*)ii,fcm(ii,2),fcm(ii,3),nid,'nid'
-c        enddo
-c     endif
-c     call nekgsync
-c     if (nid.eq.1) then
-c     write(6,*)'processor 1'
-c        do ii=0,mm*nn-1
-c        write(6,*)ii,fcm(ii,2),fcm(ii,3),nid,'nid'
-c        enddo
-c     endif
-c     call nekgsync
-c     call exitt0
 
       do mode=2,3
          call rand_initial(fcm(1,mode),mm,nn)
@@ -571,8 +559,6 @@ c-----------------------------------------------------------------------
 
          ! construct temporary mttkrp
          do tr=1,nn
-c           call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),
-c    $               fcm(kc1+(mm)*(tr-1),3),(kc2-kc1+1),cm(1,0,tr),1)
             call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),
      $               fcm(0+(mm)*(tr-1),3),(kc2-kc1+1),cm(ic1,jc1,tr),1)
          enddo
@@ -925,8 +911,7 @@ c     factor matrices. It returns cp_a, cp_b, cp_c ,cp_w.
       real cp_res,cp_relres,cp_fit,cp_tol,pre_relres,reldiff
 
       integer tmp2(nn),tmp3(nn)
-      integer mode,maxit,local_size,mm,nn
-      logical ifexist
+      integer mode,maxit,mm,nn
 
       real norm_c,norm_c0
       common /scrtens_norm/ norm_c,norm_c0
@@ -1020,6 +1005,8 @@ c-----------------------------------------------------------------------
       real cl(ic1:ic2,jc1:jc2,kc1:kc2)
       integer ic1,ic2,jc1,jc2,kc1,kc2,nb
 
+      if (nid.eq.0) write(6,*) 'inside set_c_core'
+
       do k=1,nb
       do j=1,nb
       do i=1,nb
@@ -1027,6 +1014,135 @@ c-----------------------------------------------------------------------
       enddo
       enddo
       enddo
+
+      if (nid.eq.0) write(6,*) 'exitting set_c_core'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine als_quad(cp_a,cp_b,cp_c,cp_w,fcm,fcmpm,lsm,lsminv,lsr,
+     $                    tmp1,tmp2,tmp3,tmp4,cmr,crm,cl,ic1,ic2,jc1,jc2
+     $                    ,kc1,kc2,mm,nn)
+
+c     This subroutine requires tensor cl, indices ic1, ic2, jc1, jc2,
+c     kc1, kc2, mm and nn where mm and nn are the dimensions of the
+c     factor matrices. It returns cp_a, cp_b, cp_c ,cp_w.
+
+      real cp_a(mm*nn),cp_b(mm*nn),cp_c(mm*nn),cp_w(nn)
+      real cl(ic1:ic2,jc1:jc2,kc1:kc2)
+      real fcm(mm*nn,3),fcmpm(nn*nn,3)
+      real lsm(nn*nn,3),lsminv(nn*nn,3),lsr(mm*nn)
+      real tmp1(nn*nn),tmp2(mm*nn)
+      real cmr(ic1:ic2,jc1:jc2,nn),crm(ic1:ic2,nn,kc1:kc2)
+      real cp_res,cp_relres,cp_fit,cp_tol,pre_relres,reldiff
+      real sub_para
+
+      integer tmp3(nn),tmp4(nn)
+      integer mode,maxit,mm,nn
+
+      real norm_c,norm_c0
+      common /scrtens_norm/ norm_c,norm_c0
+
+      if (nid.eq.0) write(6,*) 'inside als_quad'
+
+      maxit = 500
+      cp_tol = 0.2
+      pre_relres = 1
+      sub_para = 0.7
+
+      ! Compute A^TA
+      call rand_initial(fcm(1,1),mm,nn)
+      call copy(fcm(1,2),fcm((mm*nn/2)+1,1),mm*nn/2)
+      call copy(fcm((mm*nn/2)+1,2),fcm(1,1),mm*nn/2)
+      call chsign(fcm((mm*nn/2)+1,2),mm*nn/2)
+
+      do mode=1,2
+         call set_product_matrix(fcmpm(1,mode),fcm(1,mode),mm,nn)
+      enddo
+
+      call copy(tmp2,fcm(1,1),mm*nn)
+      ! ALS with quad factor
+      do ii=1,maxit
+            call mttkrp(lsr,cl,cmr,crm,ic1,ic2,jc1,jc2,kc1,kc2,
+     $                  fcm,mm,nn,3)
+            call set_lsm(lsm,fcmpm,3,nn)
+            call invmat(lsminv(1,3),tmp1,lsm(1,3)
+     $           ,tmp3,tmp4,nn)
+            do jj=1,nn
+               call mxm(lsr,mm,lsminv(1+(jj-1)*nn,3),nn,
+     $         fcm(1+(mm)*(jj-1),3),1)
+            enddo
+            call compute_cp_weight(cp_w,fcm(1,3),mm,nn)
+            call mode_normalize(fcm(1,3),mm,nn)
+            call set_product_matrix(fcmpm(1,3),fcm(1,3),mm,nn)
+
+         do kk=1,10
+               call mttkrp(lsr,cl,cmr,crm,ic1,ic2,jc1,jc2,kc1,kc2,
+     $                     fcm,mm,nn,1)
+               call set_lsm(lsm,fcmpm,1,nn)
+               call invmat(lsminv(1,1),tmp1,lsm(1,1)
+     $                     ,tmp3,tmp4,nn)
+               do jj=1,nn
+                  call mxm(lsr,mm,lsminv(1+(jj-1)*nn,1),nn,
+     $            fcm(1+(mm)*(jj-1),1),1)
+               enddo
+               call compute_cp_weight(cp_w,fcm(1,1),mm,nn)
+               call mode_normalize(fcm(1,1),mm,nn)
+
+               call add2sxy(fcm(1,1),sub_para,tmp2,1-sub_para,mm*nn)
+               call copy(tmp2,fcm(1,1),mm*nn)
+
+               call copy(fcm(1,2),fcm((mm*nn/2)+1,1),mm*nn/2)
+               call copy(fcm((mm*nn/2)+1,2),fcm(1,1),mm*nn/2)
+               call chsign(fcm((mm*nn/2)+1,2),mm*nn/2)
+
+               call set_product_matrix(fcmpm(1,2),fcm(1,2),mm,nn)
+         enddo
+            call set_product_matrix(fcmpm(1,1),fcm(1,1),mm,nn)
+
+         ! compute the relative error
+         call compute_residual(cp_res,lsr,fcm(1,3),lsm(1,3),
+     $                       fcmpm(1,3),cp_w,norm_c0,mm,nn)
+         cp_relres = cp_res/sqrt(norm_c)
+         cp_fit = 1-cp_relres
+         reldiff = abs(pre_relres-cp_relres)/pre_relres
+
+         pre_relres = cp_relres
+         if (nid.eq.0) write(6,1)'iter:', ii,'rel difference:',reldiff,
+     $   'relative residual:', cp_relres, 'rank:', nn
+         if (cp_relres.lt.cp_tol.OR.ii.ge.maxit.OR.reldiff.le.1e-5) then
+            exit
+         endif
+      enddo
+
+      call copy(cp_a,fcm(1,1),mm*nn)
+      call copy(cp_b,fcm(1,2),mm*nn)
+      call copy(cp_c,fcm(1,3),mm*nn)
+
+    1 format(a,i4,x,a,1p1e13.5,x,a,1p1e13.5,x,a,i4)
+      if (nid.eq.0) write(6,*) 'exitting als_quad'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine force_skew(cl,ic1,ic2,jc1,jc2,kc1,kc2)
+
+      real cl(ic1:ic2,jc1:jc2,kc1:kc2)
+      real cl0t(jc1+1:jc2,ic1:ic2,kc1+1:kc2)
+      integer ic1,ic2,jc1,jc2,kc1,kc2
+
+      if (nid.eq.0) write(6,*) 'inside force_skew'
+
+      do k=kc1+1,kc2
+         call transpose(cl0t(1,1,k),(jc2-jc1),cl(1,1,k),(ic2-ic1+1))
+      do j=jc1+1,jc2
+      do i=ic1,ic2
+         cl(i,j,k) = 0.5*(cl(i,j,k)-cl0t(i,j,k))
+      enddo
+      enddo
+      enddo
+
+      if (nid.eq.0) write(6,*) 'exitting force_skew'
 
       return
       end
