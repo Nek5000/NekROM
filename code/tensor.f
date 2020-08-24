@@ -244,8 +244,7 @@ c-----------------------------------------------------------------------
       real cp_res,cp_relres,cp_fit,cp_tol,pre_relres,reldiff
 
       integer tmp2(nn),tmp3(nn)
-      integer mode,maxit,local_size,mm,nn
-      logical ifexist
+      integer mode,maxit,mm,nn
 
       real norm_c,norm_c0
       common /scrtens_norm/ norm_c,norm_c0
@@ -255,9 +254,6 @@ c-----------------------------------------------------------------------
       maxit = 500
       cp_tol = 0.2
       pre_relres = 1
-
-      local_size = (ic2-ic1+1)*(jc2-jc1+1)*(kc2-kc1+1)
-      norm_c = vlsc2(cl(ic1,jc1,kc1),cl(ic1,jc1,kc1),local_size)
 
 c     if (nid.eq.0) then
 c     write(6,*)'processor 0'
@@ -925,8 +921,7 @@ c     factor matrices. It returns cp_a, cp_b, cp_c ,cp_w.
       real cp_res,cp_relres,cp_fit,cp_tol,pre_relres,reldiff
 
       integer tmp2(nn),tmp3(nn)
-      integer mode,maxit,local_size,mm,nn
-      logical ifexist
+      integer mode,maxit,mm,nn
 
       real norm_c,norm_c0
       common /scrtens_norm/ norm_c,norm_c0
