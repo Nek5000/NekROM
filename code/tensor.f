@@ -72,6 +72,9 @@ c     first frontal slice and first lateral slice.
       write(6,*)'check index',ic1,ic2,jc1,jc2,kc1,kc2,nid
       call nekgsync
 
+      if (ifquad) then
+         call force_skew(cl,ic1,ic2,jc1,jc2,kc1,kc2)
+      endif
       local_size = (ic2-ic1+1)*(jc2-jc1+1)*(kc2-kc1+1)
       write(6,*)'local_size',local_size
       norm_c = vlsc2(cl,cl,local_size)
@@ -1020,6 +1023,8 @@ c-----------------------------------------------------------------------
       real cl(ic1:ic2,jc1:jc2,kc1:kc2)
       integer ic1,ic2,jc1,jc2,kc1,kc2,nb
 
+      if (nid.eq.0) write(6,*) 'inside set_c_core'
+
       do k=1,nb
       do j=1,nb
       do i=1,nb
@@ -1027,6 +1032,8 @@ c-----------------------------------------------------------------------
       enddo
       enddo
       enddo
+
+      if (nid.eq.0) write(6,*) 'exitting set_c_core'
 
       return
       end
@@ -1132,6 +1139,28 @@ c     factor matrices. It returns cp_a, cp_b, cp_c ,cp_w.
 
     1 format(a,i4,x,a,1p1e13.5,x,a,1p1e13.5,x,a,i4)
       if (nid.eq.0) write(6,*) 'exitting als_quad'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine force_skew(cl,ic1,ic2,jc1,jc2,kc1,kc2)
+
+      real cl(ic1:ic2,jc1:jc2,kc1:kc2)
+      real cl0t(jc1+1:jc2,ic1:ic2,kc1+1:kc2)
+      integer ic1,ic2,jc1,jc2,kc1,kc2
+
+      if (nid.eq.0) write(6,*) 'inside force_skew'
+
+      do k=kc1+1,kc2
+         call transpose(cl0t(1,1,k),(jc2-jc1),cl(1,1,k),(ic2-ic1+1))
+      do j=jc1+1,jc2
+      do i=ic1,ic2
+         cl(i,j,k) = 0.5*(cl(i,j,k)-cl0t(i,j,k))
+      enddo
+      enddo
+      enddo
+
+      if (nid.eq.0) write(6,*) 'exitting force_skew'
 
       return
       end
