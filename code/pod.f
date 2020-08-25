@@ -1085,7 +1085,11 @@ c     call snorm(pb(1,0),n)
 c-----------------------------------------------------------------------
       subroutine cnmax(val,fname,ifld)
 
-      ! add description
+      ! compute maximum number of POD modes to be used
+
+      ! val   := eigenvalues based on the generated Gramians
+      ! fname := filename that will be created
+      ! ifld  := field number
 
       include 'SIZE'
       include 'TSTEP'
@@ -1139,7 +1143,13 @@ c     total=vlsum(val,ls)
 c-----------------------------------------------------------------------
       subroutine cenpm(val,fname,ifld)
 
-      ! add description
+      ! compute the percentage that each POD mode represents in the
+      ! total averaged energy. The energy is defined based on the
+      ! inner-product set by ips
+
+      ! val   := eigenvalues based on the generated Gramians
+      ! fname := filename that will be created
+      ! ifld  := field number
 
       include 'SIZE'
       include 'TSTEP'
