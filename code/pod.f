@@ -1,6 +1,8 @@
 c-----------------------------------------------------------------------
       subroutine setbases
 
+      ! set ub,vb,wb,tb in /morbasis/ with pod basis
+
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
@@ -73,6 +75,12 @@ c     enddo
 c-----------------------------------------------------------------------
       subroutine ps2k(ck,ux,uub)
 
+      ! set snapshot coefficients for a given scalar basis
+
+      ! ck  := coefficients
+      ! ux  := snapshots
+      ! uub := basis functions
+
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
@@ -96,6 +104,12 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine pv2k(ck,usnap,uub,vvb,wwb)
+
+      ! set snapshot coefficients for a given vector basis
+
+      ! ck           := coefficients
+      ! usnap        := snapshots
+      ! uub,vvb,wwb, := x,y,z components of basis functions
 
       include 'SIZE'
       include 'TOTAL'
@@ -141,6 +155,12 @@ c        endif
 c-----------------------------------------------------------------------
       subroutine ps2b(coef,tt,sb)
 
+      ! get coordinates of a scalar field for a given basis
+
+      ! ck  := coordinates of <ux> in <uub>
+      ! ux  := FOM scalar field
+      ! uub := basis functions
+
       include 'SIZE'
       include 'MOR'
 
@@ -170,6 +190,12 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine pv2b(coef,ux,uy,uz,uub,vvb,wwb)
+
+      ! get coordinates of a vector field for a given basis
+
+      ! coef        := coordinates of <ux,uy,uz> in <uub,vvb,wwb>
+      ! ux,uy,uz    := x,y,z components of FOM field
+      ! uub,vvb,wwb := x,y,z components of basis functions
 
       include 'SIZE'
       include 'MOR'
@@ -209,6 +235,12 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       function sip(t1,t2)
 
+      ! return inner-product of scalar fields
+
+      ! t1,t2 := scalar fields
+      ! ips   := inner product type
+      !          (L2 = L_2, H10 = H^1_0, HLM = Helmholtz)
+
       include 'SIZE'
       include 'MOR'
 
@@ -231,6 +263,13 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       function vip(t1,t2,t3,t4,t5,t6)
+
+      ! return inner-product of vector fields
+
+      ! t1,t2,t3 := x,y,z components of field 1
+      ! t4,t5,t6 := x,y,z components of field 2
+      ! ips   := inner product type
+      !          (L2 = L_2, H10 = H^1_0, HLM = Helmholtz)
 
       include 'SIZE'
       include 'MOR'
@@ -255,6 +294,11 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       function h10sip_vd(t1,t2)
 
+      ! return inner-product of scalar fields using the H^1_0
+      ! inner-product with an arbitrary diffusivity field
+
+      ! t1,t2 := scalar fields
+
       include 'SIZE'
       include 'SOLN'
       include 'MOR'
@@ -274,6 +318,11 @@ c     call dssum(t3,lx1,ly1,lz1)
 c-----------------------------------------------------------------------
       function h10sip(t1,t2)
 
+      ! return inner-product of scalar fields using the H^1_0
+      ! inner-product
+
+      ! t1,t2 := scalar fields
+
       include 'SIZE'
       include 'INPUT'
       include 'MOR'
@@ -291,6 +340,11 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       function h10vip(t1,t2,t3,t4,t5,t6)
+
+      ! return inner-product of vector fields using the H^1_0
+      ! inner-product
+
+      ! t1,t2,t3; t4,t5,t6 := x,y,z components of vector fields
 
       include 'SIZE'
       include 'INPUT'
@@ -320,6 +374,11 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       function hlmsip(t1,t2)
 
+      ! return inner-product of scalar fields using the Helmholtz
+      ! inner-product
+
+      ! t1,t2 := scalar fields
+
       include 'SIZE'
       include 'MASS'
       include 'MOR'
@@ -335,6 +394,11 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       function hlmvip(t1,t2,t3,t4,t5,t6)
 
+      ! return inner-product of vector fields using the Helmholtz
+      ! inner-product
+
+      ! t1,t2,t3; t4,t5,t6 := x,y,z components of vector fields
+
       include 'SIZE'
       include 'MOR'
 
@@ -349,6 +413,11 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       function wl2sip(t1,t2)
+
+      ! return inner-product of scalar fields using the L^2
+      ! inner-product
+
+      ! t1,t2 := scalar fields
 
       include 'SIZE'
       include 'MASS'
@@ -366,6 +435,11 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       function wl2vip(t1,t2,t3,t4,t5,t6)
 
+      ! return inner-product of vector fields using the L^2
+      ! inner-product
+
+      ! t1,t2,t3; t4,t5,t6 := x,y,z components of vector fields
+
       include 'SIZE'
       include 'MASS'
 
@@ -379,6 +453,8 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine setgram
+
+      ! set the Gramian according to ifpod flags
 
       include 'SIZE'
       include 'MOR'
@@ -405,6 +481,8 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine setevec
+
+      ! set the eigenvectors based on the generated Gramians
 
       include 'SIZE'
       include 'MOR'
@@ -441,6 +519,13 @@ c           enddo
       end
 c-----------------------------------------------------------------------
       subroutine hlmgg(gram,s,ms,mdim)
+
+      ! set the Gramian based on the Helmholtz inner-product
+
+      ! gram := Gramian
+      ! s    := snapshots
+      ! ms   := number of snapshots
+      ! mdim := vector dimension
 
       include 'SIZE'
       include 'TOTAL'
@@ -493,6 +578,13 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine h10gg(gram,s,ms,mdim)
 
+      ! set the Gramian based on the H^1_0 inner-product
+
+      ! gram := Gramian
+      ! s    := snapshots
+      ! ms   := number of snapshots
+      ! mdim := vector dimension
+
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
@@ -533,6 +625,14 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine wl2gg(gram,s,ms,mdim)
 
+      ! set the Gramian based on the L^2 inner-product
+      ! (duplicate, will be deprecated)
+
+      ! gram := Gramian
+      ! s    := snapshots
+      ! ms   := number of snapshots
+      ! mdim := vector dimension
+
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
@@ -569,6 +669,13 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine gengraml2(gram,s,ms,mdim)
 
+      ! set the Gramian based on the L^2 inner-product
+
+      ! gram := Gramian
+      ! s    := snapshots
+      ! ms   := number of snapshots
+      ! mdim := vector dimension
+
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
@@ -604,6 +711,13 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine gengram(gram,s,ms,mdim)
 
+      ! set the Gramian based on the inner-product set by ips
+
+      ! gram := Gramian
+      ! s    := snapshots
+      ! ms   := number of snapshots
+      ! mdim := vector dimension
+
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
@@ -628,6 +742,13 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine genevec(vec,val,gram,ifld)
+
+      ! set the eigenvectors based on the given Gramian
+
+      ! vec  := eigenvectors
+      ! val  := eigenvalues
+      ! gram := Gramian
+      ! ifld := field number
 
       !!! does not work if ns.lt.ls !!!
 
@@ -685,6 +806,10 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine vnorm(uub,vvb,wwb)
 
+      ! normalizes vector field
+
+      ! uub,vvb,wwb := x,y,z components of vector field
+
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
@@ -709,6 +834,10 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine snorm(ssb)
 
+      ! normalizes scalar field
+
+      ! ssb := scalar field
+
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
@@ -729,6 +858,12 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine h10pv2b(coef,ux,uy,uz,uub,vvb,wwb)
+
+      ! get coordinates of a vector field for a H^1_0 orthogonal basis
+
+      ! coef        := coordinates of <ux,uy,uz> in <uub,vvb,wwb>
+      ! ux,uy,uz    := x,y,z components of FOM field
+      ! uub,vvb,wwb := x,y,z components of basis functions
 
       include 'SIZE'
       include 'INPUT'
@@ -776,6 +911,12 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine hlmpv2b(coef,ux,uy,uz,uub,vvb,wwb)
+
+      ! get coordinates of a vector field for a Helmholtz orthogonal basis
+
+      ! coef        := coordinates of <ux,uy,uz> in <uub,vvb,wwb>
+      ! ux,uy,uz    := x,y,z components of FOM field
+      ! uub,vvb,wwb := x,y,z components of basis functions
 
       include 'SIZE'
       include 'MASS'
@@ -833,7 +974,7 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine regularev(a,lam,n,wk)
-c
+ 
 c     Solve the eigenvalue problem  A x = lam x
 c
 c     A -- symmetric matrix
@@ -944,6 +1085,8 @@ c     call snorm(pb(1,0),n)
 c-----------------------------------------------------------------------
       subroutine cnmax(val,fname,ifld)
 
+      ! add description
+
       include 'SIZE'
       include 'TSTEP'
       include 'MOR'
@@ -995,6 +1138,8 @@ c     total=vlsum(val,ls)
       end
 c-----------------------------------------------------------------------
       subroutine cenpm(val,fname,ifld)
+
+      ! add description
 
       include 'SIZE'
       include 'TSTEP'
