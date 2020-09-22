@@ -723,6 +723,8 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
 
       ifvort=.false. ! default to false for now
 
+      ifhelm =.false.
+
       ifforce=param(193).ne.0.
       ifsource=param(194).ne.0.
       ifbuoy=param(195).ne.0.
@@ -797,6 +799,7 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
          write (6,*) ' '
          write (6,*) 'rp_ad_re      ',ad_re
          write (6,*) 'rp_ad_pe      ',ad_pe
+         write (6,*) 'rp_ad_mu      ',ad_mu
          write (6,*) ' '
          write (6,*) 'rp_isolve     ',isolve
          write (6,*) 'rp_ips        ',ips

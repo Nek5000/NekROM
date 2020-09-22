@@ -911,6 +911,9 @@ c-----------------------------------------------------------------------
       if (ad_step.le.3) then
          call cmult2(flu,b,ad_beta(1,ad_step)/ad_dt,nb*nb)
          call add2s2(flu,a,ad_diff,nb*nb)
+         if (ifhelm) then
+            call add2s2(flu,b,ad_mu,nb*nb)
+         endif
       endif
          
       return
