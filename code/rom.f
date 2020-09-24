@@ -1331,6 +1331,15 @@ c-----------------------------------------------------------------------
          call copy(wk1,qq,n)
          call binv1(wk1)
          call outpost(vx,vy,vz,pavg,wk1,'qqq')
+         if (ifsrct) then
+            do i=1,nb
+               rqt(i)=glsc2(qqt,tb(1,i),n)
+               if (nio.eq.0) write (6,*) rqt(i),i,'rqt'
+            enddo
+            call copy(wk1,qqt,n)
+            call binv1(wk1)
+            call outpost(vx,vy,vz,pavg,wk1,'qqq')
+         endif
       endif
 
       if (nio.eq.0) write (6,*) 'exiting setf'

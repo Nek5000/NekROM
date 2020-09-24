@@ -37,7 +37,8 @@ c     parameters and common blocks for MOR
      $                  gx(lx1*ly1*lz1*lelm),
      $                  gy(lx1*ly1*lz1*lelm),
      $                  gz(lx1*ly1*lz1*lelm),
-     $                  qq(lx1*ly1*lz1*lelm)
+     $                  qq(lx1*ly1*lz1*lelm),
+     $                  qqt(lx1*ly1*lz1*lelm)
 
       common /morbuoy/ bux,buy,buz,bu_angle
 
@@ -83,7 +84,7 @@ c     parameters and common blocks for MOR
      $                 ut2j(0:(ltb+1)*(ltb+1)*6-1)
 
       common /morrhs/ cvr(lub*3),ctr(ltb*3),usa(0:lub),rg(lub),
-     $                rf(lub),fu(lub,3),rq(ltb)
+     $                rf(lub),fu(lub,3),rq(ltb),rqt(ltb)
 
       common /morsig_diag/ siga_diag(0:lub),sigb_diag(0:lub),
      $                     sigc_diag(0:lub,0:lub)
@@ -156,13 +157,13 @@ c     parameters and common blocks for MOR
      $        ifcdrag,ifrms,ifread,ifforce,ifpod(0:ldimt1),
      $        ifbuoy,ifrom(0:ldimt1),ifcintp,iffastc,ifcnuss,ifctke,
      $        iffasth,ifavisc,ifsource,ifei,ifsub0,ifrecon,iftneu,
-     $        ifdecpl,ifcore,ifquad,ifhelm
+     $        ifdecpl,ifcore,ifquad,ifhelm,ifsrct
 
       common /morflags/ ifl2,ifvort,ifstep,ifavg0,ifplay,
      $                  ifcdrag,ifrms,ifread,ifforce,ifpod,
      $                  ifbuoy,ifrom,ifcintp,iffastc,ifcnuss,ifctke,
      $                  iffasth,ifavisc,ifsource,ifei,ifsub0,ifrecon,
-     $                  iftneu,ifdecpl,ifcore,ifquad,ifhelm
+     $                  iftneu,ifdecpl,ifcore,ifquad,ifhelm,ifsrct
 
       real last_time,misc_time,lu_time,
      $     copt_time,quasi_time,lnsrch_time,

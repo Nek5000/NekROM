@@ -569,10 +569,12 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'
       include 'MOR'
+      include 'INPUT'
 
       common /scrrhs/ tmp(0:lb),tmp2(0:lb)
 
       real rhs(nb)
+      pi = 4.*atan(1.)
 
       call mxm(ut,nb+1,ad_beta(2,icount),3,tmp,1)
       call mxm(bt,nb,tmp(1),nb,rhs,1)
@@ -585,25 +587,30 @@ c-----------------------------------------------------------------------
          rhs(i)=rhs(i)+s*at0(1+i)
       enddo
 
-      if (rmode.eq.'CP ') then
-         if (ifcore) then 
-            call evalc4(tmp(1),cta,ctb,ctc,cp_tw,ctl,ctj0,ct0k,ut)
+      if (ifadvc(2)) then
+         write(6,*)'do advection'
+         if (rmode.eq.'CP ') then
+            if (ifcore) then
+               call evalc4(tmp(1),cta,ctb,ctc,cp_tw,ctl,ctj0,ct0k,ut)
+            else
+               call evalc3(tmp(1),cta,ctb,ctc,cp_tw,ut)
+            endif
          else
-            call evalc3(tmp(1),cta,ctb,ctc,cp_tw,ut)
-         endif 
-      else
-         call evalc(tmp(1),ctmp,ctl,ut)
-      endif
+            call evalc(tmp(1),ctmp,ctl,ut)
+         endif
 c     call add2(tmp(1),st0(1),nb)
-
       call shift3(ctr,tmp(1),nb)
 
       call mxm(ctr,nb,ad_alpha(1,icount),3,tmp(1),1)
 
       call sub2(rhs,tmp(1),nb)
+      endif
 
       if (ifsource) then
          call add2(rhs,rq,nb)
+         if (ifsrct) then
+            call add2s2(rhs,rqt,sin(4*pi*ad_dt*ad_step),nb)
+         endif
       endif
 
       return
