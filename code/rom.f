@@ -215,7 +215,9 @@ c-----------------------------------------------------------------------
 
       call checker('aaa',ad_step)
 
+      call set_bdf_coef(ad_alpha,ad_beta)
       call rom_init_params
+      call rom_set_params
 
       call checker('aba',ad_step)
 
@@ -627,6 +629,45 @@ c-----------------------------------------------------------------------
       ad_re = 1/param(2)
       ad_pe = 1/param(8)
 
+      ifavg0=.false.
+
+      ifctke=.false.
+      ifcdrag=.false.
+      iffastc=.false.
+      iffasth=.false.
+      ifcintp=.false.
+      ifavisc=.false.
+      ifdecpl=.false.
+      ifsub0=.true.
+
+      do i=0,ldimt1
+         ifpod(i)=.false.
+         ifrom(i)=.false.
+      enddo
+
+      ifvort=.false. ! default to false for now
+
+      ifpart=.false.
+      ifcintp=.false.
+
+      ifcore=.true.
+      ifquad=.true.
+
+      if (nio.eq.0) write (6,*) 'exiting rom_init_params'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine rom_set_params
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      character*3 chartmp
+
+      if (nio.eq.0) write (6,*) 'inside rom_set_params'
+
       isolve=nint(param(170))
 
       if (param(171).eq.0) then
@@ -637,14 +678,7 @@ c-----------------------------------------------------------------------
          ips='HLM'
       endif
 
-      ifavg0=.false.
       if (param(172).ne.0) ifavg0=.true.
-
-      if (ifavg0.and.(nb.eq.ls))
-     $   call exitti('nb == ls results in linear dependent bases$',nb)
-
-      if (nb.gt.ls)
-     $   call exitti('nb > ls is undefined configuration$',nb)
 
       np173=nint(param(173))
 
@@ -679,6 +713,12 @@ c-----------------------------------------------------------------------
       nb=min(nint(param(177)),lb)
       if (nb.eq.0) nb=lb
 
+      if (ifavg0.and.(nb.eq.ls))
+     $   call exitti('nb == ls results in linear dependent bases$',nb)
+
+      if (nb.gt.ls)
+     $   call exitti('nb > ls is undefined configuration$',nb)
+
       rktol=param(179)
       if (rktol.lt.0.) rktol=10.**rktol
 
@@ -686,32 +726,19 @@ c-----------------------------------------------------------------------
 
       iftneu=(param(178).ne.0.and.param(174).ne.0)
 
-      ifctke=.false.
       if (param(181).ne.0) ifctke=.true.
 
-      ifcdrag=.false.
       if (param(182).ne.0) ifcdrag=.true.
 
       inus=min(max(nint(param(183)),0),5)
 
-      iffastc=.false.
       if (param(191).ne.0) iffastc=.true.
 
-      iffasth=.false.
       if (param(192).ne.0.and.ips.eq.'HLM') iffasth=.true.
 
-      ifcintp=.false.
-      ifavisc=.false.
-      ifdecpl=.false.
       if (nio.eq.0) write (6,*) 'check ifdecpl',ifdecpl,'cp1'
 
-      ifsub0=.true.
       if (param(197).ne.0.) ifsub0=.false.
-
-      do i=0,ldimt1
-         ifpod(i)=.false.
-         ifrom(i)=.false.
-      enddo
 
       ifpod(1)=param(174).ge.0.
       ifpod(2)=(ifheat.and.param(174).ne.0.)
@@ -721,17 +748,9 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
 
       ifpod(1)=ifpod(1).or.ifrom(2)
 
-      ifvort=.false. ! default to false for now
-
       ifforce=param(193).ne.0.
       ifsource=param(194).ne.0.
       ifbuoy=param(195).ne.0.
-
-      ifpart=.false.
-      ifcintp=.false.
-
-      ifcore=.true.
-      ifquad=.true.
 
       nplay=nint(param(196))
 
@@ -840,7 +859,7 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
          write (6,*) 'rp_rdft        ',rdft
       endif
 
-      if (nio.eq.0) write (6,*) 'exiting rom_init_params'
+      if (nio.eq.0) write (6,*) 'exiting rom_set_params'
 
       return
       end
