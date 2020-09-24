@@ -723,8 +723,6 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
 
       ifvort=.false. ! default to false for now
 
-      ifhelm =.false.
-
       ifforce=param(193).ne.0.
       ifsource=param(194).ne.0.
       ifbuoy=param(195).ne.0.
