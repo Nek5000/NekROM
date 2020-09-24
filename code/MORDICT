@@ -1,0 +1,107 @@
+c      
+c     Define all valid keys for .mor file
+c     Note: Keys have to be in captial letters
+c
+      integer MORDICT_NKEYS
+
+      parameter(MORDICT_NKEYS = 100)
+
+      character*132 mordictkey(MORDICT_NKEYS)
+      data
+     &  mordictkey(1)  / 'GENERAL' /
+     &  mordictkey(2)  / 'GENERAL:STOPAT' /
+     &  mordictkey(3)  / 'GENERAL:ENDTIME' /
+     &  mordictkey(4)  / 'GENERAL:NUMSTEPS' /
+     &  mordictkey(5)  / 'GENERAL:DT' /
+     &  mordictkey(6)  / 'GENERAL:VARIABLEDT' /
+     &  mordictkey(7)  / 'GENERAL:WRITEINTERVAL' /
+     &  mordictkey(8)  / 'GENERAL:WRITECONTROL' /
+     &  mordictkey(9)  / 'PROBLEMTYPE:NUMBEROFPERTURBATIONS' /
+     &  mordictkey(10) / 'GENERAL:TARGETCFL' /
+     &  mordictkey(12) / 'GENERAL:FILTERING' /
+     &  mordictkey(13) / 'GENERAL:FILTERWEIGHT' /
+     &  mordictkey(14) / 'GENERAL:FILTERCUTOFFRATIO' /
+     &  mordictkey(15) / 'GENERAL:WRITEDOUBLEPRECISION' /
+     &  mordictkey(16) / 'GENERAL:WRITENFILES' /
+     &  mordictkey(17) / 'GENERAL:DEALIASING' /
+     &  mordictkey(18) / 'GENERAL:TIMESTEPPER' /
+     &  mordictkey(19) / 'PROBLEMTYPE:AXISYMMETRY' /
+     &  mordictkey(20) / 'PROBLEMTYPE:SWIRL' /
+     &  mordictkey(21) / 'PROBLEMTYPE:CYCLICBOUNDARIES' /
+     &  mordictkey(22) / 'PROBLEMTYPE:PERTURBATIONS' /
+     &  mordictkey(23) / 'PROBLEMTYPE:SOLVEBASEFLOW' /
+     &  mordictkey(25) / 'PROBLEMTYPE:VARIABLEPROPERTIES' /
+     &  mordictkey(26) / 'MESH' /
+     &  mordictkey(27) / 'MESH:MOTION' /
+     &  mordictkey(29) / 'MESH:WRITETOFIELDFILE' /
+     &  mordictkey(30) / 'VELOCITY' /
+     &  mordictkey(31) / 'VELOCITY:RESIDUALTOL' /
+     &  mordictkey(32) / 'VELOCITY:RESIDUALPROJ' /
+     &  mordictkey(33) / 'VELOCITY:WRITETOFIELDFILE' /
+     &  mordictkey(34) / 'VELOCITY:ADVECTION' /
+     &  mordictkey(35) / 'VELOCITY:VISCOSITY' /
+     &  mordictkey(36) / 'VELOCITY:DENSITY' /
+     &  mordictkey(37) / 'PRESSURE' /
+     &  mordictkey(38) / 'PRESSURE:RESIDUALTOL' /
+     &  mordictkey(39) / 'PRESSURE:RESIDUALPROJ' /
+     &  mordictkey(40) / 'PRESSURE:WRITETOFIELDFILE' /
+     &  mordictkey(41) / 'PRESSURE:PRECONDITIONER' /
+     &  mordictkey(42) / 'TEMPERATURE' /
+     &  mordictkey(43) / 'TEMPERATURE:CONJUGATEHEATTRANSFER' /
+     &  mordictkey(44) / 'TEMPERATURE:WRITETOFIELDFILE' /
+     &  mordictkey(45) / 'TEMPERATURE:ADVECTION' /
+     &  mordictkey(46) / 'TEMPERATURE:CONDUCTIVITY' /
+     &  mordictkey(47) / 'TEMPERATURE:RHOCP' /
+     &  mordictkey(48) / 'GENERAL:STARTFROM' /
+     &  mordictkey(49) / 'PROBLEMTYPE' /
+     &  mordictkey(50) / 'PROBLEMTYPE:STRESSFORMULATION' /
+     &  mordictkey(51) / 'GENERAL:USERPARAM01' /
+     &  mordictkey(52) / 'GENERAL:USERPARAM02' /
+     &  mordictkey(53) / 'GENERAL:USERPARAM03' /
+     &  mordictkey(54) / 'GENERAL:USERPARAM04' /
+     &  mordictkey(55) / 'GENERAL:USERPARAM05' /
+     &  mordictkey(56) / 'GENERAL:USERPARAM06' /
+     &  mordictkey(57) / 'GENERAL:USERPARAM07' /
+     &  mordictkey(58) / 'GENERAL:USERPARAM08' /
+     &  mordictkey(59) / 'GENERAL:USERPARAM09' /
+     &  mordictkey(60) / 'GENERAL:USERPARAM10' /
+     &  mordictkey(61) / 'SCALAR%%' /
+     &  mordictkey(62) / 'SCALAR%%:SOLVER' /
+     &  mordictkey(63) / 'SCALAR%%:RESIDUALTOL' /
+     &  mordictkey(64) / 'SCALAR%%:DENSITY' /
+     &  mordictkey(65) / 'SCALAR%%:DIFFUSIVITY' /
+     &  mordictkey(66) / 'SCALAR%%:WRITETOFIELDFILE' /
+     &  mordictkey(67) / 'SCALAR%%:ABSOLUTETOL' /
+     &  mordictkey(68) / 'SCALAR%%:CONJUGATEHEATTRANSFER' /
+     &  mordictkey(69) / 'TEMPERATURE:SOLVER' /
+     &  mordictkey(70) / 'TEMPERATURE:RESIDUALTOL' /
+     &  mordictkey(71) / 'TEMPERATURE:ABSOLUTETOL' /
+     &  mordictkey(72) / 'PROBLEMTYPE:DP0DT' /
+     &  mordictkey(73) / 'CVODE' /
+     &  mordictkey(74) / 'CVODE:ABSOLUTETOL' /
+     &  mordictkey(75) / 'CVODE:RELATIVETOL' /
+     &  mordictkey(76) / 'CVODE:STIFF' /
+     &  mordictkey(77) / 'CVODE:MODE' /
+     &  mordictkey(78) / 'CVODE:PRECONDITIONER' /
+     &  mordictkey(79) / 'CVODE:DTMAX' /
+     &  mordictkey(80) / 'CVODE:DQJINCREMENTFACTOR' /
+     &  mordictkey(81) / 'CVODE:RATIOLNLTOL' /
+     &  mordictkey(82) / ':PARVERSION' /
+     &  mordictkey(83) / 'MESH:NUMBEROFBCFIELDS' /
+     &  mordictkey(84) / 'GENERAL:OPTLEVEL' /
+     &  mordictkey(85) / 'GENERAL:LOGLEVEL' /
+     &  mordictkey(86) / 'MESH:VISCOSITY' /
+     &  mordictkey(87) / 'MESH:RESIDUALTOL' /
+     &  mordictkey(88) / 'GENERAL:EXTRAPOLATION' /
+     &  mordictkey(89) / 'PROBLEMTYPE:EQUATION' /
+     &  mordictkey(90) / 'TEMPERATURE:RESIDUALPROJ' /
+     &  mordictkey(91) / 'SCALAR%%:RESIDUALPROJ' /
+     &  mordictkey(92) / 'MESH:FIRSTBCFIELDINDEX' /
+     &  mordictkey(93) / 'GENERAL:POLYNOMIALORDER' /
+     &  mordictkey(94) / 'GENERAL:POLYNOMIALORDERDEALIAS' /
+     &  mordictkey(95) / 'GENERAL:PNPNFORMULATION' /
+     &  mordictkey(96) / 'GENERAL:MINNUMPROCESSES' /
+     &  mordictkey(97) / 'GENERAL:MAXNUMPROCESSES' /
+     &  mordictkey(98) / 'GENERAL:MAXNUMSESSIONS' /
+     &  mordictkey(99) / 'GENERAL:MAXNUMELEMENTS' /
+     &  mordictkey(100)/ 'GENERAL:MAXNUMHISTORYPOINTS' /
