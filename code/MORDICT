@@ -1,6 +1,6 @@
 c      
 c     Define all valid keys for .mor file
-c     Note: Keys have to be in captial letters
+c     Note: Keys have to be in capital letters
 c
       integer MORDICT_NKEYS
 
@@ -12,31 +12,31 @@ c
      &  mordictkey(2)  / 'GENERAL:MODE' /
      &  mordictkey(3)  / 'GENERAL:FIELD' /
      &  mordictkey(4)  / 'GENERAL:NB' /
-     &  mordictkey(5)  / 'GENERAL:EI' /
+     &  mordictkey(5)  / 'GENERAL:EI' /         
      &  mordictkey(6)  / 'GENERAL:AVGINIT' /
      &  mordictkey(7)  / 'GENERAL:RKTOL' /
      &  mordictkey(8)  / 'GENERAL:TEMPNEUBC' /
      &  mordictkey(9)  / 'GENERAL:NPLAY' /
-     &  mordictkey(10)  / 'POD' /
-     &  mordictkey(11)  / 'POD:TYPE' /
-     &  mordictkey(12)  / 'POD:MODE0' /
-     &  mordictkey(13)  / 'QOI' /
-     &  mordictkey(14)  / 'QOI:FREQ' /
-     &  mordictkey(15)  / 'QOI:TKE' /
-     &  mordictkey(16)  / 'QOI:DRAG' /
-     &  mordictkey(17)  / 'QOI:NU' /
-     &  mordictkey(18)  / 'COPT' /
-     &  mordictkey(19)  / 'COPT:MODE' /
-     &  mordictkey(20)  / 'COPT:FIELD' /
-     &  mordictkey(21)  / 'COPT:BARRIER' /
-     &  mordictkey(22)  / 'COPT:BOXTOL' /
-     &  mordictkey(23)  / 'COPT:VELTOL0' /
-     &  mordictkey(24)  / 'COPT:VELNLOOP' /
-     &  mordictkey(25)  / 'COPT:TEMPTOL0' /
-     &  mordictkey(26)  / 'COPT:TEMPNLOOP' /
-     &  mordictkey(27)  / 'FAST' /
-     &  mordictkey(28)  / 'FAST:CEVAL' /
-     &  mordictkey(29)  / 'FAST:HEVAL' /
+     &  mordictkey(10) / 'POD' /
+     &  mordictkey(11) / 'POD:TYPE' /
+     &  mordictkey(12) / 'POD:MODE0' /
+     &  mordictkey(13) / 'QOI' /
+     &  mordictkey(14) / 'QOI:FREQ' /
+     &  mordictkey(15) / 'QOI:TKE' /
+     &  mordictkey(16) / 'QOI:DRAG' /
+     &  mordictkey(17) / 'QOI:NU' /
+     &  mordictkey(18) / 'COPT' /
+     &  mordictkey(19) / 'COPT:MODE' /
+     &  mordictkey(20) / 'COPT:FIELD' /
+     &  mordictkey(21) / 'COPT:BARRIER' /
+     &  mordictkey(22) / 'COPT:BOXTOL' /
+     &  mordictkey(23) / 'COPT:VPAR0' /
+     &  mordictkey(24) / 'COPT:VNLOOP' /
+     &  mordictkey(25) / 'COPT:TPAR0' /
+     &  mordictkey(26) / 'COPT:TNLOOP' /
+     &  mordictkey(27) / 'FAST' /
+     &  mordictkey(28) / 'FAST:CEVAL' /
+     &  mordictkey(29) / 'FAST:HEVAL' /
      &  mordictkey(30) / 'FORCING' /
      &  mordictkey(31) / 'FORCING:BODY' /
      &  mordictkey(32) / 'FORCING:SOURCE' /
