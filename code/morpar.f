@@ -185,7 +185,7 @@ c
             isolve=2
          else
             write (6,*) 'invalid option for copt:mode ',c_out
-            err=err+1
+            ierr=ierr+1
          endif
       endif
 
@@ -200,7 +200,7 @@ c
             icopt=0
          else
             write (6,*) 'invalid option for copt:field ',c_out
-            err=err+1
+            ierr=ierr+1
          endif
       endif
 
@@ -213,7 +213,7 @@ c
             barr_func=0.
          else
             write (6,*) 'invalid option for copt:barrier ',c_out
-            err=err+1
+            ierr=ierr+1
          endif
       endif
 
@@ -262,7 +262,7 @@ c
             rmode='EF '
          else
             write (6,*) 'invalid option for filter:location ',c_out
-            err=err+1
+            ierr=ierr+1
          endif
       endif
 
@@ -280,7 +280,7 @@ c
                endif
             else
                write (6,*) 'transfer filter needs a filter:modes value'
-               err=err+1
+               ierr=ierr+1
             endif
          else if (index(c_out,'DIFF').eq.1) then
             rfilter='STD'
@@ -289,11 +289,11 @@ c
                rdft=d_out
             else
                write (6,*) 'diff. filter needs a filter:radius value'
-               err=err+1
+               ierr=ierr+1
             endif
          else
             write (6,*) 'invalid option for filter:type ',c_out
-            err=err+1
+            ierr=ierr+1
          endif
       endif
 
@@ -305,10 +305,11 @@ c
          mb=rtmp1(1,1)
          if (mb.lt.nb) then
             write (6,*) 'mb less than nb, exiting... ',mb
-         err=err+1
+         ierr=ierr+1
       endif
 
 100   if (ierr.eq.0) call finiparser_dump()
+
       return
       end
 c-----------------------------------------------------------------------
