@@ -653,6 +653,30 @@ c-----------------------------------------------------------------------
       ifcore=.true.
       ifquad=.true.
 
+      ips='L2 '
+      isolve=0
+      rmode='OFF'
+      ifei=.false.
+      navg_step=1
+      nb=lb
+      rktol=0.
+      ad_qstep=ad_iostep
+      iftneu=.false.
+      inus=0
+      ifsub0=.true.
+
+      ifforce=.false.
+      ifsource=.false.
+      ifbuoy=.false.
+      ifplay=.false.
+      nplay=0
+
+      icopt=0
+
+      rfilter='STD'
+      rbf=0.5
+      rdft=0.5
+
       if (nio.eq.0) write (6,*) 'exiting rom_init_params'
 
       return
