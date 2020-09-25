@@ -790,9 +790,9 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
 
       ! barrier initial parameter and number of loop
       ubarr0  =param(187)
-      ubarrseq=param(188)
+      ubarrseq=nint(param(188))
       tbarr0  =param(189)
-      tbarrseq=param(190)
+      tbarrseq=nint(param(190))
 
       ! filter technique
       np198=nint(param(198))
