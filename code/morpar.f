@@ -130,50 +130,38 @@ c
 
       ! POD
 
-      call finiparser_getstring(c_out,'general:type',ifnd)
+      call finiparser_getstring(c_out,'pod:type',ifnd)
       if (ifnd.eq.1) then
          call capit(c_out,132)
-         if (index(c_out,'on').eq.1) then
-            rmode='ALL'
-         else if (index(c_out,'off').eq.1) then
-            rmode='OFF'
+         if (index(c_out,'L2').eq.1) then
+            ips='L2 '
+         else if (index(c_out,'H10').eq.1) then
+            ips='H10'
+         else if (index(c_out,'HLM').eq.1) then
+            ips='HLM'
          else
             write (6,*) 'invalid option for pod:type ',c_out
             ierr=ierr+1
          endif
       endif
 
-      call finiparser_getstring(c_out,'general:mode0',ifnd)
+      call finiparser_getstring(c_out,'pod:mode0',ifnd)
       if (ifnd.eq.1) then
          call capit(c_out,132)
-         if (index(c_out,'on').eq.1) then
-            rmode='ALL'
-         else if (index(c_out,'off').eq.1) then
-            rmode='OFF'
+         if (index(c_out,'AVG').eq.1) then
+            ifavg0=.true.
+         else if (index(c_out,'STATE').eq.1) then
+            ifavg0=.false.
          else
-            write (6,*) 'invalid option for general:ei ,c_out
+            write (6,*) 'invalid option for pod:mode0 ,c_out
             ierr=ierr+1
          endif
       endif
-
-      !ifsub0=
 
       ! QOI
 
       call finiparser_getdbl(d_out,'qoi:freq',ifnd)
       if (ifnd.eq.1) ad_qstep=nint(d_out)+ad_iostep*max(1-nint(d_out),0)
-
-      call finiparser_getstring(c_out,'qoi:tke',ifnd)
-      if (ifnd.eq.1) then
-         call capit(c_out,132)
-         if (index(c_out,'on').eq.1) then
-            rmode='ALL'
-         else if (index(c_out,'off').eq.1) then
-            rmode='OFF'
-         else
-            call exitti(1,'invalid option for qoi:tke$')
-         endif
-      endif
 
       call finiparser_getbool(i_out,'qoi:drag',ifnd)
       if (ifnd.eq.1) ifcdrag=i_out.eq.1
@@ -278,7 +266,6 @@ c
          endif
       endif
 
-      ! TODO: set values to rbf var
       call finiparser_getstring(c_out,'filter:type',ifnd)
       if (ifnd.eq.1) then
          call capit(c_out,132)
@@ -305,7 +292,7 @@ c
                err=err+1
             endif
          else
-            write (6,*) 'invalid option for filter:type'
+            write (6,*) 'invalid option for filter:type ',c_out
             err=err+1
          endif
       endif
