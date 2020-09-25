@@ -760,8 +760,6 @@ c-----------------------------------------------------------------------
 
       if (param(192).ne.0.and.ips.eq.'HLM') iffasth=.true.
 
-      if (nio.eq.0) write (6,*) 'check ifdecpl',ifdecpl,'cp1'
-
       if (param(197).ne.0.) ifsub0=.false.
 
       ifpod(1)=param(174).ge.0.
@@ -862,6 +860,7 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
          write (6,*) 'rp_ifpart     ',ifpart
          write (6,*) 'rp_ifvort     ',ifvort
          write (6,*) 'rp_ifcintp    ',ifcintp
+         write (6,*) 'rp_ifdecpl    ',ifdecpl
          write (6,*) ' '
          do i=0,ldimt1
             write (6,*) 'rp_ifpod(',i,')   ',ifpod(i)
