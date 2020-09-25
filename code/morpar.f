@@ -8,8 +8,9 @@ C
 
       if (nid.eq.0) call mor_read(ierr)
       call bcast(ierr,isize)
-      if (ierr .ne. 0) call exitt
-      call bcastparam
+      if (ierr.ne.0) call exitt
+
+      call bcastmor
 
       return
       end
@@ -312,69 +313,61 @@ c
       return
       end
 c-----------------------------------------------------------------------
-      subroutine bcastrpar
+      subroutine bcastmor
 C
 C     Broadcast mor parameters to all processors
 C
-      INCLUDE 'SIZE'
-      INCLUDE 'INPUT'
-      INCLUDE 'TSTEP'
-      INCLUDE 'RESTART'
-      INCLUDE 'PARALLEL'
-      INCLUDE 'CTIMER'
-      INCLUDE 'ADJOINT'
-      INCLUDE 'CVODE'
+      include 'SIZE'
+      include 'MOR'
 
-c     call bcast(loglevel, isize)
-c     call bcast(optlevel, isize)
+      ! characters
 
-c     call bcast(param , 200*wdsize)
-c     call bcast(uparam, 20*wdsize)
+      call bcast(rmode,csize*3)
+      call bcast(ips,csize*3)
+      call bcast(rfilter,csize*3)
 
-c     call bcast(filterType, wdsize)
+      ! integers
 
-c     call bcast(atol ,  (ldimt1+1)*wdsize)
-c     call bcast(restol, (ldimt1+1)*wdsize)
+      call bcast(max_tr,isize)
+      call bcast(nb,isize)
+      call bcast(navg_step,isize)
+      call bcast(nplay,isize)
+      call bcast(ad_qstep,isize)
+      call bcast(inus,isize)
+      call bcast(isolve,isize)
+      call bcast(icopt,isize)
+      call bcast(barr_func,isize)
+      call bcast(ubarrseq,isize)
+      call bcast(tbarrseq,isize)
 
-c     call bcast(ifchar , lsize)
-c     call bcast(iftran  , lsize)
-c     call bcast(ifflow  , lsize)
-c     call bcast(ifheat  , lsize)     
-c     call bcast(iflomach, lsize)
-c     call bcast(ifstrs  , lsize)
-c     call bcast(ifmvbd  , lsize)
-c     call bcast(ifusermv, lsize)
-c     call bcast(ifdp0dt,  lsize)
-c     call bcast(ifaxis  , lsize)
-c     call bcast(ifcyclic, lsize)
-c     call bcast(ifmhd   , lsize)
-c     call bcast(ifuservp, lsize)
-c     call bcast(ifpert, lsize)
-c     call bcast(ifbase, lsize)
-c     call bcast(ifmoab, lsize)
-c     call bcast(ifaziv, lsize)
-c     call bcast(ifadj , lsize)
+      ! reals
 
-c     call bcast(ifadvc ,  ldimt1*lsize)
-c     call bcast(ifdiff ,  ldimt1*lsize)
-c     call bcast(ifdeal ,  ldimt1*lsize)
-c     call bcast(iffilter, ldimt1*lsize)
+      call bcast(rktol,wdsize)
+      call bcast(box_tol,wdsize)
+      call bcast(ubarr0,wdsize)
+      call bcast(tbarr0,wdsize)
+      call bcast(rbf,wdsize)
+      call bcast(rdft,wdsize)
 
-c     call bcast(idpss    ,  ldimt*isize)
-c     call bcast(iftmsh   , (ldimt1+1)*lsize)
-c     call bcast(ifprojfld, (ldimt1+1)*lsize)
+      ! logicals
 
-c     call bcast(cpfld, 3*ldimt1*wdsize)
+      call bcast(ifrecon,lsize)
+      call bcast(ifpod,lsize*2)
+      call bcast(ifrom,lsize*2)
+      call bcast(ifei,lsize)
+      call bcast(iftneu,lsize)
+      call bcast(ifplay,lsize)
+      call bcast(ifavg0,lsize)
 
-c     call bcast(ifxyo , lsize)
-c     call bcast(ifvo  , lsize)
-c     call bcast(ifpo  , lsize)
-c     call bcast(ifto  , lsize)
-c     call bcast(ifpsco, ldimt1*lsize)
+      call bcast(ifcdrag,lsize)
+      call bcast(ifctke,lsize)
 
-c     call bcast(initc, 15*132*csize) 
+      call bcast(iffastc,lsize)
+      call bcast(iffasth,lsize)
 
-c     call bcast(timeioe,sizeof(timeioe))
+      call bcast(ifforce,lsize)
+      call bcast(ifsource,lsize)
+      call bcast(ifbuoy,lsize)
 
       return
       END
