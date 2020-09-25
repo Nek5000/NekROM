@@ -257,9 +257,9 @@ c
          if (index(c_out,'NONE').eq.1) then
             rfilter='STD'
          else if (index(c_out,'CONV').eq.1) then
-            rmode='LER'
+            rfilter='LER'
          else if (index(c_out,'POST').eq.1) then
-            rmode='EF '
+            rfilter='EF '
          else
             write (6,*) 'invalid option for filter:location ',c_out
             ierr=ierr+1
@@ -283,7 +283,6 @@ c
                ierr=ierr+1
             endif
          else if (index(c_out,'DIFF').eq.1) then
-            rfilter='STD'
             call finiparser_getdbl(d_out,'filter:radius',ifnd)
             if (ifnd.eq.1) then
                rdft=d_out
@@ -304,7 +303,7 @@ c
          call read_serial(rtmp1(1,1),1,'ops/nb ',b,nid)
          mb=rtmp1(1,1)
          if (mb.lt.nb) then
-            write (6,*) 'mb less than nb, exiting... ',mb
+            write (6,*) 'mb less than nb... ',mb
          ierr=ierr+1
       endif
 
