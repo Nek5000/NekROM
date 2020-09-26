@@ -2576,3 +2576,308 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine set_riesz_representator
+
+      ! compute the riesz representator (only one)
+      ! solve one stoke problem and one poisson problem
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'ORTHOT'
+      include 'CTIMER'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real work(lx2*ly2*lz2*lelt)
+      real u_resid_h1_norm
+      real u_resid_h10_norm
+      real u_resid_l2_norm
+      real t_resid_h1_norm
+      real t_resid_h10_norm
+      real t_resid_l2_norm
+      real resid_h1_norm
+      real resid_h10_norm
+      real resid_l2_norm
+
+      n=lx1*ly1*lz1*nelv
+
+      if (nio.eq.0) write (6,*) 'inside set_riesz_representator'
+
+      call set_rom_residual
+
+      u_resid_h10_norm = 0
+      u_resid_l2_norm = 0
+      t_resid_h10_norm = 0
+      t_resid_l2_norm = 0
+
+      call rone(ones,n)
+      call rzero(zeros,n)
+
+      if (ifrom(1)) then
+         ifield=1
+         tolhv=1e-8
+
+         call steady_stoke_solve(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
+     $            work,res_u(1,1),res_u(1,2),res_u(1,ldim))
+
+         ifield=1
+         u_resid_h10_norm = h10vip(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
+     $                             eh_u(1,1),eh_u(1,2),eh_u(1,ldim))
+         u_resid_l2_norm = wl2vip(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
+     $                            eh_u(1,1),eh_u(1,2),eh_u(1,ldim))
+         u_resid_h1_norm = u_resid_h10_norm + u_resid_l2_norm
+         if (nid.eq.0) write(6,*)'vel residual in h1 norm',
+     $                            sqrt(u_resid_h1_norm)
+         if (nid.eq.0) write(6,*)'vel residual in h10 norm',
+     $                            sqrt(u_resid_h10_norm)
+         if (nid.eq.0) write(6,*)'vel residual in l2 norm',
+     $                            sqrt(u_resid_l2_norm)
+      endif
+
+      if (ifrom(2)) then
+         ifield=2
+         tolht(2)=1e-8
+         ifld1 = ifield-1
+         napproxt(1,ifld1) = laxtt
+         ! check with imesh
+         imesh  = 1
+
+         call hsolve  ('TEMP',eh_t,res_t,ones,ones
+     $            ,tmask(1,1,1,1,ifield-1)
+     $            ,tmult(1,1,1,1,ifield-1)
+     $            ,imesh,tolht(ifield),nmxh,1
+     $            ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
+
+         ifield=2
+         t_resid_h10_norm = h10sip(eh_t,eh_t)
+         t_resid_l2_norm = wl2sip(eh_t,eh_t)
+
+         t_resid_h1_norm = t_resid_h10_norm + t_resid_l2_norm
+         if (nid.eq.0) write(6,*)'temp residual in h1 norm',
+     $                            sqrt(t_resid_h1_norm)
+         if (nid.eq.0) write(6,*)'temp residual in h10 norm',
+     $                            sqrt(t_resid_h10_norm)
+         if (nid.eq.0) write(6,*)'temp residual in l2 norm',
+     $                            sqrt(t_resid_l2_norm)
+      endif
+
+      resid_h1_norm = sqrt(u_resid_h10_norm+u_resid_l2_norm+
+     $                     t_resid_h10_norm+t_resid_l2_norm)
+      resid_h10_norm = sqrt(u_resid_h10_norm+t_resid_h10_norm)
+      resid_l2_norm = sqrt(u_resid_l2_norm+t_resid_l2_norm)
+
+      if (resid_h1_norm.le.0) call
+     $             exitti('negative semidefinite dual norm$',n)
+
+      if (nid.eq.0) write (6,*) 'residual in h1 norm:',resid_h1_norm
+      if (nid.eq.0) write (6,*) 'residual in h10 norm:',resid_h10_norm
+      if (nid.eq.0) write (6,*) 'residual in l2 norm:',resid_l2_norm
+
+      call nekgsync
+      if (nio.eq.0) write (6,*) 'exiting set_riesz_representator'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine set_rom_residual
+
+      ! compute the rom residual
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'ORTHOT'
+      include 'CTIMER'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /screi/ wk1(lt),wk2(lt),wk3(lt),wk4(lt),wk5(lt),wk6(lt)
+
+      real work(lx2*ly2*lz2*lelt)
+      real coef(0:nb)
+      real coef2(0:(nb+1)**2-1)
+
+      n=lx1*ly1*lz1*nelv
+
+      if (nio.eq.0) write (6,*) 'inside set_rom_residual'
+
+      call nekgsync
+c     call set_theta_uns
+      call set_betaj_new
+      call set_alphaj_new
+
+      if (ifrom(1)) call opzero(res_u(1,1),res_u(1,2),res_u(1,ldim))
+      if (ifrom(2)) call rzero(res_t,n)
+
+      ! use res_u and res_t for the velocity and temperature residual
+      ! setup res_u for velocity representator
+      if (ifrom(1)) then
+         l1=1
+         call mxm(uj,nb+1,betaj,6,coef,1)
+         do i=0,nb
+            ifield=1
+            call opcopy(wk1,wk2,wk3,ub(1,i),vb(1,i),wb(1,i))
+            call opcolv(wk1,wk2,wk3,bm1)
+            call opchsgn(wk1,wk2,wk3)
+
+            call cfill(wk4,coef(i),n)
+            if (nid.eq.0) write(6,*)coef(i),'theta_u'
+            call add2col2(res_u(1,1),wk1,wk4,n)
+            call add2col2(res_u(1,2),wk2,wk4,n)
+            if (ldim.eq.3) then
+               call add2col2(res_u(1,ldim),wk3,wk4,n)
+            endif
+            l1=l1+1
+         enddo
+         if (nid.eq.0) write(6,*)l1,'lres_u_1'
+
+         do i=0,nb
+            ifield=1
+            call opcopy(wk4,wk5,wk6,ub(1,i),vb(1,i),wb(1,i))
+            call axhelm(wk1,wk4,ones,zeros,1,1)
+            call axhelm(wk2,wk5,ones,zeros,1,2)
+            if (ldim.eq.3) then
+               call axhelm(wk3,wk6,ones,zeros,1,3)
+            endif
+            call opcmult(wk1,wk2,wk3,param(2))
+            call opchsgn(wk1,wk2,wk3)
+
+            coef(i)=ua(i)
+            call cfill(wk4,coef(i),n)
+            if (nid.eq.0) write(6,*)coef(i),'theta_u'
+            call add2col2(res_u(1,1),wk1,wk4,n)
+            call add2col2(res_u(1,2),wk2,wk4,n)
+            if (ldim.eq.3) then
+               call add2col2(res_u(1,ldim),wk3,wk4,n)
+            endif
+            l1=l1+1
+         enddo
+         if (nid.eq.0) write(6,*)l1,'lres_u_2'
+
+         call mxm(utj,(nb+1),alphaj,6,coef,1)
+         do i=0,nb
+            ifield=1
+            call opcopy(wk1,wk2,wk3,tb(1,i),zeros,zeros)
+            call opcolv(wk1,wk2,wk3,bm1)
+            call opchsgn(wk1,wk2,wk3)
+
+            coef(i)=-sin(bu_angle)*ad_ra*(coef(i)+uta_wol(i))
+            call cfill(wk4,coef(i),n)
+            if (nid.eq.0) write(6,*)coef(i),'theta_u'
+            call add2col2(res_u(1,1),wk1,wk4,n)
+            call add2col2(res_u(1,2),wk2,wk4,n)
+            if (ldim.eq.3) then
+               call add2col2(res_u(1,ldim),wk3,wk4,n)
+            endif
+            l1=l1+1
+         enddo
+         if (nid.eq.0) write(6,*)l1,'lres_u_3'
+
+         call mxm(utj,(nb+1),alphaj,6,coef,1)
+         do i=0,nb
+            ifield=1
+            call opcopy(wk1,wk2,wk3,zeros,tb(1,i),zeros)
+            call opcolv(wk1,wk2,wk3,bm1)
+            call opchsgn(wk1,wk2,wk3)
+
+            coef(i)=-cos(bu_angle)*ad_ra*(coef(i)+uta_wol(i))
+            call cfill(wk4,coef(i),n)
+            if (nid.eq.0) write(6,*)coef(i),'theta_u'
+            call add2col2(res_u(1,1),wk1,wk4,n)
+            call add2col2(res_u(1,2),wk2,wk4,n)
+            if (ldim.eq.3) then
+               call add2col2(res_u(1,ldim),wk3,wk4,n)
+            endif
+            l1=l1+1
+         enddo
+         if (nid.eq.0) write(6,*)l1,'lres_u_4'
+
+         call mxm(u2j,(nb+1)**2,alphaj,6,coef2,1)
+         do j=0,nb
+            do i=0,nb
+            ifield=1
+               call convect_new(wk1,ub(1,i),.false.,
+     $                          ub(1,j),vb(1,j),wb(1,j),.false.)
+               call convect_new(wk2,vb(1,i),.false.,
+     $                          ub(1,j),vb(1,j),wb(1,j),.false.)
+               if (ldim.eq.3) then
+                  call convect_new(wk3,wb(1,i),.false.,
+     $                             ub(1,j),vb(1,j),wb(1,j),.false.)
+               endif
+               call opchsgn(wk1,wk2,wk3)
+
+               coef2(i+(nb+1)*j)=coef2(i+(nb+1)*j)
+     $                            +u2a_wol(1+i+(nb+1)*j)
+               if (nid.eq.0) write(6,*)coef2(i+(nb+1)*j),'theta_u'
+               call cfill(wk4,coef2(i+(nb+1)*j),n)
+               call add2col2(res_u(1,1),wk1,wk4,n)
+               call add2col2(res_u(1,2),wk2,wk4,n)
+               if (ldim.eq.3) then
+                  call add2col2(res_u(1,ldim),wk3,wk4,n)
+               endif
+               l1=l1+1
+            enddo
+         enddo
+         if (nid.eq.0) write(6,*)l1,'lres_u_5'
+      endif
+
+      if (ifrom(2)) then
+         ! setup res_t for temperature representator
+         l2=1
+         call mxm(utj,nb+1,betaj,6,coef,1)
+         call rzero(coef,nb+1)
+         do i=0,nb
+            ifield=2
+            call copy(wk1,tb(1,i),n)
+            call col2(wk1,bm1,n)
+            call chsign(wk1,n)
+
+            if (nid.eq.0) write(6,*)coef(i),'theta_t'
+            call cfill(wk2,coef(i),n)
+            call add2col2(res_t,wk1,wk2,n)
+            l2=l2+1
+         enddo
+         if (nid.eq.0) write(6,*)l2,'lres_t_1'
+         do i=0,nb
+            ifield=2
+            call copy(wk2,tb(1,i),n)
+            call axhelm(wk1,wk2,ones,zeros,1,1)
+            call cmult(wk1,param(8),n)
+            call chsign(wk1,n)
+
+            coef(i)=uta(i)
+            if (nid.eq.0) write(6,*)coef(i),'theta_t'
+            call cfill(wk2,coef(i),n)
+            call add2col2(res_t,wk1,wk2,n)
+            l2=l2+1
+         enddo
+         if (nid.eq.0) write(6,*)l2,'lres_t_2'
+
+         call mxm(utuj,(nb+1)**2,alphaj,6,coef2,1)
+         do j=0,nb
+            do i=0,nb
+               ifield=2
+               call convect_new(wk1,tb(1,i),.false.,
+     $                          ub(1,j),vb(1,j),wb(1,j),.false.)
+               call chsign(wk1,n)
+
+               coef2(i+(nb+1)*j)=coef2(i+(nb+1)*j)
+     $                            +utua_wol(1+i+(nb+1)*j)
+               call cfill(wk2,coef2(i+(nb+1)*j),n)
+               if (nid.eq.0) write(6,*)coef2(i+(nb+1)*j),'theta_t'
+               call add2col2(res_t,wk1,wk2,n)
+               l2=l2+1
+            enddo
+         enddo
+         if (nid.eq.0) write(6,*)l2,'lres_t_3'
+
+         if (nid.eq.0) write(6,*)l2,'lres_t_f'
+
+         if (nid.eq.0) write(6,*)l2,'lres_t_ft'
+      endif
+
+      if (nio.eq.0) write (6,*) 'exiting set_rom_residual'
+      return
+      end
+c-----------------------------------------------------------------------
