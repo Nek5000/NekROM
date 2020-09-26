@@ -2590,26 +2590,10 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       real work(lx2*ly2*lz2*lelt)
-      real u_resid_h1_norm
-      real u_resid_h10_norm
-      real u_resid_l2_norm
-      real t_resid_h1_norm
-      real t_resid_h10_norm
-      real t_resid_l2_norm
-      real resid_h1_norm
-      real resid_h10_norm
-      real resid_l2_norm
 
       n=lx1*ly1*lz1*nelv
 
       if (nio.eq.0) write (6,*) 'inside set_riesz_representator'
-
-      call set_rom_residual
-
-      u_resid_h10_norm = 0
-      u_resid_l2_norm = 0
-      t_resid_h10_norm = 0
-      t_resid_l2_norm = 0
 
       call rone(ones,n)
       call rzero(zeros,n)
@@ -2620,19 +2604,6 @@ c-----------------------------------------------------------------------
 
          call steady_stoke_solve(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
      $            work,res_u(1,1),res_u(1,2),res_u(1,ldim))
-
-         ifield=1
-         u_resid_h10_norm = h10vip(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
-     $                             eh_u(1,1),eh_u(1,2),eh_u(1,ldim))
-         u_resid_l2_norm = wl2vip(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
-     $                            eh_u(1,1),eh_u(1,2),eh_u(1,ldim))
-         u_resid_h1_norm = u_resid_h10_norm + u_resid_l2_norm
-         if (nid.eq.0) write(6,*)'vel residual in h1 norm',
-     $                            sqrt(u_resid_h1_norm)
-         if (nid.eq.0) write(6,*)'vel residual in h10 norm',
-     $                            sqrt(u_resid_h10_norm)
-         if (nid.eq.0) write(6,*)'vel residual in l2 norm',
-     $                            sqrt(u_resid_l2_norm)
       endif
 
       if (ifrom(2)) then
@@ -2648,33 +2619,10 @@ c-----------------------------------------------------------------------
      $            ,tmult(1,1,1,1,ifield-1)
      $            ,imesh,tolht(ifield),nmxh,1
      $            ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
-
-         ifield=2
-         t_resid_h10_norm = h10sip(eh_t,eh_t)
-         t_resid_l2_norm = wl2sip(eh_t,eh_t)
-
-         t_resid_h1_norm = t_resid_h10_norm + t_resid_l2_norm
-         if (nid.eq.0) write(6,*)'temp residual in h1 norm',
-     $                            sqrt(t_resid_h1_norm)
-         if (nid.eq.0) write(6,*)'temp residual in h10 norm',
-     $                            sqrt(t_resid_h10_norm)
-         if (nid.eq.0) write(6,*)'temp residual in l2 norm',
-     $                            sqrt(t_resid_l2_norm)
       endif
 
-      resid_h1_norm = sqrt(u_resid_h10_norm+u_resid_l2_norm+
-     $                     t_resid_h10_norm+t_resid_l2_norm)
-      resid_h10_norm = sqrt(u_resid_h10_norm+t_resid_h10_norm)
-      resid_l2_norm = sqrt(u_resid_l2_norm+t_resid_l2_norm)
-
-      if (resid_h1_norm.le.0) call
-     $             exitti('negative semidefinite dual norm$',n)
-
-      if (nid.eq.0) write (6,*) 'residual in h1 norm:',resid_h1_norm
-      if (nid.eq.0) write (6,*) 'residual in h10 norm:',resid_h10_norm
-      if (nid.eq.0) write (6,*) 'residual in l2 norm:',resid_l2_norm
-
       call nekgsync
+
       if (nio.eq.0) write (6,*) 'exiting set_riesz_representator'
 
       return
@@ -2686,15 +2634,12 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'
       include 'TOTAL'
-      include 'ORTHOT'
-      include 'CTIMER'
       include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
       common /screi/ wk1(lt),wk2(lt),wk3(lt),wk4(lt),wk5(lt),wk6(lt)
 
-      real work(lx2*ly2*lz2*lelt)
       real coef(0:nb)
       real coef2(0:(nb+1)**2-1)
 
@@ -2881,3 +2826,74 @@ c     call set_theta_uns
       return
       end
 c-----------------------------------------------------------------------
+      subroutine get_dual_norm
+
+      ! compute dual norm of the residual
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      real u_resid_h1_norm
+      real u_resid_h10_norm
+      real u_resid_l2_norm
+      real t_resid_h1_norm
+      real t_resid_h10_norm
+      real t_resid_l2_norm
+      real resid_h1_norm
+      real resid_h10_norm
+      real resid_l2_norm
+
+      if (nio.eq.0) write (6,*) 'inside c_dual_norm'
+
+      u_resid_h10_norm = 0
+      u_resid_l2_norm = 0
+      t_resid_h10_norm = 0
+      t_resid_l2_norm = 0
+
+      if (ifrom(1)) then
+         ifield=1
+         u_resid_h10_norm = h10vip(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
+     $                             eh_u(1,1),eh_u(1,2),eh_u(1,ldim))
+         u_resid_l2_norm = wl2vip(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
+     $                            eh_u(1,1),eh_u(1,2),eh_u(1,ldim))
+         u_resid_h1_norm = u_resid_h10_norm + u_resid_l2_norm
+         if (nid.eq.0) write(6,*)'vel residual in h1 norm',
+     $                            sqrt(u_resid_h1_norm)
+         if (nid.eq.0) write(6,*)'vel residual in h10 norm',
+     $                            sqrt(u_resid_h10_norm)
+         if (nid.eq.0) write(6,*)'vel residual in l2 norm',
+     $                            sqrt(u_resid_l2_norm)
+      endif
+
+      if (ifrom(2)) then
+         ifield=2
+         t_resid_h10_norm = h10sip(eh_t,eh_t)
+         t_resid_l2_norm = wl2sip(eh_t,eh_t)
+
+         t_resid_h1_norm = t_resid_h10_norm + t_resid_l2_norm
+         if (nid.eq.0) write(6,*)'temp residual in h1 norm',
+     $                            sqrt(t_resid_h1_norm)
+         if (nid.eq.0) write(6,*)'temp residual in h10 norm',
+     $                            sqrt(t_resid_h10_norm)
+         if (nid.eq.0) write(6,*)'temp residual in l2 norm',
+     $                            sqrt(t_resid_l2_norm)
+      endif
+
+      resid_h1_norm = sqrt(u_resid_h10_norm+u_resid_l2_norm+
+     $                     t_resid_h10_norm+t_resid_l2_norm)
+      resid_h10_norm = sqrt(u_resid_h10_norm+t_resid_h10_norm)
+      resid_l2_norm = sqrt(u_resid_l2_norm+t_resid_l2_norm)
+
+      if (resid_h1_norm.le.0) call
+     $             exitti('negative semidefinite dual norm$',n)
+
+      if (nid.eq.0) write (6,*) 'residual in h1 norm:',resid_h1_norm
+      if (nid.eq.0) write (6,*) 'residual in h10 norm:',resid_h10_norm
+      if (nid.eq.0) write (6,*) 'residual in l2 norm:',resid_l2_norm
+
+      call nekgsync
+      if (nio.eq.0) write (6,*) 'exiting c_dual_norm'
+
+      return
+      end
