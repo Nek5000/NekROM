@@ -28,10 +28,10 @@ c
       include 'TSTEP'
       include 'MOR'
 
-      call set_morfle
-
       character*132 c_out,txt,txt2
       character*3 chartmp
+
+      call set_morfle
 
       call finiparser_load(morfle,ierr)
       if (ierr.ne.0) return
