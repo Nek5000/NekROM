@@ -2631,14 +2631,13 @@ c-----------------------------------------------------------------------
       subroutine set_rom_residual
 
       ! compute the rom residual
+      ! make res_u and res_t in common blog
 
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
-
-      common /screi/ wk1(lt),wk2(lt),wk3(lt),wk4(lt),wk5(lt),wk6(lt)
 
       real coef(0:nb)
       real coef2(0:(nb+1)**2-1)

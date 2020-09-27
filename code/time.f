@@ -240,6 +240,10 @@ c        call settavg(uta,uuta,utua,ut2a,uta_wol,utua_wol,u,ut)
          call settavg_new(uta,uuta,utua,ut2a,uta_wol,utua_wol,u,ut)
 c        call settj(utj,uutj,utuj,uj,ut)
          call settj_new(utj,uutj,utuj,ujfilter,ut)
+         if (ifsource) then
+            call setfavg(rqa,rqta)
+            call setfj(rqj,rqtj)
+         endif
          call count_gal(num_galt,anum_galt,ut(1),tmax,tmin,1e-16,nb)
       endif
 
@@ -1381,6 +1385,57 @@ c-----------------------------------------------------------------------
          enddo
          enddo
          enddo
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine setfj(s1,s2)
+
+      include 'SIZE'
+      include 'MOR'
+
+      real s1(6),s2(6)
+
+      pi  = 4.*atan(1.)
+      if (ad_step.eq.(navg_step-1)) then
+         s1(1) = 1
+         s1(2) = 1
+         s1(3) = 1
+         s2(4) = sin(4*pi*(ad_step-2)*ad_dt)
+         s2(5) = sin(4*pi*(ad_step-1)*ad_dt)
+         s2(6) = sin(4*pi*(ad_step)*ad_dt)
+      endif
+      if (ad_step.eq.ad_nsteps) then
+         s1(4) = 1
+         s1(5) = 1
+         s1(6) = 1
+         s2(4) = sin(4*pi*ad_step*ad_dt)
+         s2(5) = sin(4*pi*(ad_step-1)*ad_dt)
+         s2(6) = sin(4*pi*(ad_step-2)*ad_dt)
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine setfavg
+
+      include 'SIZE'
+      include 'MOR'
+
+      if (ad_step.eq.navg_step-3) then
+         rqa = 0.0
+         rqta = 0.0
+      endif
+
+      pi  = 4.*atan(1.)
+      rqa = rqa + 1.
+      rqta = rqta + sin(4*pi*ad_step*ad_dt)
+
+      if (ad_step.eq.ad_nsteps) then
+         s=1./real(ad_nsteps-navg_step+1)
+         rqa = rqa*s
+         rqta = rqta*s
       endif
 
       return
