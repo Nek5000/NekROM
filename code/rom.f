@@ -822,8 +822,6 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
       ! POD radius of the filter for differential filter
       rdft=param(200)
 
-      call compute_BDF_coef(ad_alpha,ad_beta)
-
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
          rtmp1(1,1)=nb*1.
          call dump_serial(rtmp1(1,1),1,'ops/nb ',nid)
