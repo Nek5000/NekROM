@@ -198,6 +198,7 @@ c-----------------------------------------------------------------------
       include 'SOLN'
       include 'MOR'
       include 'AVG'
+      include 'INPUT'
 
       logical iftmp,ifexist
       integer num_ts
@@ -217,7 +218,12 @@ c-----------------------------------------------------------------------
 
       call set_bdf_coef(ad_alpha,ad_beta)
       call rom_init_params
-      call rom_set_params
+
+      if (param(170).lt.0) then
+         call readat_mor
+      else
+         call rom_set_params
+      endif
 
       call checker('aba',ad_step)
 
