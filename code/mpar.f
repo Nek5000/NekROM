@@ -28,10 +28,11 @@ c
       include 'TSTEP'
       include 'MOR'
 
-      character*132 c_out,txt,txt2
+      character*132 c_out,txt,txt2,morfle
       character*3 chartmp
 
-      call set_morfle
+      call set_morfle(morfle)
+      write (6,*) 'morfle: ',morfle
 
       call finiparser_load(morfle,ierr)
       if (ierr.ne.0) return
@@ -404,12 +405,11 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine set_morfle
+      subroutine set_morfle(morfle)
 
       include 'SIZE'
       include 'INPUT'
       include 'PARALLEL'
-      include 'MOR'
 
       character*132 name
       character*1 sess1(132),path1(132),nam1(132)
@@ -421,7 +421,8 @@ c-----------------------------------------------------------------------
       equivalence (mor,mor4)
       character*78  string
 
-      character*132 morfle data  /'.mor'/
+      character*132 morfle
+      data mor4  /'.mor'/
 
       len = ltrunc(path,132)
       if (indx1(path1(len),'/',1).lt.1) then
