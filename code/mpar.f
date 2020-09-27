@@ -305,7 +305,8 @@ c
          mb=rtmp1(1,1)
          if (mb.lt.nb) then
             write (6,*) 'mb less than nb... ',mb
-         ierr=ierr+1
+            ierr=ierr+1
+         endif
       endif
 
 100   if (ierr.eq.0) call finiparser_dump()
