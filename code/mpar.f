@@ -154,7 +154,7 @@ c
          else if (index(c_out,'STATE').eq.1) then
             ifavg0=.false.
          else
-            write (6,*) 'invalid option for pod:mode0 ,c_out
+            write (6,*) 'invalid option for pod:mode0 ',c_out
             ierr=ierr+1
          endif
       endif
