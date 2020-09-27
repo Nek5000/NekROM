@@ -613,7 +613,16 @@ c     call add2(tmp(1),st0(1),nb)
       if (ifsource) then
          call add2(rhs,rq,nb)
          if (ifsrct) then
-            call add2s2(rhs,rqt,sin(4*pi*ad_dt*ad_step),nb)
+            rqt_time_coef(3) = rqt_time_coef(2)
+            rqt_time_coef(2) = rqt_time_coef(1)
+            rqt_time_coef(1) = sin(4*pi*ad_dt*(ad_step-1))
+            if (ad_step .le. 4) then
+               write(6,*)'ad_step', ad_step
+               write(6,*)'extrapolation points:', rqt_time_coef(1:3)
+            endif
+            rqttcext = glsc2(ad_alpha(1,icount),rqt_time_coef,3)
+            call add2s2(rhs,rqt,rqttcext,nb)
+c           call add2s2(rhs,rqt,sin(4*pi*ad_dt*ad_step),nb)
          endif
       endif
 
