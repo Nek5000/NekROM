@@ -84,7 +84,9 @@ c     parameters and common blocks for MOR
      $                 ut2j(0:(ltb+1)*(ltb+1)*6-1)
 
       common /morrhs/ cvr(lub*3),ctr(ltb*3),usa(0:lub),rg(lub),
-     $                rf(lub),fu(lub,3),rq(ltb),rqt(ltb)
+     $                rf(lub),fu(lub,3),rq(ltb),rqt(ltb),
+     $                rqt_time_coef(3),rqj(6),rqtj(6),
+     $                rqa,rqta
 
       common /morsig_diag/ siga_diag(0:lub),sigb_diag(0:lub),
      $                     sigc_diag(0:lub,0:lub)
