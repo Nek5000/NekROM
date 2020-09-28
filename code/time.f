@@ -350,33 +350,33 @@ c        call cubar
       return
       end
 c-----------------------------------------------------------------------
-      subroutine compute_BDF_coef(ad_alpha,ad_beta)
+      subroutine set_bdf_coef(ad_alpha,ad_beta)
 
-      real ad_alpha(3,3), ad_beta(4,3)
+      real ad_alpha(3,3),ad_beta(4,3)
 
       call rzero(ad_alpha,3*3)
       call rzero(ad_beta,3*4)
 
-      ad_beta(1,1) = 1.
-      ad_beta(2,1) = -1.
+      ad_beta(1,1)  =  1.
+      ad_beta(2,1)  = -1.
 
-      ad_beta(1,2) = 1.5
-      ad_beta(2,2) = -2
-      ad_beta(3,2) = 0.5
+      ad_beta(1,2)  =  1.5
+      ad_beta(2,2)  = -2
+      ad_beta(3,2)  =  0.5
 
-      ad_beta(1,3) = 11./6
-      ad_beta(2,3) = -3
-      ad_beta(3,3) = 1.5
-      ad_beta(4,3) = -1./3.
+      ad_beta(1,3)  =  11./6
+      ad_beta(2,3)  = -3.
+      ad_beta(3,3)  =  1.5
+      ad_beta(4,3)  = -1./3
 
-      ad_alpha(1,1)=1
+      ad_alpha(1,1) =  1.
 
-      ad_alpha(1,2)=2
-      ad_alpha(2,2)=-1
+      ad_alpha(1,2) =  2.
+      ad_alpha(2,2) = -1.
 
-      ad_alpha(1,3)=3
-      ad_alpha(2,3)=-3
-      ad_alpha(3,3)=1
+      ad_alpha(1,3) =  3.
+      ad_alpha(2,3) = -3.
+      ad_alpha(3,3) =  1.
 
       return
       end

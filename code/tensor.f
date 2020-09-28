@@ -1101,8 +1101,8 @@ c     factor matrices. It returns cp_a, cp_b, cp_c ,cp_w.
             call set_product_matrix(fcmpm(1,1),fcm(1,1),mm,nn)
 
          ! compute the relative error
-         call compute_residual(cp_res,lsr,fcm(1,3),lsm(1,3),
-     $                       fcmpm(1,3),cp_w,norm_c0,mm,nn)
+         call compute_residual(cp_res,lsr,fcm(1,1),lsm(1,1),
+     $                       fcmpm(1,1),cp_w,norm_c0,mm,nn)
          cp_relres = cp_res/sqrt(norm_c)
          cp_fit = 1-cp_relres
          reldiff = abs(pre_relres-cp_relres)/pre_relres

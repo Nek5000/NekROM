@@ -198,6 +198,7 @@ c-----------------------------------------------------------------------
       include 'SOLN'
       include 'MOR'
       include 'AVG'
+      include 'INPUT'
 
       logical iftmp,ifexist
       integer num_ts
@@ -215,11 +216,18 @@ c-----------------------------------------------------------------------
 
       call checker('aaa',ad_step)
 
-      call rom_init_params
+      call set_bdf_coef(ad_alpha,ad_beta)
+      call mor_init_params
 
-      call checker('aba',ad_step)
+      if (param(170).lt.0) then
+         call mor_set_params_par
+      else
+         call mor_set_params_rea
+      endif
 
-      call rom_init_fields
+      call mor_show_params
+
+      call mor_init_fields
 c     do k=2,10
 c     call k_mean(k,nsu,nsp,nst,'sample.list ',k)
 c     enddo
@@ -591,7 +599,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine rom_init_params
+      subroutine mor_init_params
 
       include 'SIZE'
       include 'TOTAL'
@@ -599,7 +607,7 @@ c-----------------------------------------------------------------------
 
       character*3 chartmp
 
-      if (nio.eq.0) write (6,*) 'inside rom_init_params'
+      if (nio.eq.0) write (6,*) 'inside mor_init_params'
 
       ad_nsteps=nsteps
       ad_iostep=iostep
@@ -627,6 +635,67 @@ c-----------------------------------------------------------------------
       ad_re = 1/param(2)
       ad_pe = 1/param(8)
 
+      ifavg0=.false.
+
+      ifctke=.false.
+      ifcdrag=.false.
+      iffastc=.false.
+      iffasth=.false.
+      ifcintp=.false.
+      ifavisc=.false.
+      ifdecpl=.false.
+      ifsub0=.true.
+
+      do i=0,ldimt1
+         ifpod(i)=.false.
+         ifrom(i)=.false.
+      enddo
+
+      ifvort=.false. ! default to false for now
+
+      ifpart=.false.
+      ifcintp=.false.
+
+      ifcore=.true.
+      ifquad=.true.
+
+      ips='L2 '
+      isolve=0
+      rmode='OFF'
+      ifei=.false.
+      navg_step=1
+      nb=lb
+      rktol=0.
+      ad_qstep=ad_iostep
+      iftneu=.false.
+      inus=0
+      ifsub0=.true.
+
+      ifforce=.false.
+      ifsource=.false.
+      ifbuoy=.false.
+      ifplay=.false.
+      nplay=0
+
+      icopt=0
+
+      rfilter='STD'
+      rbf=0.5
+      rdft=0.5
+
+      if (nio.eq.0) write (6,*) 'exiting mor_init_params'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine mor_set_params_rea
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      character*3 chartmp
+
       isolve=nint(param(170))
 
       if (param(171).eq.0) then
@@ -637,14 +706,7 @@ c-----------------------------------------------------------------------
          ips='HLM'
       endif
 
-      ifavg0=.false.
       if (param(172).ne.0) ifavg0=.true.
-
-      if (ifavg0.and.(nb.eq.ls))
-     $   call exitti('nb == ls results in linear dependent bases$',nb)
-
-      if (nb.gt.ls)
-     $   call exitti('nb > ls is undefined configuration$',nb)
 
       np173=nint(param(173))
 
@@ -679,6 +741,12 @@ c-----------------------------------------------------------------------
       nb=min(nint(param(177)),lb)
       if (nb.eq.0) nb=lb
 
+      if (ifavg0.and.(nb.eq.ls))
+     $   call exitti('nb == ls results in linear dependent bases$',nb)
+
+      if (nb.gt.ls)
+     $   call exitti('nb > ls is undefined configuration$',nb)
+
       rktol=param(179)
       if (rktol.lt.0.) rktol=10.**rktol
 
@@ -686,32 +754,17 @@ c-----------------------------------------------------------------------
 
       iftneu=(param(178).ne.0.and.param(174).ne.0)
 
-      ifctke=.false.
       if (param(181).ne.0) ifctke=.true.
 
-      ifcdrag=.false.
       if (param(182).ne.0) ifcdrag=.true.
 
       inus=min(max(nint(param(183)),0),5)
 
-      iffastc=.false.
       if (param(191).ne.0) iffastc=.true.
 
-      iffasth=.false.
       if (param(192).ne.0.and.ips.eq.'HLM') iffasth=.true.
 
-      ifcintp=.false.
-      ifavisc=.false.
-      ifdecpl=.false.
-      if (nio.eq.0) write (6,*) 'check ifdecpl',ifdecpl,'cp1'
-
-      ifsub0=.true.
       if (param(197).ne.0.) ifsub0=.false.
-
-      do i=0,ldimt1
-         ifpod(i)=.false.
-         ifrom(i)=.false.
-      enddo
 
       ifpod(1)=param(174).ge.0.
       ifpod(2)=(ifheat.and.param(174).ne.0.)
@@ -721,17 +774,9 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
 
       ifpod(1)=ifpod(1).or.ifrom(2)
 
-      ifvort=.false. ! default to false for now
-
       ifforce=param(193).ne.0.
       ifsource=param(194).ne.0.
       ifbuoy=param(195).ne.0.
-
-      ifpart=.false.
-      ifcintp=.false.
-
-      ifcore=.true.
-      ifquad=.true.
 
       nplay=nint(param(196))
 
@@ -749,9 +794,9 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
 
       ! barrier initial parameter and number of loop
       ubarr0  =param(187)
-      ubarrseq=param(188)
+      ubarrseq=nint(param(188))
       tbarr0  =param(189)
-      tbarrseq=param(190)
+      tbarrseq=nint(param(190))
 
       ! filter technique
       np198=nint(param(198))
@@ -775,8 +820,6 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
       ! POD radius of the filter for differential filter
       rdft=param(200)
 
-      call compute_BDF_coef(ad_alpha,ad_beta)
-
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
          rtmp1(1,1)=nb*1.
          call dump_serial(rtmp1(1,1),1,'ops/nb ',nid)
@@ -786,67 +829,78 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
          if (mb.lt.nb) call exitti('mb less than nb, exiting...$',mb)
       endif
 
-      if (nio.eq.0) then
-         write (6,*) 'rp_nb         ',nb
-         write (6,*) 'rp_lub        ',lub
-         write (6,*) 'rp_ltb        ',ltb
-         write (6,*) ' '
-         write (6,*) 'rp_ls         ',ls
-         write (6,*) 'rp_lsu        ',lsu
-         write (6,*) 'rp_lst        ',lst
-         write (6,*) ' '
-         write (6,*) 'rp_ad_re      ',ad_re
-         write (6,*) 'rp_ad_pe      ',ad_pe
-         write (6,*) 'rp_ad_mu      ',ad_mu
-         write (6,*) ' '
-         write (6,*) 'rp_isolve     ',isolve
-         write (6,*) 'rp_ips        ',ips
-         write (6,*) 'rp_ifavg0     ',ifavg0
-         write (6,*) 'rp_ifsub0     ',ifsub0
-         write (6,*) 'rp_rmode      ',rmode
-         write (6,*) 'rp_ad_qstep   ',ad_qstep
-         write (6,*) 'rp_ifctke     ',ifctke
-         write (6,*) 'rp_ifcdrag    ',ifcdrag
-         write (6,*) 'rp_inus       ',inus
-         write (6,*) 'rp_iffastc    ',iffastc
-         write (6,*) 'rp_iffasth    ',iffasth
-         write (6,*) 'rp_nplay      ',nplay
-         write (6,*) 'rp_ifplay     ',ifplay
-         write (6,*) 'rp_ifei       ',ifei      
-         write (6,*) ' '
-         write (6,*) 'rp_ifforce    ',ifforce
-         write (6,*) 'rp_ifsource   ',ifsource
-         write (6,*) 'rp_ifbuoy     ',ifbuoy
-         write (6,*) 'rp_ifpart     ',ifpart
-         write (6,*) 'rp_ifvort     ',ifvort
-         write (6,*) 'rp_ifcintp    ',ifcintp
-         write (6,*) ' '
-         do i=0,ldimt1
-            write (6,*) 'rp_ifpod(',i,')   ',ifpod(i)
-         enddo
-         do i=0,ldimt1
-            write (6,*) 'rp_ifrom(',i,')   ',ifrom(i)
-         enddo
-         write (6,*) ' '
-         write (6,*) 'rp_icopt       ',icopt
-         write (6,*) 'rp_barr_func   ',barr_func
-         write (6,*) 'rp_box_tol     ',box_tol
-         write (6,*) 'ubarr0         ',ubarr0
-         write (6,*) 'ubarrseq       ',ubarrseq
-         write (6,*) 'tbarr0         ',tbarr0
-         write (6,*) 'tbarrseq       ',tbarrseq
-         write (6,*) ' '
-         write (6,*) 'rp_rfilter     ',rfilter
-         write (6,*) 'rp_rbf         ',rbf
-         write (6,*) 'rp_rdft        ',rdft
-      endif
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine mor_show_params
 
-      if (nio.eq.0) write (6,*) 'exiting rom_init_params'
+      include 'SIZE'
+      include 'MOR'
+
+      if (nio.eq.0) then
+         write (6,*) 'mp_nb         ',nb
+         write (6,*) 'mp_lub        ',lub
+         write (6,*) 'mp_ltb        ',ltb
+         write (6,*) ' '
+         write (6,*) 'mp_ls         ',ls
+         write (6,*) 'mp_lsu        ',lsu
+         write (6,*) 'mp_lst        ',lst
+         write (6,*) ' '
+         write (6,*) 'mp_ad_re      ',ad_re
+         write (6,*) 'mp_ad_pe      ',ad_pe
+         write (6,*) ' '
+         write (6,*) 'mp_isolve     ',isolve
+         write (6,*) 'mp_ips        ',ips
+         write (6,*) 'mp_ifavg0     ',ifavg0
+         write (6,*) 'mp_ifsub0     ',ifsub0
+         write (6,*) 'mp_rmode      ',rmode
+         write (6,*) 'mp_ad_qstep   ',ad_qstep
+         write (6,*) 'mp_ifctke     ',ifctke
+         write (6,*) 'mp_ifcdrag    ',ifcdrag
+         write (6,*) 'mp_inus       ',inus
+         write (6,*) 'mp_iffastc    ',iffastc
+         write (6,*) 'mp_iffasth    ',iffasth
+         write (6,*) 'mp_nplay      ',nplay
+         write (6,*) 'mp_ifplay     ',ifplay
+         write (6,*) 'mp_ifei       ',ifei
+         write (6,*) ' '
+         write (6,*) 'mp_ifforce    ',ifforce
+         write (6,*) 'mp_ifsource   ',ifsource
+         write (6,*) 'mp_ifbuoy     ',ifbuoy
+         write (6,*) 'mp_ifpart     ',ifpart
+         write (6,*) 'mp_ifvort     ',ifvort
+         write (6,*) 'mp_ifcintp    ',ifcintp
+         write (6,*) 'mp_ifdecpl    ',ifdecpl
+         write (6,*) ' '
+         do i=0,ldimt1
+            write (6,*) 'mp_ifpod(',i,')   ',ifpod(i)
+         enddo
+         do i=0,ldimt1
+            write (6,*) 'mp_ifrom(',i,')   ',ifrom(i)
+         enddo
+         write (6,*) ' '
+         write (6,*) 'mp_icopt       ',icopt
+         write (6,*) 'mp_barr_func   ',barr_func
+         write (6,*) 'mp_box_tol     ',box_tol
+         write (6,*) 'mp_ubarr0      ',ubarr0
+         write (6,*) 'mp_ubarrseq    ',ubarrseq
+         write (6,*) 'mp_tbarr0      ',tbarr0
+         write (6,*) 'mp_tbarrseq    ',tbarrseq
+         write (6,*) ' '
+         write (6,*) 'mp_rfilter     ',rfilter
+         write (6,*) 'mp_rbf         ',rbf
+         write (6,*) 'mp_rdft        ',rdft
+         write (6,*) ' '
+         write (6,*) 'mp_max_tr      ',max_tr
+         write (6,*) 'mp_navg_step   ',navg_step
+         write (6,*) 'mp_rk_tol      ',rk_tol
+         write (6,*) 'mp_iftneu      ',iftneu
+      endif
 
       return
       end
 c-----------------------------------------------------------------------
-      subroutine rom_init_fields
+      subroutine mor_init_fields
 
       include 'SIZE'
       include 'TOTAL'
