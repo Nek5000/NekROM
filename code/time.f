@@ -622,7 +622,6 @@ c     call add2(tmp(1),st0(1),nb)
             endif
             rqttcext = glsc2(ad_alpha(1,icount),rqt_time_coef,3)
             call add2s2(rhs,rqt,rqttcext,nb)
-c           call add2s2(rhs,rqt,sin(4*pi*ad_dt*ad_step),nb)
          endif
       endif
 
