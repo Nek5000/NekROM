@@ -3893,8 +3893,7 @@
  E  512  3   249.000       1.00000       0.00000       0.00000       0.00000    
  v  512  4   0.00000       0.00000       0.00000       0.00000       0.00000    
   ***** NO THERMAL BOUNDARY CONDITIONS *****
-           1  PRESOLVE/RESTART OPTIONS  *****
-r0.f00001
+           0  PRESOLVE/RESTART OPTIONS  *****
            7          INITIAL CONDITIONS *****
 C Default                                                                       
 C Default                                                                       
