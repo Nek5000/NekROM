@@ -328,3 +328,33 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine rom_init_params
+
+      include 'SIZE'
+      include 'INPUT'
+
+      if (nid.eq.0) write (6,*) 'rom_init_params has been deprecated...'
+
+      call mor_init_params
+
+      if (param(170).ge.0.) then 
+         call mor_set_params_rea
+      else
+         call mor_set_params_par
+      endif
+
+      call mor_show_params
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine rom_init_fields
+
+      include 'SIZE'
+
+      if (nid.eq.0) write (6,*) 'rom_init_fields has been deprecated...'
+      call mor_init_fields
+
+      return
+      end
+c-----------------------------------------------------------------------
