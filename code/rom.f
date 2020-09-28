@@ -838,58 +838,58 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       if (nio.eq.0) then
-         write (6,*) 'rp_nb         ',nb
-         write (6,*) 'rp_lub        ',lub
-         write (6,*) 'rp_ltb        ',ltb
+         write (6,*) 'mp_nb         ',nb
+         write (6,*) 'mp_lub        ',lub
+         write (6,*) 'mp_ltb        ',ltb
          write (6,*) ' '
-         write (6,*) 'rp_ls         ',ls
-         write (6,*) 'rp_lsu        ',lsu
-         write (6,*) 'rp_lst        ',lst
+         write (6,*) 'mp_ls         ',ls
+         write (6,*) 'mp_lsu        ',lsu
+         write (6,*) 'mp_lst        ',lst
          write (6,*) ' '
-         write (6,*) 'rp_ad_re      ',ad_re
-         write (6,*) 'rp_ad_pe      ',ad_pe
+         write (6,*) 'mp_ad_re      ',ad_re
+         write (6,*) 'mp_ad_pe      ',ad_pe
          write (6,*) ' '
-         write (6,*) 'rp_isolve     ',isolve
-         write (6,*) 'rp_ips        ',ips
-         write (6,*) 'rp_ifavg0     ',ifavg0
-         write (6,*) 'rp_ifsub0     ',ifsub0
-         write (6,*) 'rp_rmode      ',rmode
-         write (6,*) 'rp_ad_qstep   ',ad_qstep
-         write (6,*) 'rp_ifctke     ',ifctke
-         write (6,*) 'rp_ifcdrag    ',ifcdrag
-         write (6,*) 'rp_inus       ',inus
-         write (6,*) 'rp_iffastc    ',iffastc
-         write (6,*) 'rp_iffasth    ',iffasth
-         write (6,*) 'rp_nplay      ',nplay
-         write (6,*) 'rp_ifplay     ',ifplay
-         write (6,*) 'rp_ifei       ',ifei      
+         write (6,*) 'mp_isolve     ',isolve
+         write (6,*) 'mp_ips        ',ips
+         write (6,*) 'mp_ifavg0     ',ifavg0
+         write (6,*) 'mp_ifsub0     ',ifsub0
+         write (6,*) 'mp_rmode      ',rmode
+         write (6,*) 'mp_ad_qstep   ',ad_qstep
+         write (6,*) 'mp_ifctke     ',ifctke
+         write (6,*) 'mp_ifcdrag    ',ifcdrag
+         write (6,*) 'mp_inus       ',inus
+         write (6,*) 'mp_iffastc    ',iffastc
+         write (6,*) 'mp_iffasth    ',iffasth
+         write (6,*) 'mp_nplay      ',nplay
+         write (6,*) 'mp_ifplay     ',ifplay
+         write (6,*) 'mp_ifei       ',ifei
          write (6,*) ' '
-         write (6,*) 'rp_ifforce    ',ifforce
-         write (6,*) 'rp_ifsource   ',ifsource
-         write (6,*) 'rp_ifbuoy     ',ifbuoy
-         write (6,*) 'rp_ifpart     ',ifpart
-         write (6,*) 'rp_ifvort     ',ifvort
-         write (6,*) 'rp_ifcintp    ',ifcintp
-         write (6,*) 'rp_ifdecpl    ',ifdecpl
+         write (6,*) 'mp_ifforce    ',ifforce
+         write (6,*) 'mp_ifsource   ',ifsource
+         write (6,*) 'mp_ifbuoy     ',ifbuoy
+         write (6,*) 'mp_ifpart     ',ifpart
+         write (6,*) 'mp_ifvort     ',ifvort
+         write (6,*) 'mp_ifcintp    ',ifcintp
+         write (6,*) 'mp_ifdecpl    ',ifdecpl
          write (6,*) ' '
          do i=0,ldimt1
-            write (6,*) 'rp_ifpod(',i,')   ',ifpod(i)
+            write (6,*) 'mp_ifpod(',i,')   ',ifpod(i)
          enddo
          do i=0,ldimt1
-            write (6,*) 'rp_ifrom(',i,')   ',ifrom(i)
+            write (6,*) 'mp_ifrom(',i,')   ',ifrom(i)
          enddo
          write (6,*) ' '
-         write (6,*) 'rp_icopt       ',icopt
-         write (6,*) 'rp_barr_func   ',barr_func
-         write (6,*) 'rp_box_tol     ',box_tol
-         write (6,*) 'ubarr0         ',ubarr0
-         write (6,*) 'ubarrseq       ',ubarrseq
-         write (6,*) 'tbarr0         ',tbarr0
-         write (6,*) 'tbarrseq       ',tbarrseq
+         write (6,*) 'mp_icopt       ',icopt
+         write (6,*) 'mp_barr_func   ',barr_func
+         write (6,*) 'mp_box_tol     ',box_tol
+         write (6,*) 'mp_ubarr0      ',ubarr0
+         write (6,*) 'mp_ubarrseq    ',ubarrseq
+         write (6,*) 'mp_tbarr0      ',tbarr0
+         write (6,*) 'mp_tbarrseq    ',tbarrseq
          write (6,*) ' '
-         write (6,*) 'rp_rfilter     ',rfilter
-         write (6,*) 'rp_rbf         ',rbf
-         write (6,*) 'rp_rdft        ',rdft
+         write (6,*) 'mp_rfilter     ',rfilter
+         write (6,*) 'mp_rbf         ',rbf
+         write (6,*) 'mp_rdft        ',rdft
       endif
 
       return
