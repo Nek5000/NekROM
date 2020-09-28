@@ -225,6 +225,8 @@ c-----------------------------------------------------------------------
          call rom_set_params
       endif
 
+      call rom_show_params
+
       call checker('aba',ad_step)
 
       call rom_init_fields
@@ -831,6 +833,14 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
          if (mb.lt.nb) call exitti('mb less than nb, exiting...$',mb)
       endif
 
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine rom_show_params
+
+      include 'SIZE'
+      include 'MOR'
+
       if (nio.eq.0) then
          write (6,*) 'rp_nb         ',nb
          write (6,*) 'rp_lub        ',lub
@@ -885,8 +895,6 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
          write (6,*) 'rp_rbf         ',rbf
          write (6,*) 'rp_rdft        ',rdft
       endif
-
-      if (nio.eq.0) write (6,*) 'exiting rom_set_params'
 
       return
       end
