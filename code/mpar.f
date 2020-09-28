@@ -77,11 +77,11 @@ c
       call finiparser_getstring(c_out,'general:field',ifnd)
       if (ifnd.eq.1) then
          call capit(c_out,132)
-         if (index(c_out,'v').eq.1) then
+         if (index(c_out,'V').eq.1) then
             ifpod(1)=.true.
-         else if (index(c_out,'t').eq.1) then
+         else if (index(c_out,'T').eq.1) then
             rmode='ONB'
-         else if (index(c_out,'vt').eq.1) then
+         else if (index(c_out,'VT').eq.1) then
             ifpod(1)=.true.
             ifpod(2)=ifheat
          else
@@ -194,11 +194,11 @@ c
       call finiparser_getstring(c_out,'copt:field',ifnd)
       if (ifnd.eq.1) then
          call capit(c_out,132)
-         if (index(c_out,'v').eq.1) then
+         if (index(c_out,'V').eq.1) then
             icopt=2
-         else if (index(c_out,'t').eq.1) then
+         else if (index(c_out,'T').eq.1) then
             icopt=1
-         else if (index(c_out,'vt').eq.1) then
+         else if (index(c_out,'VT').eq.1) then
             icopt=0
          else
             write (6,*) 'invalid option for copt:field ',c_out
