@@ -1,21 +1,21 @@
 c-----------------------------------------------------------------------
-      subroutine readat_mor
+      subroutine mor_set_params_par
 C
 C     Read in run parameters from .mor file
 C
       INCLUDE 'SIZE'
       INCLUDE 'PARALLEL'
 
-      if (nid.eq.0) call mor_read(ierr)
+      if (nid.eq.0) call mpar_read(ierr)
       call bcast(ierr,isize)
       if (ierr.ne.0) call exitt
 
-      call bcastmor
+      call bcastmpar
 
       return
       end
 c-----------------------------------------------------------------------
-      subroutine mor_read(ierr)
+      subroutine mpar_read(ierr)
 c
 c     parse .mor file and set run parameters
 c
@@ -37,7 +37,7 @@ c
       call finiparser_load(morfle,ierr)
       if (ierr.ne.0) return
 
-      call mor_verify(ierr)
+      call mpar_verify(ierr)
       if (ierr.ne.0) return
 
       ! general
@@ -315,7 +315,7 @@ c
       return
       end
 c-----------------------------------------------------------------------
-      subroutine bcastmor
+      subroutine bcastmpar
 C
 C     Broadcast mor parameters to all processors
 C
@@ -374,7 +374,7 @@ C
       return
       END
 c-----------------------------------------------------------------------
-      subroutine mor_verify(ierr)
+      subroutine mpar_verify(ierr)
 
       INCLUDE 'MORDICT'
       

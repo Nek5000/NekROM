@@ -217,19 +217,17 @@ c-----------------------------------------------------------------------
       call checker('aaa',ad_step)
 
       call set_bdf_coef(ad_alpha,ad_beta)
-      call rom_init_params
+      call mor_init_params
 
       if (param(170).lt.0) then
-         call readat_mor
+         call mor_set_params_par
       else
-         call rom_set_params
+         call mor_set_params_rea
       endif
 
-      call rom_show_params
+      call mor_show_params
 
-      call checker('aba',ad_step)
-
-      call rom_init_fields
+      call mor_init_fields
 c     do k=2,10
 c     call k_mean(k,nsu,nsp,nst,'sample.list ',k)
 c     enddo
@@ -601,7 +599,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine rom_init_params
+      subroutine mor_init_params
 
       include 'SIZE'
       include 'TOTAL'
@@ -609,7 +607,7 @@ c-----------------------------------------------------------------------
 
       character*3 chartmp
 
-      if (nio.eq.0) write (6,*) 'inside rom_init_params'
+      if (nio.eq.0) write (6,*) 'inside mor_init_params'
 
       ad_nsteps=nsteps
       ad_iostep=iostep
@@ -685,20 +683,18 @@ c-----------------------------------------------------------------------
       rbf=0.5
       rdft=0.5
 
-      if (nio.eq.0) write (6,*) 'exiting rom_init_params'
+      if (nio.eq.0) write (6,*) 'exiting mor_init_params'
 
       return
       end
 c-----------------------------------------------------------------------
-      subroutine rom_set_params
+      subroutine mor_set_params_rea
 
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
 
       character*3 chartmp
-
-      if (nio.eq.0) write (6,*) 'inside rom_set_params'
 
       isolve=nint(param(170))
 
@@ -836,7 +832,7 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
       return
       end
 c-----------------------------------------------------------------------
-      subroutine rom_show_params
+      subroutine mor_show_params
 
       include 'SIZE'
       include 'MOR'
@@ -899,7 +895,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine rom_init_fields
+      subroutine mor_init_fields
 
       include 'SIZE'
       include 'TOTAL'

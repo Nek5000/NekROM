@@ -1307,9 +1307,12 @@ c-----------------------------------------------------------------------
 
       character*127 fmat
 
+      if (nid.eq.0) write (6,*) 'trace has been deprecated'
+      return
+
       if (istep.eq.0) then
-         call rom_init_params
-         call rom_init_fields
+c        call rom_init_params
+c        call rom_init_fields
          call loadbases
       else
          if (istep.gt.lcs) then
