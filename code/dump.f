@@ -188,7 +188,7 @@ c-----------------------------------------------------------------------
          l=1
          do j=1,nres
          do i=1,nres
-            sigtmp(l,1)=sigma(i,j)
+            sigtmp(l,1)=mor_sigma(i,j)
             l=l+1
          enddo
          enddo
@@ -386,7 +386,7 @@ c-----------------------------------------------------------------------
          l=1
          do j=1,nres
          do i=1,nres
-            sigtmp(l,1)=sigma(i,j)
+            sigtmp(l,1)=mor_sigma(i,j)
             l=l+1
          enddo
          enddo

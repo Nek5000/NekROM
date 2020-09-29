@@ -22,7 +22,7 @@ c-----------------------------------------------------------------------
 
       do j=1,nres
       do i=1,nres
-         res=res+sigma(i,j)*theta(i)*theta(j)
+         res=res+mor_sigma(i,j)*mor_theta(i)*mor_theta(j)
       enddo
       enddo
 
@@ -64,7 +64,7 @@ c-----------------------------------------------------------------------
 
       do j=1,nres
       do i=1,nres
-         res=res+sigma(i,j)*theta(i)*theta(j)
+         res=res+mor_sigma(i,j)*mor_theta(i)*mor_theta(j)
       enddo
       enddo
 
@@ -343,11 +343,11 @@ c-----------------------------------------------------------------------
       if (nres.le.0) call exitti('nres <= 0$',nres)
 
       if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
-         call read_serial(sigtmp,nres*nres,'ops/sigma ',sigma,nid)
+         call read_serial(sigtmp,nres*nres,'ops/sigma ',mor_sigma,nid)
          l=1
          do j=1,nres
          do i=1,nres
-            sigma(i,j)=sigtmp(l,1)
+            mor_sigma(i,j)=sigtmp(l,1)
             l=l+1
          enddo
          enddo
@@ -371,21 +371,21 @@ c-----------------------------------------------------------------------
          if (ifield.eq.2) then
             do i=1,nres
             do j=1,nres
-               sigma(i,j)=glsc3(xi(1,i),xi(1,j),bm1,n)
+               mor_sigma(i,j)=glsc3(xi(1,i),xi(1,j),bm1,n)
             enddo
             enddo
          else if (ifield.eq.1) then
             if (.true.) then ! if using voritcity residual
                do i=1,nres
                   do j=1,nres
-                     sigma(i,j)=glsc3(xi_u(1,1,i),xi_u(1,1,j),bm1,n)
+                     mor_sigma(i,j)=glsc3(xi_u(1,1,i),xi_u(1,1,j),bm1,n)
                   enddo
-                  write (6,*) i,sigma(1,i),'sigma'
+                  write (6,*) i,mor_sigma(1,i),'sigma'
                enddo
             else
                do i=1,nres
                do j=1,nres
-                  sigma(i,j)=
+                  mor_sigma(i,j)=
      $               op_glsc2_wt(xi_u(1,1,i),xi_u(1,2,i),xi_u(1,ldim,i),
      $                       xi_u(1,1,j),xi_u(1,2,j),xi_u(1,ldim,j),bm1)
                enddo
@@ -409,21 +409,21 @@ c-----------------------------------------------------------------------
 
       l=1
       do i=1,nb
-         theta(l)=ut(i)
+         mor_theta(l)=ut(i)
          l=l+1
       enddo
 
-      theta(l)=-1.
+      mor_theta(l)=-1.
       l=l+1
 
       do i=1,nb
-         theta(l)=-ut(i)
-         theta(l)=0.
+         mor_theta(l)=-ut(i)
+         mor_theta(l)=0.
          l=l+1
       enddo
 
       do i=1,l-1
-         write (6,*) i,theta(i),'theta'
+         write (6,*) i,mor_theta(i),'theta'
       enddo
 
       return
@@ -441,15 +441,15 @@ c-----------------------------------------------------------------------
 
       l=1
       call set_betaj
-      call mxm(utj,nb+1,betaj,6,theta(l),1)
+      call mxm(utj,nb+1,betaj,6,mor_theta(l),1)
 
       l=l+nb+1
       do i=0,nb
-         theta(l)=uta(i)
+         mor_theta(l)=uta(i)
          l=l+1
       enddo
 
-      theta(l)=-1.
+      mor_theta(l)=-1.
 
       l=l+1
 
@@ -468,35 +468,35 @@ c-----------------------------------------------------------------------
 
       l=1
       call set_betaj
-      call mxm(utj,nb+1,betaj,6,theta(l),1)
+      call mxm(utj,nb+1,betaj,6,mor_theta(l),1)
 
       l=l+nb+1
 
       call set_alphaj
 
       if (ifrom(1)) then
-c        call mxm(uutj,(nb+1)**2,alphaj,6,theta(l),1)
-         call mxm(utuj,(nb+1)**2,alphaj,6,theta(l),1)
+c        call mxm(uutj,(nb+1)**2,alphaj,6,mor_theta(l),1)
+         call mxm(utuj,(nb+1)**2,alphaj,6,mor_theta(l),1)
       else
-         call mxm(utj,nb+1,alphaj,6,theta(l),1)
+         call mxm(utj,nb+1,alphaj,6,mor_theta(l),1)
       endif
 
       if (ifrom(1)) then
          do j=0,nb
          do i=0,nb
-            theta(l)=theta(l)+utua(i+(nb+1)*j)
+            mor_theta(l)=mor_theta(l)+utua(i+(nb+1)*j)
             l=l+1
          enddo
          enddo
       else
          do i=0,nb
-            theta(l)=theta(l)+uta(i)
+            mor_theta(l)=mor_theta(l)+uta(i)
             l=l+1
          enddo
       endif
 
       do i=0,nb
-         theta(l)=param(8)*uta(i)
+         mor_theta(l)=param(8)*uta(i)
          l=l+1
       enddo
 
@@ -515,33 +515,33 @@ c-----------------------------------------------------------------------
 
       l=1
       call set_betaj
-      call mxm(utj,nb+1,betaj,6,theta(l),1)
+      call mxm(utj,nb+1,betaj,6,mor_theta(l),1)
 
       l=l+nb+1
 
       call set_alphaj(alphaj)
-      call mxm(ut2j,(nb+1)**2,alphaj,6,theta(l),1)
+      call mxm(ut2j,(nb+1)**2,alphaj,6,mor_theta(l),1)
       do j=0,nb
       do i=0,nb
-         theta(l)=theta(l)+u2a(1+i+(nb+1)*j)
+         mor_theta(l)=mor_theta(l)+u2a(1+i+(nb+1)*j)
          l=l+1
       enddo
       enddo
 
       do i=0,nb
-         theta(l)=param(2)*ua(i)
+         mor_theta(l)=param(2)*ua(i)
          l=l+1
       enddo
 
       if (ifbuoy) then
          do i=0,nb
-            theta(l)=ad_ra*uta(i)
+            mor_theta(l)=ad_ra*uta(i)
             l=l+1
          enddo
       endif
 
       do i=1,nres
-         if (nio.eq.0) write (6,*) theta(i),'theta'
+         if (nio.eq.0) write (6,*) mor_theta(i),'theta'
       enddo
 
       return

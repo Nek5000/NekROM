@@ -942,7 +942,7 @@ c-----------------------------------------------------------------------
          if (ifrom(0)) nsp=lsp
          if (ifrom(1)) nsu=lsu
          if (ifrom(2)) nst=lst
-         call get_saved_fields(us0,ps,ts0,nsu,nsp,nst,timek,fname1)
+         call get_saved_fields(us0,prs,ts0,nsu,nsp,nst,timek,fname1)
 
          fname1='avg.list'
          inquire (file=fname1,exist=alist)
