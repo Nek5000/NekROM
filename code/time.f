@@ -574,6 +574,7 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
       include 'INPUT'
+      include 'TSTEP'
 
       common /scrrhs/ tmp(0:lb),tmp2(0:lb)
 
@@ -615,7 +616,9 @@ c     call add2(tmp(1),st0(1),nb)
          if (ifsrct) then
             rqt_time_coef(3) = rqt_time_coef(2)
             rqt_time_coef(2) = rqt_time_coef(1)
-            rqt_time_coef(1) = sin(((3*pi/2)*ad_dt*(ad_step-1)))
+            time = (ad_step-1)*ad_dt
+            call userq(1,1,1,1)
+            rqt_time_coef(1) = ft
             if (ad_step .le. 4) then
                write(6,*)'ad_step', ad_step
                write(6,*)'extrapolation points:', rqt_time_coef(1:3)
@@ -1401,6 +1404,7 @@ c-----------------------------------------------------------------------
       subroutine setfj(s1,s2)
 
       include 'SIZE'
+      include 'TSTEP'
       include 'MOR'
 
       real s1(6),s2(6)
@@ -1410,17 +1414,29 @@ c-----------------------------------------------------------------------
          s1(1) = 1
          s1(2) = 1
          s1(3) = 1
-         s2(1) = sin((3*pi/2)*(ad_step-2)*ad_dt)
-         s2(2) = sin((3*pi/2)*(ad_step-1)*ad_dt)
-         s2(3) = sin((3*pi/2)*(ad_step)*ad_dt)
+         time = (ad_step-2)*ad_dt
+         call userq(1,1,1,1)
+         s2(1) = ft
+         time = (ad_step-1)*ad_dt
+         call userq(1,1,1,1)
+         s2(2) = ft
+         time = (ad_step)*ad_dt
+         call userq(1,1,1,1)
+         s2(3) = ft
       endif
       if (ad_step.eq.ad_nsteps) then
          s1(4) = 1
          s1(5) = 1
          s1(6) = 1
-         s2(4) = sin((3*pi/2)*(ad_step-2)*ad_dt)
-         s2(5) = sin((3*pi/2)*(ad_step-1)*ad_dt)
-         s2(6) = sin((3*pi/2)*ad_step*ad_dt)
+         time = (ad_step-2)*ad_dt
+         call userq(1,1,1,1)
+         s2(4) = ft
+         time = (ad_step-1)*ad_dt
+         call userq(1,1,1,1)
+         s2(5) = ft
+         time = (ad_step)*ad_dt
+         call userq(1,1,1,1)
+         s2(6) = ft
       endif
 
       return
@@ -1429,6 +1445,7 @@ c-----------------------------------------------------------------------
       subroutine setfavg
 
       include 'SIZE'
+      include 'TSTEP'
       include 'MOR'
 
       if (ad_step.eq.navg_step-3) then
@@ -1438,7 +1455,9 @@ c-----------------------------------------------------------------------
 
       pi  = 4.*atan(1.)
       rqa = rqa + 1.
-      rqta = rqta + sin((3*pi/2)*ad_step*ad_dt)
+      time = (ad_step)*ad_dt
+      call userq(1,1,1,1)
+      rqta = rqta + ft
 
       if (ad_step.eq.ad_nsteps) then
          s=1./real(ad_nsteps-navg_step+1)
