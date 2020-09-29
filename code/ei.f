@@ -3048,7 +3048,7 @@ c-----------------------------------------------------------------------
          t3 = glsc2(alphaj,rqtj,6)
          t4 = t3 + rqta
          write(6,*)'t4',t4,rqta
-         call add2s2(res_t,qqt,t4,n)
+         call add2s2(res_t,qqxyz,t4,n)
       endif
 
       if (nio.eq.0) write (6,*) 'exitting resid_in_source'

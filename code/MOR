@@ -38,7 +38,7 @@ c     parameters and common blocks for MOR
      $                  gy(lx1*ly1*lz1*lelm),
      $                  gz(lx1*ly1*lz1*lelm),
      $                  qq(lx1*ly1*lz1*lelm),
-     $                  qqt(lx1*ly1*lz1*lelm)
+     $                  qqxyz(lx1*ly1*lz1*lelm)
 
       common /morbuoy/ bux,buy,buz,bu_angle
 
