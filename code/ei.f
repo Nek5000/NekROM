@@ -2576,9 +2576,9 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine set_riesz_representator
+      subroutine set_riesz_rep
 
-      ! compute the riesz representator (only one)
+      ! compute the riesz representation (only one)
       ! solve one stoke problem and one poisson problem
 
       include 'SIZE'
@@ -2593,7 +2593,7 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelv
 
-      if (nio.eq.0) write (6,*) 'inside set_riesz_representator'
+      if (nio.eq.0) write (6,*) 'inside set_riesz_rep'
 
       call rone(ones,n)
       call rzero(zeros,n)
@@ -2623,7 +2623,7 @@ c-----------------------------------------------------------------------
 
       call nekgsync
 
-      if (nio.eq.0) write (6,*) 'exiting set_riesz_representator'
+      if (nio.eq.0) write (6,*) 'exiting set_riesz_rep'
 
       return
       end
