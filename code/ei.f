@@ -2631,7 +2631,7 @@ c-----------------------------------------------------------------------
       subroutine set_rom_residual
 
       ! compute the rom residual
-      ! make res_u and res_t in common blog
+      ! make res_u and res_t in common block
 
       include 'SIZE'
       include 'TOTAL'
