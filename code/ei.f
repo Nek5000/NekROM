@@ -2762,8 +2762,6 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine resid_in_time(msg)
 
-      ! still has to rewrite this subroutine
-
       ! compute the rom residual in time derivative term
 
       include 'SIZE'
@@ -2816,8 +2814,6 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine resid_in_diffusion(msg)
-
-      ! still has to rewrite this subroutine
 
       ! compute the rom residual in diffusion term
 
@@ -2892,8 +2888,6 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine resid_in_advec(msg)
 
-      ! still has to rewrite this subroutine
-
       ! compute the rom residual in advection term
 
       include 'SIZE'
@@ -2961,8 +2955,6 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine resid_in_buoy
 
-      ! still has to rewrite this subroutine
-
       ! compute the rom residual in buoyancy term
 
       include 'SIZE'
@@ -3020,7 +3012,6 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine resid_in_source
 
-      ! still has to rewrite this subroutine
       ! compute the rom residual in source term
 
       include 'SIZE'
@@ -3047,7 +3038,7 @@ c-----------------------------------------------------------------------
       if (ifsrct) then
          t3 = glsc2(alphaj,rqtj,6)
          t4 = t3 + rqta
-         write(6,*)'t4',t4,rqta
+         write(6,*)'t4',t4,t3,rqta
          call add2s2(res_t,qqxyz,t4,n)
       endif
 
