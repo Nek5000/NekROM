@@ -1410,17 +1410,17 @@ c-----------------------------------------------------------------------
          s1(1) = 1
          s1(2) = 1
          s1(3) = 1
-         s2(4) = sin((3*pi/2)*(ad_step-2)*ad_dt)
-         s2(5) = sin((3*pi/2)*(ad_step-1)*ad_dt)
-         s2(6) = sin((3*pi/2)*(ad_step)*ad_dt)
+         s2(1) = sin((3*pi/2)*(ad_step-2)*ad_dt)
+         s2(2) = sin((3*pi/2)*(ad_step-1)*ad_dt)
+         s2(3) = sin((3*pi/2)*(ad_step)*ad_dt)
       endif
       if (ad_step.eq.ad_nsteps) then
          s1(4) = 1
          s1(5) = 1
          s1(6) = 1
-         s2(4) = sin((3*pi/2)*ad_step*ad_dt)
+         s2(4) = sin((3*pi/2)*(ad_step-2)*ad_dt)
          s2(5) = sin((3*pi/2)*(ad_step-1)*ad_dt)
-         s2(6) = sin((3*pi/2)*(ad_step-2)*ad_dt)
+         s2(6) = sin((3*pi/2)*ad_step*ad_dt)
       endif
 
       return
