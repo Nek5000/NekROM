@@ -144,9 +144,15 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine get_saved_fields(usave,psave,tsave,nsu,nsp,nst,tk,fn)
+      subroutine read_fields(usave,psave,tsave,nsu,nsp,nst,tk,fn,ifa)
 
-c     This routine reads files specificed in fname
+      ! Reads and stores field files in given arrays
+
+      ! usave,psave,tsave := velocity, pressure, temperature storage
+      ! nsu,nsp,nst       := number of fields to save in each field
+      ! tk                := time at each snapshot
+      ! fn                := file name of the list file
+      ! ifa               := to average or not to average
 
       include 'SIZE'
       include 'TOTAL'
@@ -162,10 +168,12 @@ c     This routine reads files specificed in fname
       character*128 fn
       character*128 fnlint
 
+      logical ifa
+
       common /scrk2/ t4(lt),t5(lt),t6(lt)
 
       call nekgsync
-      gsf_time=dnekclock()
+      rf_time=dnekclock()
 
       ierr = 0
       call lints(fnlint,fn,128)
@@ -177,17 +185,21 @@ c     This routine reads files specificed in fname
       n2= lx2*ly2*lz2*nelt
 
       call push_sol(vx,vy,vz,pr,t)
-      call zero_sol(uavg,vavg,wavg,pavg,tavg)
-      call zero_sol(urms,vrms,wrms,prms,trms)
-      call opzero(vwms,wums,uvms)
+
+      if (ifa) then
+         call zero_sol(uavg,vavg,wavg,pavg,tavg)
+         call zero_sol(urms,vrms,wrms,prms,trms)
+         call opzero(vwms,wums,uvms)
+      endif
+
       call opcopy(t4,t5,t6,xm1,ym1,zm1)
 
       nsave=max(max(nsu,nsp),nst)
 
-      if (nio.eq.0) write (6,*) 'nsu,nsp,nst:',nsu,nsp,nst
+      if (nio.eq.0) write (6,*) 'nu,np,nt:',nsu,nsp,nst
 
       icount = 0
-      do ipass=1,nsave
+      do ip=1,nsave
          call blank(initc,127)
          initc(1) = 'done '
          if (nid.eq.0) read(77,127,end=998) initc(1)
@@ -203,15 +215,17 @@ c     This routine reads files specificed in fname
             tk(icount)=time
             time=ttmp
 
-            ip=ipass
-            call add_sol(uavg,vavg,wavg,pavg,tavg,vx,vy,vz,pr,t)
-            call add2col2(urms,vx,vx,n)
-            call add2col2(vrms,vy,vy,n)
-            if (ldim.eq.3) call add2col2(wrms,vz,vz,n)
-            call add2col2(trms,t,t,n)
-            call add2col2(vwms,vx,t,n)
-            call add2col2(wums,vy,t,n)
-            if (ldim.eq.3) call add2col2(uvms,vz,t,n)
+            if (ifa) then
+               call add_sol(uavg,vavg,wavg,pavg,tavg,vx,vy,vz,pr,t)
+               call add2col2(urms,vx,vx,n)
+               call add2col2(vrms,vy,vy,n)
+               if (ldim.eq.3) call add2col2(wrms,vz,vz,n)
+               call add2col2(trms,t,t,n)
+               call add2col2(vwms,vx,t,n)
+               call add2col2(wums,vy,t,n)
+               if (ldim.eq.3) call add2col2(uvms,vz,t,n)
+            endif
+
             if (icount.le.nsu)
      $         call opcopy(usave(1,1,ip),usave(1,2,ip),usave(1,ldim,ip),
      $                    vx,vy,vz)
@@ -230,29 +244,32 @@ c     This routine reads files specificed in fname
 
       call pop_sol(vx,vy,vz,pr,t)
 
-      su=1./real(min(nsave,nsu))
-      sp=1./real(min(nsave,nsp))
-      st=1./real(min(nsave,nst))
+      if (ifa) then
+         su=1./real(min(nsave,nsu))
+         sp=1./real(min(nsave,nsp))
+         st=1./real(min(nsave,nst))
 
-      call scale_sol(uavg,vavg,wavg,pavg,tavg,su)
-      call scale_sol(urms,vrms,wrms,prms,trms,su)
-      call opcmult(vwms,wums,uvms,su,n)
+         call scale_sol(uavg,vavg,wavg,pavg,tavg,su)
+         call scale_sol(urms,vrms,wrms,prms,trms,su)
+         call opcmult(vwms,wums,uvms,su,n)
+      endif
+
       call opcopy(xm1,ym1,zm1,t4,t5,t6)
 
       call nekgsync
-      if (nio.eq.0) write (6,*) 'gsf_time:',dnekclock()-gsf_time
+      if (nio.eq.0) write (6,*) 'rf_time:',dnekclock()-rf_time
 
       return
 
   199 continue ! exception handle for file not found
 
       call nekgsync
-      if (nio.eq.0) write (6,*) 'gsf_time:',dnekclock()-gsf_time
+      if (nio.eq.0) write (6,*) 'rf_time:',dnekclock()-rf_time
 
       ierr = 1
       if (nid.eq.0) ierr = iglmax(ierr,1)
       write (6,*) fnlint
-      call exitti('get_saved_fields did not find list file.$',ierr)
+      call exitti('read_fields did not find list file.$',ierr)
 
       return
       end
