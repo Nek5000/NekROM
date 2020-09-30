@@ -391,6 +391,8 @@ c-----------------------------------------------------------------------
          call sets(st0,tb,'ops/ct ')
       endif
 
+      if (rmode.eq.'AEQ') call setfluc
+
 c     if (ifbuoy.and.ifrom(1).and.ifrom(2)) call setbut(but0)
       if (ifbuoy.and.ifrom(1).and.ifrom(2)) then
          call setbut_xyz(but0_x,but0_y,but0_z)
@@ -820,7 +822,7 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
       ! POD radius of the filter for differential filter
       rdft=param(200)
 
-      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
          rtmp1(1,1)=nb*1.
          call dump_serial(rtmp1(1,1),1,'ops/nb ',nid)
       else
@@ -996,6 +998,20 @@ c           if (idc_t.gt.0) call rzero(tb,n)
             call sub2(vavg,vb,n)
             if (ldim.eq.3) call sub2(wavg,wb,n)
             if (ifpod(2)) call sub2(tavg,tb,n)
+         endif
+      endif
+
+      if (rmode.eq.'AEQ') then
+         iftmp=.false.
+         if (ifpod(1)) then
+            fname1='flucv.list'
+            call read_fields(flucv,fldtmp(1,1),fldtmp(1,2),
+     $         navg,1,1,tk,fname1,iftmp)
+         endif
+         if (ifpod(2)) then
+            fname1='fluct.list'
+            call read_fields(fldtmp(1,1),fldtmp(1,ldim+1),fluct,
+     $         navg,1,1,tk,fname1,iftmp)
          endif
       endif
 
@@ -1386,6 +1402,41 @@ c-----------------------------------------------------------------------
       endif
 
       if (nio.eq.0) write (6,*) 'exiting setf'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine setfluc(fv,ft,fname)
+
+      include 'SIZE'
+      include 'TSTEP'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /scrread/ tab((lub+1)**2)
+
+      real fv(navg,navg),ft(navg,navg)
+
+      character*128 fname
+
+      if (nio.eq.0) write (6,*) 'inside setfluc'
+
+      do j=1,navg
+      do i=1,navg
+         fv(i,j)=wl2vip(ub(1,i),vb(1,i),wb(1,i),
+     $                  flucv(1,1,j),flucv(1,2,j),flucv(1,3,j))
+      enddo
+      enddo
+
+      do j=1,navg
+      do i=1,navg
+         ft(i,j)=wl2sip(tb(1,i),fluct(1,j))
+      enddo
+      enddo
+
+      call dump_serial(fv,navg**2,'fv ',nid)
+      call dump_serial(ft,navg**2,'ft ',nid)
 
       return
       end

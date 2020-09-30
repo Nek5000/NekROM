@@ -56,6 +56,8 @@ c
          else if (index(c_out,'CP').eq.1) then
             rmode='CP '
             max_tr=ltr
+         else if (index(c_out,'AEQ').eq.1) then
+            rmode='AEQ'
          else
             write (6,*) 'invalid option for general:mode ',c_out
             ierr=ierr+1
@@ -298,7 +300,7 @@ c
          endif
       endif
 
-      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
          rtmp1(1,1)=nb*1.
          call dump_serial(rtmp1(1,1),1,'ops/nb ',nid)
       else
