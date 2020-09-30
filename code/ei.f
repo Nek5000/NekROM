@@ -2545,9 +2545,19 @@ c-----------------------------------------------------------------------
 
       ! ad_alpha(3,3)
 
-      alphaj(1)=-ad_alpha(1,3)-ad_alpha(2,3)
-      alphaj(2)=-ad_alpha(1,3)
-      alphaj(3)=0.
+      if (navg_step.eq.1) then
+         alphaj(1)=ad_alpha(1,1)+ad_alpha(2,2)-1
+         alphaj(2)=ad_alpha(1,2)-ad_alpha(1,3)
+         alphaj(3)=0.
+      elseif (navg_step.eq.2) then
+         alphaj(1)=ad_alpha(2,2)-ad_alpha(1,3)-ad_alpha(2,3)
+         alphaj(2)=ad_alpha(1,2)-ad_alpha(1,3)
+         alphaj(3)=0.
+      elseif (navg_step.ge.3) then
+         alphaj(1)=-ad_alpha(1,3)-ad_alpha(2,3)
+         alphaj(2)=-ad_alpha(1,3)
+         alphaj(3)=0.
+      endif
       alphaj(4)=-ad_alpha(3,3)
       alphaj(5)=-ad_alpha(2,3)-ad_alpha(3,3)
       alphaj(6)=-1.
@@ -2564,9 +2574,22 @@ c-----------------------------------------------------------------------
 
       ! ad_beta(4,3)
 
-      betaj(1)=ad_beta(3+1,3)
-      betaj(2)=ad_beta(2+1,3)+ad_beta(3+1,3)
-      betaj(3)=ad_beta(1+1,3)+ad_beta(2+1,3)+ad_beta(3+1,3)
+      if (navg_step.eq.1) then
+         betaj(1)=ad_beta(1+1,1)+ad_beta(2+1,2)+ad_beta(3+1,3)
+         betaj(2)=ad_beta(0+1,1)+ad_beta(1+1,2)
+     $           +ad_beta(2+1,3)+ad_beta(3+1,3)
+         betaj(3)=ad_beta(0+1,2)+ad_beta(1+1,3)
+     $           +ad_beta(2+1,3)+ad_beta(3+1,3)
+      elseif (navg_step.eq.2) then
+         betaj(1)=ad_beta(2+1,2)+ad_beta(3+1,3)
+         betaj(2)=ad_beta(1+1,2)+ad_beta(2+1,3)+ad_beta(3+1,3)
+         betaj(3)=ad_beta(0+1,2)+ad_beta(1+1,3)
+     $           +ad_beta(2+1,3)+ad_beta(3+1,3)
+      elseif (navg_step.ge.3) then
+         betaj(1)=ad_beta(3+1,3)
+         betaj(2)=ad_beta(2+1,3)+ad_beta(3+1,3)
+         betaj(3)=ad_beta(1+1,3)+ad_beta(2+1,3)+ad_beta(3+1,3)
+      endif
       betaj(4)=ad_beta(0+1,3)+ad_beta(1+1,3)+ad_beta(2+1,3)
       betaj(5)=ad_beta(0+1,3)+ad_beta(1+1,3)
       betaj(6)=ad_beta(0+1,3)
