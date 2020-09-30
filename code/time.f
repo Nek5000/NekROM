@@ -1119,7 +1119,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine set_uavg_in_ext(s1,s2,t1)
+      subroutine set_ucoef_in_ext(s1,s2,t1)
 
       include 'SIZE'
       include 'MOR'
@@ -1160,7 +1160,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine set_tavg_in_ext(s1,s2,t1,t2)
+      subroutine set_tcoef_in_ext(s1,s2,t1,t2)
 
       include 'SIZE'
       include 'MOR'
@@ -1391,7 +1391,7 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       call setuj_new(uj,u2j,ujfilter,u)
-      call set_uavg_in_ext(ua_wol,u2a_wol,u)
+      call set_ucoef_in_ext(ua_ext,u2a_ext,u)
 
       return
       end
@@ -1406,7 +1406,7 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       call settj_new(utj,uutj,utuj,ujfilter,ut)
-      call set_tavg_in_ext(uta_wol,utua_wol,u,ut)
+      call set_tcoef_in_ext(uta_ext,utua_ext,u,ut)
 
       if (ifsource) then
          call set_favg_in_ext(rqa,rqta)
