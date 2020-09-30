@@ -602,12 +602,12 @@ c-----------------------------------------------------------------------
          else
             call evalc(tmp(1),ctmp,ctl,ut)
          endif
-c     call add2(tmp(1),st0(1),nb)
-      call shift3(ctr,tmp(1),nb)
+c        call add2(tmp(1),st0(1),nb)
+         call shift3(ctr,tmp(1),nb)
 
-      call mxm(ctr,nb,ad_alpha(1,icount),3,tmp(1),1)
+         call mxm(ctr,nb,ad_alpha(1,icount),3,tmp(1),1)
 
-      call sub2(rhs,tmp(1),nb)
+         call sub2(rhs,tmp(1),nb)
       endif
 
       if (ifsource) then
