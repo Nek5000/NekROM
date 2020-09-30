@@ -1119,7 +1119,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine setuavg_new(s1,s2,t1)
+      subroutine set_uavg_in_ext(s1,s2,t1)
 
       include 'SIZE'
       include 'MOR'
@@ -1135,7 +1135,6 @@ c-----------------------------------------------------------------------
 
       call add2(s1,t1(0,1),nb+1)
 
-      ! Leray has to be fixed
       if (rfilter.eq.'LER'.and.rbf.gt.0) then 
          call copy(tmp,t1(0,1),nb+1)
          call pod_proj(tmp(1),rbf,nb,'step  ')
@@ -1161,7 +1160,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine settavg_new(s1,s2,t1,t2)
+      subroutine set_tavg_in_ext(s1,s2,t1,t2)
 
       include 'SIZE'
       include 'MOR'
@@ -1342,26 +1341,28 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine setfavg
+      subroutine set_favg_in_ext(s1,s2)
 
       include 'SIZE'
       include 'TSTEP'
       include 'MOR'
 
+      real s1,s2
+
       if (ad_step.eq.navg_step-3) then
-         rqa = 0.0
-         rqta = 0.0
+         s1 = 0.0
+         s2 = 0.0
       endif
 
-      rqa = rqa + 1.
+      s1 = s1 + 1.
       time = (ad_step)*ad_dt
       call userq(1,1,1,1)
-      rqta = rqta + ft
+      s2 = s2 + ft
 
       if (ad_step.eq.ad_nsteps) then
          s=1./real(ad_nsteps-navg_step+1)
-         rqa = rqa*s
-         rqta = rqta*s
+         s1 = s1*s
+         s2 = s2*s
       endif
 
       return
@@ -1390,7 +1391,7 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       call setuj_new(uj,u2j,ujfilter,u)
-      call setuavg_new(ua_wol,u2a_wol,u)
+      call set_uavg_in_ext(ua_wol,u2a_wol,u)
 
       return
       end
@@ -1404,11 +1405,11 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
 
-      call settavg_new(uta_wol,utua_wol,u,ut)
       call settj_new(utj,uutj,utuj,ujfilter,ut)
+      call set_tavg_in_ext(uta_wol,utua_wol,u,ut)
 
       if (ifsource) then
-         call setfavg(rqa,rqta)
+         call set_favg_in_ext(rqa,rqta)
          call setfj(rqj,rqtj)
       endif
 
