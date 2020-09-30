@@ -60,7 +60,7 @@ c-----------------------------------------------------------------------
       ! we do not need to solve for pressure in ROM
 c        nn=lx2*ly2*lz2*nelt
 c     do i=1,ns
-c        call copy(pb(1,i),ps(1,i),nn)
+c        call copy(pb(1,i),prs(1,i),nn)
 c     enddo
 
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF') call dump_bas
