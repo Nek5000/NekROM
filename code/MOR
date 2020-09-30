@@ -2,6 +2,10 @@ c     parameters and common blocks for MOR
 
       include 'LMOR'
 
+      ! for now fix lbavg
+
+      parameter (lbavg=10)
+
       common /morgram/ ug(ls,ls,0:ldimt1)
       common /moreig/ evec(ls,lb,0:ldimt1),eval(ls,0:ldimt1)
 
@@ -92,6 +96,9 @@ c     parameters and common blocks for MOR
      $                    thc_diag(0:lub,0:lub)
 
       common /mortmp/ ctmp((lub*(lub+1)*(lub+1))/lpmin+1)
+
+      common /morftmp/ fldtmp(lx1*ly1*lz1*lelm,ldim+1)
+
       common /moritmp/ itmp1(lub),itmp2(lub)
       common /morrtmp/ rtmp1(lub,lub),rtmp2(lb,lb),rtmp3(lb,lb)
       common /morstmp/ stmp(lb+1,ls)
@@ -202,9 +209,11 @@ c     parameters and common blocks for MOR
       common /morifilt/  rbf
 
       ! Tensor Decomposition 
+
       real cua,cub,cuc,cp_uw
       real cta,ctb,ctc,cp_tw
       integer ntr,max_tr
+
       common /cp_decomp/ cua((lub+1)*ltr),cub((lub+1)*ltr),
      $                   cuc((lub+1)*ltr),cp_uw(ltr),
      $                   cta((lub+1)*ltr),ctb((lub+1)*ltr),
@@ -212,3 +221,12 @@ c     parameters and common blocks for MOR
       common /cp_rank/ ntr,max_tr
       common /cp_aux/  cu0k((lub+1)**2), cuj0((lub+1)**2),
      $                 ct0k((lub+1)**2), ctj0((lub+1)**2)
+
+      ! Average Equation
+
+      common /morflucp/ nbavg
+
+      common /morflucf/ flucv(lx1*ly1*lz1*lelm,ldim,lbavg),
+     $                  fluct(lx1*ly1*lz1*lelm,lbavg)
+
+      common /morflucop/ fv_op(lbavg*lbavg),ft_op(lbavg*lbavg)
