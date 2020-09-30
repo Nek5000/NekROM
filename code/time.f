@@ -25,8 +25,6 @@ c-----------------------------------------------------------------------
       rhs(0,1)=1.
       rhs(0,2)=1.
 
-      call checker('bab',ad_step)
-
 c     if (icount.le.2) then
       if (.false.) then
          if (ifrom(1)) call setr_v(rhs(1,1),icount)
@@ -50,12 +48,9 @@ c     if (icount.le.2) then
          return
       endif
 
-      call checker('bac',ad_step)
-
       if (ifrom(2)) then
          if (ad_step.le.3) then
             ttime=dnekclock()
-            call checker('bad',ad_step)
             call seth(hlm(1,2),at,bt,1./ad_pe)
             if (ad_step.eq.3)
      $         call dump_serial(hlm(1,2),nb*nb,'ops/ht ',nid)
@@ -76,7 +71,6 @@ c     if (icount.le.2) then
                enddo
             endif
             lu_time=lu_time+dnekclock()-ttime
-            call checker('bae',ad_step)
             call update_k
          endif
 
@@ -94,7 +88,6 @@ c     if (icount.le.2) then
             endif
             call mxm(rhs(1,2),1,wt(1,2),nb,rhstmp(1),nb)
             call copy(rhs(1,2),rhstmp(1),nb)
-            call checker('baf',ad_step)
          else
             scopt='tcopt'
             call mxm(ut,nb+1,ad_alpha(1,icount),icount,utmp1,1)
@@ -118,20 +111,16 @@ c     if (icount.le.2) then
          endif
       endif
 
-      call checker('bag',ad_step)
-
       if (ifrom(1)) then
          if (ad_step.le.3) then
             ttime=dnekclock()
             call seth(hlm,au,bu,1./ad_re)
-            call checkera('bah',hlm,nb*nb,ad_step)
             if (ad_step.eq.3) call dump_serial(hlm,nb*nb,'ops/hu ',nid)
             do j=1,nb-nplay
             do i=1,nb-nplay
                hlm(i+(j-1)*(nb-nplay),1)=hlm(i+nplay+(j+nplay-1)*nb,1)
             enddo
             enddo
-            call checkera('bai',hlm,nb*nb,ad_step)
             if (nio.eq.0) write (6,*) 'check ifdecpl',ifdecpl,'cp3'
             if (ifdecpl) then
                call copy(hinv,hlm,(nb-nplay)**2)
@@ -139,7 +128,6 @@ c     if (icount.le.2) then
             else
                call invmat(hinv,hlu,hlm,ihlu,ihlu2,nb-nplay)
             if (nio.eq.0) write (6,*) 'check nplay',nplay,'cp3'
-               call checkera('baj',hinv,nb*nb,ad_step)
                call rzero(wt,(nb-nplay)**2)
                do i=1,nb-nplay
                   wt(i+(nb-nplay)*(i-1),1)=1.
@@ -154,9 +142,7 @@ c     if (icount.le.2) then
          ttime=dnekclock()
          if ((isolve.eq.0).or.(icopt.eq.2)) then ! standard matrix inversion
             call mxm(wt,nb,rhs(1,1),nb,rhstmp(1),1)
-            call checkera('bak',rhstmp(1),nb,ad_step)
             call mxm(hinv,nb,rhstmp(1),nb,rhs(1,1),1)
-            call checkera('bal',hinv(1,1),nb*nb,ad_step)
             if (ifdecpl) then
             do i=1,nb
                if (rhs(i,1).gt.upmax(i)) rhs(i,1)=upmax(i)-updis(i)*eps
@@ -164,7 +150,6 @@ c     if (icount.le.2) then
             enddo
             endif
             call mxm(rhs(1,1),1,wt,nb,rhstmp(1),nb)
-            call checkera('bam',rhstmp(1),nb,ad_step)
             call copy(rhs(1,1),rhstmp(1),nb)
          else 
             scopt='ucopt'
@@ -181,7 +166,6 @@ c     if (icount.le.2) then
             call mxm(rhstmp(1),1,wt,nb,rhs(1,1),nb)
 
          endif
-         call checkera('ban',rhstmp(1),nb,ad_step)
          solve_time=solve_time+dnekclock()-ttime
          if (nplay.gt.0) then
             do i=1,nplay
@@ -191,9 +175,7 @@ c     if (icount.le.2) then
       endif
 
       if (ifrom(2)) call shift3(ut,rhs(0,2),nb+1)
-         call checker('bal',ad_step)
       if (ifrom(1)) call shift3(u,rhs,nb+1)
-         call checker('bao',ad_step)
 
       ustep_time=ustep_time+dnekclock()-ulast_time
 
@@ -228,8 +210,8 @@ c-----------------------------------------------------------------------
 
       if (ifrom(1)) then
 c        call setuavg(ua,u2a,ua_wol,u2a_wol,u)
-         call setuavg_new(ua,u2a,ua_wol,u2a_wol,u)
 c        call setuj(uj,u2j,u)
+         call setuavg_new(ua,u2a,ua_wol,u2a_wol,u)
          call setuj_new(uj,u2j,ujfilter,u)
          call count_gal(num_galu,anum_galu,rhstmp(1),upmax,upmin,
      $   1e-16,nb)
@@ -237,9 +219,13 @@ c        call setuj(uj,u2j,u)
 
       if (ifrom(2)) then
 c        call settavg(uta,uuta,utua,ut2a,uta_wol,utua_wol,u,ut)
-         call settavg_new(uta,uuta,utua,ut2a,uta_wol,utua_wol,u,ut)
 c        call settj(utj,uutj,utuj,uj,ut)
+         call settavg_new(uta,uuta,utua,ut2a,uta_wol,utua_wol,u,ut)
          call settj_new(utj,uutj,utuj,ujfilter,ut)
+         if (ifsource) then
+            call setfavg(rqa,rqta)
+            call setfj(rqj,rqtj)
+         endif
          call count_gal(num_galt,anum_galt,ut(1),tmax,tmin,1e-16,nb)
       endif
 
@@ -569,6 +555,8 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'
       include 'MOR'
+      include 'INPUT'
+      include 'TSTEP'
 
       common /scrrhs/ tmp(0:lb),tmp2(0:lb)
 
@@ -585,25 +573,40 @@ c-----------------------------------------------------------------------
          rhs(i)=rhs(i)+s*at0(1+i)
       enddo
 
-      if (rmode.eq.'CP ') then
-         if (ifcore) then 
-            call evalc4(tmp(1),cta,ctb,ctc,cp_tw,ctl,ctj0,ct0k,ut)
+      if (ifadvc(2)) then
+         write(6,*)'do advection'
+         if (rmode.eq.'CP ') then
+            if (ifcore) then
+               call evalc4(tmp(1),cta,ctb,ctc,cp_tw,ctl,ctj0,ct0k,ut)
+            else
+               call evalc3(tmp(1),cta,ctb,ctc,cp_tw,ut)
+            endif
          else
-            call evalc3(tmp(1),cta,ctb,ctc,cp_tw,ut)
-         endif 
-      else
-         call evalc(tmp(1),ctmp,ctl,ut)
+            call evalc(tmp(1),ctmp,ctl,ut)
+         endif
+c        call add2(tmp(1),st0(1),nb)
+         call shift3(ctr,tmp(1),nb)
+
+         call mxm(ctr,nb,ad_alpha(1,icount),3,tmp(1),1)
+
+         call sub2(rhs,tmp(1),nb)
       endif
-c     call add2(tmp(1),st0(1),nb)
-
-      call shift3(ctr,tmp(1),nb)
-
-      call mxm(ctr,nb,ad_alpha(1,icount),3,tmp(1),1)
-
-      call sub2(rhs,tmp(1),nb)
 
       if (ifsource) then
          call add2(rhs,rq,nb)
+         if (ifsrct) then
+            rqt_time_coef(3) = rqt_time_coef(2)
+            rqt_time_coef(2) = rqt_time_coef(1)
+            time = (ad_step-1)*ad_dt
+            call userq(1,1,1,1)
+            rqt_time_coef(1) = ft
+            if (ad_step .le. 4) then
+               write(6,*)'ad_step', ad_step
+               write(6,*)'extrapolation points:', rqt_time_coef(1:3)
+            endif
+            rqttcext = glsc2(ad_alpha(1,icount),rqt_time_coef,3)
+            call add2s2(rhs,rqt,rqttcext,nb)
+         endif
       endif
 
       return
@@ -618,16 +621,10 @@ c-----------------------------------------------------------------------
 
       real rhs(nb)
 
-      call checkera('ba1',rhs,nb,ad_step)
-
       call mxm(u,nb+1,ad_beta(2,icount),3,tmp1,1)
-      call checkera('ba2',tmp1,nb,ad_step)
       call mxm(bu,nb,tmp1(1),nb,rhs,1)
-      call checkera('ba3',rhs,nb,ad_step)
 
       call cmult(rhs,-1.0/ad_dt,nb)
-
-      call checkera('ba4',rhs,nb,ad_step)
 
       s=-1.0/ad_re
 
@@ -646,7 +643,6 @@ c-----------------------------------------------------------------------
       endif
 
       call chsign(tmp1(1),nb)
-      call checkera('ba5',tmp1(1),nb,ad_step)
 
       if (ifbuoy) then
          call mxm(but0,nb+1,ut,nb+1,tmp2(0),1)
@@ -661,7 +657,6 @@ c-----------------------------------------------------------------------
       call mxm(fu,nb,ad_alpha(1,icount),3,tmp1(1),1)
 
       call add2(rhs,tmp1(1),nb)
-      call checkera('ba5',rhs,nb,ad_step)
 
       ! artificial viscosity
 
@@ -911,6 +906,9 @@ c-----------------------------------------------------------------------
       if (ad_step.le.3) then
          call cmult2(flu,b,ad_beta(1,ad_step)/ad_dt,nb*nb)
          call add2s2(flu,a,ad_diff,nb*nb)
+         if (ifhelm) then
+            call add2s2(flu,b,ad_mu,nb*nb)
+         endif
       endif
          
       return
@@ -1192,6 +1190,7 @@ c-----------------------------------------------------------------------
          call rzero(s1,nb+1)
          call rzero(s2,(nb+1)**2)
       endif
+
       if (ad_step.eq.navg_step-3) then
          call rzero(s3,(nb+1))
          call rzero(s4,(nb+1)**2)
@@ -1305,11 +1304,18 @@ c-----------------------------------------------------------------------
       real s1(0:nb,6),s2(0:nb,0:nb,6),t1(0:nb,3)
       real s3(0:nb,6)
 
-      if (ad_step.eq.(navg_step-1)) then
+      logical ifbdf1, ifbdf2, ifbdf3
+
+      ifbdf1 = (navg_step.eq.1.and.ad_step.eq.navg_step+1)
+      ifbdf2 = (navg_step.eq.2.and.ad_step.eq.navg_step)
+      ifbdf3 = (navg_step.ge.3.and.ad_step.eq.navg_step-1)
+
+      if (ifbdf1.or.ifbdf2.or.ifbdf3) then
          call copy(s1(0,1),t1(0,3),nb+1)
          call copy(s1(0,2),t1(0,2),nb+1)
          call copy(s1(0,3),t1(0,1),nb+1)
       endif
+
       if (ad_step.eq.ad_nsteps) then
          call copy(s1(0,4),t1(0,3),nb+1)
          call copy(s1(0,5),t1(0,2),nb+1)
@@ -1345,7 +1351,13 @@ c-----------------------------------------------------------------------
       real s1(0:nb,6),s2(0:nb,0:nb,6),s3(0:nb,0:nb,6)
       real t1(0:nb,6),t2(0:nb,3)
 
-      if (ad_step.eq.(navg_step-1)) then
+      logical ifbdf1, ifbdf2, ifbdf3
+
+      ifbdf1 = (navg_step.eq.1.and.ad_step.eq.navg_step+1)
+      ifbdf2 = (navg_step.eq.2.and.ad_step.eq.navg_step)
+      ifbdf3 = (navg_step.ge.3.and.ad_step.eq.navg_step-1)
+
+      if (ifbdf1.or.ifbdf2.or.ifbdf3) then
          call copy(s1(0,1),t2(0,3),nb+1)
          call copy(s1(0,2),t2(0,2),nb+1)
          call copy(s1(0,3),t2(0,1),nb+1)
@@ -1371,6 +1383,78 @@ c-----------------------------------------------------------------------
          enddo
          enddo
          enddo
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine setfj(s1,s2)
+
+      include 'SIZE'
+      include 'TSTEP'
+      include 'MOR'
+
+      real s1(6),s2(6)
+
+      logical ifbdf1, ifbdf2, ifbdf3
+
+      ifbdf1 = (navg_step.eq.1.and.ad_step.eq.navg_step+1)
+      ifbdf2 = (navg_step.eq.2.and.ad_step.eq.navg_step)
+      ifbdf3 = (navg_step.ge.3.and.ad_step.eq.navg_step-1)
+
+      if (ifbdf1.or.ifbdf2.or.ifbdf3) then
+         s1(1) = 1
+         s1(2) = 1
+         s1(3) = 1
+         time = (ad_step-2)*ad_dt
+         call userq(1,1,1,1)
+         s2(1) = ft
+         time = (ad_step-1)*ad_dt
+         call userq(1,1,1,1)
+         s2(2) = ft
+         time = (ad_step)*ad_dt
+         call userq(1,1,1,1)
+         s2(3) = ft
+      endif
+
+      if (ad_step.eq.ad_nsteps) then
+         s1(4) = 1
+         s1(5) = 1
+         s1(6) = 1
+         time = (ad_step-2)*ad_dt
+         call userq(1,1,1,1)
+         s2(4) = ft
+         time = (ad_step-1)*ad_dt
+         call userq(1,1,1,1)
+         s2(5) = ft
+         time = (ad_step)*ad_dt
+         call userq(1,1,1,1)
+         s2(6) = ft
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine setfavg
+
+      include 'SIZE'
+      include 'TSTEP'
+      include 'MOR'
+
+      if (ad_step.eq.navg_step-3) then
+         rqa = 0.0
+         rqta = 0.0
+      endif
+
+      rqa = rqa + 1.
+      time = (ad_step)*ad_dt
+      call userq(1,1,1,1)
+      rqta = rqta + ft
+
+      if (ad_step.eq.ad_nsteps) then
+         s=1./real(ad_nsteps-navg_step+1)
+         rqa = rqa*s
+         rqta = rqta*s
       endif
 
       return

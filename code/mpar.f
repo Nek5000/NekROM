@@ -82,7 +82,7 @@ c
          if (index(c_out,'V').eq.1) then
             ifpod(1)=.true.
          else if (index(c_out,'T').eq.1) then
-            rmode='ONB'
+            ifpod(2)=.true.
          else if (index(c_out,'VT').eq.1) then
             ifpod(1)=.true.
             ifpod(2)=ifheat

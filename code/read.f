@@ -106,9 +106,10 @@ c-----------------------------------------------------------------------
          if (ifrom(1)) nsu=nn
          if (ifrom(2)) nst=nn
 
-         call get_saved_fields(us0,ps,ts0,nsu,nsp,nst,timek,'bas.list ')
+         call get_saved_fields(us0,prs,ts0,nsu,nsp,nst,
+     $                         timek,'bas.list ')
          do i=0,nb
-            if (ifrom(0)) call copy(pb(1,i),ps(1,i+1),n2)
+            if (ifrom(0)) call copy(pb(1,i),prs(1,i+1),n2)
             if (ifrom(1)) call opcopy(ub(1,i),vb(1,i),wb(1,i),
      $                        us0(1,1,i+1),us0(1,2,i+1),us0(1,ldim,i+1))
             if (ifrom(2)) call copy(tb(1,i),ts0(1,i+1),n)

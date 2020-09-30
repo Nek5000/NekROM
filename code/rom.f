@@ -23,8 +23,6 @@ c-----------------------------------------------------------------------
          call rom_setup
       endif
 
-      call checker('baa',ad_step)
-
       ad_step = istep
       jfield=ifield
       ifield=1
@@ -38,11 +36,8 @@ c-----------------------------------------------------------------------
      $   'error: running rom_update with ifflow = .true.$',nelv)
          if (istep.gt.0) then
             call bdfext_step
-            call checker('bba',ad_step)
             call post
-            call checker('bca',ad_step)
             call reconv(vx,vy,vz,u) ! reconstruct velocity to be used in h-t
-            call checker('bda',ad_step)
          endif
       else
          if (nio.eq.0) write (6,*) 'starting rom_step loop',ad_nsteps
@@ -214,8 +209,6 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelt
 
-      call checker('aaa',ad_step)
-
       call set_bdf_coef(ad_alpha,ad_beta)
       call mor_init_params
 
@@ -233,8 +226,6 @@ c     call k_mean(k,nsu,nsp,nst,'sample.list ',k)
 c     enddo
 c     call exitt0
 
-      call checker('aca',ad_step)
-
       inquire (file='ops/evec',exist=ifexist)
       if (ifexist) then
          open (unit=10,file='ops/evec')
@@ -245,27 +236,18 @@ c     call exitt0
       else
          call setgram
          call setevec
-         call checker('ada',ad_step)
-
          call setbases
-
-         call checker('aea',ad_step)
       endif
 
 c     call average_in_xy
 c     call average_in_y
       call setops
-      call checker('afa',ad_step)
       call setu
-      call checker('aga',ad_step)
 
       call setf
-      call checker('aha',ad_step)
 
       call setqoi
-      call checker('aia',ad_step)
       call setmisc
-      call checker('aja',ad_step)
 
       if (ifei) then
 c        call set_sigma
@@ -273,13 +255,10 @@ c        call set_sigma
       endif
 
       if (ifplay) call set_trace
-      call checker('ala',ad_step)
 
       if (nio.eq.0) write (6,*) 'end range setup'
 
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF') call dump_misc
-
-      call checker('ama',ad_step)
 
       time=ttime
 
@@ -944,7 +923,7 @@ c-----------------------------------------------------------------------
          if (ifrom(0)) nsp=lsp
          if (ifrom(1)) nsu=lsu
          if (ifrom(2)) nst=lst
-         call get_saved_fields(us0,ps,ts0,nsu,nsp,nst,timek,fname1)
+         call get_saved_fields(us0,prs,ts0,nsu,nsp,nst,timek,fname1)
 
          fname1='avg.list'
          inquire (file=fname1,exist=alist)
@@ -1399,6 +1378,15 @@ c-----------------------------------------------------------------------
          call copy(wk1,qq,n)
          call binv1(wk1)
          call outpost(vx,vy,vz,pavg,wk1,'qqq')
+         if (ifsrct) then
+            do i=1,nb
+               rqt(i)=glsc2(qqxyz,tb(1,i),n)
+               if (nio.eq.0) write (6,*) rqt(i),i,'rqt'
+            enddo
+            call copy(wk1,qqxyz,n)
+            call binv1(wk1)
+            call outpost(vx,vy,vz,pavg,wk1,'qqq')
+         endif
       endif
 
       if (nio.eq.0) write (6,*) 'exiting setf'
