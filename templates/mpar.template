@@ -1,5 +1,5 @@
 [GENERAL]
-mode    = all # can be 
+mode    = all # (off=offline,on=online,all=both,onb=online with bases,cp)
 field   = vt  # fields to perform the pod-rom (v=vel.,t=temp.,vt=both)
 nb      = 10  # number of modes for the pod-rom
 ei      = no  # error-indicator
