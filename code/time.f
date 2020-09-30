@@ -228,8 +228,8 @@ c-----------------------------------------------------------------------
 
       if (ifrom(1)) then
 c        call setuavg(ua,u2a,ua_wol,u2a_wol,u)
-         call setuavg_new(ua,u2a,ua_wol,u2a_wol,u)
 c        call setuj(uj,u2j,u)
+         call setuavg_new(ua,u2a,ua_wol,u2a_wol,u)
          call setuj_new(uj,u2j,ujfilter,u)
          call count_gal(num_galu,anum_galu,rhstmp(1),upmax,upmin,
      $   1e-16,nb)
@@ -237,8 +237,8 @@ c        call setuj(uj,u2j,u)
 
       if (ifrom(2)) then
 c        call settavg(uta,uuta,utua,ut2a,uta_wol,utua_wol,u,ut)
-         call settavg_new(uta,uuta,utua,ut2a,uta_wol,utua_wol,u,ut)
 c        call settj(utj,uutj,utuj,uj,ut)
+         call settavg_new(uta,uuta,utua,ut2a,uta_wol,utua_wol,u,ut)
          call settj_new(utj,uutj,utuj,ujfilter,ut)
          if (ifsource) then
             call setfavg(rqa,rqta)
@@ -1216,6 +1216,7 @@ c-----------------------------------------------------------------------
          call rzero(s1,nb+1)
          call rzero(s2,(nb+1)**2)
       endif
+
       if (ad_step.eq.navg_step-3) then
          call rzero(s3,(nb+1))
          call rzero(s4,(nb+1)**2)
@@ -1329,11 +1330,18 @@ c-----------------------------------------------------------------------
       real s1(0:nb,6),s2(0:nb,0:nb,6),t1(0:nb,3)
       real s3(0:nb,6)
 
-      if (ad_step.eq.(navg_step-1)) then
+      logical ifbdf1, ifbdf2, ifbdf3
+
+      ifbdf1 = (navg_step.eq.1.and.ad_step.eq.navg_step+1)
+      ifbdf2 = (navg_step.eq.2.and.ad_step.eq.navg_step)
+      ifbdf3 = (navg_step.ge.3.and.ad_step.eq.navg_step-1)
+
+      if (ifbdf1.or.ifbdf2.or.ifbdf3) then
          call copy(s1(0,1),t1(0,3),nb+1)
          call copy(s1(0,2),t1(0,2),nb+1)
          call copy(s1(0,3),t1(0,1),nb+1)
       endif
+
       if (ad_step.eq.ad_nsteps) then
          call copy(s1(0,4),t1(0,3),nb+1)
          call copy(s1(0,5),t1(0,2),nb+1)
@@ -1369,7 +1377,13 @@ c-----------------------------------------------------------------------
       real s1(0:nb,6),s2(0:nb,0:nb,6),s3(0:nb,0:nb,6)
       real t1(0:nb,6),t2(0:nb,3)
 
-      if (ad_step.eq.(navg_step-1)) then
+      logical ifbdf1, ifbdf2, ifbdf3
+
+      ifbdf1 = (navg_step.eq.1.and.ad_step.eq.navg_step+1)
+      ifbdf2 = (navg_step.eq.2.and.ad_step.eq.navg_step)
+      ifbdf3 = (navg_step.ge.3.and.ad_step.eq.navg_step-1)
+
+      if (ifbdf1.or.ifbdf2.or.ifbdf3) then
          call copy(s1(0,1),t2(0,3),nb+1)
          call copy(s1(0,2),t2(0,2),nb+1)
          call copy(s1(0,3),t2(0,1),nb+1)
@@ -1408,7 +1422,13 @@ c-----------------------------------------------------------------------
 
       real s1(6),s2(6)
 
-      if (ad_step.eq.(navg_step-1)) then
+      logical ifbdf1, ifbdf2, ifbdf3
+
+      ifbdf1 = (navg_step.eq.1.and.ad_step.eq.navg_step+1)
+      ifbdf2 = (navg_step.eq.2.and.ad_step.eq.navg_step)
+      ifbdf3 = (navg_step.ge.3.and.ad_step.eq.navg_step-1)
+
+      if (ifbdf1.or.ifbdf2.or.ifbdf3) then
          s1(1) = 1
          s1(2) = 1
          s1(3) = 1
@@ -1422,6 +1442,7 @@ c-----------------------------------------------------------------------
          call userq(1,1,1,1)
          s2(3) = ft
       endif
+
       if (ad_step.eq.ad_nsteps) then
          s1(4) = 1
          s1(5) = 1
