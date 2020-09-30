@@ -1119,85 +1119,85 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine setuavg_new(s3,s4,t1)
+      subroutine setuavg_new(s1,s2,t1)
 
       include 'SIZE'
       include 'MOR'
 
-      real s3(0:nb),s4(0:nb,0:nb)
-      real t1(0:nb)
+      real s1(0:nb),s2(0:nb,0:nb)
+      real t1(0:nb,3)
       real tmp(0:nb)
 
       if (ad_step.eq.navg_step-3) then
-         call rzero(s3,(nb+1))
-         call rzero(s4,(nb+1)**2)
+         call rzero(s1,(nb+1))
+         call rzero(s2,(nb+1)**2)
       endif
 
-      call add2(s3,t1,nb+1)
+      call add2(s1,t1(0,1),nb+1)
 
       ! Leray has to be fixed
       if (rfilter.eq.'LER'.and.rbf.gt.0) then 
-         call copy(tmp,t1,nb+1)
+         call copy(tmp,t1(0,1),nb+1)
          call pod_proj(tmp(1),rbf,nb,'step  ')
          do j=0,nb
          do i=0,nb
-            s4(i,j)=s4(i,j)+t1(i)*tmp(j)
+            s2(i,j)=s2(i,j)+t1(i,1)*tmp(j)
          enddo
          enddo
       else
          do j=0,nb
          do i=0,nb
-            s4(i,j)=s4(i,j)+t1(i)*t1(j)
+            s2(i,j)=s2(i,j)+t1(i,1)*t1(j,1)
          enddo
          enddo
       endif
 
       if (ad_step.eq.ad_nsteps) then
          s=1./real(ad_nsteps-navg_step+1)
-         call cmult(s3,s,nb+1)
-         call cmult(s4,s,(nb+1)**2)
+         call cmult(s1,s,nb+1)
+         call cmult(s2,s,(nb+1)**2)
       endif
 
       return
       end
 c-----------------------------------------------------------------------
-      subroutine settavg_new(s5,s6,t1,t2)
+      subroutine settavg_new(s1,s2,t1,t2)
 
       include 'SIZE'
       include 'MOR'
 
-      real s5(0:nb),s6(0:nb,0:nb)
-      real t1(0:nb),t2(0:nb)
+      real s1(0:nb),s2(0:nb,0:nb)
+      real t1(0:nb,3),t2(0:nb,3)
       real tmp(0:nb)
 
       if (ad_step.eq.navg_step-3) then
-         call rzero(s5,(nb+1))
-         call rzero(s6,(nb+1)**2)
+         call rzero(s1,(nb+1))
+         call rzero(s2,(nb+1)**2)
       endif
 
-      call add2(s5,t2,nb+1)
+      call add2(s2,t2(0,1),nb+1)
 
       ! Leray has to be fixed
       if (rfilter.eq.'LER'.and.rbf.gt.0) then 
-         call copy(tmp,t1,nb+1)
+         call copy(tmp,t1(0,1),nb+1)
          call pod_proj(tmp(1),rbf,nb,'step  ')
          do j=0,nb
          do i=0,nb
-            s6(i,j)=s6(i,j)+tmp(j)*t2(i)
+            s2(i,j)=s2(i,j)+tmp(j)*t2(i,1)
          enddo
          enddo
       else
          do j=0,nb
          do i=0,nb
-            s6(i,j)=s6(i,j)+t1(j)*t2(i)
+            s2(i,j)=s2(i,j)+t1(j,1)*t2(i,1)
          enddo
          enddo
       endif
 
       if (ad_step.eq.ad_nsteps) then
          s=1./real(ad_nsteps-navg_step+1)
-         call cmult(s5,s,nb+1)
-         call cmult(s6,s,(nb+1)**2)
+         call cmult(s1,s,nb+1)
+         call cmult(s2,s,(nb+1)**2)
       endif
 
       return
@@ -1406,6 +1406,7 @@ c-----------------------------------------------------------------------
 
       call settavg_new(uta_wol,utua_wol,u,ut)
       call settj_new(utj,uutj,utuj,ujfilter,ut)
+
       if (ifsource) then
          call setfavg(rqa,rqta)
          call setfj(rqj,rqtj)
