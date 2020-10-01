@@ -372,7 +372,7 @@ c-----------------------------------------------------------------------
          call sets(st0,tb,'ops/ct ')
       endif
 
-      if (rmode.eq.'AEQ') call setfluc
+      if (rmode.eq.'AEQ') call setfluc(fv_op,ft_op)
 
 c     if (ifbuoy.and.ifrom(1).and.ifrom(2)) call setbut(but0)
       if (ifbuoy.and.ifrom(1).and.ifrom(2)) then
@@ -1397,7 +1397,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine setfluc(fv,ft,fname)
+      subroutine setfluc(fv,ftt,fname)
 
       include 'SIZE'
       include 'TSTEP'
@@ -1407,27 +1407,32 @@ c-----------------------------------------------------------------------
 
       common /scrread/ tab((lub+1)**2)
 
-      real fv(navg,navg),ft(navg,navg)
+      real fv(nbavg,nbavg),ftt(nbavg,nbavg)
 
       character*128 fname
 
-      if (nio.eq.0) write (6,*) 'inside setfluc'
+      if (nio.eq.0) write (6,*) 'inside setfluc',nbavg
 
-      do j=1,navg
-      do i=1,navg
+      nbavg=2
+
+      do j=1,nbavg
+      do i=1,nbavg
          fv(i,j)=wl2vip(ub(1,i),vb(1,i),wb(1,i),
-     $                  flucv(1,1,j),flucv(1,2,j),flucv(1,3,j))
+     $                  flucv(1,1,j),flucv(1,2,j),flucv(1,ldim,j))
+         fv(i,j)=wl2vip(ub(1,i),vb(1,i),wb(1,i),
+     $                  ub(1,j),vb(1,j),wb(1,j))
+         write (6,*) 'fv',i,j,fv(i,j)
       enddo
       enddo
 
-      do j=1,navg
-      do i=1,navg
-         ft(i,j)=wl2sip(tb(1,i),fluct(1,j))
+      do j=1,nbavg
+      do i=1,nbavg
+         ftt(i,j)=wl2sip(tb(1,i),fluct(1,j))
       enddo
       enddo
 
-      call dump_serial(fv,navg**2,'fv ',nid)
-      call dump_serial(ft,navg**2,'ft ',nid)
+      call dump_serial(fv,nbavg**2,'ops/fv ',nid)
+      call dump_serial(ftt,nbavg**2,'ops/ft ',nid)
 
       return
       end
