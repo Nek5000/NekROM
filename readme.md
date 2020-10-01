@@ -1,8 +1,10 @@
 # Model Order Reduction (MOR)
 
-[![Build Status](https://travis-ci.com/Ping-Hsuan/MOR.svg?token=EQXANzsNGzuULuHM1DJy&branch=develop)](https://travis-ci.com/Ping-Hsuan/MOR)
+This package include tools to help apply model-order reduction (MOR) to data produced by [Nek5000](https://github.com/Nek5000/Nek5000).
 
-This package include tools to help apply model-order reduction (MOR) to data produced by [Nek5000](https://github.com/Nek5000/Nek5000). See conventions.txt for the coding style of this project when contributing.
+# Contribution
+
+Please submit issues and PR to github.com/SEAL-UIUC/NekMOR. PR should be the smallest coherent change to the source. Issue titles should describe the issue e.g., 'Error in x', 'Missing x', etc. PR titles should describe the modification made e.g., 'Fixed x', 'Improved x, etc. See conventions.txt for the coding style of this project when contributing.
 
 # Parameter File Support
 
