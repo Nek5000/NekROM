@@ -1404,15 +1404,31 @@ c-----------------------------------------------------------------------
 
       real s1,s2
 
-      if (ad_step.eq.navg_step-3) then
+      logical ifbdf1, ifbdf2, ifbdf3
+
+      ifbdf1 = (navg_step.eq.1.and.ad_step.eq.navg_step+1)
+      ifbdf2 = (navg_step.eq.2.and.ad_step.eq.navg_step)
+      ifbdf3 = (navg_step.ge.3.and.ad_step.eq.navg_step-1)
+
+      if (ifbdf1.or.ifbdf2.or.ifbdf3) then
          s1 = 0.0
          s2 = 0.0
+         s1 = 3
+         time = (ad_step-2)*ad_dt
+         call userq(1,1,1,1)
+         s2 = s2 + ft
+         time = (ad_step-1)*ad_dt
+         call userq(1,1,1,1)
+         s2 = s2 + ft
+         time = (ad_step)*ad_dt
+         call userq(1,1,1,1)
+         s2 = s2 + ft
+      else
+         s1 = s1 + 1.
+         time = (ad_step)*ad_dt
+         call userq(1,1,1,1)
+         s2 = s2 + ft
       endif
-
-      s1 = s1 + 1.
-      time = (ad_step)*ad_dt
-      call userq(1,1,1,1)
-      s2 = s2 + ft
 
       if (ad_step.eq.ad_nsteps) then
          s=1./real(ad_nsteps-navg_step+1)
