@@ -209,24 +209,18 @@ c-----------------------------------------------------------------------
       tttime=dnekclock()
 
       if (ifrom(1)) then
-c        call setuavg(ua,u2a,ua_wol,u2a_wol,u)
-c        call setuj(uj,u2j,u)
-         call setuavg_new(ua,u2a,ua_wol,u2a_wol,u)
-         call setuj_new(uj,u2j,ujfilter,u)
+         call setuavg(ua,u2a,u)
          call count_gal(num_galu,anum_galu,rhstmp(1),upmax,upmin,
      $   1e-16,nb)
       endif
 
       if (ifrom(2)) then
-c        call settavg(uta,uuta,utua,ut2a,uta_wol,utua_wol,u,ut)
-c        call settj(utj,uutj,utuj,uj,ut)
-         call settavg_new(uta,uuta,utua,ut2a,uta_wol,utua_wol,u,ut)
-         call settj_new(utj,uutj,utuj,ujfilter,ut)
-         if (ifsource) then
-            call setfavg(rqa,rqta)
-            call setfj(rqj,rqtj)
-         endif
+         call settavg(uta,uuta,utua,ut2a,u,ut)
          call count_gal(num_galt,anum_galt,ut(1),tmax,tmin,1e-16,nb)
+      endif
+
+      if (ifei) then
+         call set_time_avg_resid_coef
       endif
 
       if (mod(ad_step,ad_qstep).eq.0) then
@@ -574,7 +568,6 @@ c-----------------------------------------------------------------------
       enddo
 
       if (ifadvc(2)) then
-         write(6,*)'do advection'
          if (rmode.eq.'CP ') then
             if (ifcore) then
                call evalc4(tmp(1),cta,ctb,ctc,cp_tw,ctl,ctj0,ct0k,ut)
@@ -707,20 +700,17 @@ c              tmp2(i)=log(d)
       return
       end
 c-----------------------------------------------------------------------
-      subroutine setuavg(s1,s2,s3,s4,t1)
+      subroutine setuavg(s1,s2,t1)
 
       include 'SIZE'
       include 'MOR'
 
-      real s1(0:nb),s2(0:nb,0:nb),s3(0:nb),s4(0:nb,0:nb)
+      real s1(0:nb),s2(0:nb,0:nb)
       real t1(0:nb)
-      real tmp(0:nb)
 
       if (ad_step.eq.navg_step) then
          call rzero(s1,nb+1)
          call rzero(s2,(nb+1)**2)
-         call rzero(s3,(nb+1))
-         call rzero(s4,(nb+1)**2)
       endif
 
       call add2(s1,t1,nb+1)
@@ -731,50 +721,16 @@ c-----------------------------------------------------------------------
       enddo
       enddo
 
-      if (rfilter.eq.'LER'.and.rbf.gt.0) then 
-         call copy(tmp,t1,nb+1)
-         call pod_proj(tmp(1),rbf,nb,'step  ')
-         do j=0,nb
-         do i=0,nb
-            s4(i,j)=s4(i,j)+t1(i)*tmp(j)
-         enddo
-         enddo
-      endif
-
       if (ad_step.eq.ad_nsteps) then
          s=1./real(ad_nsteps-(navg_step-1))
          call cmult(s1,s,nb+1)
          call cmult(s2,s,(nb+1)**2)
-         call copy(s3,s1,(nb+1))
-         do i=0,nb
-            s3(i)=s3(i)-t1(i)/(1.*(ad_nsteps-navg_step+1))
-         enddo
-
-         if (rfilter.eq.'LER'.and.rbf.gt.0) then 
-            call copy(tmp,t1,nb+1)
-            call pod_proj(tmp(1),rbf,nb,'step  ')
-            call cmult(s4,s,(nb+1)**2)
-            do j=0,nb
-            do i=0,nb
-               s4(i,j)=s4(i,j)-
-     $               (t1(i)*tmp(j))/(1.*(ad_nsteps-navg_step+1))
-            enddo
-            enddo
-         else
-            call copy(s4,s2,(nb+1)**2)
-            do j=0,nb
-            do i=0,nb
-               s4(i,j)=s4(i,j)-
-     $            (t1(i)*t1(j))/(1.*(ad_nsteps-navg_step+1))
-            enddo
-            enddo
-         endif
       endif
 
       return
       end
 c-----------------------------------------------------------------------
-      subroutine settavg(s1,s2,s3,s4,s5,s6,t1,t2)
+      subroutine settavg(s1,s2,s3,s4,t1,t2)
 
       ! not sure what s2,s3,s4 for
 
@@ -782,8 +738,6 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       real s1(0:nb),s2(0:nb,0:nb),s3(0:nb,0:nb),s4(0:nb,0:nb)
-      real s5(0:nb)
-      real s6(0:nb,0:nb)
       real t1(0:nb),t2(0:nb)
 
       if (ad_step.eq.navg_step) then
@@ -791,8 +745,6 @@ c-----------------------------------------------------------------------
          call rzero(s2,(nb+1)**2)
          call rzero(s3,(nb+1)**2)
          call rzero(s4,(nb+1)**2)
-         call rzero(s5,(nb+1))
-         call rzero(s6,(nb+1)**2)
       endif
 
       call add2(s1,ut,nb+1)
@@ -802,7 +754,6 @@ c-----------------------------------------------------------------------
          s2(i,j)=s2(i,j)+t1(i)*t2(j)
          s2(i,j)=s3(i,j)+t1(j)*t2(i)
          s2(i,j)=s4(i,j)+t2(j)*t2(i)
-         s6(i,j)=s6(i,j)+t1(j)*t2(i)
       enddo
       enddo
 
@@ -812,16 +763,6 @@ c-----------------------------------------------------------------------
          call cmult(s2,s,(nb+1)**2)
          call cmult(s3,s,(nb+1)**2)
          call cmult(s4,s,(nb+1)**2)
-         call copy(s5,s1,nb+1)
-         call cmult(s6,s,(nb+1)**2)
-         do i=0,nb
-            s5(i)=s5(i)-(t2(i))/(1.*(ad_nsteps-navg_step+1))
-         enddo
-         do j=0,nb
-         do i=0,nb
-            s6(i,j)=s6(i,j)-(t1(j)*t2(i))/(1.*(ad_nsteps-navg_step+1))
-         enddo
-         enddo
       endif
 
       return
@@ -1177,120 +1118,140 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine setuavg_new(s1,s2,s3,s4,t1)
+      subroutine set_ucoef_in_ext(s1,s2,t1)
 
       include 'SIZE'
       include 'MOR'
 
-      real s1(0:nb),s2(0:nb,0:nb),s3(0:nb),s4(0:nb,0:nb)
-      real t1(0:nb)
+      real s1(0:nb),s2(0:nb,0:nb)
+      real t1(0:nb,3)
       real tmp(0:nb)
 
-      if (ad_step.eq.navg_step) then
-         call rzero(s1,nb+1)
+      logical ifbdf1, ifbdf2, ifbdf3
+
+      ifbdf1 = (navg_step.eq.1.and.ad_step.eq.navg_step+1)
+      ifbdf2 = (navg_step.eq.2.and.ad_step.eq.navg_step)
+      ifbdf3 = (navg_step.ge.3.and.ad_step.eq.navg_step-1)
+
+      if (ifbdf1.or.ifbdf2.or.ifbdf3) then
+         call rzero(s1,(nb+1))
          call rzero(s2,(nb+1)**2)
-      endif
-
-      if (ad_step.eq.navg_step-3) then
-         call rzero(s3,(nb+1))
-         call rzero(s4,(nb+1)**2)
-      endif
-
-      call add2(s1,t1,nb+1)
-      call add2(s3,t1,nb+1)
-
-      do j=0,nb
-      do i=0,nb
-         s2(i,j)=s2(i,j)+t1(i)*t1(j)
-      enddo
-      enddo
-
-      ! Leray has to be fixed
-      if (rfilter.eq.'LER'.and.rbf.gt.0) then 
-         call copy(tmp,t1,nb+1)
-         call pod_proj(tmp(1),rbf,nb,'step  ')
-         do j=0,nb
-         do i=0,nb
-            s4(i,j)=s4(i,j)+t1(i)*tmp(j)
-         enddo
-         enddo
+         call copy(s1,t1(0,3),nb+1)
+         call add2(s1,t1(0,2),nb+1)
+         call add2(s1,t1(0,1),nb+1)
+         if (rfilter.eq.'LER'.and.rbf.gt.0) then
+            do k=1,3
+            call copy(tmp,t1(0,k),nb+1)
+            call pod_proj(tmp(1),rbf,nb,'step  ')
+            do j=0,nb
+            do i=0,nb
+               s2(i,j)=s2(i,j)+t1(i,k)*tmp(j)
+            enddo
+            enddo
+            enddo
+         else
+            do k=1,3
+            do j=0,nb
+            do i=0,nb
+               s2(i,j)=s2(i,j)+t1(i,k)*t1(j,k)
+            enddo
+            enddo
+            enddo
+         endif
       else
-         do j=0,nb
-         do i=0,nb
-            s4(i,j)=s4(i,j)+t1(i)*t1(j)
-         enddo
-         enddo
+
+         call add2(s1,t1(0,1),nb+1)
+         if (rfilter.eq.'LER'.and.rbf.gt.0) then
+            call copy(tmp,t1(0,1),nb+1)
+            call pod_proj(tmp(1),rbf,nb,'step  ')
+            do j=0,nb
+            do i=0,nb
+               s2(i,j)=s2(i,j)+t1(i,1)*tmp(j)
+            enddo
+            enddo
+         else
+            do j=0,nb
+            do i=0,nb
+               s2(i,j)=s2(i,j)+t1(i,1)*t1(j,1)
+            enddo
+            enddo
+         endif
       endif
 
       if (ad_step.eq.ad_nsteps) then
          s=1./real(ad_nsteps-navg_step+1)
          call cmult(s1,s,nb+1)
          call cmult(s2,s,(nb+1)**2)
-         call cmult(s3,s,nb+1)
-         call cmult(s4,s,(nb+1)**2)
       endif
 
       return
       end
 c-----------------------------------------------------------------------
-      subroutine settavg_new(s1,s2,s3,s4,s5,s6,t1,t2)
-
-      ! not sure what s2,s3,s4 for
+      subroutine set_tcoef_in_ext(s1,s2,t1,t2)
 
       include 'SIZE'
       include 'MOR'
 
-      real s1(0:nb),s2(0:nb,0:nb),s3(0:nb,0:nb),s4(0:nb,0:nb)
-      real s5(0:nb),s6(0:nb,0:nb)
-      real t1(0:nb),t2(0:nb)
+      real s1(0:nb),s2(0:nb,0:nb)
+      real t1(0:nb,3),t2(0:nb,3)
       real tmp(0:nb)
 
-      if (ad_step.eq.navg_step) then
-         call rzero(s1,nb+1)
+      logical ifbdf1, ifbdf2, ifbdf3
+
+      ifbdf1 = (navg_step.eq.1.and.ad_step.eq.navg_step+1)
+      ifbdf2 = (navg_step.eq.2.and.ad_step.eq.navg_step)
+      ifbdf3 = (navg_step.ge.3.and.ad_step.eq.navg_step-1)
+
+      if (ifbdf1.or.ifbdf2.or.ifbdf3) then
+         call rzero(s1,(nb+1))
          call rzero(s2,(nb+1)**2)
-         call rzero(s3,(nb+1)**2)
-         call rzero(s4,(nb+1)**2)
-      endif
-      if (ad_step.eq.navg_step-3) then
-         call rzero(s5,(nb+1))
-         call rzero(s6,(nb+1)**2)
-      endif
-
-      call add2(s1,t2,nb+1)
-      call add2(s5,t2,nb+1)
-
-      do j=0,nb
-      do i=0,nb
-         s2(i,j)=s2(i,j)+t1(i)*t2(j)
-         s2(i,j)=s3(i,j)+t1(j)*t2(i)
-         s2(i,j)=s4(i,j)+t2(j)*t2(i)
-      enddo
-      enddo
-      ! Leray has to be fixed
-      if (rfilter.eq.'LER'.and.rbf.gt.0) then 
-         call copy(tmp,t1,nb+1)
-         call pod_proj(tmp(1),rbf,nb,'step  ')
-         do j=0,nb
-         do i=0,nb
-            s6(i,j)=s6(i,j)+tmp(j)*t2(i)
-         enddo
-         enddo
+         call copy(s1,t2(0,3),nb+1)
+         call add2(s1,t2(0,2),nb+1)
+         call add2(s1,t2(0,1),nb+1)
+         if (rfilter.eq.'LER'.and.rbf.gt.0) then
+            do k=1,3
+            call copy(tmp,t1(0,k),nb+1)
+            call pod_proj(tmp(1),rbf,nb,'step  ')
+            do j=0,nb
+            do i=0,nb
+               s2(i,j)=s2(i,j)+tmp(j)*t2(i,k)
+            enddo
+            enddo
+            enddo
+         else
+            do k=1,3
+            do j=0,nb
+            do i=0,nb
+               s2(i,j)=s2(i,j)+t1(j,k)*t2(i,k)
+            enddo
+            enddo
+            enddo
+         endif
       else
-         do j=0,nb
-         do i=0,nb
-            s6(i,j)=s6(i,j)+t1(j)*t2(i)
-         enddo
-         enddo
+
+         call add2(s1,t2(0,1),nb+1)
+         if (rfilter.eq.'LER'.and.rbf.gt.0) then
+            call copy(tmp,t1(0,1),nb+1)
+            call pod_proj(tmp(1),rbf,nb,'step  ')
+            do j=0,nb
+            do i=0,nb
+               s2(i,j)=s2(i,j)+tmp(j)*t2(i,1)
+            enddo
+            enddo
+         else
+            do j=0,nb
+            do i=0,nb
+               s2(i,j)=s2(i,j)+t1(j,1)*t2(i,1)
+            enddo
+            enddo
+         endif
       endif
+
 
       if (ad_step.eq.ad_nsteps) then
          s=1./real(ad_nsteps-navg_step+1)
          call cmult(s1,s,nb+1)
          call cmult(s2,s,(nb+1)**2)
-         call cmult(s3,s,(nb+1)**2)
-         call cmult(s4,s,(nb+1)**2)
-         call cmult(s5,s,nb+1)
-         call cmult(s6,s,(nb+1)**2)
       endif
 
       return
@@ -1435,27 +1396,94 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine setfavg
+      subroutine set_favg_in_ext(s1,s2)
 
       include 'SIZE'
       include 'TSTEP'
       include 'MOR'
 
-      if (ad_step.eq.navg_step-3) then
-         rqa = 0.0
-         rqta = 0.0
-      endif
+      real s1,s2
 
-      rqa = rqa + 1.
-      time = (ad_step)*ad_dt
-      call userq(1,1,1,1)
-      rqta = rqta + ft
+      logical ifbdf1, ifbdf2, ifbdf3
+
+      ifbdf1 = (navg_step.eq.1.and.ad_step.eq.navg_step+1)
+      ifbdf2 = (navg_step.eq.2.and.ad_step.eq.navg_step)
+      ifbdf3 = (navg_step.ge.3.and.ad_step.eq.navg_step-1)
+
+      if (ifbdf1.or.ifbdf2.or.ifbdf3) then
+         s1 = 0.0
+         s2 = 0.0
+         s1 = 3
+         time = (ad_step-2)*ad_dt
+         call userq(1,1,1,1)
+         s2 = s2 + ft
+         time = (ad_step-1)*ad_dt
+         call userq(1,1,1,1)
+         s2 = s2 + ft
+         time = (ad_step)*ad_dt
+         call userq(1,1,1,1)
+         s2 = s2 + ft
+      else
+         s1 = s1 + 1.
+         time = (ad_step)*ad_dt
+         call userq(1,1,1,1)
+         s2 = s2 + ft
+      endif
 
       if (ad_step.eq.ad_nsteps) then
          s=1./real(ad_nsteps-navg_step+1)
-         rqa = rqa*s
-         rqta = rqta*s
+         s1 = s1*s
+         s2 = s2*s
       endif
 
       return
       end
+c-----------------------------------------------------------------------
+      subroutine set_time_avg_resid_coef
+
+      ! currently only support for BDF3/EXT3
+      ! compute the coefficient in the time-averaged residual
+
+      include 'SIZE'
+      include 'MOR'
+
+      if (ifrom(1)) call set_time_avg_resid_coef_u
+      if (ifrom(2)) call set_time_avg_resid_coef_t
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine set_time_avg_resid_coef_u
+
+      ! currently only support for BDF3/EXT3
+      ! compute the coefficient in the time-averaged velocity residual
+
+      include 'SIZE'
+      include 'MOR'
+
+      call setuj_new(uj,u2j,ujfilter,u)
+      call set_ucoef_in_ext(ua_ext,u2a_ext,u)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine set_time_avg_resid_coef_t
+
+      ! currently only support for BDF3/EXT3
+      ! compute the coefficient in the time-averaged temperature
+      ! residual
+
+      include 'SIZE'
+      include 'MOR'
+
+      call settj_new(utj,uutj,utuj,ujfilter,ut)
+      call set_tcoef_in_ext(uta_ext,utua_ext,u,ut)
+
+      if (ifsource) then
+         call set_favg_in_ext(rqa,rqta)
+         call setfj(rqj,rqtj)
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------

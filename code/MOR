@@ -43,11 +43,11 @@ c     parameters and common blocks for MOR
       common /morbuoy/ bux,buy,buz,bu_angle
 
       common /moruavg/ ua(0:lub),u2a((lub+1)**2),uas(0:lub),uvs(0:lub),
-     $                 u2a_wol((lub+1)**2),ua_wol(0:lub)
+     $                 u2a_ext((lub+1)**2),ua_ext(0:lub)
       common /mortavg/ uta(0:ltb),uuta((lub+1)*(ltb+1)),
      $                 utua((ltb+1)*(lub+1)),
      $                 ut2a((ltb+1)*(ltb+1)),tas(0:ltb),tvs(0:ltb),
-     $                 utua_wol((ltb+1)**2),uta_wol(0:ltb)
+     $                 utua_ext((ltb+1)**2),uta_ext(0:ltb)
 
       common /mormsk/ dmask(lx1,ly1,lz1,lelm,lmsk+1)
 
