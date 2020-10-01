@@ -22,7 +22,7 @@ c-----------------------------------------------------------------------
 
       do j=1,nres
       do i=1,nres
-         res=res+sigma(i,j)*theta(i)*theta(j)
+         res=res+mor_sigma(i,j)*mor_theta(i)*mor_theta(j)
       enddo
       enddo
 
@@ -64,7 +64,7 @@ c-----------------------------------------------------------------------
 
       do j=1,nres
       do i=1,nres
-         res=res+sigma(i,j)*theta(i)*theta(j)
+         res=res+mor_sigma(i,j)*mor_theta(i)*mor_theta(j)
       enddo
       enddo
 
@@ -343,11 +343,11 @@ c-----------------------------------------------------------------------
       if (nres.le.0) call exitti('nres <= 0$',nres)
 
       if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
-         call read_serial(sigtmp,nres*nres,'ops/sigma ',sigma,nid)
+         call read_serial(sigtmp,nres*nres,'ops/sigma ',mor_sigma,nid)
          l=1
          do j=1,nres
          do i=1,nres
-            sigma(i,j)=sigtmp(l,1)
+            mor_sigma(i,j)=sigtmp(l,1)
             l=l+1
          enddo
          enddo
@@ -371,21 +371,21 @@ c-----------------------------------------------------------------------
          if (ifield.eq.2) then
             do i=1,nres
             do j=1,nres
-               sigma(i,j)=glsc3(xi(1,i),xi(1,j),bm1,n)
+               mor_sigma(i,j)=glsc3(xi(1,i),xi(1,j),bm1,n)
             enddo
             enddo
          else if (ifield.eq.1) then
             if (.true.) then ! if using voritcity residual
                do i=1,nres
                   do j=1,nres
-                     sigma(i,j)=glsc3(xi_u(1,1,i),xi_u(1,1,j),bm1,n)
+                     mor_sigma(i,j)=glsc3(xi_u(1,1,i),xi_u(1,1,j),bm1,n)
                   enddo
-                  write (6,*) i,sigma(1,i),'sigma'
+                  write (6,*) i,mor_sigma(1,i),'sigma'
                enddo
             else
                do i=1,nres
                do j=1,nres
-                  sigma(i,j)=
+                  mor_sigma(i,j)=
      $               op_glsc2_wt(xi_u(1,1,i),xi_u(1,2,i),xi_u(1,ldim,i),
      $                       xi_u(1,1,j),xi_u(1,2,j),xi_u(1,ldim,j),bm1)
                enddo
@@ -409,21 +409,21 @@ c-----------------------------------------------------------------------
 
       l=1
       do i=1,nb
-         theta(l)=ut(i)
+         mor_theta(l)=ut(i)
          l=l+1
       enddo
 
-      theta(l)=-1.
+      mor_theta(l)=-1.
       l=l+1
 
       do i=1,nb
-         theta(l)=-ut(i)
-         theta(l)=0.
+         mor_theta(l)=-ut(i)
+         mor_theta(l)=0.
          l=l+1
       enddo
 
       do i=1,l-1
-         write (6,*) i,theta(i),'theta'
+         write (6,*) i,mor_theta(i),'theta'
       enddo
 
       return
@@ -441,15 +441,15 @@ c-----------------------------------------------------------------------
 
       l=1
       call set_betaj
-      call mxm(utj,nb+1,betaj,6,theta(l),1)
+      call mxm(utj,nb+1,betaj,6,mor_theta(l),1)
 
       l=l+nb+1
       do i=0,nb
-         theta(l)=uta(i)
+         mor_theta(l)=uta(i)
          l=l+1
       enddo
 
-      theta(l)=-1.
+      mor_theta(l)=-1.
 
       l=l+1
 
@@ -468,35 +468,35 @@ c-----------------------------------------------------------------------
 
       l=1
       call set_betaj
-      call mxm(utj,nb+1,betaj,6,theta(l),1)
+      call mxm(utj,nb+1,betaj,6,mor_theta(l),1)
 
       l=l+nb+1
 
       call set_alphaj
 
       if (ifrom(1)) then
-c        call mxm(uutj,(nb+1)**2,alphaj,6,theta(l),1)
-         call mxm(utuj,(nb+1)**2,alphaj,6,theta(l),1)
+c        call mxm(uutj,(nb+1)**2,alphaj,6,mor_theta(l),1)
+         call mxm(utuj,(nb+1)**2,alphaj,6,mor_theta(l),1)
       else
-         call mxm(utj,nb+1,alphaj,6,theta(l),1)
+         call mxm(utj,nb+1,alphaj,6,mor_theta(l),1)
       endif
 
       if (ifrom(1)) then
          do j=0,nb
          do i=0,nb
-            theta(l)=theta(l)+utua(i+(nb+1)*j)
+            mor_theta(l)=mor_theta(l)+utua(i+(nb+1)*j)
             l=l+1
          enddo
          enddo
       else
          do i=0,nb
-            theta(l)=theta(l)+uta(i)
+            mor_theta(l)=mor_theta(l)+uta(i)
             l=l+1
          enddo
       endif
 
       do i=0,nb
-         theta(l)=param(8)*uta(i)
+         mor_theta(l)=param(8)*uta(i)
          l=l+1
       enddo
 
@@ -515,33 +515,33 @@ c-----------------------------------------------------------------------
 
       l=1
       call set_betaj
-      call mxm(utj,nb+1,betaj,6,theta(l),1)
+      call mxm(utj,nb+1,betaj,6,mor_theta(l),1)
 
       l=l+nb+1
 
       call set_alphaj(alphaj)
-      call mxm(ut2j,(nb+1)**2,alphaj,6,theta(l),1)
+      call mxm(ut2j,(nb+1)**2,alphaj,6,mor_theta(l),1)
       do j=0,nb
       do i=0,nb
-         theta(l)=theta(l)+u2a(1+i+(nb+1)*j)
+         mor_theta(l)=mor_theta(l)+u2a(1+i+(nb+1)*j)
          l=l+1
       enddo
       enddo
 
       do i=0,nb
-         theta(l)=param(2)*ua(i)
+         mor_theta(l)=param(2)*ua(i)
          l=l+1
       enddo
 
       if (ifbuoy) then
          do i=0,nb
-            theta(l)=ad_ra*uta(i)
+            mor_theta(l)=ad_ra*uta(i)
             l=l+1
          enddo
       endif
 
       do i=1,nres
-         if (nio.eq.0) write (6,*) theta(i),'theta'
+         if (nio.eq.0) write (6,*) mor_theta(i),'theta'
       enddo
 
       return
@@ -2203,12 +2203,12 @@ c     call set_alphaj
       if (ifbuoy) then
          call mxm(utj,(nb+1),alphaj,6,theta_u(l1),1)
          do i=0,nb
-            theta_u(l1)=-sin(bu_angle)*ad_ra*(theta_u(l1)+uta_wol(i))
+            theta_u(l1)=-sin(bu_angle)*ad_ra*(theta_u(l1)+uta_ext(i))
             l1=l1+1
          enddo
          call mxm(utj,(nb+1),alphaj,6,theta_u(l1),1)
          do i=0,nb
-            theta_u(l1)=-cos(bu_angle)*ad_ra*(theta_u(l1)+uta_wol(i))
+            theta_u(l1)=-cos(bu_angle)*ad_ra*(theta_u(l1)+uta_ext(i))
             l1=l1+1
          enddo
       endif
@@ -2218,7 +2218,7 @@ c     call set_alphaj
       call mxm(u2j,(nb+1)**2,alphaj,6,theta_u(l1),1)
       do j=0,nb
       do i=0,nb
-         theta_u(l1)=theta_u(l1)+u2a_wol(1+i+(nb+1)*j)
+         theta_u(l1)=theta_u(l1)+u2a_ext(1+i+(nb+1)*j)
          l1=l1+1
       enddo
       enddo
@@ -2245,7 +2245,7 @@ c     call set_alphaj
       call mxm(utuj,(nb+1)**2,alphaj,6,theta_t(l2),1)
       do j=0,nb
       do i=0,nb
-         theta_t(l2)=theta_t(l2)+utua_wol(1+i+(nb+1)*j)
+         theta_t(l2)=theta_t(l2)+utua_ext(1+i+(nb+1)*j)
          l2=l2+1
       enddo
       enddo
@@ -2381,7 +2381,7 @@ c     call set_theta_uns
          call opcolv(wk1,wk2,wk3,bm1)
          call opchsgn(wk1,wk2,wk3)
 
-         coef(i)=-sin(bu_angle)*ad_ra*(coef(i)+uta_wol(i))
+         coef(i)=-sin(bu_angle)*ad_ra*(coef(i)+uta_ext(i))
          call cfill(wk4,coef(i),n)
          if (nid.eq.0) write(6,*)coef(i),'theta_u'
          call add2col2(res_u(1,1),wk1,wk4,n)
@@ -2400,7 +2400,7 @@ c     call set_theta_uns
          call opcolv(wk1,wk2,wk3,bm1)
          call opchsgn(wk1,wk2,wk3)
 
-         coef(i)=-cos(bu_angle)*ad_ra*(coef(i)+uta_wol(i))
+         coef(i)=-cos(bu_angle)*ad_ra*(coef(i)+uta_ext(i))
          call cfill(wk4,coef(i),n)
          if (nid.eq.0) write(6,*)coef(i),'theta_u'
          call add2col2(res_u(1,1),wk1,wk4,n)
@@ -2427,7 +2427,7 @@ c     call set_theta_uns
             call opchsgn(wk1,wk2,wk3)
 
             coef2(i+(nb+1)*j)=coef2(i+(nb+1)*j)
-     $                         +u2a_wol(1+i+(nb+1)*j)
+     $                         +u2a_ext(1+i+(nb+1)*j)
             if (nid.eq.0) write(6,*)coef2(i+(nb+1)*j),'theta_u'
             call cfill(wk4,coef2(i+(nb+1)*j),n)
             call add2col2(res_u(1,1),wk1,wk4,n)
@@ -2477,7 +2477,7 @@ c     call set_theta_uns
             call chsign(wk1,n) 
 
             coef2(i+(nb+1)*j)=coef2(i+(nb+1)*j)
-     $                         +utua_wol(1+i+(nb+1)*j)
+     $                         +utua_ext(1+i+(nb+1)*j)
             call cfill(wk2,coef2(i+(nb+1)*j),n)
             call add2col2(res_t,wk1,wk2,n)
             l2=l2+1
@@ -2545,9 +2545,19 @@ c-----------------------------------------------------------------------
 
       ! ad_alpha(3,3)
 
-      alphaj(1)=-ad_alpha(1,3)-ad_alpha(2,3)
-      alphaj(2)=-ad_alpha(1,3)
-      alphaj(3)=0.
+      if (navg_step.eq.1) then
+         alphaj(1)=ad_alpha(1,1)+ad_alpha(2,2)-1
+         alphaj(2)=ad_alpha(1,2)-ad_alpha(1,3)
+         alphaj(3)=0.
+      elseif (navg_step.eq.2) then
+         alphaj(1)=ad_alpha(2,2)-ad_alpha(1,3)-ad_alpha(2,3)
+         alphaj(2)=ad_alpha(1,2)-ad_alpha(1,3)
+         alphaj(3)=0.
+      elseif (navg_step.ge.3) then
+         alphaj(1)=-ad_alpha(1,3)-ad_alpha(2,3)
+         alphaj(2)=-ad_alpha(1,3)
+         alphaj(3)=0.
+      endif
       alphaj(4)=-ad_alpha(3,3)
       alphaj(5)=-ad_alpha(2,3)-ad_alpha(3,3)
       alphaj(6)=-1.
@@ -2564,9 +2574,22 @@ c-----------------------------------------------------------------------
 
       ! ad_beta(4,3)
 
-      betaj(1)=ad_beta(3+1,3)
-      betaj(2)=ad_beta(2+1,3)+ad_beta(3+1,3)
-      betaj(3)=ad_beta(1+1,3)+ad_beta(2+1,3)+ad_beta(3+1,3)
+      if (navg_step.eq.1) then
+         betaj(1)=ad_beta(1+1,1)+ad_beta(2+1,2)+ad_beta(3+1,3)
+         betaj(2)=ad_beta(0+1,1)+ad_beta(1+1,2)
+     $           +ad_beta(2+1,3)+ad_beta(3+1,3)
+         betaj(3)=ad_beta(0+1,2)+ad_beta(1+1,3)
+     $           +ad_beta(2+1,3)+ad_beta(3+1,3)
+      elseif (navg_step.eq.2) then
+         betaj(1)=ad_beta(2+1,2)+ad_beta(3+1,3)
+         betaj(2)=ad_beta(1+1,2)+ad_beta(2+1,3)+ad_beta(3+1,3)
+         betaj(3)=ad_beta(0+1,2)+ad_beta(1+1,3)
+     $           +ad_beta(2+1,3)+ad_beta(3+1,3)
+      elseif (navg_step.ge.3) then
+         betaj(1)=ad_beta(3+1,3)
+         betaj(2)=ad_beta(2+1,3)+ad_beta(3+1,3)
+         betaj(3)=ad_beta(1+1,3)+ad_beta(2+1,3)+ad_beta(3+1,3)
+      endif
       betaj(4)=ad_beta(0+1,3)+ad_beta(1+1,3)+ad_beta(2+1,3)
       betaj(5)=ad_beta(0+1,3)+ad_beta(1+1,3)
       betaj(6)=ad_beta(0+1,3)
@@ -2576,3 +2599,472 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine set_riesz_rep
+
+      ! compute the riesz representation (only one)
+      ! solve one stoke problem and one poisson problem
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'ORTHOT'
+      include 'CTIMER'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real work(lx2*ly2*lz2*lelt)
+
+      n=lx1*ly1*lz1*nelv
+
+      if (nio.eq.0) write (6,*) 'inside set_riesz_rep'
+
+      call rone(ones,n)
+      call rzero(zeros,n)
+
+      if (ifrom(1)) then
+         ifield=1
+         tolhv=1e-8
+
+         call steady_stoke_solve(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
+     $            work,res_u(1,1),res_u(1,2),res_u(1,ldim))
+      endif
+
+      if (ifrom(2)) then
+         ifield=2
+         tolht(2)=1e-8
+         ifld1 = ifield-1
+         napproxt(1,ifld1) = laxtt
+         ! check with imesh
+         imesh  = 1
+
+         call hsolve  ('TEMP',eh_t,res_t,ones,ones
+     $            ,tmask(1,1,1,1,ifield-1)
+     $            ,tmult(1,1,1,1,ifield-1)
+     $            ,imesh,tolht(ifield),nmxh,1
+     $            ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
+      endif
+
+      call nekgsync
+
+      if (nio.eq.0) write (6,*) 'exiting set_riesz_rep'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine set_rom_residual
+
+      ! compute the rom residual
+      ! make res_u and res_t in common block
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real coef(0:nb)
+      real coef2(0:(nb+1)**2-1)
+
+      n=lx1*ly1*lz1*nelv
+
+      if (nio.eq.0) write (6,*) 'inside set_rom_residual'
+
+      call nekgsync
+c     call set_theta_uns
+      call set_betaj_new
+      call set_alphaj_new
+
+      if (ifrom(1)) call opzero(res_u(1,1),res_u(1,2),res_u(1,ldim))
+      if (ifrom(2)) call rzero(res_t,n)
+
+      ! setup velocity residual
+      if (ifrom(1)) then
+         if (iftran) then
+            call resid_in_time('vel')
+         endif
+
+         call resid_in_diffusion('vel')
+
+         if (ifbuoy) call resid_in_buoy
+
+         if (ifadvc(1)) then
+            call resid_in_advec('vel')
+         endif
+      endif
+
+      ! setup temperature residual
+      if (ifrom(2)) then
+         if (iftran) call resid_in_time('tmp')
+
+         call resid_in_diffusion('tmp')
+
+         if (ifadvc(2)) then
+            call resid_in_advec('tmp')
+         endif
+
+         if (ifsource) then
+            call resid_in_source
+         endif
+      endif
+
+      if (nio.eq.0) write (6,*) 'exiting set_rom_residual'
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine get_dual_norm
+
+      ! compute dual norm of the residual
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      real u_resid_h1_norm
+      real u_resid_h10_norm
+      real u_resid_l2_norm
+      real t_resid_h1_norm
+      real t_resid_h10_norm
+      real t_resid_l2_norm
+      real resid_h1_norm
+      real resid_h10_norm
+      real resid_l2_norm
+
+      if (nio.eq.0) write (6,*) 'inside c_dual_norm'
+
+      u_resid_h10_norm = 0
+      u_resid_l2_norm = 0
+      t_resid_h10_norm = 0
+      t_resid_l2_norm = 0
+
+      if (ifrom(1)) then
+         ifield=1
+         u_resid_h10_norm = h10vip(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
+     $                             eh_u(1,1),eh_u(1,2),eh_u(1,ldim))
+         u_resid_l2_norm = wl2vip(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
+     $                            eh_u(1,1),eh_u(1,2),eh_u(1,ldim))
+         u_resid_h1_norm = u_resid_h10_norm + u_resid_l2_norm
+         if (nid.eq.0) write(6,*)'vel residual in h1 norm',
+     $                            sqrt(u_resid_h1_norm)
+         if (nid.eq.0) write(6,*)'vel residual in h10 norm',
+     $                            sqrt(u_resid_h10_norm)
+         if (nid.eq.0) write(6,*)'vel residual in l2 norm',
+     $                            sqrt(u_resid_l2_norm)
+      endif
+
+      if (ifrom(2)) then
+         ifield=2
+         t_resid_h10_norm = h10sip(eh_t,eh_t)
+         t_resid_l2_norm = wl2sip(eh_t,eh_t)
+
+         t_resid_h1_norm = t_resid_h10_norm + t_resid_l2_norm
+         if (nid.eq.0) write(6,*)'temp residual in h1 norm',
+     $                            sqrt(t_resid_h1_norm)
+         if (nid.eq.0) write(6,*)'temp residual in h10 norm',
+     $                            sqrt(t_resid_h10_norm)
+         if (nid.eq.0) write(6,*)'temp residual in l2 norm',
+     $                            sqrt(t_resid_l2_norm)
+      endif
+
+      resid_h1_norm = sqrt(u_resid_h10_norm+u_resid_l2_norm+
+     $                     t_resid_h10_norm+t_resid_l2_norm)
+      resid_h10_norm = sqrt(u_resid_h10_norm+t_resid_h10_norm)
+      resid_l2_norm = sqrt(u_resid_l2_norm+t_resid_l2_norm)
+
+      if (resid_h1_norm.le.0) call
+     $             exitti('negative semidefinite dual norm$',n)
+
+      if (nid.eq.0) write (6,*) 'residual in h1 norm:',resid_h1_norm
+      if (nid.eq.0) write (6,*) 'residual in h10 norm:',resid_h10_norm
+      if (nid.eq.0) write (6,*) 'residual in l2 norm:',resid_l2_norm
+
+      call nekgsync
+      if (nio.eq.0) write (6,*) 'exiting c_dual_norm'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine resid_in_time(msg)
+
+      ! compute the rom residual in time derivative term
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /screi/ wk1(lt),wk2(lt),wk3(lt),wk4(lt)
+
+      real coef(0:nb)
+      character*3 msg
+
+      if (nio.eq.0) write (6,*) 'inside resid_in_time'
+
+      n=lx1*ly1*lz1*nelv
+
+      if (msg.eq.'vel') then
+         call mxm(uj,nb+1,betaj,6,coef,1)
+         do i=0,nb
+            ifield=1
+            call opcopy(wk1,wk2,wk3,ub(1,i),vb(1,i),wb(1,i))
+            call opcolv(wk1,wk2,wk3,bm1)
+            call opchsgn(wk1,wk2,wk3)
+
+            call cfill(wk4,coef(i),n)
+            if (nid.eq.0) write(6,*)coef(i),'theta_u'
+            call add2col2(res_u(1,1),wk1,wk4,n)
+            call add2col2(res_u(1,2),wk2,wk4,n)
+            if (ldim.eq.3) then
+               call add2col2(res_u(1,ldim),wk3,wk4,n)
+            endif
+         enddo
+      elseif (msg.eq.'tmp') then
+         call mxm(utj,nb+1,betaj,6,coef,1)
+         do i=0,nb
+            ifield=2
+            call copy(wk1,tb(1,i),n)
+            call col2(wk1,bm1,n)
+            call chsign(wk1,n)
+
+            if (nid.eq.0) write(6,*)coef(i),'theta_t'
+            call cfill(wk2,coef(i),n)
+            call add2col2(res_t,wk1,wk2,n)
+         enddo
+      endif
+
+      if (nio.eq.0) write (6,*) 'exitting resid_in_time'
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine resid_in_diffusion(msg)
+
+      ! compute the rom residual in diffusion term
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /screi/ wk1(lt),wk2(lt),wk3(lt),wk4(lt)
+
+      real coef(0:nb)
+      character*3 msg
+
+      if (nio.eq.0) write (6,*) 'inside resid_diffusion'
+
+      n=lx1*ly1*lz1*nelv
+
+      if (msg.eq.'vel') then
+         do i=0,nb
+            ifield=1
+            call opcopy(wk4,wk5,wk6,ub(1,i),vb(1,i),wb(1,i))
+            call axhelm(wk1,wk4,ones,zeros,1,1)
+            call axhelm(wk2,wk5,ones,zeros,1,2)
+            if (ldim.eq.3) then
+               call axhelm(wk3,wk6,ones,zeros,1,3)
+            endif
+            call opcmult(wk1,wk2,wk3,param(2))
+            call opchsgn(wk1,wk2,wk3)
+
+            coef(i)=ua(i)
+            call cfill(wk4,coef(i),n)
+            if (nid.eq.0) write(6,*)coef(i),'theta_u'
+            call add2col2(res_u(1,1),wk1,wk4,n)
+            call add2col2(res_u(1,2),wk2,wk4,n)
+            if (ldim.eq.3) then
+               call add2col2(res_u(1,ldim),wk3,wk4,n)
+            endif
+         enddo
+      elseif (msg.eq.'tmp') then
+         do i=0,nb
+            ifield=2
+            call copy(wk2,tb(1,i),n)
+            call axhelm(wk1,wk2,ones,zeros,1,1)
+            call cmult(wk1,param(8),n)
+            call chsign(wk1,n)
+
+            coef(i)=uta(i)
+            if (nid.eq.0) write(6,*)coef(i),'theta_t'
+            call cfill(wk2,coef(i),n)
+            call add2col2(res_t,wk1,wk2,n)
+         enddo
+         if (ifhelm) then
+            if(nid.eq.0) write(6,*)'helm is on'
+            do i=0,nb
+               ifield=2
+               call copy(wk1,tb(1,i),n)
+               call col2(wk1,bm1,n)
+               call chsign(wk1,n)
+
+               coef(i) = uta(i) * ad_mu
+               if (nid.eq.0) write(6,*)coef(i),'theta_t'
+               call cfill(wk2,coef(i),n)
+               call add2col2(res_t,wk1,wk2,n)
+            enddo
+         endif
+      endif
+
+      if (nio.eq.0) write (6,*) 'exitting resid_diffusion'
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine resid_in_advec(msg)
+
+      ! compute the rom residual in advection term
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /screi/ wk1(lt),wk2(lt),wk3(lt),wk4(lt)
+
+      real coef2(0:(nb+1)**2-1)
+      character*3 msg
+
+      if (nio.eq.0) write (6,*) 'inside resid_advec'
+
+      n=lx1*ly1*lz1*nelv
+
+      if (msg.eq.'vel') then
+         call mxm(u2j,(nb+1)**2,alphaj,6,coef2,1)
+         do j=0,nb
+            do i=0,nb
+            ifield=1
+               call convect_new(wk1,ub(1,i),.false.,
+     $                          ub(1,j),vb(1,j),wb(1,j),.false.)
+               call convect_new(wk2,vb(1,i),.false.,
+     $                          ub(1,j),vb(1,j),wb(1,j),.false.)
+               if (ldim.eq.3) then
+                  call convect_new(wk3,wb(1,i),.false.,
+     $                             ub(1,j),vb(1,j),wb(1,j),.false.)
+               endif
+               call opchsgn(wk1,wk2,wk3)
+
+               coef2(i+(nb+1)*j)=coef2(i+(nb+1)*j)
+     $                            +u2a_ext(1+i+(nb+1)*j)
+               if (nid.eq.0) write(6,*)coef2(i+(nb+1)*j),'theta_u'
+               call cfill(wk4,coef2(i+(nb+1)*j),n)
+               call add2col2(res_u(1,1),wk1,wk4,n)
+               call add2col2(res_u(1,2),wk2,wk4,n)
+               if (ldim.eq.3) then
+                  call add2col2(res_u(1,ldim),wk3,wk4,n)
+               endif
+            enddo
+         enddo
+      elseif (msg.eq.'tmp') then
+         call mxm(utuj,(nb+1)**2,alphaj,6,coef2,1)
+         do j=0,nb
+            do i=0,nb
+               ifield=2
+               call convect_new(wk1,tb(1,i),.false.,
+     $                          ub(1,j),vb(1,j),wb(1,j),.false.)
+               call chsign(wk1,n)
+
+               coef2(i+(nb+1)*j)=coef2(i+(nb+1)*j)
+     $                            +utua_ext(1+i+(nb+1)*j)
+               call cfill(wk2,coef2(i+(nb+1)*j),n)
+               if (nid.eq.0) write(6,*)coef2(i+(nb+1)*j),'theta_t'
+               call add2col2(res_t,wk1,wk2,n)
+            enddo
+         enddo
+      endif
+
+      if (nio.eq.0) write (6,*) 'exitting resid_advec'
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine resid_in_buoy
+
+      ! compute the rom residual in buoyancy term
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /screi/ wk1(lt),wk2(lt),wk3(lt),wk4(lt)
+
+      real coef(0:nb)
+      character*3 msg
+
+      if (nio.eq.0) write (6,*) 'inside resid_buoy'
+
+      n=lx1*ly1*lz1*nelv
+
+      call mxm(utj,(nb+1),alphaj,6,coef,1)
+      do i=0,nb
+         ifield=1
+         call opcopy(wk1,wk2,wk3,tb(1,i),zeros,zeros)
+         call opcolv(wk1,wk2,wk3,bm1)
+         call opchsgn(wk1,wk2,wk3)
+
+         coef(i)=-sin(bu_angle)*ad_ra*(coef(i)+uta_ext(i))
+         call cfill(wk4,coef(i),n)
+         if (nid.eq.0) write(6,*)coef(i),'theta_u'
+         call add2col2(res_u(1,1),wk1,wk4,n)
+         call add2col2(res_u(1,2),wk2,wk4,n)
+         if (ldim.eq.3) then
+            call add2col2(res_u(1,ldim),wk3,wk4,n)
+         endif
+      enddo
+
+      call mxm(utj,(nb+1),alphaj,6,coef,1)
+      do i=0,nb
+         ifield=1
+         call opcopy(wk1,wk2,wk3,zeros,tb(1,i),zeros)
+         call opcolv(wk1,wk2,wk3,bm1)
+         call opchsgn(wk1,wk2,wk3)
+
+         coef(i)=-cos(bu_angle)*ad_ra*(coef(i)+uta_ext(i))
+         call cfill(wk4,coef(i),n)
+         if (nid.eq.0) write(6,*)coef(i),'theta_u'
+         call add2col2(res_u(1,1),wk1,wk4,n)
+         call add2col2(res_u(1,2),wk2,wk4,n)
+         if (ldim.eq.3) then
+            call add2col2(res_u(1,ldim),wk3,wk4,n)
+         endif
+      enddo
+
+      if (nio.eq.0) write (6,*) 'exitting resid_buoy'
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine resid_in_source
+
+      ! compute the rom residual in source term
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /screi/ wk1(lt),wk2(lt),wk3(lt),wk4(lt)
+
+      real coef(0:nb)
+      real t1, t2, t3, t4
+      character*3 msg
+
+      if (nio.eq.0) write (6,*) 'inside resid_in_source'
+
+      n=lx1*ly1*lz1*nelv
+
+      t1 = glsc2(alphaj,rqj,6)
+      t2 = t1 + rqa
+      write(6,*)'t2',t2
+      call add2(res_t,qq,n)
+
+      if (ifsrct) then
+         t3 = glsc2(alphaj,rqtj,6)
+         t4 = t3 + rqta
+         write(6,*)'t4',t4,t3,rqta
+         call add2s2(res_t,qqxyz,t4,n)
+      endif
+
+      if (nio.eq.0) write (6,*) 'exitting resid_in_source'
+      return
+      end

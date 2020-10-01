@@ -921,7 +921,7 @@ c-----------------------------------------------------------------------
          if (ifrom(0)) nsp=lsp
          if (ifrom(1)) nsu=lsu
          if (ifrom(2)) nst=lst
-         call get_saved_fields(us0,ps,ts0,nsu,nsp,nst,timek,fname1)
+         call get_saved_fields(us0,prs,ts0,nsu,nsp,nst,timek,fname1)
 
          fname1='avg.list'
          inquire (file=fname1,exist=alist)
@@ -1362,6 +1362,15 @@ c-----------------------------------------------------------------------
          call copy(wk1,qq,n)
          call binv1(wk1)
          call outpost(vx,vy,vz,pavg,wk1,'qqq')
+         if (ifsrct) then
+            do i=1,nb
+               rqt(i)=glsc2(qqxyz,tb(1,i),n)
+               if (nio.eq.0) write (6,*) rqt(i),i,'rqt'
+            enddo
+            call copy(wk1,qqxyz,n)
+            call binv1(wk1)
+            call outpost(vx,vy,vz,pavg,wk1,'qqq')
+         endif
       endif
 
       if (nio.eq.0) write (6,*) 'exiting setf'
