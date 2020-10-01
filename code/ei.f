@@ -2203,12 +2203,12 @@ c     call set_alphaj
       if (ifbuoy) then
          call mxm(utj,(nb+1),alphaj,6,theta_u(l1),1)
          do i=0,nb
-            theta_u(l1)=-sin(bu_angle)*ad_ra*(theta_u(l1)+uta_wol(i))
+            theta_u(l1)=-sin(bu_angle)*ad_ra*(theta_u(l1)+uta_ext(i))
             l1=l1+1
          enddo
          call mxm(utj,(nb+1),alphaj,6,theta_u(l1),1)
          do i=0,nb
-            theta_u(l1)=-cos(bu_angle)*ad_ra*(theta_u(l1)+uta_wol(i))
+            theta_u(l1)=-cos(bu_angle)*ad_ra*(theta_u(l1)+uta_ext(i))
             l1=l1+1
          enddo
       endif
@@ -2218,7 +2218,7 @@ c     call set_alphaj
       call mxm(u2j,(nb+1)**2,alphaj,6,theta_u(l1),1)
       do j=0,nb
       do i=0,nb
-         theta_u(l1)=theta_u(l1)+u2a_wol(1+i+(nb+1)*j)
+         theta_u(l1)=theta_u(l1)+u2a_ext(1+i+(nb+1)*j)
          l1=l1+1
       enddo
       enddo
@@ -2245,7 +2245,7 @@ c     call set_alphaj
       call mxm(utuj,(nb+1)**2,alphaj,6,theta_t(l2),1)
       do j=0,nb
       do i=0,nb
-         theta_t(l2)=theta_t(l2)+utua_wol(1+i+(nb+1)*j)
+         theta_t(l2)=theta_t(l2)+utua_ext(1+i+(nb+1)*j)
          l2=l2+1
       enddo
       enddo
@@ -2381,7 +2381,7 @@ c     call set_theta_uns
          call opcolv(wk1,wk2,wk3,bm1)
          call opchsgn(wk1,wk2,wk3)
 
-         coef(i)=-sin(bu_angle)*ad_ra*(coef(i)+uta_wol(i))
+         coef(i)=-sin(bu_angle)*ad_ra*(coef(i)+uta_ext(i))
          call cfill(wk4,coef(i),n)
          if (nid.eq.0) write(6,*)coef(i),'theta_u'
          call add2col2(res_u(1,1),wk1,wk4,n)
@@ -2400,7 +2400,7 @@ c     call set_theta_uns
          call opcolv(wk1,wk2,wk3,bm1)
          call opchsgn(wk1,wk2,wk3)
 
-         coef(i)=-cos(bu_angle)*ad_ra*(coef(i)+uta_wol(i))
+         coef(i)=-cos(bu_angle)*ad_ra*(coef(i)+uta_ext(i))
          call cfill(wk4,coef(i),n)
          if (nid.eq.0) write(6,*)coef(i),'theta_u'
          call add2col2(res_u(1,1),wk1,wk4,n)
@@ -2427,7 +2427,7 @@ c     call set_theta_uns
             call opchsgn(wk1,wk2,wk3)
 
             coef2(i+(nb+1)*j)=coef2(i+(nb+1)*j)
-     $                         +u2a_wol(1+i+(nb+1)*j)
+     $                         +u2a_ext(1+i+(nb+1)*j)
             if (nid.eq.0) write(6,*)coef2(i+(nb+1)*j),'theta_u'
             call cfill(wk4,coef2(i+(nb+1)*j),n)
             call add2col2(res_u(1,1),wk1,wk4,n)
@@ -2477,7 +2477,7 @@ c     call set_theta_uns
             call chsign(wk1,n) 
 
             coef2(i+(nb+1)*j)=coef2(i+(nb+1)*j)
-     $                         +utua_wol(1+i+(nb+1)*j)
+     $                         +utua_ext(1+i+(nb+1)*j)
             call cfill(wk2,coef2(i+(nb+1)*j),n)
             call add2col2(res_t,wk1,wk2,n)
             l2=l2+1
@@ -2944,7 +2944,7 @@ c-----------------------------------------------------------------------
                call opchsgn(wk1,wk2,wk3)
 
                coef2(i+(nb+1)*j)=coef2(i+(nb+1)*j)
-     $                            +u2a_wol(1+i+(nb+1)*j)
+     $                            +u2a_ext(1+i+(nb+1)*j)
                if (nid.eq.0) write(6,*)coef2(i+(nb+1)*j),'theta_u'
                call cfill(wk4,coef2(i+(nb+1)*j),n)
                call add2col2(res_u(1,1),wk1,wk4,n)
@@ -2964,7 +2964,7 @@ c-----------------------------------------------------------------------
                call chsign(wk1,n)
 
                coef2(i+(nb+1)*j)=coef2(i+(nb+1)*j)
-     $                            +utua_wol(1+i+(nb+1)*j)
+     $                            +utua_ext(1+i+(nb+1)*j)
                call cfill(wk2,coef2(i+(nb+1)*j),n)
                if (nid.eq.0) write(6,*)coef2(i+(nb+1)*j),'theta_t'
                call add2col2(res_t,wk1,wk2,n)
@@ -3002,7 +3002,7 @@ c-----------------------------------------------------------------------
          call opcolv(wk1,wk2,wk3,bm1)
          call opchsgn(wk1,wk2,wk3)
 
-         coef(i)=-sin(bu_angle)*ad_ra*(coef(i)+uta_wol(i))
+         coef(i)=-sin(bu_angle)*ad_ra*(coef(i)+uta_ext(i))
          call cfill(wk4,coef(i),n)
          if (nid.eq.0) write(6,*)coef(i),'theta_u'
          call add2col2(res_u(1,1),wk1,wk4,n)
@@ -3019,7 +3019,7 @@ c-----------------------------------------------------------------------
          call opcolv(wk1,wk2,wk3,bm1)
          call opchsgn(wk1,wk2,wk3)
 
-         coef(i)=-cos(bu_angle)*ad_ra*(coef(i)+uta_wol(i))
+         coef(i)=-cos(bu_angle)*ad_ra*(coef(i)+uta_ext(i))
          call cfill(wk4,coef(i),n)
          if (nid.eq.0) write(6,*)coef(i),'theta_u'
          call add2col2(res_u(1,1),wk1,wk4,n)
