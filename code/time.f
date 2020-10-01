@@ -568,7 +568,6 @@ c-----------------------------------------------------------------------
       enddo
 
       if (ifadvc(2)) then
-         write(6,*)'do advection'
          if (rmode.eq.'CP ') then
             if (ifcore) then
                call evalc4(tmp(1),cta,ctb,ctc,cp_tw,ctl,ctj0,ct0k,ut)
@@ -1128,27 +1127,55 @@ c-----------------------------------------------------------------------
       real t1(0:nb,3)
       real tmp(0:nb)
 
-      if (ad_step.eq.navg_step-3) then
+      logical ifbdf1, ifbdf2, ifbdf3
+
+      ifbdf1 = (navg_step.eq.1.and.ad_step.eq.navg_step+1)
+      ifbdf2 = (navg_step.eq.2.and.ad_step.eq.navg_step)
+      ifbdf3 = (navg_step.ge.3.and.ad_step.eq.navg_step-1)
+
+      if (ifbdf1.or.ifbdf2.or.ifbdf3) then
          call rzero(s1,(nb+1))
          call rzero(s2,(nb+1)**2)
-      endif
-
-      call add2(s1,t1(0,1),nb+1)
-
-      if (rfilter.eq.'LER'.and.rbf.gt.0) then 
-         call copy(tmp,t1(0,1),nb+1)
-         call pod_proj(tmp(1),rbf,nb,'step  ')
-         do j=0,nb
-         do i=0,nb
-            s2(i,j)=s2(i,j)+t1(i,1)*tmp(j)
-         enddo
-         enddo
+         call copy(s1,t1(0,3),nb+1)
+         call add2(s1,t1(0,2),nb+1)
+         call add2(s1,t1(0,1),nb+1)
+         if (rfilter.eq.'LER'.and.rbf.gt.0) then
+            do k=1,3
+            call copy(tmp,t1(0,k),nb+1)
+            call pod_proj(tmp(1),rbf,nb,'step  ')
+            do j=0,nb
+            do i=0,nb
+               s2(i,j)=s2(i,j)+t1(i,k)*tmp(j)
+            enddo
+            enddo
+            enddo
+         else
+            do k=1,3
+            do j=0,nb
+            do i=0,nb
+               s2(i,j)=s2(i,j)+t1(i,k)*t1(j,k)
+            enddo
+            enddo
+            enddo
+         endif
       else
-         do j=0,nb
-         do i=0,nb
-            s2(i,j)=s2(i,j)+t1(i,1)*t1(j,1)
-         enddo
-         enddo
+
+         call add2(s1,t1(0,1),nb+1)
+         if (rfilter.eq.'LER'.and.rbf.gt.0) then
+            call copy(tmp,t1(0,1),nb+1)
+            call pod_proj(tmp(1),rbf,nb,'step  ')
+            do j=0,nb
+            do i=0,nb
+               s2(i,j)=s2(i,j)+t1(i,1)*tmp(j)
+            enddo
+            enddo
+         else
+            do j=0,nb
+            do i=0,nb
+               s2(i,j)=s2(i,j)+t1(i,1)*t1(j,1)
+            enddo
+            enddo
+         endif
       endif
 
       if (ad_step.eq.ad_nsteps) then
@@ -1169,29 +1196,57 @@ c-----------------------------------------------------------------------
       real t1(0:nb,3),t2(0:nb,3)
       real tmp(0:nb)
 
-      if (ad_step.eq.navg_step-3) then
+      logical ifbdf1, ifbdf2, ifbdf3
+
+      ifbdf1 = (navg_step.eq.1.and.ad_step.eq.navg_step+1)
+      ifbdf2 = (navg_step.eq.2.and.ad_step.eq.navg_step)
+      ifbdf3 = (navg_step.ge.3.and.ad_step.eq.navg_step-1)
+
+      if (ifbdf1.or.ifbdf2.or.ifbdf3) then
          call rzero(s1,(nb+1))
          call rzero(s2,(nb+1)**2)
-      endif
-
-      call add2(s2,t2(0,1),nb+1)
-
-      ! Leray has to be fixed
-      if (rfilter.eq.'LER'.and.rbf.gt.0) then 
-         call copy(tmp,t1(0,1),nb+1)
-         call pod_proj(tmp(1),rbf,nb,'step  ')
-         do j=0,nb
-         do i=0,nb
-            s2(i,j)=s2(i,j)+tmp(j)*t2(i,1)
-         enddo
-         enddo
+         call copy(s1,t2(0,3),nb+1)
+         call add2(s1,t2(0,2),nb+1)
+         call add2(s1,t2(0,1),nb+1)
+         if (rfilter.eq.'LER'.and.rbf.gt.0) then
+            do k=1,3
+            call copy(tmp,t1(0,k),nb+1)
+            call pod_proj(tmp(1),rbf,nb,'step  ')
+            do j=0,nb
+            do i=0,nb
+               s2(i,j)=s2(i,j)+tmp(j)*t2(i,k)
+            enddo
+            enddo
+            enddo
+         else
+            do k=1,3
+            do j=0,nb
+            do i=0,nb
+               s2(i,j)=s2(i,j)+t1(j,k)*t2(i,k)
+            enddo
+            enddo
+            enddo
+         endif
       else
-         do j=0,nb
-         do i=0,nb
-            s2(i,j)=s2(i,j)+t1(j,1)*t2(i,1)
-         enddo
-         enddo
+
+         call add2(s1,t2(0,1),nb+1)
+         if (rfilter.eq.'LER'.and.rbf.gt.0) then
+            call copy(tmp,t1(0,1),nb+1)
+            call pod_proj(tmp(1),rbf,nb,'step  ')
+            do j=0,nb
+            do i=0,nb
+               s2(i,j)=s2(i,j)+tmp(j)*t2(i,1)
+            enddo
+            enddo
+         else
+            do j=0,nb
+            do i=0,nb
+               s2(i,j)=s2(i,j)+t1(j,1)*t2(i,1)
+            enddo
+            enddo
+         endif
       endif
+
 
       if (ad_step.eq.ad_nsteps) then
          s=1./real(ad_nsteps-navg_step+1)
