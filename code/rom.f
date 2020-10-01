@@ -30,7 +30,7 @@ c-----------------------------------------------------------------------
       ifmult=.not.ifrom(2).and.ifheat
 
 
-      if (rmode.ne.'OFF') then
+      if (rmode.ne.'OFF'.or.rmode.eq.'AEQ') then
       if (ifmult) then
          if (ifflow) call exitti(
      $   'error: running rom_update with ifflow = .true.$',nelv)
@@ -131,7 +131,8 @@ c        cts='rkck  '
 
     2 continue
 
-      if (ifei.and.rmode.ne.'OFF'.and.nint(param(175)).eq.1) then
+      if (ifei.and.(rmode.ne.'OFF'.and.rmode.ne.'AEQ')
+     $   .and.nint(param(175)).eq.1) then
          call cres_uns(sigma_u,sigma_t)
 c        call cres
       endif
@@ -258,7 +259,8 @@ c        call set_sigma
 
       if (nio.eq.0) write (6,*) 'end range setup'
 
-      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') call dump_misc
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ')
+     $   call dump_misc
 
       time=ttime
 
@@ -383,7 +385,8 @@ c     if (ifbuoy.and.ifrom(1).and.ifrom(2)) call setbut(but0)
 
       call set_binv2
 
-      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') call dump_ops
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ')
+     $   call dump_ops
 
       call nekgsync
       if (nio.eq.0) write (6,*) 'ops_time:',dnekclock()-ops_time
@@ -543,7 +546,7 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'begin range setup'
 
-      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
          call nekgsync
          proj_time=dnekclock()
 
@@ -915,7 +918,7 @@ c-----------------------------------------------------------------------
       ns = ls
       ! ns should be set in get_saved_fields
 
-      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
          fname1='file.list '
          nsu=1
          nsp=1
@@ -1291,7 +1294,7 @@ c-----------------------------------------------------------------------
             u((nb+1)*2)=1.
          endif
 
-         if (rmode.eq.'ALL'.or.rmode.eq.'OFF')
+         if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ')
      $      call dump_serial(u,nb+1,'ops/u0 ',nid)
 
          if (ifrom(2)) then
@@ -1302,7 +1305,7 @@ c-----------------------------------------------------------------------
                if (nio.eq.0) write (6,*) 'ut',ut(i)
             enddo
             call add2(tic,tb,n)
-            if (rmode.eq.'ALL'.or.rmode.eq.'OFF')
+            if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ')
      $         call dump_serial(ut,nb+1,'ops/t0 ',nid)
          endif
          ifield=jfield
@@ -1472,7 +1475,7 @@ c-----------------------------------------------------------------------
 
       call dump_serial(t1,nb+1,'ops/uv ',nid)
 
-      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
          call dump_serial(uas,nb+1,'ops/uas ',nid)
          call dump_serial(uvs,nb+1,'ops/uvs ',nid)
       endif
@@ -1531,7 +1534,7 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelv
 
-      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
          do j=0,nb
          do i=0,nb
             b(i,j)=op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),
@@ -1586,7 +1589,7 @@ c-----------------------------------------------------------------------
 c     call cmult(gx,1./sqrt(2.),n)
 c     call cmult(gy,1./sqrt(2.),n)
 
-      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
          do j=0,nb
          do i=0,nb
             b_x(i,j)=glsc3(ub(1,i),gx,tb(1,j),n)
@@ -1651,7 +1654,7 @@ c-----------------------------------------------------------------------
       call add3s2(but0,but0_x,but0_y,sin(bu_angle),
      $            cos(bu_angle),(nb+1)**2)
 
-      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
          call dump_serial(but0,(nb+1)**2,'ops/but ',nid)
       endif
       return

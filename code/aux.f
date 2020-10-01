@@ -504,7 +504,7 @@ c-----------------------------------------------------------------------
                write (6,*) i,udis(i),'udis'
             enddo
          endif
-         if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
+         if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
             call dump_serial(umin,nb,'ops/umin ',nid)
             call dump_serial(umax,nb,'ops/umax ',nid)
          endif
@@ -539,7 +539,7 @@ c-----------------------------------------------------------------------
             enddo
          endif
 
-         if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
+         if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
             call dump_serial(tmin,nb,'ops/tmin ',nid)
             call dump_serial(tmax,nb,'ops/tmax ',nid)
          endif
