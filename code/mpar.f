@@ -95,6 +95,7 @@ c
 
       ifrom(1)=ifpod(1)
       ifpod(1)=ifpod(1).or.ifrom(2)
+      ifrom(2)=ifpod(2)
 
       call finiparser_getdbl(d_out,'general:nb',ifnd)
       if (ifnd.eq.1) nb=min(nint(d_out),lb)
