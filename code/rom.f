@@ -988,12 +988,12 @@ c           if (idc_t.gt.0) call rzero(tb,n)
          if (ifpod(1)) then
             fname1='flucv.list'
             call read_fields(flucv,fldtmp(1,1),fldtmp(1,2),
-     $         navg,1,1,tk,fname1,iftmp)
+     $         nbavg,1,1,tk,fname1,iftmp)
          endif
          if (ifpod(2)) then
             fname1='fluct.list'
             call read_fields(fldtmp(1,1),fldtmp(1,ldim+1),fluct,
-     $         navg,1,1,tk,fname1,iftmp)
+     $         1,1,nbavg,tk,fname1,iftmp)
          endif
       endif
 
