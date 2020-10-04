@@ -1419,14 +1419,6 @@ c-----------------------------------------------------------------------
       do i=1,nbavg
          fv(i,j)=wl2vip(ub(1,i),vb(1,i),wb(1,i),
      $                  flucv(1,1,j),flucv(1,2,j),flucv(1,ldim,j))
-         fv(i,j)=wl2vip(ub(1,i),vb(1,i),wb(1,i),
-     $                  ub(1,j),vb(1,j),wb(1,j))
-         write (6,*) 'fv',i,j,fv(i,j)
-      enddo
-      enddo
-
-      do j=1,nbavg
-      do i=1,nbavg
          ftt(i,j)=wl2sip(tb(1,i),fluct(1,j))
       enddo
       enddo
