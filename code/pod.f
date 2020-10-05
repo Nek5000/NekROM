@@ -991,7 +991,7 @@ c     should be called.
 
       call copy(aa,a,100)
 
-      call dsyev('V','U',n,a,n,lam,wk,(3*n-1),info)
+      call dsyev('V','U',n,a,n,lam,wk,n*n,info)
 
       if (info.ne.0) then
          if (nid.eq.0) then
