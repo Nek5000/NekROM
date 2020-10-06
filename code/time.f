@@ -1210,17 +1210,19 @@ c-----------------------------------------------------------------------
       subroutine setuj(s1,s2,s3,t1)
 
       ! set quantities in velocity residual
+      ! store uj and ujfilter at different
+      ! time by u and compute u2j by uj or ujfilter
 
       ! s1 := uj
-      ! s2 := utj
-      ! s3 := tuj
+      ! s2 := u2j
+      ! s3 := ujfilter
       ! t1 := u
 
       include 'SIZE'
       include 'MOR'
 
-      real s1(0:nb,6),s2(0:nb,0:nb,6),t1(0:nb,3)
-      real s3(0:nb,6)
+      real s1(0:nb,6),s2(0:nb,0:nb,6)
+      real s3(0:nb,6),t1(0:nb,3)
 
       logical ifbdf1,ifbdf2,ifbdf3
 
@@ -1238,10 +1240,18 @@ c-----------------------------------------------------------------------
          call copy(s1(0,4),t1(0,3),nb+1)
          call copy(s1(0,5),t1(0,2),nb+1)
          call copy(s1(0,6),t1(0,1),nb+1)
-         do k=1,6
-            call copy(s3(0,k),s1(0,k),nb+1)
-            call mxm(s1(0,k),nb+1,s1(0,k),1,s2(0,0,k),nb+1)
-         enddo
+         if (rfilter.eq.'LER'.and.rbf.gt.0) then
+            do k=1,6
+               call copy(s3(0,k),s1(0,k),nb+1)
+               call pod_proj(s3(1,k),rbf,nb,'step  ')
+               call mxm(s1(0,k),nb+1,s3(0,k),1,s2(0,0,k),nb+1)
+            enddo
+         else
+            do k=1,6
+               call copy(s3(0,k),s1(0,k),nb+1)
+               call mxm(s1(0,k),nb+1,s1(0,k),1,s2(0,0,k),nb+1)
+            enddo
+         endif
       endif
 
       return
@@ -1405,7 +1415,6 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'
       include 'MOR'
-
       if (ifrom(1)) call set_time_avg_resid_coef_u
       if (ifrom(2)) call set_time_avg_resid_coef_t
 
