@@ -1250,12 +1250,14 @@ c-----------------------------------------------------------------------
       subroutine settj(s1,s2,s3,t1,t2)
 
       ! set quantities in temperature residual
+      ! store utj at different time by ut and compute
+      ! uutj, utuj with utj and ujfilter
 
-      ! s1 := tj
-      ! s2 := utj
-      ! s3 := tuj
-      ! t1 := u
-      ! t2 := t
+      ! s1 := utj
+      ! s2 := uutj
+      ! s3 := utuj
+      ! t1 := ujfilter from setuj
+      ! t2 := ut
 
       include 'SIZE'
       include 'MOR'
@@ -1279,14 +1281,6 @@ c-----------------------------------------------------------------------
          call copy(s1(0,4),t2(0,3),nb+1)
          call copy(s1(0,5),t2(0,2),nb+1)
          call copy(s1(0,6),t2(0,1),nb+1)
-         if (nid.eq.0) then 
-         do k=1,6
-         do j=0,nb
-            write (6,*) 't1',k,j,t1(j,k)
-         enddo
-         enddo
-         endif
-
          do k=1,6
          do j=0,nb
          do i=0,nb
