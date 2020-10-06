@@ -2846,7 +2846,7 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /screi/ wk1(lt),wk2(lt),wk3(lt),wk4(lt)
+      common /screi/ wk1(lt),wk2(lt),wk3(lt),wk4(lt),wk5(lt),wk6(lt)
 
       real coef(0:nb)
       character*3 msg
