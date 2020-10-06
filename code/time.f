@@ -1062,15 +1062,22 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine set_ucoef_in_ext(s1,s2,t1)
 
-      ! set velocity contribution to the residual
+      ! Set the coefficient of residual involving summation in
+      ! extrapolation term.  Take convection term as an example and
+      ! consider only EXT3 is used The coefficient can be written as:
+      ! The inner product of [c_0 c_1 c_2 c_3 c_4 c_5] and
+      ! [{u**2}^{J_0-2} {u**2}^_{J_0-1} {u**2}^{J_0} {u**2}^{J-2}
+      ! {u**2}^{J-1} {u**2}^{J}] plus sum^J_{j=J_0-2} {u**2}^j. This
+      ! subroutine computes sum^J_{j=J_0-2} {u**2}^j
 
-      ! TODO: s1:=?,s2:=?,t1:=?
+      ! s1:=ua_ext
+      ! s2:=u2a_ext
+      ! t1:=u
 
       include 'SIZE'
       include 'MOR'
 
-      real s1(0:nb),s2(0:nb,0:nb)
-      real t1(0:nb,3)
+      real s1(0:nb),s2(0:nb,0:nb),t1(0:nb,3)
       real tmp(0:nb)
 
       logical ifbdf1,ifbdf2,ifbdf3
@@ -1135,9 +1142,17 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine set_tcoef_in_ext(s1,s2,t1,t2)
 
-      ! set temperature contribution to the residual
+      ! Set the coefficient of residual involving summation in
+      ! extrapolation term.  Take buoyance term as an example and
+      ! consider only EXT3 is used The coefficient can be written as:
+      ! The inner product of [c_0 c_1 c_2 c_3 c_4 c_5] and [T^{J_0-2}
+      ! T^_{J_0-1} T^{J_0} T^{J-2} T^{J-1} T^{J}] plus sum^J_{j=J_0-2}
+      ! T^j. This subroutine computes sum^J_{j=J_0-2} T^j
 
-      ! TODO: s1:=?,s2:=?,t1:=,t2:=?
+      ! s1:=uta_ext
+      ! s2:=utua_ext
+      ! t1:=u
+      ! t2:=ut
 
       include 'SIZE'
       include 'MOR'
@@ -1302,9 +1317,12 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine setfj(s1,s2)
 
-      ! set quantities in Temperature forcing residual
+      ! set quantities in source term for residual
+      ! store rqj and rqtj at different
+      ! time by user specified function ft in userq
 
-      ! TODO: s1=?,s2=?
+      ! s1:=rqj
+      ! s2:=rqtj
 
       include 'SIZE'
       include 'TSTEP'
@@ -1353,9 +1371,11 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine set_favg_in_ext(s1,s2)
 
-      ! TODO: description here
+      ! Set the coefficient of residual involving summation in
+      ! extrapolating source term.
 
-      ! TODO: s1:=?,s2:=?
+      ! s1:=rqa
+      ! s2:=rqta
 
       include 'SIZE'
       include 'TSTEP'
