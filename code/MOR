@@ -2,10 +2,6 @@ c     parameters and common blocks for MOR
 
       include 'LMOR'
 
-      ! for now fix lbavg
-
-      parameter (lbavg=10)
-
       common /morgram/ ug(ls,ls,0:ldimt1)
       common /moreig/ evec(ls,lb,0:ldimt1),eval(ls,0:ldimt1)
 
@@ -232,6 +228,8 @@ c     parameters and common blocks for MOR
      $                 ct0k((lub+1)**2), ctj0((lub+1)**2)
 
       ! Average Equation
+
+      parameter (lbavg=lb)
 
       common /morflucp/ nbavg
 
