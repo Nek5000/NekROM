@@ -986,14 +986,51 @@ c           if (idc_t.gt.0) call rzero(tb,n)
       if (rmode.eq.'AEQ') then
          iftmp=.false.
          if (ifpod(1)) then
-            fname1='flucv.list'
-            call read_fields(flucv,fldtmp(1,1),fldtmp(1,2),
+            fname1='uavg.list '
+            call read_fields(uafld,fldtmp,fldtmp,
      $         nbavg,1,1,tk,fname1,iftmp)
+
+            fname1='urms.list'
+            call read_fields(uufld,fldtmp,fldtmp,
+     $         nbavg,1,1,tk,fname1,iftmp)
+
+            fname1='urm2.list'
+            call read_fields(uvfld,fldtmp,fldtmp,
+     $         nbavg,1,1,tk,fname1,iftmp)
+
+            ifxyo=.true.
+            do i=1,nbavg
+               call evaldut(flucv(1,1,i),
+     $            uufld(1,1,i),uvfld(1,1,i),uvfld(1,ldim,i),
+     $           uafld(1,1,i),uafld(1,2,i),uafld(1,ldim,i),uafld(1,1,i))
+
+               call evaldut(flucv(1,2,i),
+     $            uvfld(1,1,i),uufld(1,2,i),uvfld(1,ldim,i),
+     $           uafld(1,1,i),uafld(1,2,i),uafld(1,ldim,i),uafld(1,2,i))
+
+               if (ldim.eq.3) call evaldut(flucv(1,3,i),
+     $            uufld(1,1,i),uvfld(1,1,i),uvfld(1,ldim,i),
+     $           uafld(1,1,i),uafld(1,2,i),uafld(1,ldim,i),uafld(1,3,i))
+
+               call outpost(flucv(1,1,i),flucv(1,2,i),flucv(1,ldim,i),
+     $            pr,t,'flc')
+            enddo
          endif
+
          if (ifpod(2)) then
-            fname1='fluct.list'
-            call read_fields(fldtmp(1,1),fldtmp(1,ldim+1),fluct,
+            fname1='tavg.list'
+            call read_fields(fldtmp,fldtmp,tafld,
      $         1,1,nbavg,tk,fname1,iftmp)
+
+            fname1='utms.list'
+            call read_fields(utfld,fldtmp,fldtmp,
+     $         nbavg,1,1,tk,fname1,iftmp)
+
+            do i=1,nbavg
+               call evaldut(fluct(1,i),
+     $            utfld(1,1,i),utfld(1,2,i),utfld(1,ldim,i),
+     $            uafld(1,1,i),uafld(1,2,i),uafld(1,ldim,i),tafld(1,i))
+            enddo
          endif
       endif
 
