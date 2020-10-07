@@ -219,9 +219,7 @@ c-----------------------------------------------------------------------
          call count_gal(num_galt,anum_galt,ut(1),tmax,tmin,1e-16,nb)
       endif
 
-      if (ifei) then
-         call set_time_avg_resid_coef
-      endif
+      if (ifei) call set_time_avg_resid_coef
 
       if (mod(ad_step,ad_qstep).eq.0) then
          if (ifctke) call ctke
@@ -702,6 +700,12 @@ c              tmp2(i)=log(d)
 c-----------------------------------------------------------------------
       subroutine setuavg(s1,s2,t1)
 
+      ! set average quantities involving velocity coefficients
+
+      ! s1 := <uj>
+      ! s2 := <ujxuj>
+      ! t1 := uj
+
       include 'SIZE'
       include 'MOR'
 
@@ -732,7 +736,14 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine settavg(s1,s2,s3,s4,t1,t2)
 
-      ! not sure what s2,s3,s4 for
+      ! set average quantities involving temperature coefficients
+
+      ! s1 := <uj>
+      ! s2 := <ujxtj>
+      ! s3 := <tjxuj>
+      ! s4 := <tjxtj>
+      ! t1 := uj
+      ! t2 := tj
 
       include 'SIZE'
       include 'MOR'
@@ -747,13 +758,13 @@ c-----------------------------------------------------------------------
          call rzero(s4,(nb+1)**2)
       endif
 
-      call add2(s1,ut,nb+1)
+      call add2(s1,t2,nb+1)
 
       do j=0,nb
       do i=0,nb
          s2(i,j)=s2(i,j)+t1(i)*t2(j)
-         s2(i,j)=s3(i,j)+t1(j)*t2(i)
-         s2(i,j)=s4(i,j)+t2(j)*t2(i)
+         s3(i,j)=s3(i,j)+t1(j)*t2(i)
+         s4(i,j)=s4(i,j)+t2(j)*t2(i)
       enddo
       enddo
 
@@ -763,75 +774,6 @@ c-----------------------------------------------------------------------
          call cmult(s2,s,(nb+1)**2)
          call cmult(s3,s,(nb+1)**2)
          call cmult(s4,s,(nb+1)**2)
-      endif
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine setuj(s1,s2,t1)
-
-      include 'SIZE'
-      include 'MOR'
-
-      real s1(0:nb,6),s2(0:nb,0:nb,6),t1(0:nb,3)
-      real s3(0:nb,6)
-
-      if (ad_step.eq.(navg_step+1)) then
-         call copy(s1(0,1),t1(0,3),nb+1)
-         call copy(s1(0,2),t1(0,2),nb+1)
-         call copy(s1(0,3),t1(0,1),nb+1)
-      endif
-      if (ad_step.eq.ad_nsteps) then
-         call copy(s1(0,4),t1(0,3),nb+1)
-         call copy(s1(0,5),t1(0,2),nb+1)
-         call copy(s1(0,6),t1(0,1),nb+1)
-         if (rfilter.eq.'LER'.and.rbf.gt.0) then 
-            do k=1,6
-               call copy(s3(0,k),s1(0,k),nb+1)
-               call pod_proj(s3(1,k),rbf,nb,'step  ')
-            enddo
-            do k=1,6
-               call mxm(s1(0,k),nb+1,s3(0,k),1,s2(0,0,k),nb+1)
-            enddo
-         else
-            do k=1,6
-               call mxm(s1(0,k),nb+1,s1(0,k),1,s2(0,0,k),nb+1)
-            enddo
-         endif
-      endif
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine settj(s1,s2,s3,t1,t2)
-
-      include 'SIZE'
-      include 'MOR'
-
-      ! s1=utj,s2=uutj,s3=utuj,t1=uj,t2=ut
-
-      real s1(0:nb,6),s2(0:nb,0:nb,6),s3(0:nb,0:nb,6)
-      real t1(0:nb,6),t2(0:nb,3)
-
-      if (ad_step.eq.(navg_step+1)) then
-         call copy(s1(0,1),t2(0,3),nb+1)
-         call copy(s1(0,2),t2(0,2),nb+1)
-         call copy(s1(0,3),t2(0,1),nb+1)
-      endif
-
-      if (ad_step.eq.ad_nsteps) then
-         call copy(s1(0,4),t2(0,3),nb+1)
-         call copy(s1(0,5),t2(0,2),nb+1)
-         call copy(s1(0,6),t2(0,1),nb+1)
-
-         do k=1,6
-         do j=0,nb
-         do i=0,nb
-            s2(i,j,k)=t1(i,k)*s1(j,k)
-            s3(i,j,k)=t1(j,k)*s1(i,k)
-         enddo
-         enddo
-         enddo
       endif
 
       return
@@ -1120,18 +1062,29 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine set_ucoef_in_ext(s1,s2,t1)
 
+      ! Set the coefficient of residual involving summation in
+      ! extrapolation term.  Take convection term as an example and
+      ! consider only EXT3 is used The coefficient can be written as:
+      ! The inner product of [c_0 c_1 c_2 c_3 c_4 c_5] and
+      ! [{u**2}^{J_0-2} {u**2}^_{J_0-1} {u**2}^{J_0} {u**2}^{J-2}
+      ! {u**2}^{J-1} {u**2}^{J}] plus sum^J_{j=J_0-2} {u**2}^j. This
+      ! subroutine computes sum^J_{j=J_0-2} {u**2}^j
+
+      ! s1:=ua_ext
+      ! s2:=u2a_ext
+      ! t1:=u
+
       include 'SIZE'
       include 'MOR'
 
-      real s1(0:nb),s2(0:nb,0:nb)
-      real t1(0:nb,3)
+      real s1(0:nb),s2(0:nb,0:nb),t1(0:nb,3)
       real tmp(0:nb)
 
-      logical ifbdf1, ifbdf2, ifbdf3
+      logical ifbdf1,ifbdf2,ifbdf3
 
-      ifbdf1 = (navg_step.eq.1.and.ad_step.eq.navg_step+1)
-      ifbdf2 = (navg_step.eq.2.and.ad_step.eq.navg_step)
-      ifbdf3 = (navg_step.ge.3.and.ad_step.eq.navg_step-1)
+      ifbdf1 = navg_step.eq.1.and.ad_step.eq.navg_step+1
+      ifbdf2 = navg_step.eq.2.and.ad_step.eq.navg_step
+      ifbdf3 = navg_step.ge.3.and.ad_step.eq.navg_step-1
 
       if (ifbdf1.or.ifbdf2.or.ifbdf3) then
          call rzero(s1,(nb+1))
@@ -1189,6 +1142,18 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine set_tcoef_in_ext(s1,s2,t1,t2)
 
+      ! Set the coefficient of residual involving summation in
+      ! extrapolation term.  Take buoyance term as an example and
+      ! consider only EXT3 is used The coefficient can be written as:
+      ! The inner product of [c_0 c_1 c_2 c_3 c_4 c_5] and [T^{J_0-2}
+      ! T^_{J_0-1} T^{J_0} T^{J-2} T^{J-1} T^{J}] plus sum^J_{j=J_0-2}
+      ! T^j. This subroutine computes sum^J_{j=J_0-2} T^j
+
+      ! s1:=uta_ext
+      ! s2:=utua_ext
+      ! t1:=u
+      ! t2:=ut
+
       include 'SIZE'
       include 'MOR'
 
@@ -1196,11 +1161,11 @@ c-----------------------------------------------------------------------
       real t1(0:nb,3),t2(0:nb,3)
       real tmp(0:nb)
 
-      logical ifbdf1, ifbdf2, ifbdf3
+      logical ifbdf1,ifbdf2,ifbdf3
 
-      ifbdf1 = (navg_step.eq.1.and.ad_step.eq.navg_step+1)
-      ifbdf2 = (navg_step.eq.2.and.ad_step.eq.navg_step)
-      ifbdf3 = (navg_step.ge.3.and.ad_step.eq.navg_step-1)
+      ifbdf1 = navg_step.eq.1.and.ad_step.eq.navg_step+1
+      ifbdf2 = navg_step.eq.2.and.ad_step.eq.navg_step
+      ifbdf3 = navg_step.ge.3.and.ad_step.eq.navg_step-1
 
       if (ifbdf1.or.ifbdf2.or.ifbdf3) then
          call rzero(s1,(nb+1))
@@ -1257,19 +1222,28 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine setuj_new(s1,s2,s3,t1)
+      subroutine setuj(s1,s2,s3,t1)
+
+      ! set quantities in velocity residual
+      ! store uj and ujfilter at different
+      ! time by u and compute u2j by uj or ujfilter
+
+      ! s1 := uj
+      ! s2 := u2j
+      ! s3 := ujfilter
+      ! t1 := u
 
       include 'SIZE'
       include 'MOR'
 
-      real s1(0:nb,6),s2(0:nb,0:nb,6),t1(0:nb,3)
-      real s3(0:nb,6)
+      real s1(0:nb,6),s2(0:nb,0:nb,6)
+      real s3(0:nb,6),t1(0:nb,3)
 
-      logical ifbdf1, ifbdf2, ifbdf3
+      logical ifbdf1,ifbdf2,ifbdf3
 
-      ifbdf1 = (navg_step.eq.1.and.ad_step.eq.navg_step+1)
-      ifbdf2 = (navg_step.eq.2.and.ad_step.eq.navg_step)
-      ifbdf3 = (navg_step.ge.3.and.ad_step.eq.navg_step-1)
+      ifbdf1 = navg_step.eq.1.and.ad_step.eq.navg_step+1
+      ifbdf2 = navg_step.eq.2.and.ad_step.eq.navg_step
+      ifbdf3 = navg_step.ge.3.and.ad_step.eq.navg_step-1
 
       if (ifbdf1.or.ifbdf2.or.ifbdf3) then
          call copy(s1(0,1),t1(0,3),nb+1)
@@ -1281,19 +1255,15 @@ c-----------------------------------------------------------------------
          call copy(s1(0,4),t1(0,3),nb+1)
          call copy(s1(0,5),t1(0,2),nb+1)
          call copy(s1(0,6),t1(0,1),nb+1)
-         if (rfilter.eq.'LER'.and.rbf.gt.0) then 
+         if (rfilter.eq.'LER'.and.rbf.gt.0) then
             do k=1,6
                call copy(s3(0,k),s1(0,k),nb+1)
-               call pod_proj(s3(1,k),rbf,nb,'step ')
-            enddo
-            do k=1,6
+               call pod_proj(s3(1,k),rbf,nb,'step  ')
                call mxm(s1(0,k),nb+1,s3(0,k),1,s2(0,0,k),nb+1)
             enddo
          else
             do k=1,6
                call copy(s3(0,k),s1(0,k),nb+1)
-            enddo
-            do k=1,6
                call mxm(s1(0,k),nb+1,s1(0,k),1,s2(0,0,k),nb+1)
             enddo
          endif
@@ -1302,21 +1272,29 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine settj_new(s1,s2,s3,t1,t2)
+      subroutine settj(s1,s2,s3,t1,t2)
+
+      ! set quantities in temperature residual
+      ! store utj at different time by ut and compute
+      ! uutj, utuj with utj and ujfilter
+
+      ! s1 := utj
+      ! s2 := uutj
+      ! s3 := utuj
+      ! t1 := ujfilter from setuj
+      ! t2 := ut
 
       include 'SIZE'
       include 'MOR'
 
-      ! s1=utj,s2=uutj,s3=utuj,t1=uj,t2=ut
-
       real s1(0:nb,6),s2(0:nb,0:nb,6),s3(0:nb,0:nb,6)
       real t1(0:nb,6),t2(0:nb,3)
 
-      logical ifbdf1, ifbdf2, ifbdf3
+      logical ifbdf1,ifbdf2,ifbdf3
 
-      ifbdf1 = (navg_step.eq.1.and.ad_step.eq.navg_step+1)
-      ifbdf2 = (navg_step.eq.2.and.ad_step.eq.navg_step)
-      ifbdf3 = (navg_step.ge.3.and.ad_step.eq.navg_step-1)
+      ifbdf1 = navg_step.eq.1.and.ad_step.eq.navg_step+1
+      ifbdf2 = navg_step.eq.2.and.ad_step.eq.navg_step
+      ifbdf3 = navg_step.ge.3.and.ad_step.eq.navg_step-1
 
       if (ifbdf1.or.ifbdf2.or.ifbdf3) then
          call copy(s1(0,1),t2(0,3),nb+1)
@@ -1328,14 +1306,6 @@ c-----------------------------------------------------------------------
          call copy(s1(0,4),t2(0,3),nb+1)
          call copy(s1(0,5),t2(0,2),nb+1)
          call copy(s1(0,6),t2(0,1),nb+1)
-         if (nid.eq.0) then 
-         do k=1,6
-         do j=0,nb
-            write(6,*)'t1',k,j,t1(j,k)
-         enddo
-         enddo
-         endif
-
          do k=1,6
          do j=0,nb
          do i=0,nb
@@ -1351,17 +1321,24 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine setfj(s1,s2)
 
+      ! set quantities in source term for residual
+      ! store rqj and rqtj at different
+      ! time by user specified function ft in userq
+
+      ! s1:=rqj
+      ! s2:=rqtj
+
       include 'SIZE'
       include 'TSTEP'
       include 'MOR'
 
       real s1(6),s2(6)
 
-      logical ifbdf1, ifbdf2, ifbdf3
+      logical ifbdf1,ifbdf2,ifbdf3
 
-      ifbdf1 = (navg_step.eq.1.and.ad_step.eq.navg_step+1)
-      ifbdf2 = (navg_step.eq.2.and.ad_step.eq.navg_step)
-      ifbdf3 = (navg_step.ge.3.and.ad_step.eq.navg_step-1)
+      ifbdf1 = navg_step.eq.1.and.ad_step.eq.navg_step+1
+      ifbdf2 = navg_step.eq.2.and.ad_step.eq.navg_step
+      ifbdf3 = navg_step.ge.3.and.ad_step.eq.navg_step-1
 
       if (ifbdf1.or.ifbdf2.or.ifbdf3) then
          s1(1) = 1
@@ -1398,17 +1375,23 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine set_favg_in_ext(s1,s2)
 
+      ! Set the coefficient of residual involving summation in
+      ! extrapolating source term.
+
+      ! s1:=rqa
+      ! s2:=rqta
+
       include 'SIZE'
       include 'TSTEP'
       include 'MOR'
 
       real s1,s2
 
-      logical ifbdf1, ifbdf2, ifbdf3
+      logical ifbdf1,ifbdf2,ifbdf3
 
-      ifbdf1 = (navg_step.eq.1.and.ad_step.eq.navg_step+1)
-      ifbdf2 = (navg_step.eq.2.and.ad_step.eq.navg_step)
-      ifbdf3 = (navg_step.ge.3.and.ad_step.eq.navg_step-1)
+      ifbdf1 = navg_step.eq.1.and.ad_step.eq.navg_step+1
+      ifbdf2 = navg_step.eq.2.and.ad_step.eq.navg_step
+      ifbdf3 = navg_step.ge.3.and.ad_step.eq.navg_step-1
 
       if (ifbdf1.or.ifbdf2.or.ifbdf3) then
          s1 = 0.0
@@ -1446,7 +1429,6 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'
       include 'MOR'
-
       if (ifrom(1)) call set_time_avg_resid_coef_u
       if (ifrom(2)) call set_time_avg_resid_coef_t
 
@@ -1461,7 +1443,7 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
 
-      call setuj_new(uj,u2j,ujfilter,u)
+      call setuj(uj,u2j,ujfilter,u)
       call set_ucoef_in_ext(ua_ext,u2a_ext,u)
 
       return
@@ -1476,7 +1458,7 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
 
-      call settj_new(utj,uutj,utuj,ujfilter,ut)
+      call settj(utj,uutj,utuj,ujfilter,ut)
       call set_tcoef_in_ext(uta_ext,utua_ext,u,ut)
 
       if (ifsource) then
