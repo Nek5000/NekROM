@@ -56,6 +56,8 @@ c
          else if (index(c_out,'CP').eq.1) then
             rmode='CP '
             max_tr=ltr
+         else if (index(c_out,'AEQ').eq.1) then
+            rmode='AEQ'
          else
             write (6,*) 'invalid option for general:mode ',c_out
             ierr=ierr+1
@@ -93,6 +95,7 @@ c
 
       ifrom(1)=ifpod(1)
       ifpod(1)=ifpod(1).or.ifrom(2)
+      ifrom(2)=ifpod(2)
 
       call finiparser_getdbl(d_out,'general:nb',ifnd)
       if (ifnd.eq.1) nb=min(nint(d_out),lb)
@@ -299,7 +302,7 @@ c
          endif
       endif
 
-      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
          rtmp1(1,1)=nb*1.
          call dump_serial(rtmp1(1,1),1,'ops/nb ',nid)
       else
@@ -355,8 +358,12 @@ C
       ! logicals
 
       call bcast(ifrecon,lsize)
-      call bcast(ifpod,lsize*2)
-      call bcast(ifrom,lsize*2)
+
+      do i=1,2
+         call bcast(ifpod(i),lsize)
+         call bcast(ifrom(i),lsize)
+      enddo
+
       call bcast(ifei,lsize)
       call bcast(iftneu,lsize)
       call bcast(ifplay,lsize)
