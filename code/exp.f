@@ -130,7 +130,8 @@ c-----------------------------------------------------------------------
       call setu
 c     call setops
 
-      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') call dump_all
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ')
+     $   call dump_all
 
 c     call qoisetup
 
