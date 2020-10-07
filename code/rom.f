@@ -1413,8 +1413,6 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'inside setfluc',nbavg
 
-      nbavg=2
-
       do j=1,nbavg
       do i=1,nbavg
          fv(i,j)=wl2vip(ub(1,i),vb(1,i),wb(1,i),
