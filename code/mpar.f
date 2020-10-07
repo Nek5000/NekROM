@@ -355,8 +355,12 @@ C
       ! logicals
 
       call bcast(ifrecon,lsize)
-      call bcast(ifpod,lsize*2)
-      call bcast(ifrom,lsize*2)
+
+      do i=1,2
+         call bcast(ifpod(i),lsize)
+         call bcast(ifrom(i),lsize)
+      enddo
+
       call bcast(ifei,lsize)
       call bcast(iftneu,lsize)
       call bcast(ifplay,lsize)
