@@ -504,7 +504,7 @@ c-----------------------------------------------------------------------
                write (6,*) i,udis(i),'udis'
             enddo
          endif
-         if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
+         if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
             call dump_serial(umin,nb,'ops/umin ',nid)
             call dump_serial(umax,nb,'ops/umax ',nid)
          endif
@@ -539,7 +539,7 @@ c-----------------------------------------------------------------------
             enddo
          endif
 
-         if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
+         if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
             call dump_serial(tmin,nb,'ops/tmin ',nid)
             call dump_serial(tmax,nb,'ops/tmax ',nid)
          endif
@@ -1700,6 +1700,39 @@ c-----------------------------------------------------------------------
       enddo
 
       if (nio.eq.0) write (6,*) 'exiting projtoprerb'
+      
+      return 
+      end
+c-----------------------------------------------------------------------
+      subroutine evaldut(ev,ut,vt,wt,u,v,w,t)
+
+      ! compute <div(u't')> where u := (u,v,w)
+
+      ! ev         := result
+      ! (ut,vt,wt) := components of mean temperature-velocity product
+      ! (u,v,w)    := mean velocity components
+      ! t          := mean temperature
+
+      include 'SIZE'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      common /myblock4/ t1(lt),t2(lt),t3(lt)
+
+      real ev(lt),ut(lt),vt(lt),wt(lt),u(lt),v(lt),w(lt),t(lt)
+
+      n=lx1*ly1*lz1*nelt
+
+      call opcopy(t1,t2,t3,ut,vt,wt)
+
+      call admcol3(t1,u,t,-1.,n)
+      call admcol3(t2,v,t,-1.,n)
+      if (ldim.eq.3) call admcol3(t3,w,t,-1.,n)
+
+      call outpost(t1,t2,t3,t1,t2,'edt')
+      call outpost(u,v,w,t1,t2,'edt')
+
+      call divm1(ev,t1,t2,t3)
+      call outpost(ev,v,w,t1,t2,'edt')
 
       return
       end
@@ -1724,6 +1757,60 @@ c-----------------------------------------------------------------------
          call add2s2(ux,ub(1,i),coef(i),n)
          call add2s2(uy,vb(1,i),coef(i),n)
          call add2s2(uz,wb(1,i),coef(i),n)
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine divm1(div,ux,uy,uz)
+
+      ! compute divergence of <ux,uy,uz> -- mesh 1 to mesh 1 (vec. to sca.)
+
+      include 'SIZE'
+      include 'DXYZ'
+      include 'GEOM'
+      include 'INPUT'
+      include 'TSTEP'
+
+      parameter (lxyz=lx1*ly1*lz1)
+      real ux(lxyz,1),uy(lxyz,1),uz(lxyz,1),div(lxyz,1)
+
+      common /ctmp1/ ur(lxyz),us(lxyz),ut(lxyz)
+
+      n = lx1-1
+      do ie=1,nelt
+         if (ldim.eq.3) then
+            call local_grad3(ur,us,ut,ux,n,ie,dxm1,dxtm1)
+            do i=1,lxyz
+               div(i,ie) =         jacmi(i,ie)*(ur(i)*rxm1(i,1,1,ie)
+     $                                        + us(i)*sxm1(i,1,1,ie)
+     $                                        + ut(i)*txm1(i,1,1,ie))
+            enddo
+            call local_grad3(ur,us,ut,uy,n,ie,dxm1,dxtm1)
+            do i=1,lxyz
+               div(i,ie)=div(i,ie)+jacmi(i,ie)*(ur(i)*rym1(i,1,1,ie)
+     $                                        + us(i)*sym1(i,1,1,ie)
+     $                                        + ut(i)*tym1(i,1,1,ie))
+            enddo
+            call local_grad3(ur,us,ut,uz,n,ie,dxm1,dxtm1)
+            do i=1,lxyz
+               div(i,ie)=div(i,ie)+jacmi(i,ie)*(ur(i)*rzm1(i,1,1,ie)
+     $                                        + us(i)*szm1(i,1,1,ie)
+     $                                        + ut(i)*tzm1(i,1,1,ie))
+            enddo
+         else
+            if (ifaxis) call setaxdy (ifrzer(ie))
+            call local_grad2(ur,us,ux,n,ie,dxm1,dytm1)
+            do i=1,lxyz
+               div(i,ie) =         jacmi(i,ie)*(ur(i)*rxm1(i,1,1,ie)
+     $                                        + us(i)*sxm1(i,1,1,ie))
+            enddo
+            call local_grad2(ur,us,uy,n,ie,dxm1,dytm1)
+            do i=1,lxyz
+               div(i,ie)=div(i,ie)+jacmi(i,ie)*(ur(i)*rym1(i,1,1,ie)
+     $                                        + us(i)*sym1(i,1,1,ie))
+            enddo
+         endif
       enddo
 
       return

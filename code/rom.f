@@ -30,7 +30,7 @@ c-----------------------------------------------------------------------
       ifmult=.not.ifrom(2).and.ifheat
 
 
-      if (rmode.ne.'OFF') then
+      if (rmode.ne.'OFF'.or.rmode.eq.'AEQ') then
       if (ifmult) then
          if (ifflow) call exitti(
      $   'error: running rom_update with ifflow = .true.$',nelv)
@@ -131,7 +131,8 @@ c        cts='rkck  '
 
     2 continue
 
-      if (ifei.and.rmode.ne.'OFF'.and.nint(param(175)).eq.1) then
+      if (ifei.and.(rmode.ne.'OFF'.and.rmode.ne.'AEQ')
+     $   .and.nint(param(175)).eq.1) then
          call cres_uns(sigma_u,sigma_t)
 c        call cres
       endif
@@ -258,7 +259,8 @@ c        call set_sigma
 
       if (nio.eq.0) write (6,*) 'end range setup'
 
-      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') call dump_misc
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ')
+     $   call dump_misc
 
       time=ttime
 
@@ -370,6 +372,8 @@ c-----------------------------------------------------------------------
          call sets(st0,tb,'ops/ct ')
       endif
 
+      if (rmode.eq.'AEQ') call setfluc(fv_op,ft_op)
+
 c     if (ifbuoy.and.ifrom(1).and.ifrom(2)) call setbut(but0)
       if (ifbuoy.and.ifrom(1).and.ifrom(2)) then
          call setbut_xyz(but0_x,but0_y,but0_z)
@@ -381,7 +385,8 @@ c     if (ifbuoy.and.ifrom(1).and.ifrom(2)) call setbut(but0)
 
       call set_binv2
 
-      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') call dump_ops
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ')
+     $   call dump_ops
 
       call nekgsync
       if (nio.eq.0) write (6,*) 'ops_time:',dnekclock()-ops_time
@@ -541,7 +546,7 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'begin range setup'
 
-      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
          call nekgsync
          proj_time=dnekclock()
 
@@ -799,7 +804,7 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
       ! POD radius of the filter for differential filter
       rdft=param(200)
 
-      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
          rtmp1(1,1)=nb*1.
          call dump_serial(rtmp1(1,1),1,'ops/nb ',nid)
       else
@@ -913,7 +918,7 @@ c-----------------------------------------------------------------------
       ns = ls
       ! ns should be set in get_saved_fields
 
-      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
          fname1='file.list '
          nsu=1
          nsp=1
@@ -975,6 +980,57 @@ c           if (idc_t.gt.0) call rzero(tb,n)
             call sub2(vavg,vb,n)
             if (ldim.eq.3) call sub2(wavg,wb,n)
             if (ifpod(2)) call sub2(tavg,tb,n)
+         endif
+      endif
+
+      if (rmode.eq.'AEQ') then
+         iftmp=.false.
+         if (ifpod(1)) then
+            fname1='uavg.list '
+            call read_fields(uafld,fldtmp,fldtmp,
+     $         nbavg,1,1,tk,fname1,iftmp)
+
+            fname1='urms.list'
+            call read_fields(uufld,fldtmp,fldtmp,
+     $         nbavg,1,1,tk,fname1,iftmp)
+
+            fname1='urm2.list'
+            call read_fields(uvfld,fldtmp,fldtmp,
+     $         nbavg,1,1,tk,fname1,iftmp)
+
+            ifxyo=.true.
+            do i=1,nbavg
+               call evaldut(flucv(1,1,i),
+     $            uufld(1,1,i),uvfld(1,1,i),uvfld(1,ldim,i),
+     $           uafld(1,1,i),uafld(1,2,i),uafld(1,ldim,i),uafld(1,1,i))
+
+               call evaldut(flucv(1,2,i),
+     $            uvfld(1,1,i),uufld(1,2,i),uvfld(1,ldim,i),
+     $           uafld(1,1,i),uafld(1,2,i),uafld(1,ldim,i),uafld(1,2,i))
+
+               if (ldim.eq.3) call evaldut(flucv(1,3,i),
+     $            uufld(1,1,i),uvfld(1,1,i),uvfld(1,ldim,i),
+     $           uafld(1,1,i),uafld(1,2,i),uafld(1,ldim,i),uafld(1,3,i))
+
+               call outpost(flucv(1,1,i),flucv(1,2,i),flucv(1,ldim,i),
+     $            pr,t,'flc')
+            enddo
+         endif
+
+         if (ifpod(2)) then
+            fname1='tavg.list'
+            call read_fields(fldtmp,fldtmp,tafld,
+     $         1,1,nbavg,tk,fname1,iftmp)
+
+            fname1='utms.list'
+            call read_fields(utfld,fldtmp,fldtmp,
+     $         nbavg,1,1,tk,fname1,iftmp)
+
+            do i=1,nbavg
+               call evaldut(fluct(1,i),
+     $            utfld(1,1,i),utfld(1,2,i),utfld(1,ldim,i),
+     $            uafld(1,1,i),uafld(1,2,i),uafld(1,ldim,i),tafld(1,i))
+            enddo
          endif
       endif
 
@@ -1275,7 +1331,7 @@ c-----------------------------------------------------------------------
             u((nb+1)*2)=1.
          endif
 
-         if (rmode.eq.'ALL'.or.rmode.eq.'OFF')
+         if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ')
      $      call dump_serial(u,nb+1,'ops/u0 ',nid)
 
          if (ifrom(2)) then
@@ -1286,7 +1342,7 @@ c-----------------------------------------------------------------------
                if (nio.eq.0) write (6,*) 'ut',ut(i)
             enddo
             call add2(tic,tb,n)
-            if (rmode.eq.'ALL'.or.rmode.eq.'OFF')
+            if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ')
      $         call dump_serial(ut,nb+1,'ops/t0 ',nid)
          endif
          ifield=jfield
@@ -1378,6 +1434,36 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine setfluc(fv,ftt,fname)
+
+      include 'SIZE'
+      include 'TSTEP'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /scrread/ tab((lub+1)**2)
+
+      real fv(nbavg,nbavg),ftt(nbavg,nbavg)
+
+      character*128 fname
+
+      if (nio.eq.0) write (6,*) 'inside setfluc',nbavg
+
+      do j=1,nbavg
+      do i=1,nbavg
+         fv(i,j)=wl2vip(ub(1,i),vb(1,i),wb(1,i),
+     $                  flucv(1,1,j),flucv(1,2,j),flucv(1,ldim,j))
+         ftt(i,j)=wl2sip(tb(1,i),fluct(1,j))
+      enddo
+      enddo
+
+      call dump_serial(fv,nbavg**2,'ops/fv ',nid)
+      call dump_serial(ftt,nbavg**2,'ops/ft ',nid)
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine final
 
       include 'SIZE'
@@ -1421,7 +1507,7 @@ c-----------------------------------------------------------------------
 
       call dump_serial(t1,nb+1,'ops/uv ',nid)
 
-      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
          call dump_serial(uas,nb+1,'ops/uas ',nid)
          call dump_serial(uvs,nb+1,'ops/uvs ',nid)
       endif
@@ -1480,7 +1566,7 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelv
 
-      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
          do j=0,nb
          do i=0,nb
             b(i,j)=op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),
@@ -1535,7 +1621,7 @@ c-----------------------------------------------------------------------
 c     call cmult(gx,1./sqrt(2.),n)
 c     call cmult(gy,1./sqrt(2.),n)
 
-      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
          do j=0,nb
          do i=0,nb
             b_x(i,j)=glsc3(ub(1,i),gx,tb(1,j),n)
@@ -1600,7 +1686,7 @@ c-----------------------------------------------------------------------
       call add3s2(but0,but0_x,but0_y,sin(bu_angle),
      $            cos(bu_angle),(nb+1)**2)
 
-      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
          call dump_serial(but0,(nb+1)**2,'ops/but ',nid)
       endif
       return
