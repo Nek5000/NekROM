@@ -381,6 +381,8 @@ C
 c-----------------------------------------------------------------------
       subroutine mpar_verify(ierr)
 
+      ! verifies the keys of the .mor file
+
       INCLUDE 'MORDICT'
       
       character*132  key
@@ -411,6 +413,8 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine set_morfle(morfle)
+
+      ! set morfle to $session.mor
 
       include 'SIZE'
       include 'INPUT'
