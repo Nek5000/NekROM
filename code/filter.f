@@ -1,12 +1,14 @@
 c-----------------------------------------------------------------------
       subroutine pod_proj(uu,r1,nn,msg)
 
-c     uu: output/input, vector to be filtered
-c     r1: input, number of modes to be filtered
-c     nn: input, length of vector uu
-c     msg: input, used as an indicator for
-c     different filter function. Currently, we
-c     support msg = step, linear, parabo, and cubic.
+      ! Apply smoothing function to vector uu
+
+      ! uu:= output/input, vector to be filtered
+      ! r1:= input, number of modes to be filtered
+      ! nn:= input, length of vector uu
+      ! msg:= input, used as an indicator for different filter
+      ! functions. Currently, we support msg = step, linear, parabo, and
+      ! cubic.
 
       real uu(nn)
       real a1,a2,a3,a4
@@ -41,6 +43,10 @@ c     support msg = step, linear, parabo, and cubic.
 c-----------------------------------------------------------------------
       subroutine pod_df(uu)
 
+      ! Apply differential filter (DF) to vector uu
+
+      ! uu := vector that will be filtered
+
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
@@ -60,7 +66,9 @@ c-----------------------------------------------------------------------
 
       if (rdft.le.1e-12) then
       else
+         ! setup right-handed side
          call mxm(bu,nb,uu,nb,tmp,1)
+         ! solve for uu
          call dgetrs('N',nb,1,dfops,nb,ipiv,tmp,nb,info)
          call copy(uu,tmp,nb)
       endif
@@ -70,9 +78,15 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine setdf(flu,a,b,ad_diff)
 
+      ! Set up differential filter (DF) operator B + ad_diff * A
+
+      ! flu := differential filter operator
+      ! a := ROM stiffness matrix
+      ! b := ROM mass matrix
+      ! ad_diff := radius of the DF
+
       include 'SIZE'
       include 'MOR'
-
 
       real flu(nb*nb),a(nb*nb),b(nb*nb)
       real ad_diff

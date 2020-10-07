@@ -22,7 +22,7 @@ c-----------------------------------------------------------------------
 
       if (rmode.eq.'ONB'.or.rmode.eq.'CP ') then
          call loadbases
-      else if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
+      else if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
          n=lx1*ly1*lz1*nelt
 
          do i=1,nb
@@ -63,7 +63,8 @@ c     do i=1,ns
 c        call copy(pb(1,i),prs(1,i),nn)
 c     enddo
 
-      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') call dump_bas
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ')
+     $   call dump_bas
 
       call nekgsync
       if (nio.eq.0) write (6,*) 'bas_time:',dnekclock()-bas_time
@@ -89,7 +90,7 @@ c-----------------------------------------------------------------------
 
       real ck(0:nb,ls),ux(lt,ls),uub(lt,0:nb)
 
-      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
          do i=1,ns
             if (nio.eq.0) write (6,*) 'ps2k: ',i,'/',ns
             nio=-1
@@ -124,7 +125,7 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelt
 
-      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
 c        if (ips.eq.'H10') then
 c           do j=1,ns
 c              call axhelm(uu,usnap(1,1,j),ones,zeros,1,1)
@@ -463,7 +464,7 @@ c-----------------------------------------------------------------------
       call nekgsync
       sg_start=dnekclock()
 
-      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
          jfield=ifield
          ifield=1
          if (ifpod(1)) call gengram(ug(1,1,1),us0,ns,ldim)
@@ -472,7 +473,8 @@ c-----------------------------------------------------------------------
          ifield=jfield
       endif
 
-      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') call dump_gram
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ')
+     $   call dump_gram
 
       call nekgsync
       if (nio.eq.0) write (6,*) 'gram_time:',dnekclock()-sg_start
@@ -487,7 +489,7 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
 
-      if (rmode.eq.'ALL'.or.rmode.eq.'OFF') then
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
          if (nb > 1) then 
 c           do i=0,ldimt1
 c              if (ifpod(i)) then 
@@ -991,7 +993,7 @@ c     should be called.
 
       call copy(aa,a,100)
 
-      call dsyev('V','U',n,a,n,lam,wk,(3*n-1),info)
+      call dsyev('V','U',n,a,n,lam,wk,n*n,info)
 
       if (info.ne.0) then
          if (nid.eq.0) then
