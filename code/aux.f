@@ -1645,6 +1645,65 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine projtoprerb(nocp)
+
+      ! This subroutine is for p-greedy. It project the RB basis
+      ! read in by loadbases onto space that is perpendicular to the
+      ! space spanned by bases in pbas.list
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      character*128 fn
+      character*128 fnlint
+
+      integer nocp
+
+      n=lx1*ly1*lz1*nelt
+
+      if (nio.eq.0) write (6,*) 'inside projtoprerb'
+
+      ! project onto the previous RB space
+      do j=1,ns
+      uk(0,j) = 1.
+      do i=1,nocp
+         ww=vip(ub(1,i),vb(1,i),wb(1,i),ub(1,i),vb(1,i),wb(1,i))
+         vv=vip(ub(1,i),vb(1,i),wb(1,i),
+     $          us0(1,1,j),us0(1,2,j),us0(1,3,j))
+         uk(i,j) = vv/ww
+      enddo
+      enddo
+
+      do j=1,ns
+      tk(0,j) = 1.
+      do i=1,nocp
+         ww=sip(tb(1,i),tb(1,i))
+         vv=sip(tb(1,i),ts0(1,j))
+         tk(i,j) = vv/ww
+      enddo
+      enddo
+
+      ! project onto the space perpendicular to
+      ! the previous RB space
+      do i=1,ns
+         call reconv_wo0(vx,vy,vz,uk(0,i),nocp)
+         call recont_wo0(t,tk(0,i),nocp)
+         if (ifrom(1)) then
+            call sub2(us0(1,1,i),vx,n)
+            call sub2(us0(1,2,i),vy,n)
+            if (ldim.eq.3) call sub2(us0(1,ldim,i),vz,n)
+         endif
+         if (ifrom(2)) call sub2(ts0(1,i),t,n)
+      enddo
+
+      if (nio.eq.0) write (6,*) 'exiting projtoprerb'
+      
+      return 
+      end
+c-----------------------------------------------------------------------
       subroutine evaldut(ev,ut,vt,wt,u,v,w,t)
 
       ! compute <div(u't')> where u := (u,v,w)
@@ -1674,6 +1733,31 @@ c-----------------------------------------------------------------------
 
       call divm1(ev,t1,t2,t3)
       call outpost(ev,v,w,t1,t2,'edt')
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine reconv_wo0(ux,uy,uz,coef,ncop)
+
+      ! reconstruct velocity field without 0th mode
+
+      include 'SIZE'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real ux(lt),uy(lt),uz(lt),coef(0:nb)
+      integer ncop
+
+      n=lx1*ly1*lz1*nelv
+
+      call opzero(ux,uy,uz)
+
+      do i=1,ncop
+         call add2s2(ux,ub(1,i),coef(i),n)
+         call add2s2(uy,vb(1,i),coef(i),n)
+         call add2s2(uz,wb(1,i),coef(i),n)
+      enddo
 
       return
       end
@@ -1732,3 +1816,25 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine recont_wo0(tt,coef,nocp)
+
+      ! reconstruct temperature field without 0th mode
+
+      include 'SIZE'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real tt(lt),coef(0:nb)
+      integer nocp
+
+      n=lx1*ly1*lz1*nelt
+
+      call rzero(tt,n)
+
+      do i=1,nocp
+         call add2s2(tt,tb(1,i),coef(i),n)
+      enddo
+
+      return
+      end
