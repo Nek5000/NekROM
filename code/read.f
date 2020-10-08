@@ -1,6 +1,14 @@
 c-----------------------------------------------------------------------
       subroutine read_serial(a,n,fname,wk,nid)
 
+      ! read in array
+
+      ! a     := read target array
+      ! n     := number of items
+      ! fname := file name
+      ! wk    := work array
+      ! nid   := id of core
+
       character*128 fname
       character*128 fntrunc
 
@@ -22,6 +30,12 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine read_serial_helper(a,n,fname)
 
+      ! core reading routine
+
+      ! a     := read target array
+      ! n     := number of items
+      ! fname := file name
+
       real a(n)
       character*128 fname
 
@@ -33,6 +47,17 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine read_mat_serial(a,n1,n2,fname,m1,m2,wk,nid)
+
+      ! read in matrix
+
+      ! a     := read target matrix
+      ! n1    := number of rows of a
+      ! n2    := number of columns of a
+      ! fname := file name
+      ! m1    := number of rows of fname
+      ! m2    := number of columns of fname
+      ! wk    := work array
+      ! nid   := id of core
 
       character*128 fname
       character*128 fntrunc
@@ -55,6 +80,15 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine read_mat_serial_helper(a,n1,n2,fname,m1,m2)
 
+      ! matrix core reader
+
+      ! a     := read target matrix
+      ! n1    := number of rows of a
+      ! n2    := number of columns of a
+      ! fname := file name
+      ! m1    := number of rows of fname
+      ! m2    := number of columns of fname
+
       real a(n1,n2)
       character*128 fname
 
@@ -73,6 +107,8 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine loadbases
+
+      ! set POD bases ub,vb,wb,pb,tb according to parameter flags
 
       include 'SIZE'
       include 'TOTAL'
@@ -277,6 +313,8 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine restart_filen(fname127,nch)
 
+      ! restart by specifying the number of file name characters
+
       include 'SIZE'
       include 'TOTAL'
       include 'ZPER'
@@ -313,6 +351,8 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine restart_file(fname127)
+
+      ! restart by specifying the number of file name characters
 
       include 'SIZE'
       include 'TOTAL'
@@ -352,6 +392,8 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine restart_time_file(fname127)
 
+      ! restart and change 'time' to the value in the file
+
       include 'SIZE'
       include 'TOTAL'
       include 'ZPER'
@@ -388,6 +430,8 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine read_sigma_u_serial(a,n1,n2,fname,m1,m2,m3,m4,wk,nid)
 
+      ! TODO: add description
+
       character*128 fname
       character*128 fntrunc
 
@@ -408,6 +452,8 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine read_sigma_u_serial_helper(a,n1,n2,fname,m1,m2,m3,m4)
+
+      ! TODO: add description
 
       real a(n1,n2)
       character*128 fname
@@ -640,6 +686,8 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine read_sigma_t_serial(a,n1,n2,fname,m1,m2,m3,m4,wk,nid)
 
+      ! TODO: add description
+
       character*128 fname
       character*128 fntrunc
 
@@ -660,6 +708,8 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine read_sigma_t_serial_helper(a,n1,n2,fname,m1,m2,m3,m4)
+
+      ! TODO: add description
 
       real a(n1,n2)
       character*128 fname
