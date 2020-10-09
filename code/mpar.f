@@ -1,10 +1,10 @@
 c-----------------------------------------------------------------------
       subroutine mor_set_params_par
-C
-C     Read in run parameters from .mor file
-C
-      INCLUDE 'SIZE'
-      INCLUDE 'PARALLEL'
+
+      ! Read in run parameters from .mor file
+
+      include 'SIZE'
+      include 'PARALLEL'
 
       if (nid.eq.0) call mpar_read(ierr)
       call bcast(ierr,isize)
@@ -16,9 +16,9 @@ C
       end
 c-----------------------------------------------------------------------
       subroutine mpar_read(ierr)
-c
-c     parse .mor file and set run parameters
-c
+
+      ! parse .mor file and set run parameters
+
       include 'SIZE'
       include 'INPUT'
       include 'ADJOINT'
@@ -74,7 +74,7 @@ c
          endif
       endif
 
-      ifrecon=(rmode.ne.'ON '.and.rmode.ne.'CP ')
+      ifrecon=rmode.ne.'ON '.and.rmode.ne.'CP '
 
       call finiparser_getstring(c_out,'general:field',ifnd)
       if (ifnd.eq.1) then
@@ -314,15 +314,15 @@ c
          endif
       endif
 
-100   if (ierr.eq.0) call finiparser_dump()
+      if (ierr.eq.0) call finiparser_dump()
 
       return
       end
 c-----------------------------------------------------------------------
       subroutine bcastmpar
-C
-C     Broadcast mor parameters to all processors
-C
+
+      ! Broadcast mor parameters to all processors
+
       include 'SIZE'
       include 'MOR'
 
@@ -386,7 +386,7 @@ c-----------------------------------------------------------------------
 
       ! verifies the keys of the .mor file
 
-      INCLUDE 'MORDICT'
+      include 'MORDICT'
       
       character*132  key
       character*1024 val
