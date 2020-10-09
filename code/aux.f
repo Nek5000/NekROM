@@ -180,14 +180,14 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine shift(u,v,m,n)
+      subroutine shift(u,v,n,m)
 
       ! shift v array into u array
 
       ! u := target array
       ! v := input array
-      ! m := number of shifts
       ! n := length of v
+      ! m := number of shifts
 
       real u(n,m),v(n)
 
