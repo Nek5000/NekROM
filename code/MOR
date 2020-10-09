@@ -138,7 +138,7 @@ c     parameters and common blocks for MOR
       ! Error Indicator ! TODO: cleanup multi-dimensional arrays
 
       common /eires/ xi(lx1*ly1*lz1*lelm,lres),mor_theta(lres),
-     $               mor_sigma(lres,lres),alphaj(6),betaj(6),
+     $               mor_sigma(lres,lres),alphaj(8),betaj(8),
      $               sigtmp(lres,lres)
 
       common /eiivar/ nres,nres_u,nres_t
