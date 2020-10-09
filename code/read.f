@@ -1,6 +1,14 @@
 c-----------------------------------------------------------------------
       subroutine read_serial(a,n,fname,wk,nid)
 
+      ! read in array
+
+      ! a     := read target array
+      ! n     := number of items
+      ! fname := file name
+      ! wk    := work array
+      ! nid   := id of core
+
       character*128 fname
       character*128 fntrunc
 
@@ -22,6 +30,12 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine read_serial_helper(a,n,fname)
 
+      ! core reading routine
+
+      ! a     := read target array
+      ! n     := number of items
+      ! fname := file name
+
       real a(n)
       character*128 fname
 
@@ -33,6 +47,17 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine read_mat_serial(a,n1,n2,fname,m1,m2,wk,nid)
+
+      ! read in matrix
+
+      ! a     := read target matrix
+      ! n1    := number of rows of a
+      ! n2    := number of columns of a
+      ! fname := file name
+      ! m1    := number of rows of fname
+      ! m2    := number of columns of fname
+      ! wk    := work array
+      ! nid   := id of core
 
       character*128 fname
       character*128 fntrunc
@@ -55,6 +80,15 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine read_mat_serial_helper(a,n1,n2,fname,m1,m2)
 
+      ! matrix core reader
+
+      ! a     := read target matrix
+      ! n1    := number of rows of a
+      ! n2    := number of columns of a
+      ! fname := file name
+      ! m1    := number of rows of fname
+      ! m2    := number of columns of fname
+
       real a(n1,n2)
       character*128 fname
 
@@ -73,6 +107,8 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine loadbases
+
+      ! set POD bases ub,vb,wb,pb,tb according to parameter flags
 
       include 'SIZE'
       include 'TOTAL'
@@ -277,6 +313,8 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine restart_filen(fname127,nch)
 
+      ! restart by specifying the number of file name characters
+
       include 'SIZE'
       include 'TOTAL'
       include 'ZPER'
@@ -313,6 +351,8 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine restart_file(fname127)
+
+      ! restart by specifying the number of file name characters
 
       include 'SIZE'
       include 'TOTAL'
@@ -352,6 +392,8 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine restart_time_file(fname127)
 
+      ! restart and change 'time' to the value in the file
+
       include 'SIZE'
       include 'TOTAL'
       include 'ZPER'
@@ -388,6 +430,8 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine read_sigma_u_serial(a,n1,n2,fname,m1,m2,m3,m4,wk,nid)
 
+      ! TODO: add description
+
       character*128 fname
       character*128 fntrunc
 
@@ -408,6 +452,8 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine read_sigma_u_serial_helper(a,n1,n2,fname,m1,m2,m3,m4)
+
+      ! TODO: add description
 
       real a(n1,n2)
       character*128 fname
@@ -640,6 +686,8 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine read_sigma_t_serial(a,n1,n2,fname,m1,m2,m3,m4,wk,nid)
 
+      ! TODO: add description
+
       character*128 fname
       character*128 fntrunc
 
@@ -660,6 +708,8 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine read_sigma_t_serial_helper(a,n1,n2,fname,m1,m2,m3,m4)
+
+      ! TODO: add description
 
       real a(n1,n2)
       character*128 fname
@@ -761,3 +811,172 @@ c-----------------------------------------------------------------------
 
       return
       end
+c-----------------------------------------------------------------------
+      subroutine loadpbases(nsave)
+
+      ! This subroutine is for p-greedy. It reads
+      ! in files in pbas.list and return nsave for how
+      ! many files it has read in.
+
+      ! This subroutine should be called before calling
+      ! subroutine projtoprerb
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      character*128 fname
+      character*1   fn1(128)
+      character*5   fnum
+
+      logical ifexist
+
+      equivalence (fname,fn1)
+
+      if (nio.eq.0) write (6,*) 'inside loadpbases'
+
+      n=lx1*ly1*lz1*nelt
+      n2=lx2*ly2*lz2*nelt
+
+      call push_sol(vx,vy,vz,pr,t)
+
+      inquire (file='pbas.list',exist=ifexist)
+
+      if (ifexist) then
+         nn=nb
+         nsu=1
+         nsp=1
+         nst=1
+         if (ifrom(0)) nsp=nn
+         if (ifrom(1)) nsu=nn
+         if (ifrom(2)) nst=nn
+
+         call get_p_rb(nsave,nsu,nsp,nst,timek,'pbas.list ')
+         if (nn.lt.nb) call exitti(
+     $   'number of files in pbas.list fewer than nb$',nb-nn)
+      else
+         do i=0,nb
+            len=ltrunc(session,132)
+            call chcopy(fn1,'pbas',4)
+            call chcopy(fn1(5),session,len)
+            call chcopy(fn1(5+len),'0.f',3)
+            write (fnum,'(i5.5)') i+1
+            call chcopy(fn1(8+len),fnum,5)
+
+            inquire (file=fname,exist=ifexist)
+            if (.not.ifexist)
+     $        call exitti('missing pbas file, exiting...$',i+1)
+
+            call restart_filen(fname,11+len)
+            if (ifrom(0)) call copy(pb(1,i),pr,n2)
+            if (ifrom(1)) call opcopy(ub(1,i),vb(1,i),wb(1,i),vx,vy,vz)
+            if (ifrom(2)) call copy(tb(1,i),t,n)
+         enddo
+      endif
+
+    1 continue
+
+      call pop_sol(vx,vy,vz,pr,t)
+
+      if (nio.eq.0) write (6,*) 'exiting loadpbases'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine get_p_rb(nocp,nsu,nsp,nst,ttk,fn)
+
+c     This routine reads files specificed in fname
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'ZPER'
+      include 'AVG'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      parameter (lt2=lx2*ly2*lz2*lelt)
+
+      real ttk(nsu)
+      integer nocp
+
+      character*128 fn
+      character*128 fnlint
+
+      common /scrk2/ t4(lt),t5(lt),t6(lt)
+
+      call nekgsync
+      gsf_time=dnekclock()
+
+      ierr = 0
+      call lints(fnlint,fn,128)
+      if (nid.eq.0) open(77,file=fnlint,status='old',err=199)
+      ierr = iglmax(ierr,1)
+      if (ierr.gt.0) goto 199
+
+      n = lx1*ly1*lz1*nelt
+      n2= lx2*ly2*lz2*nelt
+
+      call push_sol(vx,vy,vz,pr,t)
+      call opcopy(t4,t5,t6,xm1,ym1,zm1)
+
+      nsave=max(max(nsu,nsp),nst)
+
+      if (nio.eq.0) write (6,*) 'nsu,nsp,nst:',nsu,nsp,nst
+
+      icount = 0
+      do ipass=1,nsave
+         call blank(initc,127)
+         initc(1) = 'done '
+         if (nid.eq.0) read(77,127,end=998) initc(1)
+  998    call bcast(initc,127)
+  127    format(a127)
+         if (nio.eq.0) write (6,*) ipass,' '
+
+         if (indx1(initc,'done ',5).eq.0) then ! We're not done
+            icount = icount+1
+            nfiles = 1
+            ttmp=time
+            call restart(nfiles)  ! Note -- time is reset.
+            ttk(icount)=time
+            time=ttmp
+
+            ip=ipass
+            if (icount.le.nsu)
+     $         call opcopy(ub(1,ip),vb(1,ip),wb(1,ip),
+     $                    vx,vy,vz)
+
+            if (icount.le.nsp) call copy(pb(1,ip),pr,n2)
+            if (icount.le.nst) call copy(tb(1,ip),t,n)
+         else
+            goto 999
+         endif
+      enddo
+
+  999 continue  ! clean up averages
+      if (nid.eq.0) close(77)
+
+      nsave = icount ! Actual number of files read
+      nocp = nsave
+
+      call pop_sol(vx,vy,vz,pr,t)
+
+      call nekgsync
+      if (nio.eq.0) write (6,*) 'gsf_time:',dnekclock()-gsf_time
+
+      return
+
+  199 continue ! exception handle for file not found
+
+      call nekgsync
+      if (nio.eq.0) write (6,*) 'gsf_time:',dnekclock()-gsf_time
+
+      ierr = 1
+      if (nid.eq.0) ierr = iglmax(ierr,1)
+      write (6,*) fnlint
+      call exitti('get_p_rb did not find list file.$',ierr)
+
+      return
+      end
+c-----------------------------------------------------------------------
