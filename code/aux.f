@@ -180,6 +180,26 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine shift(u,v,m,n)
+
+      ! shift v array into u array
+
+      ! u := target array
+      ! v := input array
+      ! m := number of shifts
+      ! n := length of v
+
+      real u(n,m),v(n)
+
+      do i=1,m-1
+         call copy(u(1,m+1-i),u(1,m-i),n)
+      enddo
+
+      call copy(u,v,n)
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine shift3(u,v,n)
 
       real u(n,3),v(n)
