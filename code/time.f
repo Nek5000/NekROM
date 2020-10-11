@@ -1239,34 +1239,23 @@ c-----------------------------------------------------------------------
       real s1(0:nb,6),s2(0:nb,0:nb,6)
       real s3(0:nb,6),t1(0:nb,3)
 
-      logical ifbdf1,ifbdf2,ifbdf3
+      mj=3
+      nj=3
 
-      ifbdf1 = navg_step.eq.1.and.ad_step.eq.navg_step+1
-      ifbdf2 = navg_step.eq.2.and.ad_step.eq.navg_step
-      ifbdf3 = navg_step.ge.3.and.ad_step.eq.navg_step-1
-
-      if (ifbdf1.or.ifbdf2.or.ifbdf3) then
-         call copy(s1(0,1),t1(0,3),nb+1)
-         call copy(s1(0,2),t1(0,2),nb+1)
-         call copy(s1(0,3),t1(0,1),nb+1)
-      endif
-
-      if (ad_step.eq.ad_nsteps) then
-         call copy(s1(0,4),t1(0,3),nb+1)
-         call copy(s1(0,5),t1(0,2),nb+1)
-         call copy(s1(0,6),t1(0,1),nb+1)
-         if (rfilter.eq.'LER'.and.rbf.gt.0) then
-            do k=1,6
-               call copy(s3(0,k),s1(0,k),nb+1)
-               call pod_proj(s3(1,k),rbf,nb,'step  ')
-               call mxm(s1(0,k),nb+1,s3(0,k),1,s2(0,0,k),nb+1)
-            enddo
-         else
-            do k=1,6
-               call copy(s3(0,k),s1(0,k),nb+1)
-               call mxm(s1(0,k),nb+1,s1(0,k),1,s2(0,0,k),nb+1)
-            enddo
-         endif
+      if (ad_step.eq.navg_step) then
+         do i=1,mj
+            call copy(s1(0,i),t1(0,mj+1-i),nb+1)
+         enddo
+      else if (ad_step.eq.ad_nsteps) then
+         do i=1,nj
+            call copy(s1(0,mj+i),t1(0,nj+1-i),nb+1)
+         enddo
+         do k=1,mj+nj
+            call copy(s3(0,k),s1(0,k),nb+1)
+            if (rfilter.eq.'LER'.and.rbf.gt.0)
+     $         call pod_proj(s3(1,k),rbf,nb,'step  ')
+            call mxm(s1(0,k),nb+1,s3(0,k),1,s2(0,0,k),nb+1)
+         enddo
       endif
 
       return
@@ -1290,23 +1279,18 @@ c-----------------------------------------------------------------------
       real s1(0:nb,6),s2(0:nb,0:nb,6),s3(0:nb,0:nb,6)
       real t1(0:nb,6),t2(0:nb,3)
 
-      logical ifbdf1,ifbdf2,ifbdf3
+      mj=3
+      nj=3
 
-      ifbdf1 = navg_step.eq.1.and.ad_step.eq.navg_step+1
-      ifbdf2 = navg_step.eq.2.and.ad_step.eq.navg_step
-      ifbdf3 = navg_step.ge.3.and.ad_step.eq.navg_step-1
-
-      if (ifbdf1.or.ifbdf2.or.ifbdf3) then
-         call copy(s1(0,1),t2(0,3),nb+1)
-         call copy(s1(0,2),t2(0,2),nb+1)
-         call copy(s1(0,3),t2(0,1),nb+1)
-      endif
-
-      if (ad_step.eq.ad_nsteps) then
-         call copy(s1(0,4),t2(0,3),nb+1)
-         call copy(s1(0,5),t2(0,2),nb+1)
-         call copy(s1(0,6),t2(0,1),nb+1)
-         do k=1,6
+      if (ad_step.eq.navg_step) then
+         do i=1,mj
+            call copy(s1(0,i),t2(0,mj+1-i),nb+1)
+         enddo
+      else if (ad_step.eq.ad_nsteps) then
+         do i=1,nj
+            call copy(s1(0,mj+i),t2(0,nj+1-i),nb+1)
+         enddo
+         do k=1,mj+nj
          do j=0,nb
          do i=0,nb
             s2(i,j,k)=t1(i,k)*s1(j,k)
