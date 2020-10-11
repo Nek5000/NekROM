@@ -141,7 +141,7 @@ c     parameters and common blocks for MOR
      $               mor_sigma(lres,lres),alphaj(8),betaj(8),
      $               sigtmp(lres,lres)
 
-      common /eiivar/ nres,nres_u,nres_t,its(0:3)
+      common /eiivar/ nres,nres_u,nres_t,its(3)
       common /eivar/ res,eierr
 
       common /eiresu/ xi_u(lx1*ly1*lz1*lelm,ldim,lres_u),
