@@ -631,14 +631,17 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
 
+      integer i(0:3)
+      equivalence (its,i)
+
       ! ad_alpha(3,3)
 
-      alphaj(1)=ad_alpha(1,1)+ad_alpha(2,2)+ad_alpha(3,3)
-      alphaj(2)=ad_alpha(1,2)-ad_alpha(1,3)
+      alphaj(1)=ad_alpha(1,i(1))+ad_alpha(2,i(2))+ad_alpha(3,i(3))
+      alphaj(2)=ad_alpha(1,i(2))-ad_alpha(1,i(3))
       alphaj(3)=0.
-      alphaj(4)=-ad_alpha(3,3)
-      alphaj(5)=-ad_alpha(2,3)-ad_alpha(3,3)
-      alphaj(6)=0.
+      alphaj(4)=0.
+      alphaj(5)=-ad_alpha(3,i(3))
+      alphaj(6)=-ad_alpha(2,i(3))-ad_alpha(3,i(3))
 
       call cmult(alphaj,1./(1.*(ad_nsteps-navg_step+1)),6)
 
@@ -650,17 +653,23 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
 
+      integer i(0:3)
+      equivalence (its,i)
+
       ! ad_beta(4,3)
 
-      betaj(1)=ad_beta(1+1,1)+ad_beta(2+1,2)+ad_beta(3+1,3)
-      betaj(2)=ad_beta(0+1,1)+ad_beta(1+1,2)+ad_beta(2+1,3)
-     $        +ad_beta(3+1,3)
-      betaj(3)=ad_beta(0+1,2)+ad_beta(1+1,3)+ad_beta(2+1,3)
-     $        +ad_beta(3+1,3)
+      betaj(1)=ad_beta(0+1,i(0))+ad_beta(1+1,i(1))
+     $        +ad_beta(2+1,i(2))+ad_beta(3+1,i(3))
 
-      betaj(4)=ad_beta(0+1,3)+ad_beta(1+1,3)+ad_beta(2+1,3)
-      betaj(5)=ad_beta(0+1,3)+ad_beta(1+1,3)
-      betaj(6)=ad_beta(0+1,3)
+      betaj(2)=ad_beta(0+1,i(1))+ad_beta(1+1,i(2))
+     $        +ad_beta(2+1,i(3))+ad_beta(3+1,i(3))
+
+      betaj(3)=ad_beta(0+1,i(2))+ad_beta(1+1,i(3))
+     $        +ad_beta(2+1,i(3))+ad_beta(3+1,i(3))
+
+      betaj(4)=ad_beta(0+1,i(3))+ad_beta(1+1,i(3))+ad_beta(2+1,i(3))
+      betaj(5)=ad_beta(0+1,i(3))+ad_beta(1+1,i(3))
+      betaj(6)=ad_beta(0+1,i(3))
 
       call cmult(betaj,1./(ad_dt*(ad_nsteps-navg_step+1)),6)
 

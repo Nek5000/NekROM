@@ -117,6 +117,10 @@ c-----------------------------------------------------------------------
       call finiparser_getdbl(d_out,'general:avginit',ifnd)
       if (ifnd.eq.1) navg_step=nint(max(1.,d_out))
 
+      do i=0,3
+         its(i)=max(min(navg_step+i-1,3),0)
+      enddo
+
       call finiparser_getdbl(d_out,'general:rktol',ifnd)
       if (ifnd.eq.1) rktol=d_out
       if (rktol.lt.0.) rktol=10.**rktol
