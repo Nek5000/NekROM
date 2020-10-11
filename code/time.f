@@ -326,10 +326,10 @@ c        call cubar
 c-----------------------------------------------------------------------
       subroutine set_bdf_coef(ad_alpha,ad_beta)
 
-      real ad_alpha(3,0:3),ad_beta(4,0:3)
+      real ad_alpha(3,3),ad_beta(4,3)
 
-      call rzero(ad_alpha,4*3)
-      call rzero(ad_beta,4*4)
+      call rzero(ad_alpha,3*3)
+      call rzero(ad_beta,3*4)
 
       ad_beta(1,1)  =  1.
       ad_beta(2,1)  = -1.

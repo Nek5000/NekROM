@@ -108,7 +108,7 @@ c     parameters and common blocks for MOR
       common /mordrag/ fd1(ldim*(lub+1)),fd2(ldim*(lub+1)**2),
      $                 fd3(ldim*(lub+1))
       common /mordarray/ sobj(lx1,ly1,lz1,lelm),g(lx1,ly1,lz1,lelm)
-      common /morpar/ ad_dt,ad_re,ad_pe,ad_alpha(3,0:3),ad_beta(4,0:3),
+      common /morpar/ ad_dt,ad_re,ad_pe,ad_alpha(3,3),ad_beta(4,3),
      $                tbeta,ad_ra,rktol,ad_mu
 
       integer ad_nsteps,ad_iostep,ad_step,ad_qstep
