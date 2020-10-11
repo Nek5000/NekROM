@@ -174,8 +174,8 @@ c     if (icount.le.2) then
          endif
       endif
 
-      if (ifrom(2)) call shift(ut,rhs(0,2),nb+1,3)
-      if (ifrom(1)) call shift(u,rhs,nb+1,3)
+      if (ifrom(2)) call shift(ut,rhs(0,2),nb+1,5)
+      if (ifrom(1)) call shift(u,rhs,nb+1,5)
 
       ustep_time=ustep_time+dnekclock()-ulast_time
 
