@@ -628,6 +628,10 @@ c        rhs(i)=wl2sip(qq,tb(1,i))
 c-----------------------------------------------------------------------
       subroutine set_alphaj
 
+      ! set the alphaj coefficients for the extrapolation terms
+
+      ! i := map from the ei time-step to the time-stepper order
+
       include 'SIZE'
       include 'MOR'
 
@@ -651,6 +655,10 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine set_betaj
+
+      ! set the betaj coefficients for the time-derivative terms
+
+      ! i := map from the ei time-step to the time-stepper order
 
       include 'SIZE'
       include 'MOR'
