@@ -77,11 +77,11 @@ c     parameters and common blocks for MOR
      $                 ujfilter(0:(lub+1)*8-1)
 
 
-      common /mortsol/ ut(0:(ltb+1)*3-1),utj(0:(ltb+1)*6-1),
-     $                 uutj(0:(lub+1)*(ltb+1)*6-1),
-     $                 utuj(0:(ltb+1)*(lub+1)*6-1),
+      common /mortsol/ ut(0:(ltb+1)*5-1),utj(0:(ltb+1)*8-1),
+     $                 uutj(0:(lub+1)*(ltb+1)*8-1),
+     $                 utuj(0:(ltb+1)*(lub+1)*8-1),
      $                 ut2((ltb+1)*(lub+1)),
-     $                 ut2j(0:(ltb+1)*(ltb+1)*6-1)
+     $                 ut2j(0:(ltb+1)*(ltb+1)*8-1)
 
       common /morrhs/ cvr(lub*3),ctr(ltb*3),usa(0:lub),rg(lub),
      $                rf(lub),fu(lub,3),rq(ltb),rqt(ltb),
