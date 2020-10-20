@@ -649,7 +649,7 @@ c-----------------------------------------------------------------------
       alphaj(7)=-ad_alpha(3,i(3))
       alphaj(8)=-ad_alpha(2,i(3))-ad_alpha(3,i(3))
 
-      call cmult(alphaj,1./(1.*(ad_nsteps-navg_step+1)),6)
+      call cmult(alphaj,1./(1.*(ad_nsteps-navg_step+1)),8)
 
       return
       end
@@ -682,7 +682,7 @@ c-----------------------------------------------------------------------
       betaj(7)=ad_beta(0+1,i(3))+ad_beta(1+1,i(3))
       betaj(8)=ad_beta(0+1,i(3))
 
-      call cmult(betaj,1./(ad_dt*(ad_nsteps-navg_step+1)),6)
+      call cmult(betaj,1./(ad_dt*(ad_nsteps-navg_step+1)),8)
 
       return
       end
