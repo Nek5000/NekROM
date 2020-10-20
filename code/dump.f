@@ -1,6 +1,14 @@
 c-----------------------------------------------------------------------
       subroutine dump_global(a,n,fname,wk1,wk2,nid)
 
+      ! dump a distributed real array to a file
+
+      ! a       := real data array
+      ! n       := number of local entries to dump
+      ! fname   := file name
+      ! wk1,wk2 := work arrays
+      ! nid     := processor id
+
       real a(n),wk1(1),wk2(1)
 
       character*128 fname
@@ -18,6 +26,13 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine idump_serial(a,n,fname,nid)
+
+      ! dump an integer array to a file
+
+      ! a       := integer data array
+      ! n       := number of entries to dump
+      ! fname   := file name
+      ! nid     := processor id
 
       integer a(n)
 
@@ -38,6 +53,13 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine dump_serial(a,n,fname,nid)
 
+      ! dump a real array to a file
+
+      ! a       := integer data array
+      ! n       := number of entries to dump
+      ! fname   := file name
+      ! nid     := processor id
+
       real a(n)
 
       character*128 fname
@@ -56,6 +78,14 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine dump_global_helper(a,n,fname,wk1,wk2,nid)
+
+      ! helper routine to dump_global
+
+      ! a       := integer data array
+      ! n       := number of local entries to dump
+      ! fname   := file name
+      ! wk1,wk2 := work arrays
+      ! nid     := processor id
 
       real a(n),wk1(1),wk2(1)
       integer iwk(1)
@@ -97,6 +127,12 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine idump_serial_helper(a,n,fname)
 
+      ! helper routine for idump_serial
+
+      ! a       := integer data array
+      ! n       := number of entries to dump
+      ! fname   := file name
+
       integer a(n)
 
       character*128 fname
@@ -113,6 +149,12 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine dump_serial_helper(a,n,fname)
+
+      ! helper routine for dump_serial
+
+      ! a       := real data array
+      ! n       := number of entries to dump
+      ! fname   := file name
 
       real a(n)
 
@@ -131,6 +173,8 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine dump_all
+
+      ! dump 'all' operators and data
 
       include 'SIZE'
       include 'TOTAL'
@@ -231,6 +275,8 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine dump_ops
 
+      ! dump core operators (c out disabled)
+
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
@@ -268,6 +314,8 @@ c        call dump_global(ctl,ncloc,'ops/ct ',wk1,wk2,nid)
       end
 c-----------------------------------------------------------------------
       subroutine dump_bas
+
+      ! dump pod basis
 
       include 'SIZE'
       include 'TOTAL'
@@ -317,6 +365,8 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine dump_gram
 
+      ! dump the velocity and temperature Gramians according to `ifpod`
+
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
@@ -339,6 +389,8 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine dump_misc
+
+      ! dump miscellaneous items
 
       include 'SIZE'
       include 'TOTAL'
@@ -400,6 +452,8 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine dump_snaps
+
+      ! dump velocity and temperature snapshots
 
       include 'SIZE'
       include 'TOTAL'
