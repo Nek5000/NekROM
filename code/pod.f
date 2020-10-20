@@ -507,7 +507,7 @@ c           enddo
                call cnmax(eval(1,2),'ops/enlt ',2)
             endif
          else
-            if (nid.eq.0) write (6,*) 'nb = 1, no POD'
+            if(nid.eq.0) write(6,*)'nb = 1, no POD'
             do i=0,ldimt1
                if (ifpod(i)) then 
                   call rzero(evec(1,1,i),ls*lb)
@@ -569,7 +569,7 @@ c-----------------------------------------------------------------------
             endif
             if (i.ne.j) gram(j,i)=gram(i,j)
          enddo
-         if (nio.eq.0) write (6,1) j,gram(1,j),'HLM'
+         if (nio.eq.0) write(6,1) j,gram(1,j),'HLM'
       enddo
 
       if (nio.eq.0) write (6,*) 'exiting gengram'
@@ -616,7 +616,7 @@ c-----------------------------------------------------------------------
             endif
             if (i.ne.j) gram(j,i)=gram(i,j)
          enddo
-         if (nio.eq.0) write (6,1) j,gram(1,j),'H10'
+         if (nio.eq.0) write(6,1) j,gram(1,j),'H10'
       enddo
 
       if (nio.eq.0) write (6,*) 'exiting gengram H10'
@@ -660,7 +660,7 @@ c-----------------------------------------------------------------------
             endif
             if (i.ne.j) gram(j,i)=gram(i,j)
          enddo
-         if (nio.eq.0) write (6,1) j,gram(1,j),'L2 '
+         if (nio.eq.0) write(6,1) j,gram(1,j),'L2 '
       enddo
 
       if (nio.eq.0) write (6,*) 'exiting gengram'
@@ -1003,7 +1003,7 @@ c     should be called.
          endif
 
          ninf = n-info
-         write (6,*) 'Error in regularev, info=',info,n,ninf
+         write(6,*) 'Error in regularev, info=',info,n,ninf
          call exitt
       endif
 
@@ -1042,7 +1042,7 @@ c     total=vlsum(val,ls)
       total=0
       do i=1,ns
          total=total+val(ns-i+1) 
-         if (nio.eq.0) write (6,*) i,total,val(ns-i+1),'total'
+         if (nio.eq.0) write(6,*)i,total,val(ns-i+1),'total'
       enddo
       ena(1) = val(ns)
       enl(1) = sqrt(total-ena(1))/sqrt(total)
@@ -1051,7 +1051,7 @@ c     total=vlsum(val,ls)
         enl(i) = sqrt(total-ena(i))/sqrt(total)
         if (enl(i).le.1e-4) then 
         if (icalld.eq.1) then
-           if (nio.eq.0) write (6,*)i i,enl(i),'cnmax Nmax for field',ifld
+           if (nio.eq.0) write(6,*)i,enl(i),'cnmax Nmax for field',ifld
            icalld=2
         endif
         endif
@@ -1103,14 +1103,14 @@ c-----------------------------------------------------------------------
       total=0
       do i=1,ns
          total=total+val(ns-i+1) 
-         if (nio.eq.0) write (6,*) i,total,val(ns-i+1),'total'
+         if (nio.eq.0) write(6,*)i,total,val(ns-i+1),'total'
       enddo
       do i=1,ns
         enr(i)=val(ns-i+1)/total
-c       if (nio.eq.0) write (6,*)i i,enr(i),'Nmax for field',ifld
+c       if (nio.eq.0) write(6,*)i,enr(i),'Nmax for field',ifld
         if (enr(i).le.1e-3) then 
         if (icalld.eq.1) then
-           if (nio.eq.0) writei (6,*) i,enr(i),'cenpm Nmax for field',ifld
+           if (nio.eq.0) write(6,*)i,enr(i),'cenpm Nmax for field',ifld
            icalld=2
         endif
         endif

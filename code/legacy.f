@@ -93,7 +93,7 @@ c-----------------------------------------------------------------------
 
       call count_gal(num_galu,anum_galu,rhs(1),umax,umin,1e-16,nb)
 
-      call shift(u,rhs,nb+1,3)
+      call shift3(u,rhs,nb+1)
 
       ustep_time=ustep_time+dnekclock()-ulast_time
 
@@ -134,7 +134,7 @@ c-----------------------------------------------------------------------
 
       if (nb.eq.0) then
          rhs(0)=1.
-         call shift(ut,rhs,nb+1,3)
+         call shift3(ut,rhs,nb+1)
          return
       endif
 
@@ -197,7 +197,7 @@ c-----------------------------------------------------------------------
 
       call count_gal(num_galt,anum_galt,rhs(1),tmax,tmin,1e-16,nb)
 
-      call shift(ut,rhs,nb+1,3)
+      call shift3(ut,rhs,nb+1)
 
       tstep_time=tstep_time+dnekclock()-tlast_time
 
