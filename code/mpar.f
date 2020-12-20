@@ -324,6 +324,7 @@ c-----------------------------------------------------------------------
       ! Broadcast mor parameters to all processors
 
       include 'SIZE'
+      include 'PARALLEL'
       include 'MOR'
 
       ! characters
