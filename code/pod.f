@@ -764,7 +764,7 @@ c-----------------------------------------------------------------------
       save    icalld
       data    icalld /0/
       
-      common /scrgvec/ gc(ls,ls),wk(ls,ls)
+      common /scrgvec/ gc(ls,ls),wk(ls,ls,2)
 
       real gram(ls,ls),vec(ls,nb),val(ls)
       real total,ena(ls),enl(ls)
@@ -787,7 +787,7 @@ c-----------------------------------------------------------------------
       eval_time=dnekclock()
 
       do l = 1,nb
-         call copy(vec(1,l),wk(1,ls-l+1),ls) ! reverse order of wk
+         call copy(vec(1,l),wk(1,ls-l+1,1),ls) ! reverse order of wk
       enddo
 
       do i=1,ns
@@ -993,7 +993,7 @@ c     should be called.
 
       call copy(aa,a,100)
 
-      call dsyev('V','U',n,a,n,lam,wk,n*n,info)
+      call dsyev('V','U',n,a,n,lam,wk,2*n*n,info)
 
       if (info.ne.0) then
          if (nid.eq.0) then
