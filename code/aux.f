@@ -237,6 +237,11 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine lap3d(d2u,u)
 
+      ! set Laplacian of the input scalar field
+
+      ! d2u := Laplacian field
+      ! u   := input scalar field
+
       include 'SIZE'
       include 'TOTAL'
 
@@ -1914,6 +1919,10 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       function svint(s1,s2,s3)
 
+      ! compute unit normal integration of the input vector field
+
+      ! <s1,s2,s3> := input vector field
+
       include 'SIZE'
       include 'TOTAL'
 
@@ -1961,6 +1970,14 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine checkaeq(ux,uy,uz,uxx,uxy,pp,visc)
+
+      ! checker for aeq formulation for velocity
+
+      ! <ux,uy,uz> := mean velocity field
+      ! uxx        := mean correlation (<ux ux>,<uy uy>,<uz uz>) field
+      ! uxy        := mean correlation (<ux uy>,<uy uz>,<uz ux>) field
+      ! pp         := mean pressure field
+      ! visc       := viscosity corresponding to input fields
 
       include 'SIZE'
       include 'SOLN'
@@ -2030,6 +2047,14 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine checkaeqp(ux,uy,uz,uxx,uxy,pp,visc)
+
+      ! checker for aeq formulation for velocity (with fluc. contribution)
+
+      ! <ux,uy,uz> := mean velocity field
+      ! uxx        := mean correlation (<ux'ux'>,<uy'uy'>,<uz'uz'>)
+      ! uxy        := mean correlation (<ux'uy'>,<uy'uz'>,<uz'ux'>)
+      ! pp         := mean pressure field
+      ! visc       := viscosity corresponding to input fields
 
       include 'SIZE'
       include 'SOLN'
@@ -2113,6 +2138,14 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine checkaeqd(ux,uy,uz,uxx,uxy,pp,ud,visc)
+
+      ! checker for aeq formulation for velocity (with eddy model)
+
+      ! <ux,uy,uz> := mean velocity field
+      ! uxx        := mean correlation (<ux'ux'>,<uy'uy'>,<uz'uz'>)
+      ! uxy        := mean correlation (<ux'uy'>,<uy'uz'>,<uz'ux'>)
+      ! pp         := mean pressure field
+      ! visc       := viscosity corresponding to input fields
 
       include 'SIZE'
       include 'SOLN'
@@ -2217,6 +2250,14 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine setdiff(udfld,tdfld,uafld,tafld,upup,upvp,uptp)
 
+      ! checker for aeq formulation for velocity (with eddy model)
+
+      ! <ux,uy,uz> := mean velocity field
+      ! uxx        := mean correlation (<ux'ux'>,<uy'uy'>,<uz'uz'>)
+      ! uxy        := mean correlation (<ux'uy'>,<uy'uz'>,<uz'ux'>)
+      ! pp         := mean pressure field
+      ! visc       := viscosity corresponding to input fields
+
       include 'SIZE'
       include 'SOLN'
       include 'TSTEP'
@@ -2292,6 +2333,12 @@ c    $     pr,tdfld,'dif')
 c-----------------------------------------------------------------------
       subroutine projvecm(ax,ay,az,bx,by,bz,pfld)
 
+      ! find the negative of the projection scale
+
+      ! <ax,ay,az> := vector to be projected
+      ! <bx,by,bz> := vector to project onto
+      ! pfld       := -a.b/b.b
+
       include 'SIZE'
 
       parameter (lt=lx1*ly1*lz1*lelt)
@@ -2317,6 +2364,12 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine setpsi(psit,veca,vecb)
+
+      ! find the transformation tensor such that psi a = b
+
+      ! <ax,ay,az> := starting vector
+      ! <bx,by,bz> := ending vector
+      ! psi        := transformation tensor (ldim x ldim)
 
       include 'SIZE'
 
