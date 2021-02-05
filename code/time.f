@@ -1242,7 +1242,7 @@ c-----------------------------------------------------------------------
       mj=5
       nj=3
 
-      if (ad_step.eq.navg_step) then
+      if (ad_step.eq.(navg_step+1)) then
          do i=1,mj
             call copy(s1(0,i),t1(0,mj+1-i),nb+1)
          enddo
@@ -1282,7 +1282,7 @@ c-----------------------------------------------------------------------
       mj=5
       nj=3
 
-      if (ad_step.eq.navg_step) then
+      if (ad_step.eq.(navg_step+1)) then
          do i=1,mj
             call copy(s1(0,i),t2(0,mj+1-i),nb+1)
          enddo
