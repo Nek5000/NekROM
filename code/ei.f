@@ -645,9 +645,9 @@ c-----------------------------------------------------------------------
       alphaj(3)=ad_alpha(1,i(1))+ad_alpha(2,i(2))+ad_alpha(3,i(3))
       alphaj(4)=ad_alpha(1,i(2))-ad_alpha(1,i(3))
       alphaj(5)=0.
-      alphaj(6)=0.
-      alphaj(7)=-ad_alpha(3,i(3))
-      alphaj(8)=-ad_alpha(2,i(3))-ad_alpha(3,i(3))
+      alphaj(6)=-ad_alpha(3,i(3))
+      alphaj(7)=-ad_alpha(2,i(3))-ad_alpha(3,i(3))
+      alphaj(8)=0.
 
       call cmult(alphaj,1./(1.*(ad_nsteps-navg_step+1)),8)
 
