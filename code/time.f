@@ -82,8 +82,8 @@ c     if (icount.le.2) then
             call mxm(hinv(1,2),nb,rhstmp(1),nb,rhs(1,2),1)
             if (ifdecpl) then
             do i=1,nb
-               if (rhs(i,1).gt.tpmax(i)) rhs(i,1)=tpmax(i)-tpdis(i)*eps
-               if (rhs(i,1).lt.tpmin(i)) rhs(i,1)=tpmin(i)+tpdis(i)*eps
+               if (rhs(i,2).gt.tpmax(i)) rhs(i,2)=tpmax(i)-tpdis(i)*eps
+               if (rhs(i,2).lt.tpmin(i)) rhs(i,2)=tpmin(i)+tpdis(i)*eps
             enddo
             endif
             call mxm(rhs(1,2),1,wt(1,2),nb,rhstmp(1),nb)
