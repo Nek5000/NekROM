@@ -640,8 +640,8 @@ c-----------------------------------------------------------------------
 
       ! ad_alpha(3,3)
 
-      alphaj(1)=ad_alpha(1,i(1))
-      alphaj(2)=ad_alpha(1,i(1))+ad_alpha(2,i(2))
+      alphaj(1)=ad_alpha(3,i(1))
+      alphaj(2)=ad_alpha(2,i(1))+ad_alpha(3,i(2))
       alphaj(3)=ad_alpha(1,i(1))+ad_alpha(2,i(2))+ad_alpha(3,i(3))
       alphaj(4)=ad_alpha(1,i(2))-ad_alpha(1,i(3))
       alphaj(5)=0.
