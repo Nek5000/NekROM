@@ -1428,7 +1428,6 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       call setuj(uj,u2j,ujfilter,u)
-      call set_ucoef_in_ext(ua_ext,u2a_ext,u)
 
       return
       end
@@ -1443,7 +1442,6 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       call settj(utj,uutj,utuj,ujfilter,ut)
-      call set_tcoef_in_ext(uta_ext,utua_ext,u,ut)
 
       if (ifsource) then
          call set_favg_in_ext(rqa,rqta)
