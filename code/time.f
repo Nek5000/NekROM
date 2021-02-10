@@ -1236,8 +1236,8 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
 
-      real s1(0:nb,6),s2(0:nb,0:nb,6)
-      real s3(0:nb,6),t1(0:nb,3)
+      real s1(0:nb,8),s2(0:nb,0:nb,8)
+      real s3(0:nb,8),t1(0:nb,5)
 
       mj=5
       nj=3
@@ -1276,8 +1276,8 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
 
-      real s1(0:nb,6),s2(0:nb,0:nb,6),s3(0:nb,0:nb,6)
-      real t1(0:nb,6),t2(0:nb,3)
+      real s1(0:nb,8),s2(0:nb,0:nb,8),s3(0:nb,0:nb,8)
+      real t1(0:nb,8),t2(0:nb,5)
 
       mj=5
       nj=3
@@ -1428,7 +1428,6 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       call setuj(uj,u2j,ujfilter,u)
-      call set_ucoef_in_ext(ua_ext,u2a_ext,u)
 
       return
       end
@@ -1443,7 +1442,6 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       call settj(utj,uutj,utuj,ujfilter,ut)
-      call set_tcoef_in_ext(uta_ext,utua_ext,u,ut)
 
       if (ifsource) then
          call set_favg_in_ext(rqa,rqta)
