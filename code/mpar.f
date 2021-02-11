@@ -179,8 +179,8 @@ c-----------------------------------------------------------------------
       call finiparser_getbool(i_out,'qoi:tke',ifnd)
       if (ifnd.eq.1) ifctke=i_out.eq.1
 
-      call finiparser_getdbl(d_out,'qoi:nus',ifnd)
       if (ifnd.eq.1) inus=min(max(nint(d_out),0),5)
+      call finiparser_getdbl(d_out,'qoi:nu',ifnd)
 
       ! COPT
 
