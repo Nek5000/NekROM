@@ -722,6 +722,10 @@ c-----------------------------------------------------------------------
       ifei=nint(param(175)).ne.0
 
       navg_step=nint(max(1.,param(176)))
+      do i=1,3
+         its(i)=min(navg_step+i-1,3)
+      enddo
+
       nb=min(nint(param(177)),lb)
       if (nb.eq.0) nb=lb
 
