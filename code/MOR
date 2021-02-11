@@ -72,16 +72,16 @@ c     parameters and common blocks for MOR
       common /morrb/ but0_x((lub+1)*(ltb+1)),but0_y((lub+1)*(ltb+1)),
      $               but0_z((lub+1)*(ltb+1))
 
-      common /morvsol/ u(0:(lub+1)*3-1),uj(0:(lub+1)*6-1),
-     $                 u2j(0:((lub+1)**2)*6-1),
-     $                 ujfilter(0:(lub+1)*6-1)
+      common /morvsol/ u(0:(lub+1)*5-1),uj(0:(lub+1)*8-1),
+     $                 u2j(0:((lub+1)**2)*8-1),
+     $                 ujfilter(0:(lub+1)*8-1)
 
 
-      common /mortsol/ ut(0:(ltb+1)*3-1),utj(0:(ltb+1)*6-1),
-     $                 uutj(0:(lub+1)*(ltb+1)*6-1),
-     $                 utuj(0:(ltb+1)*(lub+1)*6-1),
+      common /mortsol/ ut(0:(ltb+1)*5-1),utj(0:(ltb+1)*8-1),
+     $                 uutj(0:(lub+1)*(ltb+1)*8-1),
+     $                 utuj(0:(ltb+1)*(lub+1)*8-1),
      $                 ut2((ltb+1)*(lub+1)),
-     $                 ut2j(0:(ltb+1)*(ltb+1)*6-1)
+     $                 ut2j(0:(ltb+1)*(ltb+1)*8-1)
 
       common /morrhs/ cvr(lub*3),ctr(ltb*3),usa(0:lub),rg(lub),
      $                rf(lub),fu(lub,3),rq(ltb),rqt(ltb),
@@ -138,10 +138,10 @@ c     parameters and common blocks for MOR
       ! Error Indicator ! TODO: cleanup multi-dimensional arrays
 
       common /eires/ xi(lx1*ly1*lz1*lelm,lres),mor_theta(lres),
-     $               mor_sigma(lres,lres),alphaj(6),betaj(6),
+     $               mor_sigma(lres,lres),alphaj(8),betaj(8),
      $               sigtmp(lres,lres)
 
-      common /eiivar/ nres,nres_u,nres_t
+      common /eiivar/ nres,nres_u,nres_t,its(3)
       common /eivar/ res,eierr
 
       common /eiresu/ xi_u(lx1*ly1*lz1*lelm,ldim,lres_u),

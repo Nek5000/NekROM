@@ -82,8 +82,8 @@ c     if (icount.le.2) then
             call mxm(hinv(1,2),nb,rhstmp(1),nb,rhs(1,2),1)
             if (ifdecpl) then
             do i=1,nb
-               if (rhs(i,1).gt.tpmax(i)) rhs(i,1)=tpmax(i)-tpdis(i)*eps
-               if (rhs(i,1).lt.tpmin(i)) rhs(i,1)=tpmin(i)+tpdis(i)*eps
+               if (rhs(i,2).gt.tpmax(i)) rhs(i,2)=tpmax(i)-tpdis(i)*eps
+               if (rhs(i,2).lt.tpmin(i)) rhs(i,2)=tpmin(i)+tpdis(i)*eps
             enddo
             endif
             call mxm(rhs(1,2),1,wt(1,2),nb,rhstmp(1),nb)
@@ -174,8 +174,8 @@ c     if (icount.le.2) then
          endif
       endif
 
-      if (ifrom(2)) call shift(ut,rhs(0,2),nb+1,3)
-      if (ifrom(1)) call shift(u,rhs,nb+1,3)
+      if (ifrom(2)) call shift(ut,rhs(0,2),nb+1,5)
+      if (ifrom(1)) call shift(u,rhs,nb+1,5)
 
       ustep_time=ustep_time+dnekclock()-ulast_time
 
@@ -1236,37 +1236,26 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
 
-      real s1(0:nb,6),s2(0:nb,0:nb,6)
-      real s3(0:nb,6),t1(0:nb,3)
+      real s1(0:nb,8),s2(0:nb,0:nb,8)
+      real s3(0:nb,8),t1(0:nb,5)
 
-      logical ifbdf1,ifbdf2,ifbdf3
+      mj=5
+      nj=3
 
-      ifbdf1 = navg_step.eq.1.and.ad_step.eq.navg_step+1
-      ifbdf2 = navg_step.eq.2.and.ad_step.eq.navg_step
-      ifbdf3 = navg_step.ge.3.and.ad_step.eq.navg_step-1
-
-      if (ifbdf1.or.ifbdf2.or.ifbdf3) then
-         call copy(s1(0,1),t1(0,3),nb+1)
-         call copy(s1(0,2),t1(0,2),nb+1)
-         call copy(s1(0,3),t1(0,1),nb+1)
-      endif
-
-      if (ad_step.eq.ad_nsteps) then
-         call copy(s1(0,4),t1(0,3),nb+1)
-         call copy(s1(0,5),t1(0,2),nb+1)
-         call copy(s1(0,6),t1(0,1),nb+1)
-         if (rfilter.eq.'LER'.and.rbf.gt.0) then
-            do k=1,6
-               call copy(s3(0,k),s1(0,k),nb+1)
-               call pod_proj(s3(1,k),rbf,nb,'step  ')
-               call mxm(s1(0,k),nb+1,s3(0,k),1,s2(0,0,k),nb+1)
-            enddo
-         else
-            do k=1,6
-               call copy(s3(0,k),s1(0,k),nb+1)
-               call mxm(s1(0,k),nb+1,s1(0,k),1,s2(0,0,k),nb+1)
-            enddo
-         endif
+      if (ad_step.eq.(navg_step+1)) then
+         do i=1,mj
+            call copy(s1(0,i),t1(0,mj+1-i),nb+1)
+         enddo
+      else if (ad_step.eq.ad_nsteps) then
+         do i=1,nj
+            call copy(s1(0,mj+i),t1(0,nj+1-i),nb+1)
+         enddo
+         do k=1,mj+nj
+            call copy(s3(0,k),s1(0,k),nb+1)
+            if (rfilter.eq.'LER'.and.rbf.gt.0)
+     $         call pod_proj(s3(1,k),rbf,nb,'step  ')
+            call mxm(s1(0,k),nb+1,s3(0,k),1,s2(0,0,k),nb+1)
+         enddo
       endif
 
       return
@@ -1287,26 +1276,21 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'MOR'
 
-      real s1(0:nb,6),s2(0:nb,0:nb,6),s3(0:nb,0:nb,6)
-      real t1(0:nb,6),t2(0:nb,3)
+      real s1(0:nb,8),s2(0:nb,0:nb,8),s3(0:nb,0:nb,8)
+      real t1(0:nb,8),t2(0:nb,5)
 
-      logical ifbdf1,ifbdf2,ifbdf3
+      mj=5
+      nj=3
 
-      ifbdf1 = navg_step.eq.1.and.ad_step.eq.navg_step+1
-      ifbdf2 = navg_step.eq.2.and.ad_step.eq.navg_step
-      ifbdf3 = navg_step.ge.3.and.ad_step.eq.navg_step-1
-
-      if (ifbdf1.or.ifbdf2.or.ifbdf3) then
-         call copy(s1(0,1),t2(0,3),nb+1)
-         call copy(s1(0,2),t2(0,2),nb+1)
-         call copy(s1(0,3),t2(0,1),nb+1)
-      endif
-
-      if (ad_step.eq.ad_nsteps) then
-         call copy(s1(0,4),t2(0,3),nb+1)
-         call copy(s1(0,5),t2(0,2),nb+1)
-         call copy(s1(0,6),t2(0,1),nb+1)
-         do k=1,6
+      if (ad_step.eq.(navg_step+1)) then
+         do i=1,mj
+            call copy(s1(0,i),t2(0,mj+1-i),nb+1)
+         enddo
+      else if (ad_step.eq.ad_nsteps) then
+         do i=1,nj
+            call copy(s1(0,mj+i),t2(0,nj+1-i),nb+1)
+         enddo
+         do k=1,mj+nj
          do j=0,nb
          do i=0,nb
             s2(i,j,k)=t1(i,k)*s1(j,k)
@@ -1444,7 +1428,6 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       call setuj(uj,u2j,ujfilter,u)
-      call set_ucoef_in_ext(ua_ext,u2a_ext,u)
 
       return
       end
@@ -1459,7 +1442,6 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       call settj(utj,uutj,utuj,ujfilter,ut)
-      call set_tcoef_in_ext(uta_ext,utua_ext,u,ut)
 
       if (ifsource) then
          call set_favg_in_ext(rqa,rqta)

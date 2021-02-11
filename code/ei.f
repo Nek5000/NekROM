@@ -441,7 +441,7 @@ c-----------------------------------------------------------------------
 
       l=1
       call set_betaj
-      call mxm(utj,nb+1,betaj,6,mor_theta(l),1)
+      call mxm(utj,nb+1,betaj,8,mor_theta(l),1)
 
       l=l+nb+1
       do i=0,nb
@@ -468,17 +468,17 @@ c-----------------------------------------------------------------------
 
       l=1
       call set_betaj
-      call mxm(utj,nb+1,betaj,6,mor_theta(l),1)
+      call mxm(utj,nb+1,betaj,8,mor_theta(l),1)
 
       l=l+nb+1
 
       call set_alphaj
 
       if (ifrom(1)) then
-c        call mxm(uutj,(nb+1)**2,alphaj,6,mor_theta(l),1)
-         call mxm(utuj,(nb+1)**2,alphaj,6,mor_theta(l),1)
+c        call mxm(uutj,(nb+1)**2,alphaj,8,mor_theta(l),1)
+         call mxm(utuj,(nb+1)**2,alphaj,8,mor_theta(l),1)
       else
-         call mxm(utj,nb+1,alphaj,6,mor_theta(l),1)
+         call mxm(utj,nb+1,alphaj,8,mor_theta(l),1)
       endif
 
       if (ifrom(1)) then
@@ -515,12 +515,12 @@ c-----------------------------------------------------------------------
 
       l=1
       call set_betaj
-      call mxm(utj,nb+1,betaj,6,mor_theta(l),1)
+      call mxm(utj,nb+1,betaj,8,mor_theta(l),1)
 
       l=l+nb+1
 
-      call set_alphaj(alphaj)
-      call mxm(ut2j,(nb+1)**2,alphaj,6,mor_theta(l),1)
+      call set_alphaj
+      call mxm(ut2j,(nb+1)**2,alphaj,8,mor_theta(l),1)
       do j=0,nb
       do i=0,nb
          mor_theta(l)=mor_theta(l)+u2a(1+i+(nb+1)*j)
@@ -628,41 +628,61 @@ c        rhs(i)=wl2sip(qq,tb(1,i))
 c-----------------------------------------------------------------------
       subroutine set_alphaj
 
+      ! set the alphaj coefficients for the extrapolation terms
+
+      ! i := map from the ei time-step to the time-stepper order
+
       include 'SIZE'
       include 'MOR'
 
+      integer i(3)
+      equivalence (its,i)
+
       ! ad_alpha(3,3)
 
-      alphaj(1)=ad_alpha(1,1)+ad_alpha(2,2)+ad_alpha(3,3)
-      alphaj(2)=ad_alpha(1,2)-ad_alpha(1,3)
-      alphaj(3)=0.
-      alphaj(4)=-ad_alpha(3,3)
-      alphaj(5)=-ad_alpha(2,3)-ad_alpha(3,3)
-      alphaj(6)=0.
+      alphaj(1)=ad_alpha(3,i(1))
+      alphaj(2)=ad_alpha(2,i(1))+ad_alpha(3,i(2))
+      alphaj(3)=ad_alpha(1,i(1))+ad_alpha(2,i(2))+ad_alpha(3,i(3))
+      alphaj(4)=ad_alpha(1,i(2))-ad_alpha(1,i(3))
+      alphaj(5)=0.
+      alphaj(6)=-ad_alpha(3,i(3))
+      alphaj(7)=-ad_alpha(2,i(3))-ad_alpha(3,i(3))
+      alphaj(8)=-1.
 
-      call cmult(alphaj,1./(1.*(ad_nsteps-navg_step+1)),6)
+      call cmult(alphaj,1./(1.*(ad_nsteps-navg_step+1)),8)
 
       return
       end
 c-----------------------------------------------------------------------
       subroutine set_betaj
 
+      ! set the betaj coefficients for the time-derivative terms
+
+      ! i := map from the ei time-step to the time-stepper order
+
       include 'SIZE'
       include 'MOR'
 
+      integer i(3)
+      equivalence (its,i)
+
       ! ad_beta(4,3)
 
-      betaj(1)=ad_beta(1+1,1)+ad_beta(2+1,2)+ad_beta(3+1,3)
-      betaj(2)=ad_beta(0+1,1)+ad_beta(1+1,2)+ad_beta(2+1,3)
-     $        +ad_beta(3+1,3)
-      betaj(3)=ad_beta(0+1,2)+ad_beta(1+1,3)+ad_beta(2+1,3)
-     $        +ad_beta(3+1,3)
+      betaj(1)=ad_beta(3+1,i(1))
+      betaj(2)=ad_beta(2+1,i(1))+ad_beta(3+1,i(2))
+      betaj(3)=ad_beta(1+1,i(1))+ad_beta(2+1,i(2))+ad_beta(3+1,i(3))
 
-      betaj(4)=ad_beta(0+1,3)+ad_beta(1+1,3)+ad_beta(2+1,3)
-      betaj(5)=ad_beta(0+1,3)+ad_beta(1+1,3)
-      betaj(6)=ad_beta(0+1,3)
+      betaj(4)=ad_beta(0+1,i(1))+ad_beta(1+1,i(2))
+     $        +ad_beta(2+1,i(3))+ad_beta(3+1,i(3))
 
-      call cmult(betaj,1./(ad_dt*(ad_nsteps-navg_step+1)),6)
+      betaj(5)=ad_beta(0+1,i(2))+ad_beta(1+1,i(3))
+     $        +ad_beta(2+1,i(3))+ad_beta(3+1,i(3))
+
+      betaj(6)=ad_beta(0+1,i(3))+ad_beta(1+1,i(3))+ad_beta(2+1,i(3))
+      betaj(7)=ad_beta(0+1,i(3))+ad_beta(1+1,i(3))
+      betaj(8)=ad_beta(0+1,i(3))
+
+      call cmult(betaj,1./(ad_dt*(ad_nsteps-navg_step+1)),8)
 
       return
       end
@@ -2671,8 +2691,8 @@ c-----------------------------------------------------------------------
 
       call nekgsync
 c     call set_theta_uns
-      call set_betaj_new
-      call set_alphaj_new
+      call set_betaj
+      call set_alphaj
 
       if (ifrom(1)) call opzero(res_u(1,1),res_u(1,2),res_u(1,ldim))
       if (ifrom(2)) call rzero(res_t,n)
@@ -2803,7 +2823,7 @@ c-----------------------------------------------------------------------
       n=lx1*ly1*lz1*nelv
 
       if (msg.eq.'vel') then
-         call mxm(uj,nb+1,betaj,6,coef,1)
+         call mxm(uj,nb+1,betaj,8,coef,1)
          do i=0,nb
             ifield=1
             call opcopy(wk1,wk2,wk3,ub(1,i),vb(1,i),wb(1,i))
@@ -2819,7 +2839,7 @@ c-----------------------------------------------------------------------
             endif
          enddo
       elseif (msg.eq.'tmp') then
-         call mxm(utj,nb+1,betaj,6,coef,1)
+         call mxm(utj,nb+1,betaj,8,coef,1)
          do i=0,nb
             ifield=2
             call copy(wk1,tb(1,i),n)
@@ -2929,7 +2949,7 @@ c-----------------------------------------------------------------------
       n=lx1*ly1*lz1*nelv
 
       if (msg.eq.'vel') then
-         call mxm(u2j,(nb+1)**2,alphaj,6,coef2,1)
+         call mxm(u2j,(nb+1)**2,alphaj,8,coef2,1)
          do j=0,nb
             do i=0,nb
             ifield=1
@@ -2944,7 +2964,7 @@ c-----------------------------------------------------------------------
                call opchsgn(wk1,wk2,wk3)
 
                coef2(i+(nb+1)*j)=coef2(i+(nb+1)*j)
-     $                            +u2a_ext(1+i+(nb+1)*j)
+     $                            +u2a(1+i+(nb+1)*j)
                if (nid.eq.0) write(6,*)coef2(i+(nb+1)*j),'theta_u'
                call cfill(wk4,coef2(i+(nb+1)*j),n)
                call add2col2(res_u(1,1),wk1,wk4,n)
@@ -2955,7 +2975,7 @@ c-----------------------------------------------------------------------
             enddo
          enddo
       elseif (msg.eq.'tmp') then
-         call mxm(utuj,(nb+1)**2,alphaj,6,coef2,1)
+         call mxm(utuj,(nb+1)**2,alphaj,8,coef2,1)
          do j=0,nb
             do i=0,nb
                ifield=2
@@ -2964,7 +2984,7 @@ c-----------------------------------------------------------------------
                call chsign(wk1,n)
 
                coef2(i+(nb+1)*j)=coef2(i+(nb+1)*j)
-     $                            +utua_ext(1+i+(nb+1)*j)
+     $                            +utua(1+i+(nb+1)*j)
                call cfill(wk2,coef2(i+(nb+1)*j),n)
                if (nid.eq.0) write(6,*)coef2(i+(nb+1)*j),'theta_t'
                call add2col2(res_t,wk1,wk2,n)
@@ -2995,14 +3015,14 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelv
 
-      call mxm(utj,(nb+1),alphaj,6,coef,1)
+      call mxm(utj,(nb+1),alphaj,8,coef,1)
       do i=0,nb
          ifield=1
          call opcopy(wk1,wk2,wk3,tb(1,i),zeros,zeros)
          call opcolv(wk1,wk2,wk3,bm1)
          call opchsgn(wk1,wk2,wk3)
 
-         coef(i)=-sin(bu_angle)*ad_ra*(coef(i)+uta_ext(i))
+         coef(i)=-sin(bu_angle)*ad_ra*(coef(i)+uta(i))
          call cfill(wk4,coef(i),n)
          if (nid.eq.0) write(6,*)coef(i),'theta_u'
          call add2col2(res_u(1,1),wk1,wk4,n)
@@ -3012,14 +3032,14 @@ c-----------------------------------------------------------------------
          endif
       enddo
 
-      call mxm(utj,(nb+1),alphaj,6,coef,1)
+      call mxm(utj,(nb+1),alphaj,8,coef,1)
       do i=0,nb
          ifield=1
          call opcopy(wk1,wk2,wk3,zeros,tb(1,i),zeros)
          call opcolv(wk1,wk2,wk3,bm1)
          call opchsgn(wk1,wk2,wk3)
 
-         coef(i)=-cos(bu_angle)*ad_ra*(coef(i)+uta_ext(i))
+         coef(i)=-cos(bu_angle)*ad_ra*(coef(i)+uta(i))
          call cfill(wk4,coef(i),n)
          if (nid.eq.0) write(6,*)coef(i),'theta_u'
          call add2col2(res_u(1,1),wk1,wk4,n)
