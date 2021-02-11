@@ -30,7 +30,7 @@ c-----------------------------------------------------------------------
       param(173) = 0.
 
       call rom_setup
-      call read_serial(vv,ls*ls,'ops/gu ',wk,nid)
+      call read_serial(vv,ls*ls,'tops/gu ',wk,nid)
 
       iexit=0
 
@@ -91,7 +91,7 @@ c-----------------------------------------------------------------------
       param(173) = 0.
 
       call rom_setup
-      call read_serial(u0,nb+1,'ops/u ',wk,nid)
+      call read_serial(u0,nb+1,'tops/u ',wk,nid)
 
       s1=0.
       s2=0.
@@ -155,7 +155,7 @@ c-----------------------------------------------------------------------
       common /scrtest/ wk(lb+1,lb+1),aa(0:lb,0:lb)
 
       real a0(0:nb,0:nb)
-      call read_serial(aa,(nb+1)**2,'ops/au ',wk,nid)
+      call read_serial(aa,(nb+1)**2,'tops/au ',wk,nid)
 
       iexit=0
 
@@ -253,7 +253,7 @@ c-----------------------------------------------------------------------
 
       real b0(0:nb,0:nb)
 
-      call read_serial(bb,(nb+1)**2,'ops/bu ',wk,nid)
+      call read_serial(bb,(nb+1)**2,'tops/bu ',wk,nid)
 
       iexit=0
 
@@ -351,7 +351,7 @@ c-----------------------------------------------------------------------
 
       real c(nb,0:nb,0:nb)
 
-      call read_serial(cc,nb*(nb+1)**2,'ops/cu ',wk,nid)
+      call read_serial(cc,nb*(nb+1)**2,'tops/cu ',wk,nid)
 
       iexit=0
 
