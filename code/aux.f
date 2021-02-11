@@ -235,6 +235,37 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine lap3d(d2u,u)
+
+      ! set Laplacian of the input scalar field
+
+      ! d2u := Laplacian field
+      ! u   := input scalar field
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real d2u(1),u(1)
+
+      common /scrl2d/ ux(lt),uy(lt),uz(lt),
+     $                uxx(lt),uyy(lt),uzz(lt),t1(lt),t2(lt)
+
+      n=lx1*ly1*lz1*nelt
+
+      call gradm1(ux,uy,uz,u)
+
+      call gradm1(uxx,t1,t2,ux)
+      call gradm1(t1,uyy,t2,uy)
+      call gradm1(t1,t2,uzz,uz)
+
+      call add3(d2u,uxx,uyy,n)
+      call add2(d2u,uzz,n)
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine push_op(vx,vy,vz)
 
       include 'SIZE'
@@ -1757,6 +1788,33 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine evalut(utp,vtp,wtp,ut,vt,wt,u,v,w,t)
+
+      ! compute <u't'> where u := (u,v,w)
+
+      ! (utp,vtp,wtp) := components of mean temperature-velocity fluctuation
+      ! (ut,vt,wt)    := components of mean temperature-velocity product
+      ! (u,v,w)       := mean velocity components
+      ! t             := mean temperature
+
+      include 'SIZE'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real utp(lt),vtp(lt),wtp(lt)
+      real ut(lt),vt(lt),wt(lt),u(lt),v(lt),w(lt),t(lt)
+
+      n=lx1*ly1*lz1*nelv
+
+      call opcopy(utp,vtp,wtp,ut,vt,wt)
+
+      call admcol3(utp,u,t,-1.,n)
+      call admcol3(vtp,v,t,-1.,n)
+      if (ldim.eq.3) call admcol3(wtp,w,t,-1.,n)
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine reconv_wo0(ux,uy,uz,coef,ncop)
 
       ! reconstruct velocity field without 0th mode
@@ -1858,3 +1916,522 @@ c-----------------------------------------------------------------------
 
       return
       end
+c-----------------------------------------------------------------------
+      function svint(s1,s2,s3)
+
+      ! compute unit normal integration of the input vector field
+
+      ! <s1,s2,s3> := input vector field
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      real s1(lx1,ly1,lz1,lelt),
+     $                 s2(lx1,ly1,lz1,lelt),
+     $                 s3(lx1,ly1,lz1,lelt)
+
+      integer e,f,eg
+
+      lxyz  = lx1*ly1*lz1
+      nface = 2*ldim
+
+      iobj=1
+
+      a=0.
+      s=0.
+
+      do ie=1,nelt
+      do ifc=1,2*ldim
+         if (cbc(ifc,ie,1).ne.'E  '.and.cbc(ifc,ie,1).ne.'P  ') then
+            call facind(kx1,kx2,ky1,ky2,kz1,kz2,lx1,ly1,lz1,ifc)
+            l=1
+
+            do iz=kz1,kz2
+            do iy=ky1,ky2
+            do ix=kx1,kx2
+               a=a+area(l,1,ifc,ie)
+               s=s+area(l,1,ifc,ie)*(unx(l,1,ifc,ie)*s1(ix,iy,iz,ie)+
+     $                               uny(l,1,ifc,ie)*s2(ix,iy,iz,ie)+
+     $                               unz(l,1,ifc,ie)*s3(ix,iy,iz,ie))
+               l=l+1
+            enddo
+            enddo
+            enddo
+         endif
+      enddo
+      enddo
+
+      s=glsum(s,1)
+      a=glsum(a,1)
+
+      svint=s
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine checkaeq(ux,uy,uz,uxx,uxy,pp,visc)
+
+      ! checker for aeq formulation for velocity
+
+      ! <ux,uy,uz> := mean velocity field
+      ! uxx        := mean correlation (<ux ux>,<uy uy>,<uz uz>) field
+      ! uxy        := mean correlation (<ux uy>,<uy uz>,<uz ux>) field
+      ! pp         := mean pressure field
+      ! visc       := viscosity corresponding to input fields
+
+      include 'SIZE'
+      include 'SOLN'
+      include 'TSTEP'
+
+      real ux(lx1,ly1,lz1,lelt)
+      real uy(lx1,ly1,lz1,lelt)
+      real uz(lx1,ly1,lz1,lelt)
+
+      real uxx(lx1*ly1*lz1*lelt,ldim)
+      real uxy(lx1*ly1*lz1*lelt,ldim)
+
+      real pp(lx2,ly2,lz2,lelt)
+
+      common /myscr/         xm0(lx1,ly1,lz1,lelt)
+     $,                      ym0(lx1,ly1,lz1,lelt)
+     $,                      zm0(lx1,ly1,lz1,lelt)
+     $,                      pm1(lx1,ly1,lz1,lelv)
+     $,                      wx(lx1,ly1,lz1,lelv)
+     $,                      wy(lx1,ly1,lz1,lelv)
+     $,                      wz(lx1,ly1,lz1,lelv)
+      
+      n=lx1*ly1*lz1*nelv
+      time=1./visc
+
+      call divm1(wx,uxx(1,1),uxy(1,1),uxy(1,3))
+      call divm1(wy,uxy(1,1),uxx(1,2),uxy(1,2))
+      if (ldim.eq.3) call divm1(wz,uxy(1,3),uxy(1,2),uxx(1,3))
+
+      call chsign(wx,n)
+      call chsign(wy,n)
+      call chsign(wz,n)
+
+      call outpost(wx,wy,wz,pp,t,'cnv')
+
+      call mappr(pm1,pp,xm0,ym0)
+      call gradm1(xm0,ym0,zm0,pm1)
+
+      call outpost(xm0,ym0,zm0,pm1,t,'gdp')
+
+      call sub2(wx,xm0,n)
+      call sub2(wy,ym0,n)
+      if (ldim.eq.3) call sub2(wz,zm0,n)
+
+      if (ldim.eq.2) then
+         call lap2d(xm0,ux)
+         call add2s2(wx,xm0,visc,n)
+
+         call lap2d(ym0,uy)
+         call add2s2(wy,ym0,visc,n)
+      else
+         call lap3d(xm0,ux)
+         call add2s2(wx,xm0,visc,n)
+
+         call lap3d(ym0,uy)
+         call add2s2(wy,ym0,visc,n)
+
+         call lap3d(zm0,uz)
+         call add2s2(wz,zm0,visc,n)
+      endif
+
+      call outpost(xm0,ym0,zm0,pp,t,'lap')
+
+      call outpost(wx,wy,wz,pp,t,'aeq')
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine checkaeqp(ux,uy,uz,uxx,uxy,pp,visc)
+
+      ! checker for aeq formulation for velocity (with fluc. contribution)
+
+      ! <ux,uy,uz> := mean velocity field
+      ! uxx        := mean correlation (<ux'ux'>,<uy'uy'>,<uz'uz'>)
+      ! uxy        := mean correlation (<ux'uy'>,<uy'uz'>,<uz'ux'>)
+      ! pp         := mean pressure field
+      ! visc       := viscosity corresponding to input fields
+
+      include 'SIZE'
+      include 'SOLN'
+      include 'TSTEP'
+
+      real ux(lx1,ly1,lz1,lelt)
+      real uy(lx1,ly1,lz1,lelt)
+      real uz(lx1,ly1,lz1,lelt)
+
+      real uxx(lx1*ly1*lz1*lelt,ldim)
+      real uxy(lx1*ly1*lz1*lelt,ldim)
+
+      real pp(lx2,ly2,lz2,lelt)
+
+      common /myscr/         xm0(lx1,ly1,lz1,lelt)
+     $,                      ym0(lx1,ly1,lz1,lelt)
+     $,                      zm0(lx1,ly1,lz1,lelt)
+     $,                      pm1(lx1,ly1,lz1,lelv)
+     $,                      wx(lx1,ly1,lz1,lelv)
+     $,                      wy(lx1,ly1,lz1,lelv)
+     $,                      wz(lx1,ly1,lz1,lelv)
+      
+      n=lx1*ly1*lz1*nelv
+      time=1./visc
+
+      call divm1(wx,uxx(1,1),uxy(1,1),uxy(1,3))
+      call divm1(wy,uxy(1,1),uxx(1,2),uxy(1,2))
+      if (ldim.eq.3) call divm1(wz,uxy(1,3),uxy(1,2),uxx(1,3))
+
+      call chsign(wx,n)
+      call chsign(wy,n)
+      call chsign(wz,n)
+
+      call col3(xm0,ux,ux,n)
+      call col3(ym0,ux,uy,n)
+      call col3(zm0,ux,uz,n)
+      call divm1(pm1,xm0,ym0,zm0)
+      call sub2(wx,pm1,n)
+
+      call col3(xm0,uy,ux,n)
+      call col3(ym0,uy,uy,n)
+      call col3(zm0,uy,uz,n)
+      call divm1(pm1,xm0,ym0,zm0)
+      call sub2(wy,pm1,n)
+
+      if (ldim.eq.3) then
+         call col3(xm0,uz,ux,n)
+         call col3(ym0,uz,uy,n)
+         call col3(zm0,uz,uz,n)
+         call divm1(pm1,xm0,ym0,zm0)
+         call sub2(wz,pm1,n)
+      endif
+
+      call mappr(pm1,pp,xm0,ym0)
+      call gradm1(xm0,ym0,zm0,pm1)
+
+      call sub2(wx,xm0,n)
+      call sub2(wy,ym0,n)
+      if (ldim.eq.3) call sub2(wz,zm0,n)
+
+      if (ldim.eq.2) then
+         call lap2d(xm0,ux)
+         call add2s2(wx,xm0,visc,n)
+
+         call lap2d(ym0,uy)
+         call add2s2(wy,ym0,visc,n)
+      else
+         call lap3d(xm0,ux)
+         call add2s2(wx,xm0,visc,n)
+
+         call lap3d(ym0,uy)
+         call add2s2(wy,ym0,visc,n)
+
+         call lap3d(zm0,uz)
+         call add2s2(wz,zm0,visc,n)
+      endif
+
+      call outpost(wx,wy,wz,pp,t,'aq2')
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine checkaeqd(ux,uy,uz,uxx,uxy,pp,ud,visc)
+
+      ! checker for aeq formulation for velocity (with eddy model)
+
+      ! <ux,uy,uz> := mean velocity field
+      ! uxx        := mean correlation (<ux'ux'>,<uy'uy'>,<uz'uz'>)
+      ! uxy        := mean correlation (<ux'uy'>,<uy'uz'>,<uz'ux'>)
+      ! pp         := mean pressure field
+      ! visc       := viscosity corresponding to input fields
+
+      include 'SIZE'
+      include 'SOLN'
+      include 'TSTEP'
+
+      real ux(lx1*ly1*lz1*lelt)
+      real uy(lx1*ly1*lz1*lelt)
+      real uz(lx1*ly1*lz1*lelt)
+
+      real uxx(lx1*ly1*lz1*lelt,ldim)
+      real uxy(lx1*ly1*lz1*lelt,ldim)
+
+      real pp(lx2,ly2,lz2,lelt)
+
+      real ud(lx1*ly1*lz1*lelt,ldim)
+
+      common /myscr/         xm0(lx1,ly1,lz1,lelt)
+     $,                      ym0(lx1,ly1,lz1,lelt)
+     $,                      zm0(lx1,ly1,lz1,lelt)
+     $,                      pm1(lx1,ly1,lz1,lelv)
+     $,                      wx(lx1,ly1,lz1,lelv)
+     $,                      wy(lx1,ly1,lz1,lelv)
+     $,                      wz(lx1,ly1,lz1,lelv)
+      
+      n=lx1*ly1*lz1*nelv
+      time=1./visc
+
+      call divm1(wx,uxx(1,1),uxy(1,1),uxy(1,3))
+      call divm1(wy,uxy(1,1),uxx(1,2),uxy(1,2))
+      if (ldim.eq.3) call divm1(wz,uxy(1,3),uxy(1,2),uxx(1,3))
+
+      call chsign(wx,n)
+      call chsign(wy,n)
+      call chsign(wz,n)
+
+      call outpost(wx,wy,wz,pp,t,'cv1')
+
+      call gradm1(xm0,ym0,zm0,ux)
+      call opcolv(xm0,ym0,zm0,ud(1,1))
+      call divm1(wx,xm0,ym0,zm0)
+
+      call gradm1(xm0,ym0,zm0,uy)
+      call opcolv(xm0,ym0,zm0,ud(1,2))
+      call divm1(wy,xm0,ym0,zm0)
+
+      if (ldim.eq.3) then
+         call gradm1(xm0,ym0,zm0,uz)
+         call opcolv(xm0,ym0,zm0,ud(1,3))
+         call divm1(wz,xm0,ym0,zm0)
+      endif
+
+      call outpost(wx,wy,wz,pp,t,'cv2')
+
+      call col3(xm0,ux,ux,n)
+      call col3(ym0,ux,uy,n)
+      call col3(zm0,ux,uz,n)
+      call divm1(pm1,xm0,ym0,zm0)
+      call sub2(wx,pm1,n)
+
+      call col3(xm0,uy,ux,n)
+      call col3(ym0,uy,uy,n)
+      call col3(zm0,uy,uz,n)
+      call divm1(pm1,xm0,ym0,zm0)
+      call sub2(wy,pm1,n)
+
+      if (ldim.eq.3) then
+         call col3(xm0,uz,ux,n)
+         call col3(ym0,uz,uy,n)
+         call col3(zm0,uz,uz,n)
+         call divm1(pm1,xm0,ym0,zm0)
+         call sub2(wz,pm1,n)
+      endif
+
+      call mappr(pm1,pp,xm0,ym0)
+      call gradm1(xm0,ym0,zm0,pm1)
+
+      call sub2(wx,xm0,n)
+      call sub2(wy,ym0,n)
+      if (ldim.eq.3) call sub2(wz,zm0,n)
+
+      if (ldim.eq.2) then
+         call lap2d(xm0,ux)
+         call add2s2(wx,xm0,visc,n)
+
+         call lap2d(ym0,uy)
+         call add2s2(wy,ym0,visc,n)
+      else
+         call lap3d(xm0,ux)
+         call add2s2(wx,xm0,visc,n)
+
+         call lap3d(ym0,uy)
+         call add2s2(wy,ym0,visc,n)
+
+         call lap3d(zm0,uz)
+         call add2s2(wz,zm0,visc,n)
+      endif
+
+      call outpost(wx,wy,wz,pp,t,'aq2')
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine setdiff(udfld,tdfld,uafld,tafld,upup,upvp,uptp)
+
+      ! checker for aeq formulation for velocity (with eddy model)
+
+      ! <ux,uy,uz> := mean velocity field
+      ! uxx        := mean correlation (<ux'ux'>,<uy'uy'>,<uz'uz'>)
+      ! uxy        := mean correlation (<ux'uy'>,<uy'uz'>,<uz'ux'>)
+      ! pp         := mean pressure field
+      ! visc       := viscosity corresponding to input fields
+
+      include 'SIZE'
+      include 'SOLN'
+      include 'TSTEP'
+
+      real udfld(lx1*ly1*lz1*lelt,ldim)
+      real tdfld(lx1*ly1*lz1*lelt)
+      real uafld(lx1*ly1*lz1*lelt,ldim),tafld(lx1*ly1*lz1*lelt)
+      real upup(lx1*ly1*lz1*lelt,ldim),upvp(lx1*ly1*lz1*lelt,ldim)
+      real uptp(lx1*ly1*lz1*lelt,ldim)
+
+      common /myscr/         xm0(lx1,ly1,lz1,lelt)
+     $,                      ym0(lx1,ly1,lz1,lelt)
+     $,                      zm0(lx1,ly1,lz1,lelt)
+     $,                      pm1(lx1,ly1,lz1,lelv)
+     $,                      tx(lx1*ly1*lz1*lelv)
+     $,                      ty(lx1*ly1*lz1*lelv)
+     $,                      tz(lx1*ly1*lz1*lelv)
+
+      ! evaluate eddy viscosity
+
+      call gradm1(tx,ty,tz,uafld(1,1))
+      call projvecm(upup(1,1),upvp(1,1),upvp(1,3),tx,ty,tz,udfld(1,1))
+
+      call gradm1(tx,ty,tz,uafld(1,2))
+      call projvecm(upvp(1,1),upup(1,2),upvp(1,2),tx,ty,tz,udfld(1,2))
+
+      if (ldim.eq.3) then
+         call gradm1(tx,ty,tz,uafld(1,3))
+         call projvecm(upvp(1,3),upvp(1,2),upup(1,3),
+     $      tx,ty,tz,udfld(1,3))
+      endif
+
+      ! evaluate eddy diffusivity
+
+      call gradm1(tx,ty,tz,tafld)
+      call projvecm(uptp(1,1),uptp(1,2),uptp(1,ldim),tx,ty,tz,tdfld)
+
+      call gradm1(tx,ty,tz,uafld(1,1))
+      call opcolv(tx,ty,tz,udfld(1,1))
+      call divm1(xm0,tx,ty,tz)
+
+      call gradm1(tx,ty,tz,uafld(1,2))
+      call opcolv(tx,ty,tz,udfld(1,2))
+      call divm1(ym0,tx,ty,tz)
+
+      call gradm1(tx,ty,tz,uafld(1,3))
+      call opcolv(tx,ty,tz,udfld(1,3))
+      call divm1(zm0,tx,ty,tz)
+
+      call gradm1(tx,ty,tz,tafld)
+      call opcolv(tx,ty,tz,tdfld)
+      call divm1(pm1,tx,ty,tz)
+
+      call outpost(xm0,ym0,zm0,pr,pm1,'dif')
+
+      call divm1(xm0,upup(1,1),upvp(1,1),upvp(1,3))
+      call divm1(ym0,upvp(1,1),upup(1,2),upvp(1,2))
+      call divm1(zm0,upvp(1,3),upvp(1,2),upup(1,3))
+      call divm1(pm1,uptp(1,1),uptp(1,2),uptp(1,3))
+
+      call outpost(xm0,ym0,zm0,pr,pm1,'dif')
+
+      call outpost(upup(1,1),upvp(1,1),upvp(1,3),pr,pm1,'uvw')
+      call outpost(upvp(1,1),upup(1,2),upvp(1,2),pr,pm1,'uvw')
+      call outpost(upvp(1,3),upvp(1,2),upup(1,3),pr,pm1,'uvw')
+      call outpost(uptp(1,1),uptp(1,2),uptp(1,3),pr,pm1,'uvw')
+
+c     call outpost(udfld(1,1),udfld(1,2),udfld(1,ldim),
+c    $     pr,tdfld,'dif')
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine projvecm(ax,ay,az,bx,by,bz,pfld)
+
+      ! find the negative of the projection scale
+
+      ! <ax,ay,az> := vector to be projected
+      ! <bx,by,bz> := vector to project onto
+      ! pfld       := -a.b/b.b
+
+      include 'SIZE'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real ax(lt),ay(lt),az(lt),bx(lt),by(lt),bz(lt)
+      real pfld(lx1*ly1*lz1*lelt)
+      
+      n=lx1*ly1*lz1*nelt
+
+      eps=1.e-16
+
+      do i=1,n
+         bnorm2=bx(i)**2+by(i)**2+eps
+         if (ldim.eq.3) bnorm2=bnorm2+bz(i)**2
+
+         dot=ax(i)*bx(i)+ay(i)*by(i)+eps
+         if (ldim.eq.3) dot=dot+az(i)*bz(i)
+
+         pfld(i)=-dot/bnorm2
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine setpsi(psit,veca,vecb)
+
+      ! find the transformation tensor such that psi a = b
+
+      ! <ax,ay,az> := starting vector
+      ! <bx,by,bz> := ending vector
+      ! psi        := transformation tensor (ldim x ldim)
+
+      include 'SIZE'
+
+      common /psitmp/ w1(ldim)
+
+      real veca(lx1*ly1*lz1*lelt,ldim),vecb(lx1*ly1*lz1*lelt,ldim)
+      real psit(lx1*ly1*lz1*lelt,ldim*ldim)
+      
+      n=lx1*ly1*lz1*nelt
+
+      eps=1.e-16
+      s1=0.
+      s2=0.
+
+      do i=1,n
+         anorm2=veca(i,1)**2+veca(i,2)**2+eps
+         if (ldim.eq.3) anorm2=anorm2+veca(i,3)**2
+
+         bnorm2=vecb(i,1)**2+vecb(i,2)**2+eps
+         if (ldim.eq.3) bnorm2=bnorm2+vecb(i,3)**2
+
+         dot=veca(i,1)*vecb(i,1)+veca(i,2)*vecb(i,2)
+         if (ldim.eq.3) dot=dot+veca(i,3)*vecb(i,3)
+
+         theta=acos(dot/sqrt(bnorm2*anorm2))
+         ct=cos(theta)
+         st=sin(theta)
+
+         if (ldim.eq.2) then
+            psit(i,1)=ct
+            psit(i,2)=st
+            psit(i,3)=ct
+            psit(i,4)=-st
+         else
+            rx=veca(i,2)*vecb(i,3)-veca(i,3)*vecb(i,2)
+            ry=veca(i,3)*vecb(i,1)-veca(i,1)*vecb(i,3)
+            rz=veca(i,1)*vecb(i,2)-veca(i,2)*vecb(i,1)
+
+            psit(i,1)=ct+rx*rx*(1-ct)
+            psit(i,2)=ry*rx*(1-ct)+rz*st
+            psit(i,3)=rz*rx*(1-ct)-ry*st
+            psit(i,4)=rx*ry*(1-ct)-rz*st
+            psit(i,5)=ct+ry*ry*(1-ct)
+            psit(i,6)=rz*ry*(1-ct)+rx*st
+            psit(i,7)=rx*rz*(1-ct)+ry*st
+            psit(i,8)=ry*rz*(1-ct)-rx*st
+            psit(i,9)=ct+rz*rz*(1-ct)
+         endif
+
+         call mxm(psit,ldim,veca(i,1),ldim,w1,1)
+         call sub2(w1,vecb)
+
+         s2=s2+bnorm2
+         s1=s1+vlsc2(w1,w1,ldim)
+      enddo
+
+      s1=sqrt(glsum(s1,1))
+      s2=sqrt(glsum(s2,1))
+
+      if (nid.eq.0) write (6,*) s1,s2,s1/s2,'psierror'
+
+
+      return
+      end
+c-----------------------------------------------------------------------
