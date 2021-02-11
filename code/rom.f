@@ -1479,9 +1479,14 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-
-
       subroutine setupvp(upvp,uvfld,ufld,vfld)
+
+      ! set fluctuation correlation field
+
+      ! ufld  := <u>, temporal mean of first field
+      ! vfld  := <v>, temporal mean of second field
+      ! uvfld := <uv>, temporal mean of product of both fields
+      ! upvp  := <(u-<u>)(v-<v>)>, temporal mean of product of fluctuations
 
       include 'SIZE'
 
@@ -1498,6 +1503,12 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine setfluc(fv,ftt,fname)
+
+      ! set fluctuation ROM operators
+
+      ! fv    := inner product of basis and fluctuation field
+      ! ftt   := inner product of basis and fluctuation field
+      ! fname := name
 
       include 'SIZE'
       include 'TSTEP'
@@ -1757,6 +1768,11 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine calc_tmean(ttmean,tt)
 
+      ! set mean weighted scalar field
+
+      ! ttmean := mean value
+      ! tt     := target scalar field
+
       include 'SIZE'
       include 'TOTAL'
 
@@ -1771,6 +1787,10 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine set0mean(tt)
+
+      ! set remove weighted-mean from scalar field
+
+      ! tt := target scalar field
 
       include 'SIZE'
       include 'TOTAL'
@@ -1787,6 +1807,11 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine calc_dudn(dudn,tt)
+
+      ! calculate mean boundary gradient of scalar field
+
+      ! dudn := mean gradient value
+      ! tt   := target scalar field
 
       include 'SIZE'
       include 'TOTAL'
@@ -1834,6 +1859,10 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine set1dudn(tt)
+
+      ! set unit-mean boundary gradient for a scalar field
+
+      ! tt   := target scalar field
 
       include 'SIZE'
       include 'TOTAL'
