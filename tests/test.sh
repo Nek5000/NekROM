@@ -23,6 +23,7 @@ else
     exit 1
 fi
 
+mv ops tops
 mkdir ops &> /dev/null
 
 if [ "$TYPE" = "UNIT" ]; then

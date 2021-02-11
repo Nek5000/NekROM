@@ -293,12 +293,13 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      function h10sip_vd(t1,t2)
+      function h10sip_vd(t1,t2,vd)
 
       ! return inner-product of scalar fields using the H^1_0
       ! inner-product with an arbitrary diffusivity field
 
       ! t1,t2 := scalar fields
+      ! vd := variable diffusivity
 
       include 'SIZE'
       include 'SOLN'
@@ -306,12 +307,11 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real t1(lt),t2(lt)
+      real t1(lt),t2(lt),vd(lt)
 
       common /scrip/ t3(lt)
 
-      call axhelm(t3,t1,vdiff,zeros,1,1)
-c     call dssum(t3,lx1,ly1,lz1)
+      call axhelm(t3,t1,vd,zeros,1,1)
       h10sip_vd=glsc2(t3,t2,lx1*ly1*lz1*nelt)
 
       return
@@ -368,6 +368,40 @@ c-----------------------------------------------------------------------
       if (ldim.eq.3) then
          call axhelm(t9,t3,ones,zeros,1,3)
          h10vip=h10vip+glsc2(t9,t6,n)
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      function h10vip_vd(t1,t2,t3,t4,t5,t6,vd)
+
+      ! return inner-product of vector fields using the H^1_0
+      ! inner-product with arbitrary diffusivity fields
+
+      ! t1,t2,t3; t4,t5,t6 := x,y,z components of vector fields
+      ! vd := variable diffusivity in multiple dimensions
+
+      include 'SIZE'
+      include 'INPUT'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real t1(lt),t2(lt),t3(lt),t4(lt),t5(lt),t6(lt),vd(lt,ldim)
+
+      common /scrip/ t7(lt),t8(lt),t9(lt)
+
+      n=lx1*ly1*lz1*nelt
+
+      call axhelm(t7,t1,vd(1,1),zeros,1,1)
+      h10vip_vd=glsc2(t7,t4,n)
+
+      call axhelm(t8,t2,vd(1,2),zeros,1,2)
+      h10vip_vd=h10vip_vd+glsc2(t8,t5,n)
+
+      if (ldim.eq.3) then
+         call axhelm(t9,t3,vd(1,3),zeros,1,3)
+         h10vip_vd=h10vip_vd+glsc2(t9,t6,n)
       endif
 
       return
