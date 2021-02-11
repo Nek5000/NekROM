@@ -1479,49 +1479,8 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine setefluc(fv,ftt,fname)
 
-      include 'SIZE'
-      include 'TSTEP'
-      include 'MOR'
 
-      parameter (lt=lx1*ly1*lz1*lelt)
-
-      common /scrread/ tab((lub+1)**2)
-      common /myfluc/ tx(lt),ty(lt),tz(lt),wk1(lt),wk2(lt),wk3(lt)
-
-      real fv(0:nbavg,0:nbavg),ftt(nbavg,nbavg)
-
-      character*128 fname
-
-      if (nio.eq.0) write (6,*) 'inside setefluc',nbavg
-
-      do i=0,nbavg
-         call gradm1(tx,ty,tz,tb(1,i))
-         fv(i,0)=svint(tx,ty,tz)
-      enddo
-
-      call dump_serial(fv(0,0),nbavg+1,'ops/e1 ',nid)
-
-      do j=0,nbavg
-      do i=0,nbavg
-         call opcopy(tx,ty,tz,ub(1,i),vb(1,i),wb(1,i))
-         call opcolv(tx,ty,tz,tb(1,i))
-         fv(i,j)=svint(tx,ty,tz)
-      enddo
-      enddo
-
-      call dump_serial(fv,(nbavg+1)**2,'ops/e2 ',nid)
-
-      do i=1,nbavg
-         fv(i,0)=svint(flucut(1,i),flucvt(1,i),flucwt(1,i))
-      enddo
-
-      call dump_serial(fv(1,0),nbavg,'ops/e3 ',nid)
-
-      return
-      end
-c-----------------------------------------------------------------------
       subroutine setupvp(upvp,uvfld,ufld,vfld)
 
       include 'SIZE'
