@@ -1,17 +1,17 @@
 c-----------------------------------------------------------------------
       ! Unit Tests
 c-----------------------------------------------------------------------
-      subroutine grammian_l2_unit
-      call grammian_unit(.true.)
+      subroutine gramian_l2_unit
+      call gramian_unit(.true.)
       return
       end
 c-----------------------------------------------------------------------
-      subroutine grammian_h10_unit
-      call grammian_unit(.false.)
+      subroutine gramian_h10_unit
+      call gramian_unit(.false.)
       return
       end
 c-----------------------------------------------------------------------
-      subroutine grammian_unit(iflag)
+      subroutine gramian_unit(iflag)
 
       include 'SIZE'
       include 'INPUT'
@@ -64,17 +64,17 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine initial_condition_l2_unit
-      call initial_condition_unit(.true.)
+      subroutine ic_l2_unit
+      call ic_unit(.true.)
       return
       end
 c-----------------------------------------------------------------------
-      subroutine initial_condition_h10_unit
-      call initial_condition_unit(.false.)
+      subroutine ic_h10_unit
+      call ic_unit(.false.)
       return
       end
 c-----------------------------------------------------------------------
-      subroutine initial_condition_unit(iflag)
+      subroutine ic_unit(iflag)
 
       include 'SIZE'
       include 'SOLN'

@@ -58,13 +58,13 @@ script: $MOR_DIR/tests/test.sh
 jobs:
   include:
   - stage: unit
-    env: TYPE=UNIT TEST=GRAMMIAN          IPS=L2
-  - env: TYPE=UNIT TEST=INITIAL_CONDITION IPS=L2
+    env: TYPE=UNIT TEST=GRAMIAN           IPS=L2
+  - env: TYPE=UNIT TEST=IC                IPS=L2
   - env: TYPE=UNIT TEST=A0                IPS=L2
   - env: TYPE=UNIT TEST=B0                IPS=L2
   - env: TYPE=UNIT TEST=C0                IPS=L2
-  - env: TYPE=UNIT TEST=GRAMMIAN          IPS=H10
-  - env: TYPE=UNIT TEST=INITIAL_CONDITION IPS=H10
+  - env: TYPE=UNIT TEST=GRAMIAN           IPS=H10
+  - env: TYPE=UNIT TEST=IC                IPS=H10
   - env: TYPE=UNIT TEST=A0                IPS=H10
   - env: TYPE=UNIT TEST=B0                IPS=H10
   - env: TYPE=UNIT TEST=C0                IPS=H10
