@@ -41,7 +41,7 @@ jobs:
         run: |
           git clone --single-branch -b prod https://github.com/kent0/Nek5000
           echo "NEK_SOURCE_ROOT=$MOR_DIR/Nek5000" >> $GITHUB_ENV
-          echo "$NEK_SOURCE_ROOT/bin" >> $GITHUB_PATH
+          echo "$MOR_DIR/Nek5000/bin" >> $GITHUB_PATH
           echo 'nek_source_root' "$NEK_SOURCE_ROOT"
           echo 'path' "$PATH"
           (cd Nek5000/tools; ./maketools genmap)
