@@ -380,7 +380,7 @@ c-----------------------------------------------------------------------
       enddo
 
       edif=sqrt(s1/s3)
-      if (edif.gt.1.e-16) iexit=iexit+1
+      if (edif.gt.2.e-12) iexit=iexit+1
       if (nio.eq.0) write (6,*) 'edif',edif,s1,s3
 
       eskew=sqrt(s2/s3)
