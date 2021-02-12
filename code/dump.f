@@ -374,12 +374,16 @@ c-----------------------------------------------------------------------
       call nekgsync
       dgram_time=dnekclock()
 
-      if (ifpod(1)) then
-         call dump_serial(ug(1,1,1),ls*ls,'ops/gu ',nid)
-      endif
+      if (ifcomb) then
+         call dump_serial(ug(1,1,1),ls*ls,'ops/gcomb ',nid)
+      else
+         if (ifpod(1)) then
+            call dump_serial(ug(1,1,1),ls*ls,'ops/gu ',nid)
+         endif
 
-      if (ifpod(2)) then
-         call dump_serial(ug(1,1,2),ls*ls,'ops/gt ',nid)
+         if (ifpod(2)) then
+            call dump_serial(ug(1,1,2),ls*ls,'ops/gt ',nid)
+         endif
       endif
 
       call nekgsync
