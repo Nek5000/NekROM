@@ -10,8 +10,17 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       real u0(lt,3)
+      integer it(2)
 
       if (nio.eq.0) write (6,*) 'inside setbases'
+
+      if (ifcomb) then
+         it(1) = 1
+         it(2) = 1
+      else
+         it(1) = 1
+         it(2) = 2
+      endif
 
       call nekgsync
       bas_time=dnekclock()
@@ -36,7 +45,8 @@ c-----------------------------------------------------------------------
            do j=1,ns
            do i=1,nb
               call opadds(ub(1,i),vb(1,i),wb(1,i),
-     $           us0(1,1,j),us0(1,2,j),us0(1,ldim,j),evec(j,i,1),n,2)
+     $           us0(1,1,j),us0(1,2,j),us0(1,ldim,j),
+     $           evec(j,i,it(1)),n,2)
            enddo
            enddo
 
@@ -49,7 +59,7 @@ c-----------------------------------------------------------------------
             do i=1,nb
                call rzero(tb(1,i),n)
                do j=1,ns
-                  call add2s2(tb(1,i),ts0(1,j),evec(j,i,2),n)
+                  call add2s2(tb(1,i),ts0(1,j),evec(j,i,it(2)),n)
                enddo
             enddo
             call snorm(tb)
@@ -505,6 +515,9 @@ c-----------------------------------------------------------------------
          ifield=2
          if (ifpod(2)) call gengram(ug(1,1,2),ts0,ns,1)
          ifield=jfield
+         if (ifcomb) then
+            call add2(ug(1,1,1),ug(1,1,2),ns*ns)
+         endif
       endif
 
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ')
@@ -531,14 +544,18 @@ c                 call genevec(evec(1,1,i),eval(1,i),ug(1,1,i),i)
 c                 call cnmax(eval(1,i),fname,i)
 c              endif
 c           enddo
-            if (ifpod(1)) then 
+            if (ifcomb) then
                call genevec(evec(1,1,1),eval(1,1),ug(1,1,1),1)
-               call cnmax(eval(1,1),'ops/enlu ',1)
-               call cenpm(eval(1,1),'ops/enru ',1)
-            endif
-            if (ifpod(2)) then 
-               call genevec(evec(1,1,2),eval(1,2),ug(1,1,2),2)
-               call cnmax(eval(1,2),'ops/enlt ',2)
+            else
+               if (ifpod(1)) then
+                  call genevec(evec(1,1,1),eval(1,1),ug(1,1,1),1)
+                  call cnmax(eval(1,1),'ops/enlu ',1)
+                  call cenpm(eval(1,1),'ops/enru ',1)
+               endif
+               if (ifpod(2)) then
+                  call genevec(evec(1,1,2),eval(1,2),ug(1,1,2),2)
+                  call cnmax(eval(1,2),'ops/enlt ',2)
+               endif
             endif
          else
             if(nid.eq.0) write(6,*)'nb = 1, no POD'
