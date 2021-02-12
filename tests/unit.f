@@ -275,7 +275,7 @@ c-----------------------------------------------------------------------
       edif=sqrt(s1/s3)
       esym=sqrt(s2/s3)
 
-      if (edif.gt.1.e-16) iexit=iexit+1
+      if (edif.gt.7.e-16) iexit=iexit+1
       if (esym.gt.1.e-16) iexit=iexit+2
 
       if (nio.eq.0) write (6,*) 'edif',edif,s1,s3
