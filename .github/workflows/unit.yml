@@ -48,4 +48,6 @@ jobs:
 
       - name: Unit Test
         run: |
+          echo 'nek_source_root' "$NEK_SOURCE_ROOT"
+          echo 'path' "$PATH"
           TYPE=UNIT TEST=${{ matrix.test }} IPS=${{ matrix.ips }} $MOR_DIR/tests/test.sh
