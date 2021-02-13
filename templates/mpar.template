@@ -32,6 +32,13 @@ tnloop  = 5     # number of temperature loops
 ceval = no # fast c-evaluation for skew-symmetric c-tensor
 heval = no # fact h-evaluation by change of coordinates
 
+[Buoyancy] # cannot choose mag+angle and vector components in same .mor
+magnitude = 1.   # magnitude of gravity vector
+angle     = -90. # angle of gravity vector (degrees displacement from x-axis)
+# gx      = 0.   # x-component of gravity vector
+# gy      = 0.   # y-component of gravity vector
+# gz      = 0.   # z-component of gravity vector
+
 [FORCING]
 body     = no # body force on the velocity field, set fx,fy,fz in user file
 source   = no # source term on the thermal field, set qq in user file 
