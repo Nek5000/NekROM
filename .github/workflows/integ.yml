@@ -36,6 +36,11 @@ jobs:
           echo "FFLAGS=-w -mcmodel=medium -fprofile-arcs -ftest-coverage" >> $GITHUB_ENV
           echo "USR_LFLAGS=-mcmodel=medium" >> $GITHUB_ENV
 
+      - name: Setup Julia
+        run: |
+          chmod +x $MOR_DIR/tests/julia-init
+          ./julia-init
+
       - name: Setup Nek5000
         run: |
           git clone --single-branch -b prod https://github.com/kent0/Nek5000
