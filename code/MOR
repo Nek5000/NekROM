@@ -34,11 +34,8 @@ c     parameters and common blocks for MOR
       common /morforce/ fx(lx1*ly1*lz1*lelm),
      $                  fy(lx1*ly1*lz1*lelm),
      $                  fz(lx1*ly1*lz1*lelm),
-     $                  gx(lx1*ly1*lz1*lelm),
-     $                  gy(lx1*ly1*lz1*lelm),
-     $                  gz(lx1*ly1*lz1*lelm),
      $                  qq(lx1*ly1*lz1*lelm),
-     $                  qqxyz(lx1*ly1*lz1*lelm)
+     $                  qqxyz(lx1*ly1*lz1*lelm),gx,gy,gz
 
       common /morbuoy/ bux,buy,buz,bu_angle
 
@@ -69,8 +66,8 @@ c     parameters and common blocks for MOR
       common /morbc/ gn(lx1,ly1,lz1,lelt)
 
       common /morcpl/ but0((lub+1)*(ltb+1)),buc(lub*(ltb+1)),cintp(1)
-      common /morrb/ but0_x((lub+1)*(ltb+1)),but0_y((lub+1)*(ltb+1)),
-     $               but0_z((lub+1)*(ltb+1))
+      common /morrb/ buxt0((lub+1)*(ltb+1)),buyt0((lub+1)*(ltb+1)),
+     $               buzt0((lub+1)*(ltb+1))
 
       common /morvsol/ u(0:(lub+1)*5-1),uj(0:(lub+1)*8-1),
      $                 u2j(0:((lub+1)**2)*8-1),

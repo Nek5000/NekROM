@@ -138,6 +138,58 @@ c-----------------------------------------------------------------------
          ifplay=.false.
       endif
 
+      ibuoy=0
+
+      call finiparser_getdbl(d_out,'buoyancy:magnitude',ifnd)
+      if (ifnd.eq.1) then
+         gmag=d_out
+         ibuoy=ibuoy+1
+      endif
+
+      call finiparser_getdbl(d_out,'buoyancy:angle',ifnd)
+      if (ifnd.eq.1) then
+         gangle=d_out
+         ibuoy=ibuoy+2
+         one=1.
+         pi=4.*atan(one)
+         gx=gmag*cos(gangle*pi/180)
+         gy=gmag*sin(gangle*pi/180)
+      endif
+      
+      call finiparser_getdbl(d_out,'buoyancy:gx',ifnd)
+      if (ifnd.eq.1) then
+         gx=d_out
+         ibuoy=ibuoy+4
+      endif
+
+      call finiparser_getdbl(d_out,'buoyancy:gy',ifnd)
+      if (ifnd.eq.1) then
+         gy=d_out
+         ibuoy=ibuoy+8
+      endif
+
+      call finiparser_getdbl(d_out,'buoyancy:gz',ifnd)
+      if (ifnd.eq.1) then
+         gy=d_out
+         ibuoy=ibuoy+16
+      endif
+
+      if (ldim.eq.3) then
+         if (ibuoy.ne.12.and.ibuoy.ne.3.and.ibuoy.ne.0) then
+            write (6,*) 'invalid options for buoyancy(2D)'
+            ierr=ierr+1
+         endif
+      endif
+
+      if (ldim.eq.3) then
+         if (ibuoy.ne.28.and.ibuoy.ne.0) then
+            write (6,*) 'invalid options for buoyancy(3D)'
+            ierr=ierr+1
+         endif
+      endif
+
+      if (ibuoy.ne.0) ifbuoy=.true.
+
       ! POD
 
       call finiparser_getstring(c_out,'pod:type',ifnd)
@@ -359,6 +411,9 @@ c-----------------------------------------------------------------------
       call bcast(tbarr0,wdsize)
       call bcast(rbf,wdsize)
       call bcast(rdft,wdsize)
+      call bcast(gx,wdsize)
+      call bcast(gy,wdsize)
+      call bcast(gz,wdsize)
 
       ! logicals
 
