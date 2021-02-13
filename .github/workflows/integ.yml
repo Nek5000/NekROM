@@ -39,7 +39,7 @@ jobs:
       - name: Setup Julia
         run: |
           chmod +x $MOR_DIR/tests/julia-init
-          ./julia-init
+          $MOR_DIR/tests/julia-init
 
       - name: Setup Nek5000
         run: |
