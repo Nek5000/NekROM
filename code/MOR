@@ -229,7 +229,9 @@ c     parameters and common blocks for MOR
      $                uufld(lx1*ly1*lz1*lelt,ldim,lbavg),
      $                uvfld(lx1*ly1*lz1*lelt,ldim,lbavg),
      $                utfld(lx1*ly1*lz1*lelt,ldim,lbavg),
-     $                tafld(lx1*ly1*lz1*lelt,lbavg)
+     $                tafld(lx1*ly1*lz1*lelt,lbavg),
+     $                udfld(lx1*ly1*lz1*lelt,ldim,lbavg),
+     $                tdfld(lx1*ly1*lz1*lelt,lbavg)
 
 
       common /morflucp/ nbavg
