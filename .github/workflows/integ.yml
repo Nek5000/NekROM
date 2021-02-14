@@ -1,14 +1,13 @@
-name: Unit
+name: Integration
 
-on: [push, pull_request, workflow_dispatch]
+on: [ push, pull_request, workflow_dispatch ]
 
 jobs:
   build:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        test: [GRAMIAN, IC, A0, B0, C0]
-        ips: [L2, H10]
+        test: [ CYL ]
     env:
       MOR_DIR: /home/runner/work/NekMOR/NekMOR
       USR: "ana.o aux.o conv.o dump.o ei.o filter.o lapack.o pod.o qoi.o rom.o read.o time.o const.o unit.o rk.o legacy.o mpar.o tensor.o"
@@ -37,6 +36,11 @@ jobs:
           echo "FFLAGS=-w -mcmodel=medium -fprofile-arcs -ftest-coverage" >> $GITHUB_ENV
           echo "USR_LFLAGS=-mcmodel=medium" >> $GITHUB_ENV
 
+      - name: Setup Julia
+        run: |
+          chmod +x $MOR_DIR/tests/julia-init
+          $MOR_DIR/tests/julia-init
+
       - name: Setup Nek5000
         run: |
           git clone --single-branch -b prod https://github.com/kent0/Nek5000
@@ -45,6 +49,6 @@ jobs:
           echo "$MOR_DIR/Nek5000/bin" >> $GITHUB_PATH
           (cd Nek5000/tools; ./maketools genmap)
 
-      - name: Unit Test
+      - name: Integration Test
         run: |
-          TYPE=UNIT TEST=${{ matrix.test }} IPS=${{ matrix.ips }} $MOR_DIR/tests/test.sh
+          TYPE=INTEG TEST=${{ matrix.test }} IPS=L2 NP=1 NB=20 LB=20 SCR=tdragx $MOR_DIR/tests/test.sh

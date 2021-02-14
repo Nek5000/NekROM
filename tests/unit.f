@@ -57,7 +57,7 @@ c-----------------------------------------------------------------------
 
       if (ips.eq.'L2 '.and.esym.gt.1e-16) iexit=iexit+1
       if (ips.eq.'H10'.and.esym.gt.1e-14) iexit=iexit+1
-      if (edif.gt.1e-16) iexit=iexit+2
+      if (edif.gt.5.e-15) iexit=iexit+2
 
       call exit(iexit)
 
@@ -111,7 +111,7 @@ c-----------------------------------------------------------------------
       if (nio.eq.0) write (6,*) 'edif',edif,s1,s2
 
       iexit=1
-      if (edif.lt.1.e-13) iexit=0
+      if (edif.lt.4.e-13) iexit=0
 
       call exit(iexit)
 
@@ -180,7 +180,7 @@ c-----------------------------------------------------------------------
       if (nio.eq.0) write (6,*) 'edif',edif,s1,s3
       if (nio.eq.0) write (6,*) 'esym',esym,s2,s3
 
-      if (edif.gt.1.e-16) iexit=iexit+1
+      if (edif.gt.3.e-13) iexit=iexit+1
       if (esym.gt.1.e-15) iexit=iexit+2
 
       s1=0.
@@ -275,7 +275,7 @@ c-----------------------------------------------------------------------
       edif=sqrt(s1/s3)
       esym=sqrt(s2/s3)
 
-      if (edif.gt.1.e-16) iexit=iexit+1
+      if (edif.gt.7.e-16) iexit=iexit+1
       if (esym.gt.1.e-16) iexit=iexit+2
 
       if (nio.eq.0) write (6,*) 'edif',edif,s1,s3
@@ -380,7 +380,7 @@ c-----------------------------------------------------------------------
       enddo
 
       edif=sqrt(s1/s3)
-      if (edif.gt.1.e-16) iexit=iexit+1
+      if (edif.gt.2.e-12) iexit=iexit+1
       if (nio.eq.0) write (6,*) 'edif',edif,s1,s3
 
       eskew=sqrt(s2/s3)
