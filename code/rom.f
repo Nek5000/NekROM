@@ -1287,6 +1287,47 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine setae(a,fname)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /scrseta/ wk1(lt)
+
+      real a(0:nb,0:nb,nb)
+
+      character*128 fname
+
+      n=lx1*ly1*lz1*nelt
+
+      if (rmode.eq.'ON '.or.rmode.eq.'ONB'.or.rmode.eq.'CP ') then
+         if (nio.eq.0) write (6,*) 'reading ae...'
+         call read_mat_serial(aue,nb+1,nb+1,fname,mb+1,nb+1,wk1,nid)
+      else
+         if (nio.eq.0) write (6,*) 'forming ae...'
+         do k=1,nb
+         do j=0,nb
+            if (nio.eq.0) write (6,*) 'setae: ',k,j,'/',nb
+            nio=-1
+            do i=0,nb
+               if (ifield.eq.1) then
+                  a(i,j,k)=h10vip_vd(ub(1,i),vb(1,i),wb(1,i),
+     $                             ub(1,j),vb(1,j),wb(1,j),udfld(1,1,k))
+               else
+                  a(i,j,k)=h10sip_vd(tb(1,i),tb(1,j),tdfld(1,k))
+               endif
+            enddo
+            nio=nid
+         enddo
+         enddo
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine setu
 
       include 'SIZE'
@@ -1438,7 +1479,36 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine setupvp(upvp,uvfld,ufld,vfld)
+
+      ! set fluctuation correlation field
+
+      ! ufld  := <u>, temporal mean of first field
+      ! vfld  := <v>, temporal mean of second field
+      ! uvfld := <uv>, temporal mean of product of both fields
+      ! upvp  := <(u-<u>)(v-<v>)>, temporal mean of product of fluctuations
+
+      include 'SIZE'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real upvp(lt),uvfld(lt),ufld(lt),vfld(lt)
+
+      n=lx1*ly1*lz1*nelv
+
+      call copy(upvp,uvfld,n)
+      call admcol3(upvp,ufld,vfld,-1.,n)
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine setfluc(fv,ftt,fname)
+
+      ! set fluctuation ROM operators
+
+      ! fv    := inner product of basis and fluctuation field
+      ! ftt   := inner product of basis and fluctuation field
+      ! fname := name
 
       include 'SIZE'
       include 'TSTEP'
@@ -1693,6 +1763,117 @@ c-----------------------------------------------------------------------
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
          call dump_serial(but0,(nb+1)**2,'ops/but ',nid)
       endif
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine calc_tmean(ttmean,tt)
+
+      ! set mean weighted scalar field
+
+      ! ttmean := mean value
+      ! tt     := target scalar field
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      real tt(lx1,ly1,lz1,lelt)
+
+      nt=lx1*ly1*lz1*nelt
+
+      ttmean=glsc3(tt,bm1,vtrans(1,1,1,1,2),nt)/
+     $       glsc2(bm1,vtrans(1,1,1,1,2),nt)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine set0mean(tt)
+
+      ! set remove weighted-mean from scalar field
+
+      ! tt := target scalar field
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      real tt(lx1,ly1,lz1,lelt)
+
+      nt=lx1*ly1*lz1*nelt
+      call calc_tmean(ttmean,tt)
+      call cadd(tt,-ttmean,nt)
+
+      if (nid.eq.0) write (6,*) ttmean,'tmean'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine calc_dudn(dudn,tt)
+
+      ! calculate mean boundary gradient of scalar field
+
+      ! dudn := mean gradient value
+      ! tt   := target scalar field
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      common /mydudn/ tx(lx1,ly1,lz1,lelt),
+     $                ty(lx1,ly1,lz1,lelt),
+     $                tz(lx1,ly1,lz1,lelt)
+
+      real tt(lx1,ly1,lz1,lelt)
+
+      call gradm1(tx,ty,tz,tt)
+
+      nt=lx1*ly1*lz1*nelt
+
+      s=0.
+      a=0.
+
+      do ie=1,nelt
+      do ifc=1,2*ldim
+         if (cbc(ifc,ie,2).eq.'f  ') then
+            call facind(kx1,kx2,ky1,ky2,kz1,kz2,lx1,ly1,lz1,ifc)
+            l=0
+            do iz=kz1,kz2
+            do iy=ky1,ky2
+            do ix=kx1,kx2
+               l=l+1
+               a=a+area(l,1,ifc,ie)
+               s=s+area(l,1,ifc,ie)*(tx(ix,iy,iz,ie)*unx(l,1,ifc,ie)+
+     $                               ty(ix,iy,iz,ie)*uny(l,1,ifc,ie)+
+     $                               tz(ix,iy,iz,ie)*unz(l,1,ifc,ie))
+            enddo
+            enddo
+            enddo
+         endif
+      enddo
+      enddo
+
+      s=glsum(s,1)
+      a=glsum(a,1)
+
+      if (nid.eq.0) write (6,*) s,a,s/a,'dudn'
+      dudn=s/a
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine set1dudn(tt)
+
+      ! set unit-mean boundary gradient for a scalar field
+
+      ! tt   := target scalar field
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      real tt(lx1,ly1,lz1,lelt)
+
+      nt=lx1*ly1*lz1*nelt
+      call calc_dudn(dudn,tt)
+      sf=1./dudn
+      call cmult(tt,sf,nt)
+
       return
       end
 c-----------------------------------------------------------------------
