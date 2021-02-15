@@ -1033,8 +1033,6 @@ c           if (idc_t.gt.0) call rzero(tb,n)
          endif
       endif
 
-      if (ifbuoy) call set_ra
-
       ifield=jfield
 
       if (nio.eq.0) write (6,*) 'exiting rom_init_fields'
