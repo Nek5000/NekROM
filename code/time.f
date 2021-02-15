@@ -642,7 +642,7 @@ c-----------------------------------------------------------------------
          call mxm(buyt0,nb+1,ut,nb+1,tmp2(0),1)
          call add2s2(tmp1(1),tmp2(1),-gy,nb)
 
-         if (ldim.eq.3)
+         if (ldim.eq.3) then
             call mxm(buzt0,nb+1,ut,nb+1,tmp2(0),1)
             call add2s2(tmp1(1),tmp2(1),-gz,nb)
          endif
