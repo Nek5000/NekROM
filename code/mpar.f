@@ -52,6 +52,8 @@ c-----------------------------------------------------------------------
          else if (index(c_out,'ON').eq.1) then
             rmode='ON'
          else if (index(c_out,'OFF').eq.1) then
+             rmode='OFF'
+         else if (index(c_out,'CP').eq.1) then
             rmode='CP '
             max_tr=ltr
          else if (index(c_out,'AEQ').eq.1) then
