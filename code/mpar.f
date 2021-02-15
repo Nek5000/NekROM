@@ -52,8 +52,6 @@ c-----------------------------------------------------------------------
          else if (index(c_out,'ON').eq.1) then
             rmode='ON'
          else if (index(c_out,'OFF').eq.1) then
-            rmode='OFF'
-         else if (index(c_out,'CP').eq.1) then
             rmode='CP '
             max_tr=ltr
          else if (index(c_out,'AEQ').eq.1) then
@@ -149,6 +147,8 @@ c-----------------------------------------------------------------------
             ips='H10'
          else if (index(c_out,'HLM').eq.1) then
             ips='HLM'
+         else if (index(c_out,'OFF').eq.1) then
+            ips='OFF'
          else
             write (6,*) 'invalid option for pod:type ',c_out
             ierr=ierr+1
@@ -180,7 +180,7 @@ c-----------------------------------------------------------------------
       if (ifnd.eq.1) ifctke=i_out.eq.1
 
       call finiparser_getdbl(d_out,'qoi:nu',ifnd)
-      if (ifnd.eq.1) inus=min(max(nint(d_out),0),5)
+      if (ifnd.eq.1) inus=min(max(nint(d_out),0),6)
 
       ! COPT
 

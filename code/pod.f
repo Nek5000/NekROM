@@ -14,7 +14,7 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'inside setbases'
 
-      ifpb=rmode.ne.'AEQ'
+      ifpb=(rmode.ne.'AEQ'.and.ips.ne.'OFF')
 
       call nekgsync
       bas_time=dnekclock()
