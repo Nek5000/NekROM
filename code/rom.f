@@ -374,7 +374,8 @@ c-----------------------------------------------------------------------
 
       if (rmode.eq.'AEQ') call setfluc(fv_op,ft_op)
 
-      if (ifbuoy.and.ifrom(1).and.ifrom(2)) call setbut(but0)
+      if (ifbuoy.and.ifrom(1).and.ifrom(2))
+     $   call setbut(buxt0,buyt0,buzt0)
 
       ifield=jfield
 
@@ -1616,9 +1617,9 @@ c-----------------------------------------------------------------------
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
          do j=0,nb
          do i=0,nb
-            bx(i,j)=glsc3(ub(1,i),tb(1,j),bm1)
-            by(i,j)=glsc3(vb(1,i),tb(1,j),bm1)
-            if (ldim.eq.3) bz(i,j)=glsc3(wb(1,i),tb(1,j),bm1)
+            bx(i,j)=glsc3(ub(1,i),tb(1,j),bm1,n)
+            by(i,j)=glsc3(vb(1,i),tb(1,j),bm1,n)
+            if (ldim.eq.3) bz(i,j)=glsc3(wb(1,i),tb(1,j),bm1,n)
          enddo
          enddo
          call dump_serial(bx,(nb+1)**2,'ops/buxt ',nid)
