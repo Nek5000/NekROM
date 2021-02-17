@@ -219,8 +219,6 @@ c-----------------------------------------------------------------------
          call mor_set_params_rea
       endif
 
-c     ifsub0=.false.
-
       call mor_show_params
 
       call mor_init_fields
