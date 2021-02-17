@@ -631,6 +631,7 @@ c-----------------------------------------------------------------------
       ifavisc=.false.
       ifdecpl=.false.
       ifsub0=.true.
+      ifcomb=.false.
 
       do i=0,ldimt1
          ifpod(i)=.false.
