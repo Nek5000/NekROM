@@ -151,7 +151,7 @@ c     if (icount.le.2) then
             endif
             call mxm(rhs(1,1),1,wt,nb,rhstmp(1),nb)
             call copy(rhs(1,1),rhstmp(1),nb)
-         else
+         else 
             scopt='ucopt'
             call mxm(u,nb+1,ad_alpha(1,icount),icount,utmp1,1)
             call mxm(wt,nb,utmp1(1),nb,utmp2(1),1)
@@ -463,7 +463,7 @@ c-----------------------------------------------------------------------
          bcu(kk) = vlsc2(uu,fac_b(1+(kk-1)*(nb+1)),nb+1)
          cuu(kk) = vlsc2(u,fac_c(1+(kk-1)*(nb+1)),nb+1)
       enddo
-      call col4(tmp,bcu,cuu,cp_weight,ntr)
+      call col4(tmp,bcu,cuu,cp_weight,ntr) 
       call mxm(fac_a,nb+1,tmp,ntr,tmpcu,1)
 
       call copy(cu,tmpcu,nb)
@@ -509,7 +509,7 @@ c     decomposition with two vectors
          bcu(kk) = vlsc2(uu(1),fac_b(1+(kk-1)*(nb)),nb)
          cuu(kk) = vlsc2(u(1),fac_c(1+(kk-1)*(nb)),nb)
       enddo
-      call col4(tmp,bcu,cuu,cp_weight,ntr)
+      call col4(tmp,bcu,cuu,cp_weight,ntr) 
       call mxm(fac_a,nb,tmp,ntr,tmpcu(1),1)
 
       do k=kc1,kc2
@@ -624,11 +624,11 @@ c-----------------------------------------------------------------------
       enddo
 
       if (rmode.eq.'CP ') then
-         if (ifcore) then
+         if (ifcore) then 
             call evalc4(tmp1(1),cua,cub,cuc,cp_uw,cul,cuj0,cu0k,u)
          else
             call evalc3(tmp1(1),cua,cub,cuc,cp_uw,u)
-         endif
+         endif 
       else
          call evalc(tmp1(1),ctmp,cul,u)
       endif
@@ -793,7 +793,7 @@ c-----------------------------------------------------------------------
             call add2s2(flu,b,ad_mu,nb*nb)
          endif
       endif
-
+         
       return
       end
 c-----------------------------------------------------------------------
@@ -834,7 +834,7 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine constrained_POD(rhs,hh,invhh,uu,amax,amin,adis,
-     $                          bpar,bstep,copt_count)
+     $                          bpar,bstep,copt_count) 
 
       include 'SIZE'
       include 'TOTAL'
@@ -854,16 +854,16 @@ c-----------------------------------------------------------------------
 
       call check_diag(checkdiag,ifdiag,hh,invhh,nb)
 
-      if (isolve.eq.1) then
+      if (isolve.eq.1) then 
          ! constrained solver with inverse update
          call IPM(rhs(1),uu,helm,invhelm,amax,amin,adis,
      $   bpar,bstep,box_tol,ifdiag)
 
-      else if (isolve.eq.2) then
+      else if (isolve.eq.2) then 
          ! mix constrained solver with inverse update
          call hybrid_advance(rhs,helm,invhelm,uu,amax,amin,
      $   adis,bpar,bstep,copt_count,box_tol,ifdiag,nb)
-      else
+      else   
          call exitti('incorrect isolve specified...$',isolve)
       endif
 
@@ -1014,7 +1014,7 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine update_h(hh,invhh,ifdiag)
-
+         
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
@@ -1025,34 +1025,34 @@ c-----------------------------------------------------------------------
       real invhelm
       logical ifdiag
 
-      if (ifpod(1)) then
-         if (ifdiag) then
+      if (ifpod(1)) then 
+         if (ifdiag) then 
             do jj=1,nb
                helm(jj,1) = 1/invhh(jj+(jj-1)*nb)
             enddo
-         else
+         else 
             call copy(helm(1,1),hh(1),nb*nb)
          endif
          if (ifdiag) then
             do jj=1,nb
                invhelm(jj,1) = invhh(jj+(jj-1)*nb)
             enddo
-         else
+         else 
             call copy(invhelm(1,1),invhh(1),nb*nb)
          endif
       elseif (ifpod(2)) then
-         if (ifdiag) then
+         if (ifdiag) then 
             do jj=1,nb
                helm(jj,2) = 1/invhh(jj+(jj-1)*nb)
             enddo
-         else
+         else 
             call copy(helm(1,2),hh(1),nb*nb)
          endif
          if (ifdiag) then
             do jj=1,nb
                invhelm(jj,2) = invhh(jj+(jj-1)*nb)
             enddo
-         else
+         else 
             call copy(invhelm(1,2),invhh(1),nb*nb)
          endif
       endif
