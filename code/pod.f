@@ -74,7 +74,7 @@ c-----------------------------------------------------------------------
 
          if (ifcomb.and.ifpb) then
             do i=1,nb
-               s=sqrt(1./sip(tb(1,i),tb(1,i))+
+               s=1./sqrt(sip(tb(1,i),tb(1,i))+
      $            vip(ub(1,i),vb(1,i),wb(1,i),ub(1,i),vb(1,i),wb(1,i)))
                call opcmult(ub(1,i),vb(1,i),wb(1,i),s)
                call cmult(tb(1,i),s,n)
