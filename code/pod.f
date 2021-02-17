@@ -10,8 +10,11 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       real u0(lt,3)
+      logical ifpb
 
       if (nio.eq.0) write (6,*) 'inside setbases'
+
+      ifpb=rmode.ne.'AEQ'.and.ips.ne.'OFF'
 
       call nekgsync
       bas_time=dnekclock()
@@ -33,26 +36,40 @@ c-----------------------------------------------------------------------
 
          ! ub, vb, wb, are the modes
          if (ifrom(1)) then
-           do j=1,ns
-           do i=1,nb
-              call opadds(ub(1,i),vb(1,i),wb(1,i),
-     $           us0(1,1,j),us0(1,2,j),us0(1,ldim,j),evec(j,i,1),n,2)
-           enddo
-           enddo
+           if (ifpb) then
+              do j=1,ns
+              do i=1,nb
+                 call opadds(ub(1,i),vb(1,i),wb(1,i),
+     $              us0(1,1,j),us0(1,2,j),us0(1,ldim,j),evec(j,i,1),n,2)
+              enddo
+              enddo
 
-           call vnorm(ub,vb,wb)
+              call vnorm(ub,vb,wb)
+           else
+              do i=1,nb
+                 call opcopy(ub(1,i),vb(1,i),wb(1,i),
+     $                       us0(1,1,i),us0(1,2,i),us0(1,ldim,i))
+              enddo
+           endif
+
          else
             call opcopy(ub,vb,wb,uic,vic,wic)
          endif
 
          if (ifrom(2)) then
-            do i=1,nb
-               call rzero(tb(1,i),n)
-               do j=1,ns
-                  call add2s2(tb(1,i),ts0(1,j),evec(j,i,2),n)
+            if (ifpb) then
+               do i=1,nb
+                  call rzero(tb(1,i),n)
+                  do j=1,ns
+                     call add2s2(tb(1,i),ts0(1,j),evec(j,i,2),n)
+                  enddo
                enddo
-            enddo
-            call snorm(tb)
+               call snorm(tb)
+            else
+               do i=1,nb
+                  call copy(tb(1,i),ts0(1,i),n)
+               enddo
+            endif
          endif
       endif
 
