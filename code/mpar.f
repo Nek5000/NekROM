@@ -201,6 +201,8 @@ c-----------------------------------------------------------------------
             ips='H10'
          else if (index(c_out,'HLM').eq.1) then
             ips='HLM'
+         else if (index(c_out,'OFF').eq.1) then
+            ips='OFF'
          else
             write (6,*) 'invalid option for pod:type ',c_out
             ierr=ierr+1
