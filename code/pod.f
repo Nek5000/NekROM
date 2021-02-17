@@ -44,7 +44,7 @@ c-----------------------------------------------------------------------
               enddo
               enddo
 
-              call vnorm(ub,vb,wb)
+              if (.not.ifcomb) call vnorm(ub,vb,wb)
            else
               do i=1,nb
                  call opcopy(ub(1,i),vb(1,i),wb(1,i),
@@ -64,12 +64,21 @@ c-----------------------------------------------------------------------
                      call add2s2(tb(1,i),ts0(1,j),evec(j,i,2),n)
                   enddo
                enddo
-               call snorm(tb)
+               if (.not.ifcomb) call snorm(tb)
             else
                do i=1,nb
                   call copy(tb(1,i),ts0(1,i),n)
                enddo
             endif
+         endif
+
+         if (ifcomb.and.ifpb) then
+            do i=1,nb
+               s=sqrt(1./sip(tb(1,i),tb(1,i))+
+     $            vip(ub(1,i),vb(1,i),wb(1,i),ub(1,i),vb(1,i),wb(1,i)))
+               call opcmult(ub(1,i),vb(1,i),wb(1,i),s)
+               call cmult(tb(1,i),s,n)
+            enddo
          endif
       endif
 
@@ -522,6 +531,11 @@ c-----------------------------------------------------------------------
          ifield=2
          if (ifpod(2)) call gengram(ug(1,1,2),ts0,ns,1)
          ifield=jfield
+      endif
+
+      if (ifcomb) then
+         call add2(ug(1,1,1),ug(1,1,2),ns*ns)
+         call copy(ug(1,1,2),ug(1,1,1),ns*ns)
       endif
 
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ')

@@ -219,6 +219,8 @@ c-----------------------------------------------------------------------
          call mor_set_params_rea
       endif
 
+c     ifsub0=.false.
+
       call mor_show_params
 
       call mor_init_fields
@@ -1391,6 +1393,21 @@ c-----------------------------------------------------------------------
      $         call dump_serial(ut,nb+1,'ops/t0 ',nid)
          endif
          ifield=jfield
+
+         if (ifcomb) then
+            call opsub2(uic,vic,wic,ub,vb,wb)
+            call sub2(tic,tb,n)
+            do i=1,nb
+               r1=sip(tb(1,i),tb(1,i))+
+     $            vip(ub(1,i),vb(1,i),wb(1,i),ub(1,i),vb(1,i),wb(1,i))
+               r2=sip(tb(1,i),tic)+
+     $            vip(ub(1,i),vb(1,i),wb(1,i),uic,vic,wic)
+               ut(i)=r2/r1
+               u(i)=r2/r1
+            enddo
+            call opadd2(uic,vic,wic,ub,vb,wb)
+            call add2(tic,tb,n)
+         endif
 
          call reconv(uu,vv,ww,u)
          call recont(tt,ut)

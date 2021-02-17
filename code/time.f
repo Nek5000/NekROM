@@ -26,6 +26,44 @@ c-----------------------------------------------------------------------
       rhs(0,2)=1.
 
 c     if (icount.le.2) then
+      if (ifcomb) then
+c     if (.false.) then
+         if (ad_step.le.3) then
+            ttime=dnekclock()
+            call seth(hlm(1,2),at,bt,1./ad_pe)
+            call seth(hlm(1,1),au,bu,1./ad_re)
+            call add2(hlm(1,1),hlm(1,2),nb*nb)
+            if (ad_step.eq.3)
+     $         call dump_serial(hlm(1,2),nb*nb,'ops/h ',nid)
+            do j=1,nb-nplay
+            do i=1,nb-nplay
+               hlm(i+(j-1)*(nb-nplay),1)=hlm(i+nplay+(j+nplay-1)*nb,1)
+            enddo
+            enddo
+            if (ifdecpl) then
+               call copy(hinv(1,1),hlm(1,1),(nb-nplay)**2)
+               call diag(hinv(1,1),wt(1,1),rhs(1,1),nb)
+            else
+               call invmat(hinv(1,1),hlu(1,1),hlm(1,1),
+     $         ihlu(1,1),ihlu2(1,1),nb-nplay)
+               call rzero(wt(1,1),(nb-nplay)**2)
+               do i=1,nb-nplay
+                  wt(i+(nb-nplay)*(i-1),1)=1.
+               enddo
+            endif
+         endif
+
+         call setr_t(rhs(1,2),icount)
+         call setr_v(rhs(1,1),icount)
+         call add2(rhs(1,1),rhs(1,2),nb)
+
+         call mxm(wt(1,1),nb,rhs(1,1),nb,rhstmp(1),1)
+         call mxm(hinv(1,1),nb,rhstmp(1),nb,rhs(1,1),1)
+
+         call mxm(rhs(1,1),1,wt(1,1),nb,rhstmp(1),nb)
+         call copy(rhs(1,1),rhstmp(1),nb)
+         call copy(rhs(1,2),rhs(1,1),nb)
+      else
       if (.false.) then
          if (ifrom(1)) call setr_v(rhs(1,1),icount)
          if (ifrom(2)) call setr_t(rhs(1,2),icount)
@@ -75,6 +113,10 @@ c     if (icount.le.2) then
          endif
 
          call setr_t(rhs(1,2),icount)
+
+         do i=1,nb
+            write (6,*) i,rhs(i,2),'rt'
+         enddo
 
          ttime=dnekclock()
          if (isolve.eq.0) then
@@ -138,6 +180,11 @@ c     if (icount.le.2) then
          endif
 
          call setr_v(rhs(1,1),icount)
+
+         do i=1,nb
+            write (6,*) i,rhs(i,1),'ru'
+         enddo
+         call exitt0
 
          ttime=dnekclock()
          if ((isolve.eq.0).or.(icopt.eq.2)) then ! standard matrix inversion
@@ -617,10 +664,18 @@ c-----------------------------------------------------------------------
 
       call cmult(rhs,-1.0/ad_dt,nb)
 
+      do i=1,10
+         write (6,*) i,rhs(i),'ru0'
+      enddo
+
       s=-1.0/ad_re
 
       do i=1,nb
          rhs(i)=rhs(i)+s*au0(1+i)
+      enddo
+
+      do i=1,10
+         write (6,*) i,rhs(i),'ru1'
       enddo
 
       if (rmode.eq.'CP ') then
@@ -648,6 +703,10 @@ c-----------------------------------------------------------------------
       call mxm(fu,nb,ad_alpha(1,icount),3,tmp1(1),1)
 
       call add2(rhs,tmp1(1),nb)
+
+      do i=1,10
+         write (6,*) i,rhs(i),'ru2'
+      enddo
 
       ! artificial viscosity
 
