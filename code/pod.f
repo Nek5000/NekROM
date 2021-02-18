@@ -981,7 +981,7 @@ c-----------------------------------------------------------------------
      $         uub(1,i),vvb(1,i),wwb(1,i),ttb(1,i))
          s=1./sqrt(p)
          call opcmult(uub(1,i),vvb(1,i),wwb(1,i),s)
-         call cmult(ttb(1,i),lx1*ly1*lz1*nelt)
+         call cmult(ttb(1,i),s,lx1*ly1*lz1*nelt)
       enddo
       nio=nid
       ifield=jfield
