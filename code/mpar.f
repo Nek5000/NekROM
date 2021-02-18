@@ -170,6 +170,9 @@ c-----------------------------------------------------------------------
          endif
       endif
 
+      call finiparser_getbool(i_out,'pod:combined',ifnd)
+      if (ifnd.eq.1) ifcomb=i_out.eq.1
+
       ! QOI
 
       call finiparser_getdbl(d_out,'qoi:freq',ifnd)
@@ -371,6 +374,8 @@ c-----------------------------------------------------------------------
          call bcast(ifrom(i),lsize)
       enddo
 
+      call bcast(ifcomb,lsize)
+
       call bcast(ifei,lsize)
       call bcast(iftneu,lsize)
       call bcast(ifplay,lsize)
@@ -394,7 +399,7 @@ c-----------------------------------------------------------------------
       ! verifies the keys of the .mor file
 
       include 'MORDICT'
-      
+
       character*132  key
       character*1024 val
 
