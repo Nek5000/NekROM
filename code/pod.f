@@ -553,7 +553,8 @@ c-----------------------------------------------------------------------
       endif
 
       if (ifcomb) then
-         call add2(ug(1,1,1),ug(1,1,2),ns*ns)
+         podrati=1.-podrat
+         call add3s2(ug(1,1,1),ug(1,1,1),ug(1,1,2),podrat,podrati,ns*ns)
          call copy(ug(1,1,2),ug(1,1,1),ns*ns)
       endif
 
