@@ -319,6 +319,25 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      function cip(t1,t2,t3,t4,t5,t6,t7,t8)
+
+      ! return inner-product of vector fields
+
+      ! t1,t2,t3,t4 := vx,vy,vz,t components of field 1
+      ! t5,t6,t7,t8 := vx,vy,vz,t components of field 2
+
+      include 'SIZE'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real t1(lt),t2(lt),t3(lt),t4(lt),t5(lt),t6(lt),t7(lt),t8(lt)
+
+      cip=podrat*vip(t1,t2,t3,t5,t6,t7)+(1.-podrat)*sip(t4,t8)
+
+      return
+      end
+c-----------------------------------------------------------------------
       function h10sip_vd(t1,t2,vd)
 
       ! return inner-product of scalar fields using the H^1_0
