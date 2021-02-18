@@ -253,6 +253,53 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine pc2b(cfu,cft,ux,uy,uz,tt,uub,vvb,wwb,ttb)
+
+      ! get coordinates of a combined field for a given basis
+
+      ! cfu & cft       := coords of <ux,uy,uz,tt> in <uub,vvb,wwb,ttb>
+      ! ux,uy,uz,tt     := vx,vy,vz,t components of combined FOM field
+      ! uub,vvb,wwb,ttb := vx,vy,vz,t components of basis functions
+
+      include 'SIZE'
+      include 'MOR'
+      include 'TOTAL'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real ux(lt),uy(lt),uz(lt),tt(lt)
+      real uub(lt,0:nb),vvb(lt,0:nb),wwb(lt,0:nb),ttb(lt,0:nb)
+      real cfu(0:nb),cft(0:nb)
+
+      if (nio.eq.0) write (6,*) 'inside pc2b'
+
+      n=lx1*ly1*lz1*nelt
+
+      cfu(0) = 1.
+      cft(0) = 1.
+      if (nio.eq.0) write (6,1) 0,cfu(0),cfu(0),1.
+
+      jfield=ifield
+      ifield=1
+
+      do i=1,nb
+         ww=cip(uub(1,i),vvb(1,i),wwb(1,i),ttb(1,i),
+     $          uub(1,i),vvb(1,i),wwb(1,i),ttb(1,i))
+         vv=cip(uub(1,i),vvb(1,i),wwb(1,i),ttb(1,i),ux,uy,uz,tt)
+         cfu(i) = vv/ww
+         cft(i) = cfu(i)
+         if (nio.eq.0) write (6,1) i,coef(i),vv,ww,ips
+      enddo
+
+      ifield=jfield
+
+      if (nio.eq.0) write (6,*) 'exiting pc2b'
+
+    1 format('coef',i8,1p3e16.8,1x,a3)
+
+      return
+      end
+c-----------------------------------------------------------------------
       function sip(t1,t2)
 
       ! return inner-product of scalar fields

@@ -1396,13 +1396,9 @@ c-----------------------------------------------------------------------
          if (ifcomb) then
             call opsub2(uic,vic,wic,ub,vb,wb)
             call sub2(tic,tb,n)
-            do i=1,nb
-               r1=sip(tb(1,i),tb(1,i))+
-     $            vip(ub(1,i),vb(1,i),wb(1,i),ub(1,i),vb(1,i),wb(1,i))
-               r2=sip(tb(1,i),tic)+
-     $            vip(ub(1,i),vb(1,i),wb(1,i),uic,vic,wic)
-               ut(i)=r2/r1
-               u(i)=r2/r1
+            call pc2b(u,ut,uic,vic,wic,tic,ub,vb,wb,tb)
+            do i=0,nb
+               if (nio.eq.0) write (6,*) 'u&ut',u(i)
             enddo
             call opadd2(uic,vic,wic,ub,vb,wb)
             call add2(tic,tb,n)
