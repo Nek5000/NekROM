@@ -288,7 +288,7 @@ c-----------------------------------------------------------------------
          vv=cip(uub(1,i),vvb(1,i),wwb(1,i),ttb(1,i),ux,uy,uz,tt)
          cfu(i) = vv/ww
          cft(i) = cfu(i)
-         if (nio.eq.0) write (6,1) i,coef(i),vv,ww,ips
+         if (nio.eq.0) write (6,1) i,cfu(i),vv,ww,ips
       enddo
 
       ifield=jfield
