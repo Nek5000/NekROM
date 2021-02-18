@@ -4,7 +4,7 @@ c     Note: Keys have to be in capital letters
 c
       integer MORDICT_NKEYS
 
-      parameter (MORDICT_NKEYS = 38)
+      parameter (MORDICT_NKEYS = 39)
 
       character*132 mordictkey(MORDICT_NKEYS)
       data
