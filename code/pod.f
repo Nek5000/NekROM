@@ -72,14 +72,7 @@ c-----------------------------------------------------------------------
             endif
          endif
 
-         if (ifcomb.and.ifpb) then
-            do i=1,nb
-               s=1./sqrt(sip(tb(1,i),tb(1,i))+
-     $            vip(ub(1,i),vb(1,i),wb(1,i),ub(1,i),vb(1,i),wb(1,i)))
-               call opcmult(ub(1,i),vb(1,i),wb(1,i),s)
-               call cmult(tb(1,i),s,n)
-            enddo
-         endif
+         if (ifcomb.and.ifpb) call cnorm(ub,vb,wb,tb)
       endif
 
       ! only load the anchor point pressure
@@ -912,6 +905,36 @@ c-----------------------------------------------------------------------
          p=vip(uub(1,i),vvb(1,i),wwb(1,i),uub(1,i),vvb(1,i),wwb(1,i))
          s=1./sqrt(p)
          call opcmult(uub(1,i),vvb(1,i),wwb(1,i),s)
+      enddo
+      nio=nid
+      ifield=jfield
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine cnorm(uub,vvb,wwb,ttb)
+
+      ! normalizes combined field
+
+      ! uub,vvb,wwb,ttb := vx,vy,vz,t components of vector field
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real uub(lt,0:nb),vvb(lt,0:nb),wwb(lt,0:nb),ttb(lt,0:nb)
+
+      jfield=ifield
+      ifield=1
+      nio=-1
+      do i=1,nb
+         p=cip(uub(1,i),vvb(1,i),wwb(1,i),ttb(1,i),
+     $         uub(1,i),vvb(1,i),wwb(1,i),ttb(1,i))
+         s=1./sqrt(p)
+         call opcmult(uub(1,i),vvb(1,i),wwb(1,i),s)
+         call cmult(ttb(1,i),lx1*ly1*lz1*nelt)
       enddo
       nio=nid
       ifield=jfield
