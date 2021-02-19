@@ -38,7 +38,7 @@ c-----------------------------------------------------------------------
 
          fd(1)=fd(1)-(ak*abveck(1,1,k)+bk*abveck(2,1,k))/real(2*k)
          fd(2)=fd(2)+(ak*abveck(1,2,k)+bk*abveck(2,2,k))/real(2*k)
-c        write (6,*) 'ak pdrag',k,ak,bk,fd(1),fd(2)
+c        write (6,*) 'ak pdrag',k,ak,bk,fd(1),fd(2),lk
       enddo
 
       return
@@ -74,6 +74,7 @@ c-----------------------------------------------------------------------
 
       do iobj=1,nobj
          memtot=nmember(iobj)
+         write (6,*) 'mem',memtot,iobj
          do mem=1,memtot
             ieg=object(iobj,mem,1)
             ifc=object(iobj,mem,2)
@@ -259,7 +260,9 @@ c-----------------------------------------------------------------------
 
       common /cnus1/ tbn(0:lb,0:lb),tbd(0:lb),tsa(0:lb)
       common /cnus2/ qwall(0:lb)
-      common /scrk0/ tx(lt),ty(lt),tz(lt)
+      common /scrk0/ tx(lx1,ly1,lz1,lelt),
+     $               ty(lx1,ly1,lz1,lelt),
+     $               tz(lx1,ly1,lz1,lelt)
 
       if (inus.eq.1) then
          do j=0,nb
@@ -406,6 +409,61 @@ c-----------------------------------------------------------------------
          else
          call read_serial(qwall,nb+1,'qoi/qwall ',rtmp1,nid)
          endif
+      else if (inus.eq.6) then
+         iobj=1
+
+         do i=0,nb
+            call gradm1(tx,ty,tz,tb(1,i))
+            a=0.
+            s=0.
+
+            do imem=1,nmember(iobj)
+               ieg=object(iobj,imem,1)
+               ifc=object(iobj,imem,2)
+               ie=gllel(ieg)
+               call facind(kx1,kx2,ky1,ky2,kz1,kz2,lx1,ly1,lz1,ifc)
+               l=1
+
+               do iz=kz1,kz2
+               do iy=ky1,ky2
+               do ix=kx1,kx2
+                  a=a+area(l,1,ifc,ie)
+                  s=s+area(l,1,ifc,ie)*(unx(l,1,ifc,ie)*tx(ix,iy,iz,ie)+
+     $                                  uny(l,1,ifc,ie)*ty(ix,iy,iz,ie)+
+     $                                  unz(l,1,ifc,ie)*tz(ix,iy,iz,ie))
+                  l=l+1
+               enddo
+               enddo
+               enddo
+            enddo
+
+            s=glsum(s,1)
+            a=glsum(a,1)
+            qwall(i)=s/a
+
+            call dump_serial(qwall,nb+1,'qoi/qwall ',nid)
+         enddo
+      endif
+
+      if (iftflux) then
+         do j=0,nbavg
+         do i=0,nbavg
+            if (idirf.eq.1) then
+               call calc_tbulk(tbulkn(i,j),tbulkd(i,j),tb(1,i),ub(1,j))
+            else if (idirf.eq.2) then
+               call calc_tbulk(tbulkn(i,j),tbulkd(i,j),tb(1,i),vb(1,j))
+            else if (idirf.eq.3) then
+               call calc_tbulk(tbulkn(i,j),tbulkd(i,j),tb(1,i),wb(1,j))
+            endif
+         enddo
+         enddo
+
+         do i=0,nbavg
+            call calc_tsurf(tsurf(i),tb(1,i))
+            call calc_tmean(ttmean(i),tb(1,i))
+            call calc_sterm(st0(i),tb(1,i))
+            write (6,*) i,st0(i),'st0'
+         enddo
       endif
 
       return
@@ -689,6 +747,9 @@ c-----------------------------------------------------------------------
          rnus=vlsc2(qwall,ut,nb+1)
          if (nio.eq.0) write (6,*) ad_step,time,rnus,'nus'
       else if (inus.eq.5) then
+         rnus=vlsc2(qwall,ut,nb+1)
+         if (nio.eq.0) write (6,*) ad_step,time,rnus,'nus'
+      else if (inus.eq.6) then
          rnus=vlsc2(qwall,ut,nb+1)
          if (nio.eq.0) write (6,*) ad_step,time,rnus,'nus'
       endif
@@ -1053,6 +1114,96 @@ c       call planar_avg(tbar,tb(1,i) ,igs_x) ! Contract in x+y: work=f(z)
         close(unit=iunit+100)
         enddo
    20   format(1p3e15.6)  ! time, z , tbar
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine calc_tbulk(tbulkn,tbulkd,tt,vv)
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      real tt(1)
+      real vv(1)
+
+      nv=lx1*ly1*lz1*nelv
+
+      tbulkn=glsc3(tt,vv,bm1,nv)
+      tbulkd=glsc2(vv,bm1,nv)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine calc_tsurf(tsurf,tt)
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      real tt(lx1,ly1,lz1,lelt)
+
+      nt=lx1*ly1*lz1*nelt
+
+      nbavg=lb
+
+      s=0.
+      a=0.
+
+      do ie=1,nelt
+      do ifc=1,2*ldim
+         call facind(kx1,kx2,ky1,ky2,kz1,kz2,lx1,ly1,lz1,ifc)
+         if (cbc(ifc,ie,2).eq.'f  ') then
+            l=0
+            do iz=kz1,kz2
+            do iy=ky1,ky2
+            do ix=kx1,kx2
+               l=l+1
+               a=a+area(l,1,ifc,ie)
+               s=s+area(l,1,ifc,ie)*tt(ix,iy,iz,ie)
+            enddo
+            enddo
+            enddo
+         endif
+      enddo
+      enddo
+
+      s=glsum(s,1)
+      a=glsum(a,1)
+
+      tsurf=s/a
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine calc_sterm(s,tf)
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      real tf(lx1,ly1,lz1,lelt)
+
+      a=0.
+      s=0.
+
+      do ie=1,nelt
+      do ifc=1,2*ldim
+         if (cbc(ifc,ie,2).eq.'f  ') then
+            call facind(kx1,kx2,ky1,ky2,kz1,kz2,lx1,ly1,lz1,ifc)
+            l=0
+            do iz=kz1,kz2
+            do iy=ky1,ky2
+            do ix=kx1,kx2
+               l=l+1
+               a=a+area(l,1,ifc,ie)
+               s=s+area(l,1,ifc,ie)*tf(ix,iy,iz,ie)
+            enddo
+            enddo
+            enddo
+         endif
+      enddo
+      enddo
+
+      s=glsum(s,1)
+      a=glsum(a,1)
 
       return
       end

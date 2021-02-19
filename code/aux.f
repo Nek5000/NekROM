@@ -223,8 +223,6 @@ c-----------------------------------------------------------------------
       common /scrl2d/ ux(lt),uy(lt),uxx(lt),uyy(lt),t1(lt),t2(lt)
 
       call gradm1(ux,uy,t1,u)
-      call dsavg(ux)
-      call dsavg(uy)
 
       call gradm1(uxx,t1,t1,ux)
       call gradm1(t1,uyy,t2,uy)
