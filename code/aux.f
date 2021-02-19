@@ -232,31 +232,6 @@ c-----------------------------------------------------------------------
       call add3(d2u,uxx,uyy,lx1*ly1*lz1*nelv)
       call dsavg(d2u)
 
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine lap3d(d2u,u)
-
-      include 'SIZE'
-      include 'TOTAL'
-
-      parameter (lt=lx1*ly1*lz1*lelt)
-
-      real d2u(1),u(1)
-
-      common /scrl2d/ ux(lt),uy(lt),uz(lt),
-     $                uxx(lt),uyy(lt),uzz(lt),t1(lt),t2(lt)
-
-      n=lx1*ly1*lz1*nelt
-
-      call gradm1(ux,uy,uz,u)
-
-      call gradm1(uxx,t1,t2,ux)
-      call gradm1(t1,uyy,t2,uy)
-      call gradm1(t1,t2,uzz,uz)
-
-      call add3(d2u,uxx,uyy,n)
-      call add2(d2u,uzz,n)
 
       return
       end
