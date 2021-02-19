@@ -1231,26 +1231,16 @@ c-----------------------------------------------------------------------
          if (nio.eq.0) write (6,*) 'reading a...'
          call read_mat_serial(a0,nb+1,nb+1,fname,mb+1,nb+1,wk1,nid)
       else
-         call copy(wk1,vdiff(1,1,1,1,ifield),n)
-         if (nid.eq.0) write (6,*) vdiff(1,1,1,1,ifield),'vdiff'
-         if (nid.eq.0) write (6,*) ones(1),n,'ones'
-         s=1./vdiff(1,1,1,1,ifield)
-         call cmult(wk1,s,n)
          if (nio.eq.0) write (6,*) 'forming a...'
          do j=0,nb
             nio=-1
             do i=0,nb
                if (ifield.eq.1) then
-c                 a0(i,j)=h10vip(ub(1,i),vb(1,i),wb(1,i),
-c    $                           ub(1,j),vb(1,j),wb(1,j))
-                  a0(i,j)=h10vip_vd(ub(1,i),vb(1,i),wb(1,i),
-     $                           ub(1,j),vb(1,j),wb(1,j),wk1)
+                  a0(i,j)=h10vip(ub(1,i),vb(1,i),wb(1,i),
+     $                           ub(1,j),vb(1,j),wb(1,j))
                else
-c                 a0(i,j)=h10sip(tb(1,i),tb(1,j))
-                  a0(i,j)=h10sip_vd(tb(1,i),tb(1,j),wk1)
+                  a0(i,j)=h10sip(tb(1,i),tb(1,j))
                endif
-               if (nid.eq.0.and.i.eq.0)
-     $            write (6,*) 'seta: ',j,'/',nb,a0(i,j)
             enddo
             nio=nid
          enddo
