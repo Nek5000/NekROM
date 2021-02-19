@@ -1019,16 +1019,6 @@ c           if (idc_t.gt.0) call rzero(tb,n)
             ifxyo=.true.
 
             do i=1,nbavg
-               call checkaeq(uafld(1,1,i),uafld(1,2,i),uafld(1,ldim,i),
-     $            uufld(1,1,i),uvfld(1,1,i),pafld(1,i),visc(i))
-            enddo
-
-            do i=1,nbavg
-               call checkaeq(uafld(1,1,i),uafld(1,2,i),uafld(1,ldim,i),
-     $            uufld(1,1,i),uvfld(1,1,i),pafld(1,i),visc(i))
-            enddo
-
-            do i=1,nbavg
                call setupvp(upup(1,1,i),
      $            uufld(1,1,i),uafld(1,1,i),uafld(1,1,i))
                call setupvp(upup(1,2,i),
@@ -1049,11 +1039,6 @@ c           if (idc_t.gt.0) call rzero(tb,n)
      $            upvp(1,1,i),upup(1,2,i),upvp(1,2,i))
                call divm1(flucv(1,3,i),
      $            upvp(1,3,i),upvp(1,2,i),upup(1,3,i))
-
-               call outpost(flucv(1,1,i),flucv(1,2,i),flucv(1,ldim,i),
-     $            pr,t,'flc')
-            call checkaeqp(uafld(1,1,i),uafld(1,2,i),uafld(1,ldim,i),
-     $         upup(1,1,i),upvp(1,1,i),pafld(1,i),visc(i))
             enddo
          endif
 
@@ -1082,10 +1067,6 @@ c           if (idc_t.gt.0) call rzero(tb,n)
          do i=1,nbavg
             call setdiff(udfld(1,1,i),tdfld(1,i),uafld(1,1,i),tafld(1,i)
      $         ,upup(1,1,i),upvp(1,1,i),uptp(1,1,i))
-         enddo
-         do i=1,nbavg
-            call checkaeqd(uafld(1,1,i),uafld(1,2,i),uafld(1,ldim,i),
-     $         upup(1,1,i),upvp(1,1,i),pafld(1,i),udfld(1,1,i),visc(i))
          enddo
       endif
 
