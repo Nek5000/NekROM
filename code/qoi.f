@@ -74,7 +74,6 @@ c-----------------------------------------------------------------------
 
       do iobj=1,nobj
          memtot=nmember(iobj)
-         write (6,*) 'mem',memtot,iobj
          do mem=1,memtot
             ieg=object(iobj,mem,1)
             ifc=object(iobj,mem,2)
