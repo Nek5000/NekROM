@@ -1816,33 +1816,6 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine evalut(utp,vtp,wtp,ut,vt,wt,u,v,w,t)
-
-      ! compute <u't'> where u := (u,v,w)
-
-      ! (utp,vtp,wtp) := components of mean temperature-velocity fluctuation
-      ! (ut,vt,wt)    := components of mean temperature-velocity product
-      ! (u,v,w)       := mean velocity components
-      ! t             := mean temperature
-
-      include 'SIZE'
-
-      parameter (lt=lx1*ly1*lz1*lelt)
-
-      real utp(lt),vtp(lt),wtp(lt)
-      real ut(lt),vt(lt),wt(lt),u(lt),v(lt),w(lt),t(lt)
-
-      n=lx1*ly1*lz1*nelv
-
-      call opcopy(utp,vtp,wtp,ut,vt,wt)
-
-      call admcol3(utp,u,t,-1.,n)
-      call admcol3(vtp,v,t,-1.,n)
-      if (ldim.eq.3) call admcol3(wtp,w,t,-1.,n)
-
-      return
-      end
-c-----------------------------------------------------------------------
       subroutine reconv_wo0(ux,uy,uz,coef,ncop)
 
       ! reconstruct velocity field without 0th mode
