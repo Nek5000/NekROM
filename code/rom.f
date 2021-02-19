@@ -378,10 +378,7 @@ c-----------------------------------------------------------------------
          call sets(st0,tb,'ops/ct ')
       endif
 
-      if (rmode.eq.'AEQ') then
-         call setfluc(fv_op,ft_op,'fluc')
-         call setefluc(ftmp0,ft_op,'   ')
-      endif
+      if (rmode.eq.'AEQ') call setfluc(fv_op,ft_op,'fluc')
 
 c     if (ifbuoy.and.ifrom(1).and.ifrom(2)) call setbut(but0)
       if (ifbuoy.and.ifrom(1).and.ifrom(2)) then
