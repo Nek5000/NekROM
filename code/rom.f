@@ -1329,6 +1329,47 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine setae(a,fname)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /scrseta/ wk1(lt)
+
+      real a(0:nb,0:nb,nb)
+
+      character*128 fname
+
+      n=lx1*ly1*lz1*nelt
+
+      if (rmode.eq.'ON '.or.rmode.eq.'ONB'.or.rmode.eq.'CP ') then
+         if (nio.eq.0) write (6,*) 'reading ae...'
+         call read_mat_serial(aue,nb+1,nb+1,fname,mb+1,nb+1,wk1,nid)
+      else
+         if (nio.eq.0) write (6,*) 'forming ae...'
+         do k=1,nb
+         do j=0,nb
+            if (nio.eq.0) write (6,*) 'setae: ',k,j,'/',nb
+            nio=-1
+            do i=0,nb
+               if (ifield.eq.1) then
+                  a(i,j,k)=h10vip_vd(ub(1,i),vb(1,i),wb(1,i),
+     $                             ub(1,j),vb(1,j),wb(1,j),udfld(1,1,k))
+               else
+                  a(i,j,k)=h10sip_vd(tb(1,i),tb(1,j),tdfld(1,k))
+               endif
+            enddo
+            nio=nid
+         enddo
+         enddo
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine setu
 
       include 'SIZE'

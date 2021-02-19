@@ -237,6 +237,32 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine lap3d(d2u,u)
 
+      include 'SIZE'
+      include 'TOTAL'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real d2u(1),u(1)
+
+      common /scrl2d/ ux(lt),uy(lt),uz(lt),
+     $                uxx(lt),uyy(lt),uzz(lt),t1(lt),t2(lt)
+
+      n=lx1*ly1*lz1*nelt
+
+      call gradm1(ux,uy,uz,u)
+
+      call gradm1(uxx,t1,t2,ux)
+      call gradm1(t1,uyy,t2,uy)
+      call gradm1(t1,t2,uzz,uz)
+
+      call add3(d2u,uxx,uyy,n)
+      call add2(d2u,uzz,n)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine lap3d(d2u,u)
+
       ! set Laplacian of the input scalar field
 
       ! d2u := Laplacian field
@@ -1784,6 +1810,33 @@ c-----------------------------------------------------------------------
 
       call divm1(ev,t1,t2,t3)
       call outpost(ev,v,w,t1,t2,'edt')
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine evalut(utp,vtp,wtp,ut,vt,wt,u,v,w,t)
+
+      ! compute <u't'> where u := (u,v,w)
+
+      ! (utp,vtp,wtp) := components of mean temperature-velocity fluctuation
+      ! (ut,vt,wt)    := components of mean temperature-velocity product
+      ! (u,v,w)       := mean velocity components
+      ! t             := mean temperature
+
+      include 'SIZE'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real utp(lt),vtp(lt),wtp(lt)
+      real ut(lt),vt(lt),wt(lt),u(lt),v(lt),w(lt),t(lt)
+
+      n=lx1*ly1*lz1*nelv
+
+      call opcopy(utp,vtp,wtp,ut,vt,wt)
+
+      call admcol3(utp,u,t,-1.,n)
+      call admcol3(vtp,v,t,-1.,n)
+      if (ldim.eq.3) call admcol3(wtp,w,t,-1.,n)
 
       return
       end
