@@ -956,15 +956,8 @@ c-----------------------------------------------------------------------
       logical alist,iftmp
 
       character*128 fname1
-      real visc(10)
 
       if (nio.eq.0) write (6,*) 'inside rom_init_fields'
-
-      visc(1)=1./10.
-      visc(2)=1./20.
-      visc(3)=1./40.
-      visc(4)=1./50.
-      visc(5)=1./100.
 
       n=lx1*ly1*lz1*nelt
       jfield=ifield
