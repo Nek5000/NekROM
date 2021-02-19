@@ -421,23 +421,16 @@ c-----------------------------------------------------------------------
          if (rmode.eq.'ON '.or.rmode.eq.'ONB'.or.rmode.eq.'CP ') then
             call read_serial(fd1,ldim*(nb+1),'qoi/fd1 ',wk,nid)
             call read_serial(fd3,ldim*(nb+1),'qoi/fd3 ',wk,nid)
-            write (6,*) 'block1'
          else
             do i=0,nb
                call lap2d(a1,ub(1,i))
                call lap2d(a2,vb(1,i))
                if (ldim.eq.3) call lap2d(a3,wb(1,i))
                call outpost(a1,a2,a3,a3,tb,'lap')
-C              call cint(fd1(1+ldim*i),ub(1,i),vb(1,i),wb(1,i))
                call cint(fd3(1+ldim*i),a1,a2,a3)
-c     call exitt0
-c              write (6,*) 'cint1',i,fd1(1+ldim*i),fd1(2+dim*i)
-c              write (6,*) 'cint3',i,fd3(1+ldim*i),fd3(2+dim*i)
             enddo
-c           write (6,*) 'block2'
          endif
       endif
-c     call exitt0
 
       if (nio.eq.0) write (6,*) 'end setup for qoi'
 
