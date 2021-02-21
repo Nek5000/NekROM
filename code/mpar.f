@@ -173,6 +173,9 @@ c-----------------------------------------------------------------------
       call finiparser_getbool(i_out,'pod:combined',ifnd)
       if (ifnd.eq.1) ifcomb=i_out.eq.1
 
+      call finiparser_getdbl(d_out,'pod:ratio',ifnd)
+      if (ifnd.eq.1) podrat=d_out
+
       ! QOI
 
       call finiparser_getdbl(d_out,'qoi:freq',ifnd)

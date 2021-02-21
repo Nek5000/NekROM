@@ -72,14 +72,7 @@ c-----------------------------------------------------------------------
             endif
          endif
 
-         if (ifcomb.and.ifpb) then
-            do i=1,nb
-               s=1./sqrt(sip(tb(1,i),tb(1,i))+
-     $            vip(ub(1,i),vb(1,i),wb(1,i),ub(1,i),vb(1,i),wb(1,i)))
-               call opcmult(ub(1,i),vb(1,i),wb(1,i),s)
-               call cmult(tb(1,i),s,n)
-            enddo
-         endif
+         if (ifcomb.and.ifpb) call cnorm(ub,vb,wb,tb)
       endif
 
       ! only load the anchor point pressure
@@ -260,6 +253,53 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine pc2b(cfu,cft,ux,uy,uz,tt,uub,vvb,wwb,ttb)
+
+      ! get coordinates of a combined field for a given basis
+
+      ! cfu & cft       := coords of <ux,uy,uz,tt> in <uub,vvb,wwb,ttb>
+      ! ux,uy,uz,tt     := vx,vy,vz,t components of combined FOM field
+      ! uub,vvb,wwb,ttb := vx,vy,vz,t components of basis functions
+
+      include 'SIZE'
+      include 'MOR'
+      include 'TOTAL'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real ux(lt),uy(lt),uz(lt),tt(lt)
+      real uub(lt,0:nb),vvb(lt,0:nb),wwb(lt,0:nb),ttb(lt,0:nb)
+      real cfu(0:nb),cft(0:nb)
+
+      if (nio.eq.0) write (6,*) 'inside pc2b'
+
+      n=lx1*ly1*lz1*nelt
+
+      cfu(0) = 1.
+      cft(0) = 1.
+      if (nio.eq.0) write (6,1) 0,cfu(0),cfu(0),1.
+
+      jfield=ifield
+      ifield=1
+
+      do i=1,nb
+         ww=cip(uub(1,i),vvb(1,i),wwb(1,i),ttb(1,i),
+     $          uub(1,i),vvb(1,i),wwb(1,i),ttb(1,i))
+         vv=cip(uub(1,i),vvb(1,i),wwb(1,i),ttb(1,i),ux,uy,uz,tt)
+         cfu(i) = vv/ww
+         cft(i) = cfu(i)
+         if (nio.eq.0) write (6,1) i,cfu(i),vv,ww,ips
+      enddo
+
+      ifield=jfield
+
+      if (nio.eq.0) write (6,*) 'exiting pc2b'
+
+    1 format('coef',i8,1p3e16.8,1x,a3)
+
+      return
+      end
+c-----------------------------------------------------------------------
       function sip(t1,t2)
 
       ! return inner-product of scalar fields
@@ -315,6 +355,25 @@ c-----------------------------------------------------------------------
          if (nid.eq.0) write (6,*) 'ips: ',ips
          call exitti('did not provide supported inner product space$',1)
       endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      function cip(t1,t2,t3,t4,t5,t6,t7,t8)
+
+      ! return inner-product of vector fields
+
+      ! t1,t2,t3,t4 := vx,vy,vz,t components of field 1
+      ! t5,t6,t7,t8 := vx,vy,vz,t components of field 2
+
+      include 'SIZE'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real t1(lt),t2(lt),t3(lt),t4(lt),t5(lt),t6(lt),t7(lt),t8(lt)
+
+      cip=podrat*vip(t1,t2,t3,t5,t6,t7)+(1.-podrat)*sip(t4,t8)
 
       return
       end
@@ -534,7 +593,8 @@ c-----------------------------------------------------------------------
       endif
 
       if (ifcomb) then
-         call add2(ug(1,1,1),ug(1,1,2),ns*ns)
+         podrati=1.-podrat
+         call add3s2(ug(1,1,1),ug(1,1,1),ug(1,1,2),podrat,podrati,ns*ns)
          call copy(ug(1,1,2),ug(1,1,1),ns*ns)
       endif
 
@@ -892,6 +952,36 @@ c-----------------------------------------------------------------------
          p=vip(uub(1,i),vvb(1,i),wwb(1,i),uub(1,i),vvb(1,i),wwb(1,i))
          s=1./sqrt(p)
          call opcmult(uub(1,i),vvb(1,i),wwb(1,i),s)
+      enddo
+      nio=nid
+      ifield=jfield
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine cnorm(uub,vvb,wwb,ttb)
+
+      ! normalizes combined field
+
+      ! uub,vvb,wwb,ttb := vx,vy,vz,t components of vector field
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real uub(lt,0:nb),vvb(lt,0:nb),wwb(lt,0:nb),ttb(lt,0:nb)
+
+      jfield=ifield
+      ifield=1
+      nio=-1
+      do i=1,nb
+         p=cip(uub(1,i),vvb(1,i),wwb(1,i),ttb(1,i),
+     $         uub(1,i),vvb(1,i),wwb(1,i),ttb(1,i))
+         s=1./sqrt(p)
+         call opcmult(uub(1,i),vvb(1,i),wwb(1,i),s)
+         call cmult(ttb(1,i),s,lx1*ly1*lz1*nelt)
       enddo
       nio=nid
       ifield=jfield

@@ -4,7 +4,7 @@ c     Note: Keys have to be in capital letters
 c
       integer MORDICT_NKEYS
 
-      parameter (MORDICT_NKEYS = 38)
+      parameter (MORDICT_NKEYS = 39)
 
       character*132 mordictkey(MORDICT_NKEYS)
       data
@@ -21,28 +21,29 @@ c
      &  mordictkey(11) / 'POD:TYPE' /
      &  mordictkey(12) / 'POD:MODE0' /
      &  mordictkey(13) / 'POD:COMBINED' /
-     &  mordictkey(14) / 'QOI' /
-     &  mordictkey(15) / 'QOI:FREQ' /
-     &  mordictkey(16) / 'QOI:TKE' /
-     &  mordictkey(17) / 'QOI:DRAG' /
-     &  mordictkey(18) / 'QOI:NU' /
-     &  mordictkey(19) / 'COPT' /
-     &  mordictkey(20) / 'COPT:MODE' /
-     &  mordictkey(21) / 'COPT:FIELD' /
-     &  mordictkey(22) / 'COPT:BARRIER' /
-     &  mordictkey(23) / 'COPT:BOXTOL' /
-     &  mordictkey(24) / 'COPT:VPAR0' /
-     &  mordictkey(25) / 'COPT:VNLOOP' /
-     &  mordictkey(26) / 'COPT:TPAR0' /
-     &  mordictkey(27) / 'COPT:TNLOOP' /
-     &  mordictkey(28) / 'FAST' /
-     &  mordictkey(29) / 'FAST:CEVAL' /
-     &  mordictkey(30) / 'FAST:HEVAL' /
-     &  mordictkey(31) / 'FORCING' /
-     &  mordictkey(32) / 'FORCING:BODY' /
-     &  mordictkey(33) / 'FORCING:SOURCE' /
-     &  mordictkey(34) / 'FORCING:BUOYANCY' /
-     &  mordictkey(35) / 'FILTER' /
-     &  mordictkey(36) / 'FILTER:LOCATION' /
-     &  mordictkey(37) / 'FILTER:TYPE' /
-     &  mordictkey(38) / 'FILTER:RADIUS' /
+     &  mordictkey(14) / 'POD:RATIO' /
+     &  mordictkey(15) / 'QOI' /
+     &  mordictkey(16) / 'QOI:FREQ' /
+     &  mordictkey(17) / 'QOI:TKE' /
+     &  mordictkey(18) / 'QOI:DRAG' /
+     &  mordictkey(19) / 'QOI:NU' /
+     &  mordictkey(20) / 'COPT' /
+     &  mordictkey(21) / 'COPT:MODE' /
+     &  mordictkey(22) / 'COPT:FIELD' /
+     &  mordictkey(23) / 'COPT:BARRIER' /
+     &  mordictkey(24) / 'COPT:BOXTOL' /
+     &  mordictkey(25) / 'COPT:VPAR0' /
+     &  mordictkey(26) / 'COPT:VNLOOP' /
+     &  mordictkey(27) / 'COPT:TPAR0' /
+     &  mordictkey(28) / 'COPT:TNLOOP' /
+     &  mordictkey(29) / 'FAST' /
+     &  mordictkey(30) / 'FAST:CEVAL' /
+     &  mordictkey(31) / 'FAST:HEVAL' /
+     &  mordictkey(32) / 'FORCING' /
+     &  mordictkey(33) / 'FORCING:BODY' /
+     &  mordictkey(34) / 'FORCING:SOURCE' /
+     &  mordictkey(35) / 'FORCING:BUOYANCY' /
+     &  mordictkey(36) / 'FILTER' /
+     &  mordictkey(37) / 'FILTER:LOCATION' /
+     &  mordictkey(38) / 'FILTER:TYPE' /
+     &  mordictkey(39) / 'FILTER:RADIUS' /
