@@ -59,16 +59,18 @@ c     if (icount.le.2) then
                hlm(i+(j-1)*(nb-nplay),2)=hlm(i+nplay+(j+nplay-1)*nb,2)
             enddo
             enddo
-            if (ifdecpl) then
-               call copy(hinv(1,2),hlm(1,2),(nb-nplay)**2)
-               call diag(hinv(1,2),wt(1,2),rhs(1,2),nb)
-            else
-               call invmat(hinv(1,2),hlu(1,2),hlm(1,2),
-     $         ihlu(1,2),ihlu2(1,2),nb-nplay)
-               call rzero(wt(1,2),(nb-nplay)**2)
-               do i=1,nb-nplay
-                  wt(i+(nb-nplay)*(i-1),2)=1.
-               enddo
+            if (.not.ifcomb) then
+               if (ifdecpl) then
+                  call copy(hinv(1,2),hlm(1,2),(nb-nplay)**2)
+                  call diag(hinv(1,2),wt(1,2),rhs(1,2),nb)
+               else
+                  call invmat(hinv(1,2),hlu(1,2),hlm(1,2),
+     $            ihlu(1,2),ihlu2(1,2),nb-nplay)
+                  call rzero(wt(1,2),(nb-nplay)**2)
+                  do i=1,nb-nplay
+                     wt(i+(nb-nplay)*(i-1),2)=1.
+                  enddo
+               endif
             endif
             lu_time=lu_time+dnekclock()-ttime
             call update_k
@@ -77,6 +79,7 @@ c     if (icount.le.2) then
          call setr_t(rhs(1,2),icount)
 
          ttime=dnekclock()
+         if (.not.ifcomb) then
          if (isolve.eq.0) then
             call mxm(wt(1,2),nb,rhs(1,2),nb,rhstmp(1),1)
             call mxm(hinv(1,2),nb,rhstmp(1),nb,rhs(1,2),1)
@@ -109,6 +112,7 @@ c     if (icount.le.2) then
                rhs(i,2)=tk(i,ad_step)
             enddo
          endif
+         endif
       endif
 
       if (ifrom(1)) then
@@ -122,16 +126,18 @@ c     if (icount.le.2) then
             enddo
             enddo
             if (nio.eq.0) write (6,*) 'check ifdecpl',ifdecpl,'cp3'
-            if (ifdecpl) then
-               call copy(hinv,hlm,(nb-nplay)**2)
-               call diag(hinv,wt,rhs(1,1),nb)
-            else
-               call invmat(hinv,hlu,hlm,ihlu,ihlu2,nb-nplay)
-            if (nio.eq.0) write (6,*) 'check nplay',nplay,'cp3'
-               call rzero(wt,(nb-nplay)**2)
-               do i=1,nb-nplay
-                  wt(i+(nb-nplay)*(i-1),1)=1.
-               enddo
+            if (.not.ifcomb) then
+               if (ifdecpl) then
+                  call copy(hinv,hlm,(nb-nplay)**2)
+                  call diag(hinv,wt,rhs(1,1),nb)
+               else
+                  call invmat(hinv,hlu,hlm,ihlu,ihlu2,nb-nplay)
+               if (nio.eq.0) write (6,*) 'check nplay',nplay,'cp3'
+                  call rzero(wt,(nb-nplay)**2)
+                  do i=1,nb-nplay
+                     wt(i+(nb-nplay)*(i-1),1)=1.
+                  enddo
+               endif
             endif
             lu_time=lu_time+dnekclock()-ttime
             call update_k
@@ -140,6 +146,7 @@ c     if (icount.le.2) then
          call setr_v(rhs(1,1),icount)
 
          ttime=dnekclock()
+         if (.not.ifcomb) then
          if ((isolve.eq.0).or.(icopt.eq.2)) then ! standard matrix inversion
             call mxm(wt,nb,rhs(1,1),nb,rhstmp(1),1)
             call mxm(hinv,nb,rhstmp(1),nb,rhs(1,1),1)
@@ -166,12 +173,43 @@ c     if (icount.le.2) then
             call mxm(rhstmp(1),1,wt,nb,rhs(1,1),nb)
 
          endif
+         endif
          solve_time=solve_time+dnekclock()-ttime
          if (nplay.gt.0) then
             do i=1,nplay
                rhs(i,1)=uk(i,ad_step)
             enddo
          endif
+      endif
+
+      if (ifcomb) then
+         if (ad_step.le.3) then
+            call add2(hlm(1,1),hlm(1,2),(nb+1)**2)
+            if (ifdecpl) then
+               call copy(hinv(1,1),hlm(1,1),(nb-nplay)**2)
+               call diag(hinv(1,1),wt(1,1),utmp1,nb)
+            else
+               call invmat(hinv(1,1),hlu(1,1),hlm(1,1),
+     $         ihlu(1,1),ihlu2(1,1),nb-nplay)
+               call rzero(wt(1,1),(nb-nplay)**2)
+               do i=1,nb-nplay
+                  wt(i+(nb-nplay)*(i-1),1)=1.
+               enddo
+            endif
+         endif
+         call add2(rhs(1,1),rhs(1,2),(nb+1)**2)
+
+         call mxm(wt,nb,rhs(1,1),nb,rhstmp(1),1)
+         call mxm(hinv,nb,rhstmp(1),nb,rhs(1,1),1)
+         if (ifdecpl) then
+            do i=1,nb
+               if (rhs(i,1).gt.upmax(i)) rhs(i,1)=upmax(i)-updis(i)*eps
+               if (rhs(i,1).lt.upmin(i)) rhs(i,1)=upmin(i)+updis(i)*eps
+            enddo
+         endif
+         call mxm(rhs(1,1),1,wt,nb,rhstmp(1),nb)
+         call copy(rhs(1,1),rhstmp(1),nb)
+         call copy(rhs(1,2),rhs(1,1),nb)
       endif
 
       if (ifrom(2)) call shift(ut,rhs(0,2),nb+1,5)
