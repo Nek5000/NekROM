@@ -625,6 +625,7 @@ c-----------------------------------------------------------------------
       ifavisc=.false.
       ifdecpl=.false.
       ifsub0=.true.
+      ifcomb=.false.
 
       do i=0,ldimt1
          ifpod(i)=.false.
@@ -658,6 +659,8 @@ c-----------------------------------------------------------------------
       nplay=0
 
       icopt=0
+
+      podrat=0.5
 
       rfilter='STD'
       rbf=0.5
@@ -1389,6 +1392,17 @@ c-----------------------------------------------------------------------
      $         call dump_serial(ut,nb+1,'ops/t0 ',nid)
          endif
          ifield=jfield
+
+         if (ifcomb) then
+            call opsub2(uic,vic,wic,ub,vb,wb)
+            call sub2(tic,tb,n)
+            call pc2b(u,ut,uic,vic,wic,tic,ub,vb,wb,tb)
+            do i=0,nb
+               if (nio.eq.0) write (6,*) 'u&ut',u(i)
+            enddo
+            call opadd2(uic,vic,wic,ub,vb,wb)
+            call add2(tic,tb,n)
+         endif
 
          call reconv(uu,vv,ww,u)
          call recont(tt,ut)

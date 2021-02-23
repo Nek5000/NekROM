@@ -9,8 +9,10 @@ tneubc  = no  # inhomogeneous Neumann BC for temperature
 nplay   = 0   # number of replay modes
 
 [POD]
-type  = l2 # pod-inner product (l2,h10,hlm)
-mode0 = avg # 0th mode of the POD basis (avg=mean(snapshots),state=vx,vy,vz,t)
+type     = l2  # pod-inner product (l2,h10,hlm)
+mode0    = avg # 0th mode of the POD basis (avg=mean(snaps),state=vx,vy,vz,t)
+combined = no  # POD based on combined velocity and thermal Gramian
+ratio    = 0.5 # Gramian ratio (1 -> pure velocity, 0 -> pure thermal)
 
 [QOI]
 freq = 0  # frequency of qoi dump (<1 -> iostep)
