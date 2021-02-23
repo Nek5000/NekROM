@@ -1233,6 +1233,7 @@ c-----------------------------------------------------------------------
       else
          if (nio.eq.0) write (6,*) 'forming a...'
          do j=0,nb
+            if (nio.eq.0) write (6,*) 'seta: ',j,'/',nb
             nio=-1
             do i=0,nb
                if (ifield.eq.1) then
