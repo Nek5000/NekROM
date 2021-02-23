@@ -219,13 +219,15 @@ c-----------------------------------------------------------------------
          call mor_set_params_rea
       endif
 
+      if (nid.eq.0) write (6,*) 'post par rea'
       call mor_show_params
+      if (nid.eq.0) write (6,*) 'post show params'
+
+      call mor_set_params_uni_pre
 
       call mor_init_fields
-c     do k=2,10
-c     call k_mean(k,nsu,nsp,nst,'sample.list ',k)
-c     enddo
-c     call exitt0
+
+      call mor_set_params_uni_post
 
       inquire (file='ops/evec',exist=ifexist)
       if (ifexist) then
@@ -829,10 +831,63 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
       return
       end
 c-----------------------------------------------------------------------
+      subroutine mor_set_params_uni_pre
+
+      ! set parameters universal to .rea and .par before mor_init_fields
+
+      include 'SIZE'
+      include 'INPUT'
+      include 'MOR'
+
+      nfbc=0
+
+      nv=lx1*ly1*lz1*nelv
+
+      do ie=1,nelt
+      do ifc=1,2*ldim
+         if (cbc(ifc,ie,2).eq.'f  ') nfbc=nfbc+1
+      enddo
+      enddo
+
+      nfbc=iglsum(nfbc,1)
+
+      if (nfbc.gt.0) iftflux=.true.
+      if (iftflux) iftneu=.true.
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine mor_set_params_uni_post
+
+      ! set parameters universal to .rea and .par after mor_init_fields
+
+      include 'SIZE'
+      include 'MASS'
+      include 'MOR'
+
+      nv=lx1*ly1*lz1*nelv
+
+      ux=glsc2(ub,bm1,nv)
+      uy=glsc2(vb,bm1,nv)
+      if (ldim.eq.3) then
+         uz=glsc2(wb,bm1,nv)
+      else
+         uz=0.
+      endif
+
+      if (abs(ux).gt.max(abs(uy),abs(uz))) idirf=1
+      if (abs(uy).gt.max(abs(ux),abs(uz))) idirf=2
+      if (abs(uz).gt.max(abs(ux),abs(uy))) idirf=3
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine mor_show_params
 
       include 'SIZE'
       include 'MOR'
+
+      if (nid.eq.0) write (6,*) 'inside mor show params'
 
       if (nio.eq.0) then
          write (6,*) 'mp_nb         ',nb
@@ -979,6 +1034,21 @@ c           if (idc_t.gt.0) call rzero(tb,n)
             call outpost(vwms,wums,uvms,prms,trms,'tmn')
          endif
          ifxyo=iftmp
+
+         if (nio.eq.0) write (6,*) 'pre 0 mean'
+
+         if (ifrom(2).and.iftflux) then
+            call set0mean(tb)
+            do i=1,ns
+               call set0mean(ts0(1,i))
+            enddo
+            call set1dudn(tb)
+            do i=1,ns
+               call set1dudn(ts0(1,i))
+            enddo
+         endif
+
+         if (nio.eq.0) write (6,*) 'post 0 mean'
 
          if (ifsub0) then
             do i=1,ns

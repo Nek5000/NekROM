@@ -240,7 +240,7 @@ c-----------------------------------------------------------------------
       if (ifnd.eq.1) ifctke=i_out.eq.1
 
       call finiparser_getdbl(d_out,'qoi:nu',ifnd)
-      if (ifnd.eq.1) inus=min(max(nint(d_out),0),5)
+      if (ifnd.eq.1) inus=min(max(nint(d_out),0),6)
 
       ! COPT
 
