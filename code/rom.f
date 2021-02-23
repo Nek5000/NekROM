@@ -337,6 +337,10 @@ c-----------------------------------------------------------------------
       include 'MOR'
       include 'TSTEP'
 
+      common /tmpop/ ftmp0(0:lb,0:lb)
+
+      real visc(10)
+
       logical iftmp,ifexist
       real wk(lb+1)
 
@@ -349,6 +353,7 @@ c-----------------------------------------------------------------------
       if (ifrom(1)) then
          ifield=1
          call seta(au,au0,'ops/au ')
+         if (rmode.eq.'AEQ') call setae(aue,'ops/aue ')
          call setb(bu,bu0,'ops/bu ')
          if (rmode.eq.'CP ') then 
             inquire (file='ops/u0',exist=ifexist)
@@ -361,6 +366,7 @@ c-----------------------------------------------------------------------
       if (ifrom(2)) then
          ifield=2
          call seta(at,at0,'ops/at ')
+         if (rmode.eq.'AEQ') call setae(ate,'ops/ate ')
          call setb(bt,bt0,'ops/bt ')
          if (rmode.eq.'CP ') then 
             inquire (file='ops/t0',exist=ifexist)
@@ -372,7 +378,7 @@ c-----------------------------------------------------------------------
          call sets(st0,tb,'ops/ct ')
       endif
 
-      if (rmode.eq.'AEQ') call setfluc(fv_op,ft_op)
+      if (rmode.eq.'AEQ') call setfluc(fv_op,ft_op,'fluc')
 
       if (ifbuoy.and.ifrom(1).and.ifrom(2))
      $   call setbut(buxt0,buyt0,buzt0)
@@ -416,7 +422,7 @@ c-----------------------------------------------------------------------
                call lap2d(a1,ub(1,i))
                call lap2d(a2,vb(1,i))
                if (ldim.eq.3) call lap2d(a3,wb(1,i))
-               call cint(fd1(1+ldim*i),ub(1,i),vb(1,i),wb(1,i))
+               call outpost(a1,a2,a3,a3,tb,'lap')
                call cint(fd3(1+ldim*i),a1,a2,a3)
             enddo
          endif
@@ -994,8 +1000,8 @@ c           if (idc_t.gt.0) call rzero(tb,n)
          iftmp=.false.
          if (ifpod(1)) then
             fname1='uavg.list '
-            call read_fields(uafld,fldtmp,fldtmp,
-     $         nbavg,1,1,tk,fname1,iftmp)
+            call read_fields(uafld,pafld,fldtmp,
+     $         nbavg,nbavg,1,tk,fname1,iftmp)
 
             fname1='urms.list'
             call read_fields(uufld,fldtmp,fldtmp,
@@ -1006,21 +1012,28 @@ c           if (idc_t.gt.0) call rzero(tb,n)
      $         nbavg,1,1,tk,fname1,iftmp)
 
             ifxyo=.true.
+
             do i=1,nbavg
-               call evaldut(flucv(1,1,i),
-     $            uufld(1,1,i),uvfld(1,1,i),uvfld(1,ldim,i),
-     $           uafld(1,1,i),uafld(1,2,i),uafld(1,ldim,i),uafld(1,1,i))
+               call setupvp(upup(1,1,i),
+     $            uufld(1,1,i),uafld(1,1,i),uafld(1,1,i))
+               call setupvp(upup(1,2,i),
+     $            uufld(1,2,i),uafld(1,2,i),uafld(1,2,i))
+               if (ldim.eq.3) call setupvp(upup(1,3,i),
+     $            uufld(1,3,i),uafld(1,3,i),uafld(1,3,i))
 
-               call evaldut(flucv(1,2,i),
-     $            uvfld(1,1,i),uufld(1,2,i),uvfld(1,ldim,i),
-     $           uafld(1,1,i),uafld(1,2,i),uafld(1,ldim,i),uafld(1,2,i))
+               call setupvp(upvp(1,1,i),
+     $            uvfld(1,1,i),uafld(1,1,i),uafld(1,2,i))
+               if (ldim.eq.3) call setupvp(upvp(1,2,i),
+     $            uvfld(1,2,i),uafld(1,2,i),uafld(1,3,i))
+               if (ldim.eq.3) call setupvp(upvp(1,3,i),
+     $            uvfld(1,3,i),uafld(1,3,i),uafld(1,1,i))
 
-               if (ldim.eq.3) call evaldut(flucv(1,3,i),
-     $            uufld(1,1,i),uvfld(1,1,i),uvfld(1,ldim,i),
-     $           uafld(1,1,i),uafld(1,2,i),uafld(1,ldim,i),uafld(1,3,i))
-
-               call outpost(flucv(1,1,i),flucv(1,2,i),flucv(1,ldim,i),
-     $            pr,t,'flc')
+               call divm1(flucv(1,1,i),
+     $            upup(1,1,i),upvp(1,1,i),upvp(1,ldim,i))
+               call divm1(flucv(1,2,i),
+     $            upvp(1,1,i),upup(1,2,i),upvp(1,2,i))
+               call divm1(flucv(1,3,i),
+     $            upvp(1,3,i),upvp(1,2,i),upup(1,3,i))
             enddo
          endif
 
@@ -1034,11 +1047,22 @@ c           if (idc_t.gt.0) call rzero(tb,n)
      $         nbavg,1,1,tk,fname1,iftmp)
 
             do i=1,nbavg
-               call evaldut(fluct(1,i),
-     $            utfld(1,1,i),utfld(1,2,i),utfld(1,ldim,i),
-     $            uafld(1,1,i),uafld(1,2,i),uafld(1,ldim,i),tafld(1,i))
+               call setupvp(uptp(1,1,i),
+     $            utfld(1,1,i),uafld(1,1,i),tafld(1,i))
+               call setupvp(uptp(1,2,i),
+     $            utfld(1,2,i),uafld(1,2,i),tafld(1,i))
+               if (ldim.eq.3) call setupvp(uptp(1,3,i),
+     $            utfld(1,3,i),uafld(1,3,i),tafld(1,i))
+
+               call divm1(fluct(1,i),
+     $            uptp(1,1,i),uptp(1,2,i),uptp(1,ldim,i))
             enddo
          endif
+
+         do i=1,nbavg
+            call setdiff(udfld(1,1,i),tdfld(1,i),uafld(1,1,i),tafld(1,i)
+     $         ,upup(1,1,i),upvp(1,1,i),uptp(1,1,i))
+         enddo
       endif
 
       ifield=jfield

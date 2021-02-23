@@ -232,6 +232,7 @@ c-----------------------------------------------------------------------
       call add3(d2u,uxx,uyy,lx1*ly1*lz1*nelv)
       call dsavg(d2u)
 
+
       return
       end
 c-----------------------------------------------------------------------
@@ -1778,12 +1779,6 @@ c-----------------------------------------------------------------------
       call admcol3(t1,u,t,-1.,n)
       call admcol3(t2,v,t,-1.,n)
       if (ldim.eq.3) call admcol3(t3,w,t,-1.,n)
-
-      call outpost(t1,t2,t3,t1,t2,'edt')
-      call outpost(u,v,w,t1,t2,'edt')
-
-      call divm1(ev,t1,t2,t3)
-      call outpost(ev,v,w,t1,t2,'edt')
 
       return
       end
