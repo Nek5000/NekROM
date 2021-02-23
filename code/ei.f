@@ -288,6 +288,7 @@ c              call outpost(xi_u(1,1,l),wk1,wk2,pr,t,'xia')
                l=l+1
             enddo
             if (ifbuoy) then
+               call exitti('Buoyancy in EI disabled for now...l',1)
                do i=0,nb
                   call opcopy(wk1,wk2,wk3,gx,gy,gz)
                   call opcolv(wk1,wk2,wk3,tb(1,i))
@@ -512,6 +513,8 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       n=lx1*ly1*lz1*nelv
+
+      if (ifbuoy) call exitti('ifbuoy temporarily disabled in EI',1) 
 
       l=1
       call set_betaj
@@ -2200,6 +2203,8 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'inside set_theta_uns'
 
+      if (ifbuoy) call exitti('ifbuoy temporarily disabled in EI',1) 
+
       call rzero(theta_u,lres_u)
       call rzero(theta_t,lres_t)
 
@@ -2340,6 +2345,7 @@ c-----------------------------------------------------------------------
       n=lx1*ly1*lz1*nelv
 
       if (nio.eq.0) write (6,*) 'inside c_rieszrd_uns'
+      if (ifbuoy) call exitti('ifbuoy temporarily disabled in EI',1) 
 
       call nekgsync
 
@@ -3012,6 +3018,7 @@ c-----------------------------------------------------------------------
       character*3 msg
 
       if (nio.eq.0) write (6,*) 'inside resid_buoy'
+      if (ifbuoy) call exitti('ifbuoy temporarily disabled in EI',1) 
 
       n=lx1*ly1*lz1*nelv
 
