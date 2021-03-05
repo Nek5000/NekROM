@@ -634,6 +634,7 @@ c-----------------------------------------------------------------------
       ifdecpl=.false.
       ifsub0=.true.
       ifcomb=.false.
+      ifpb=.true.
 
       do i=0,ldimt1
          ifpod(i)=.false.

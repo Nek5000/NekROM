@@ -58,6 +58,7 @@ c-----------------------------------------------------------------------
             max_tr=ltr
          else if (index(c_out,'AEQ').eq.1) then
             rmode='AEQ'
+            ifpb=.false.
          else
             write (6,*) 'invalid option for general:mode ',c_out
             ierr=ierr+1
@@ -202,7 +203,8 @@ c-----------------------------------------------------------------------
          else if (index(c_out,'HLM').eq.1) then
             ips='HLM'
          else if (index(c_out,'OFF').eq.1) then
-            ips='OFF'
+            ips='L2 '
+            ifpb=.false.
          else
             write (6,*) 'invalid option for pod:type ',c_out
             ierr=ierr+1
@@ -448,6 +450,8 @@ c-----------------------------------------------------------------------
       call bcast(ifforce,lsize)
       call bcast(ifsource,lsize)
       call bcast(ifbuoy,lsize)
+
+      call bcast(ifpb,lsize)
 
       return
       END

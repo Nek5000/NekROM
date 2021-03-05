@@ -10,11 +10,8 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       real u0(lt,3)
-      logical ifpb
 
       if (nio.eq.0) write (6,*) 'inside setbases'
-
-      ifpb=rmode.ne.'AEQ'.and.ips.ne.'OFF'
 
       call nekgsync
       bas_time=dnekclock()
