@@ -724,26 +724,27 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine set_xi_c(xi_c,cb,sb,mdim,nxi)
+      subroutine set_xi_c(xi_c,cxb,cyb,czb,sb,mdim,mxi,nxi)
 
       ! set Riesz representation corresponding to advection term
 
-      ! xi_c := output Riesz representations
-      ! cb   := input advection fields
-      ! sb   := input fields
-      ! mdim := # of components of each field in sb
-      ! nxi  := # of fields in sb
+      ! xi_c        := output Riesz representations
+      ! cxb,cyb,czb := input advection field components
+      ! sb          := input fields
+      ! mdim        := # of components of each field in sb
+      ! mxi         := # of fields in cb
+      ! nxi         := # of fields in sb
 
       include 'SIZE'
 
       parameter (lt=lx1*ly1*lz1*lelt)
-      real xi_c(lt,mdim,nxi,nxi),cb(lt,ldim,nxi),sb(lt,mdim,nxi)
+      real xi_c(lt,mdim,nxi,mxi),cxb(lt,mxi),cyb(lt,mxi),czb(lt,mxi),
+     $   sb(lt,mdim,nxi)
 
-      do jx=1,nxi
+      do jx=1,mxi
       do ix=1,nxi
       do idim=1,mdim
-         call binvc(
-     $     xi_c(1,idim,ix,jx),cb(1,1,jx),cb(1,2,jx),cb(1,ldim,jx),
+         call binvc(xi_c(1,idim,ix,jx),cxb(1,jx),cyb(1,jx),czb(1,jx),
      $     sb(1,idim,ix),.false.,.false.)
       enddo
       enddo
