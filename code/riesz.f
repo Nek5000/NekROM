@@ -666,3 +666,137 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine set_xi_a(xi_a,sb,dfld,mdim,nxi)
+
+      ! set Riesz representation corresponding to diffusion term
+
+      ! xi_a := output Riesz representations
+      ! sb   := input fields
+      ! dfld := diffusivity fields
+      ! mdim := # of components of each field in sb
+      ! nxi  := # of fields in sb
+
+      include 'SIZE'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      real xi_a(lt,mdim,nxi),sb(lt,mdim,nxi),dfld(lt,mdim)
+
+      jfld=1
+      if (mdim.eq.1) jfld=2
+
+      do ix=1,nxi
+      do idim=1,mdim
+         call binva(
+     $      xi_a(1,idim,ix),sb(1,idim,ix),dfld(1,idim),jfld,idim)
+      enddo
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine set_xi_b(xi_b,sb,mdim,nxi)
+
+      ! set Riesz representation corresponding to mass term
+
+      ! xi_b := output Riesz representations
+      ! sb   := input fields
+      ! mdim := # of components of each field in sb
+      ! nxi  := # of fields in sb
+
+      include 'SIZE'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      real xi_b(lt,mdim,nxi),sb(lt,mdim,nxi)
+
+      jfld=1
+      if (mdim.eq.1) jfld=2
+
+      nel=nelv
+      if (jfld.eq.2) nel=nelt
+
+      do ix=1,nxi
+      do idim=1,mdim
+         call copy(xi_b(1,idim,ix),sb(1,idim,ix),lx1*ly1*lz1*nel)
+      enddo
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine set_xi_c(xi_c,cb,sb,mdim,nxi)
+
+      ! set Riesz representation corresponding to advection term
+
+      ! xi_c := output Riesz representations
+      ! cb   := input advection fields
+      ! sb   := input fields
+      ! mdim := # of components of each field in sb
+      ! nxi  := # of fields in sb
+
+      include 'SIZE'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      real xi_c(lt,mdim,nxi,nxi),cb(lt,ldim,nxi),sb(lt,mdim,nxi)
+
+      do jx=1,nxi
+      do ix=1,nxi
+      do idim=1,mdim
+         call binvc(
+     $     xi_c(1,idim,ix,jx),cb(1,1,jx),cb(1,2,jx),cb(1,ldim,jx),
+     $     sb(1,idim,ix),.false.,.false.)
+      enddo
+      enddo
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine binva(bia,s,dfld,jfld,idir)
+
+      ! apply local B^{-1} A to a scalar field
+
+      ! s    := input scalar field
+      ! dfld := diffusivity field
+      ! jfld := field # of s
+      ! idir := direction of s
+      ! bia  := B^{-1} A s
+
+      include 'SIZE'
+      include 'MASS'
+      include 'MOR'
+
+      real bia(1),s(1),dfld(1)
+
+      nel=nelt
+      if (jfield.eq.1) nel=nelv
+
+      call axhelm(bia,s,dfld,zeros,jfld,idir)
+      call invcol2(bia,bm1,lx1*ly1*lz1*nel)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine binvc(bic,ux,uy,uz,s,ifcf,ifuf)
+      
+      ! apply local B^{-1} C to a scalar field
+
+      ! ux,uy,uz := input vector field
+      ! s        := input scalar field
+      ! ifcf     := true when ux,uy,uz is on the fine mesh
+      ! ifuf     := true when s is on the fine mesh
+      ! bic      := B^{-1} C(ux,uy,uz) s
+
+      include 'SIZE'
+      include 'MASS'
+      include 'MOR'
+
+      real bic(1),ux(1),uy(1),uz(1),s(1)
+      logical ifcf,ifuf
+
+      call convect_new(bic,s,ifuf,ux,uy,uz,ifcf)
+      call invcol2(bic,bm1,lx1*ly1*lz1*nelv)
+      call rzero(bic(lx1*ly1*lz1*nelv+1),lx1*ly1*lz1*(nelt-nelv))
+
+      return
+      end
+c-----------------------------------------------------------------------
