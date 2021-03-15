@@ -16,13 +16,9 @@ c-----------------------------------------------------------------------
         call exitti('(set_xi_poisson) ifield.eq.1 not supported...$',nb)
       else
          if (ips.eq.'L2 ') then
-            do i=1,nb
-               call axhelm(xi(1,l),tb(1,i),ones,zeros,1,1)
-               call binv1(xi(1,l))
-               l=l+1
-            enddo
-            call copy(xi(1,l),qq,n)
-            call binv1(xi(1,l))
+            call set_xi_a(xi(1,l),tb(1,1),ones,1,nb)
+            l=l+nb
+            call set_xi_b(xi(1,l),qq,1,1)
             l=l+1
             do i=1,nb
                call set_gradn(wk,tb(1,i))
@@ -53,19 +49,11 @@ c-----------------------------------------------------------------------
          call exitti('(set_xi_heat) ifield.eq.1 not supported...$',nb)
       else
          if (ips.eq.'L2 ') then
-            do i=0,nb
-               call copy(xi(1,l),tb(1,i),n)
-               call col2(xi(1,l),bm1,n)
-               call binv1(xi(1,l))
-               l=l+1
-            enddo
-            do i=0,nb
-               call axhelm(xi(1,l),tb(1,i),ones,zeros,1,1)
-               call binv1(xi(1,l))
-               l=l+1
-            enddo
-            call copy(xi(1,l),qq,n)
-            call binv1(xi(1,l))
+            call set_xi_b(xi(1,l),tb,1,nb+1)
+            l=l+nb+1
+            call set_xi_a(xi(1,l),tb,ones,1,nb+1)
+            l=l+nb+1
+            call set_xi_b(xi(1,l),qq,1,1)
             l=l+1
          else
             call exitti('(set_xi_heat) ips != L2 not supported...$',ips)
@@ -94,38 +82,29 @@ c-----------------------------------------------------------------------
          call exitti('(set_xi_ad) ifield.eq.1 not supported...$',nb)
       else
          if (ips.eq.'L2 ') then
-            do i=0,nb
-               call copy(xi(1,l),tb(1,i),n)
-               l=l+1
-            enddo
-            call push_op(vx,vy,vz)
+            call set_xi_b(xi(1,l),tb,1,nb+1)
+            l=l+nb+1
             if (ifrom(1)) then
-               do j=0,nb
-                  call opcopy(vx,vy,vz,ub(1,j),vb(1,j),wb(1,j))
-                  do i=0,nb
-                     if (ifaxis) then
+               if (ifaxis) then
+                  call push_op(vx,vy,vz)
+                  do j=0,nb
+                     call opcopy(vx,vy,vz,ub(1,j),vb(1,j),wb(1,j))
+                     do i=0,nb
                         call conv1d(xi(1,l),tb(1,i))
-                     else
-                        call convect_new(xi(1,l),tb(1,i),.false.,
-     $                                  ub(1,j),vb(1,j),wb(1,j),.false.)
-                        call invcol2(wk1,bm1,n)  ! local mass inverse
-                     endif
-                     l=l+1
+                        l=l+1
+                     enddo
                   enddo
-               enddo
+                  call pop_op(vx,vy,vz)
+               else
+                  call set_xi_c(xi(1,l),ub,vb,wb,tb,1,nb+1,nb+1)
+                  l=l+(nb+1)**2
+               endif
             else
-               call opcopy(vx,vy,vz,ub,vb,wb)
-               do i=0,nb
-                  call convop(xi(1,l),tb(1,i))
-                  l=l+1
-               enddo
+               call set_xi_c(xi(1,l),ub,vb,wb,tb,1,1,nb+1)
+               l=l+nb+1
             endif
-            call pop_op(vx,vy,vz)
-            do i=0,nb
-               call axhelm(xi(1,l),tb(1,i),ones,zeros,1,1)
-               call binv1(xi(1,l))
-               l=l+1
-            enddo
+            call set_xi_a(xi(1,l),tb,ones,1,nb+1)
+            l=l+nb+1
          else
             call exitti('(set_xi_ad) ips != L2 not supported...$',ips)
          endif
