@@ -1254,7 +1254,7 @@ c    $               h10sip(eh_t,eh_t)
       return
       end
 c-----------------------------------------------------------------------
-      subroutine steady_stoke_solve(ehu,ehv,ehw,ehp,rhs1,rhs2,rhs3)
+      subroutine steady_stokes_solve(ehu,ehv,ehw,ehp,rhs1,rhs2,rhs3)
 
       include 'SIZE'
       include 'TOTAL'
@@ -1278,7 +1278,7 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelv
 
-      if (nio.eq.0) write (6,*) 'inside steady_stoke solver'
+      if (nio.eq.0) write (6,*) 'inside steady_stokes solver'
 
       IFTRAN = .FALSE.
       IFADVC(IFIELD) = .FALSE.
@@ -1336,7 +1336,7 @@ c     write(6,*)glmax(div_check,ntot1),glmin(div_check,ntot1)
       ! set vdiff back to original value
       call copy(vdiff(1,1,1,1,ifield),tmp,ntot1)
 
-      if (nio.eq.0) write (6,*) 'exiting steady_stoke solver'
+      if (nio.eq.0) write (6,*) 'exiting steady_stokes solver'
 
       return
       end
@@ -1387,7 +1387,7 @@ c        enddo
          ifield=1
          tolhv=1e-8
          tolht(2)=1e-8
-         call steady_stoke_solve(eh_u(1,1),eh_u(1,2),
+         call steady_stokes_solve(eh_u(1,1),eh_u(1,2),
      $       eh_u(1,ldim),work,res_u(1,1),
      $       res_u(1,2),res_u(1,ldim))
 
@@ -1904,7 +1904,7 @@ c     call set_theta_uns
       ifield=1
       tolhv=1e-8
       tolht(2)=1e-8
-      call steady_stoke_solve(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
+      call steady_stokes_solve(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
      $     work,res_u(1,1),res_u(1,2),res_u(1,ldim))
       if (nid.eq.0) write(6,*)'riesz_u completed'
 

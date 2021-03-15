@@ -224,9 +224,10 @@ c                 call outpost(xi_u(1,1,l),wk1,wk2,pr,t,'xig')
 c-----------------------------------------------------------------------
       subroutine set_rr_ns
 
-c     Compute the nondivergence free riesz representators for steady 
-c     Boussinesq incompressible NS 
+c     Compute the non divergence-free Riesz representations for steady
+c     Boussinesq incompressible NSE
 c     (quadratically nonlinear elliptic problem)
+
 c     L2 might not be correct......
 c     Currently we consider H1 norm
 c     Might be able to use H1 semi-norm depending on the 
@@ -347,11 +348,11 @@ c     l1=l1+1
       return
       end
 c-----------------------------------------------------------------------
-      subroutine set_sNS_divfrr
+      subroutine set_sns_divfrr
 
-c     Compute the divergence free
-c     riesz representators for steady Boussinesq 
-c     incompressible NS (quadratically nonlinear elliptic problem)
+c     Compute the divergence-free
+c     Riesz representations for steady Boussinesq
+c     incompressible NSE (quadratically nonlinear elliptic problem)
 
       include 'SIZE'
       include 'TOTAL'
@@ -366,7 +367,7 @@ c     incompressible NS (quadratically nonlinear elliptic problem)
 
       n=lx1*ly1*lz1*nelv
 
-      if (nio.eq.0) write (6,*) 'inside set_sNS_divfrr'
+      if (nio.eq.0) write (6,*) 'inside set_sns_divfrr'
 
       call rone(ones,n)
       call rzero(zeros,n)
@@ -377,7 +378,7 @@ c     incompressible NS (quadratically nonlinear elliptic problem)
          ifield=1
          tolhv=1e-8
          tolht(2)=1e-8
-         call steady_stoke_solve(xi_u(1,1,l1),xi_u(1,2,l1),
+         call steady_stokes_solve(xi_u(1,1,l1),xi_u(1,2,l1),
      $       xi_u(1,ldim,l1),work,riesz_ru(1,1,l1),    
      $       riesz_ru(1,2,l1),riesz_ru(1,ldim,l1))
          if (nid.eq.0) write(6,*)'riesz_u',l1,'completed'
@@ -402,7 +403,7 @@ c     incompressible NS (quadratically nonlinear elliptic problem)
          ifield=1
          tolhv=1e-8
          tolht(2)=1e-8
-         call steady_stoke_solve(xi_u(1,1,l1),xi_u(1,2,l1),
+         call steady_stokes_solve(xi_u(1,1,l1),xi_u(1,2,l1),
      $       xi_u(1,ldim,l1),work,riesz_ru(1,1,l1),    
      $       riesz_ru(1,2,l1),riesz_ru(1,ldim,l1))
          if (nid.eq.0) write(6,*)'riesz_u',l1,'completed'
@@ -414,7 +415,7 @@ c     incompressible NS (quadratically nonlinear elliptic problem)
          ifield=1
          tolhv=1e-8
          tolht(2)=1e-8
-         call steady_stoke_solve(xi_u(1,1,l1),xi_u(1,2,l1),
+         call steady_stokes_solve(xi_u(1,1,l1),xi_u(1,2,l1),
      $       xi_u(1,ldim,l1),work,riesz_ru(1,1,l1),    
      $       riesz_ru(1,2,l1),riesz_ru(1,ldim,l1))
          if (nid.eq.0) write(6,*)'riesz_u',l1,'completed'
@@ -427,7 +428,7 @@ c     incompressible NS (quadratically nonlinear elliptic problem)
             ifield=1
             tolhv=1e-8
             tolht(2)=1e-8
-            call steady_stoke_solve(xi_u(1,1,l1),xi_u(1,2,l1),
+            call steady_stokes_solve(xi_u(1,1,l1),xi_u(1,2,l1),
      $          xi_u(1,ldim,l1),work,riesz_ru(1,1,l1), 
      $          riesz_ru(1,2,l1),riesz_ru(1,ldim,l1))
             if (nid.eq.0) write(6,*)'riesz_u',l1,'completed'
@@ -464,16 +465,16 @@ c     if (nid.eq.0) write(6,*)'riesz_u',l1,'completed'
          call exitti('increase nres_t$',l2-1)
       endif
 
-      if (nio.eq.0) write (6,*) 'exiting set_sNS_divfrr'
+      if (nio.eq.0) write (6,*) 'exiting set_sns_divfrr'
 
       return
       end
 c-----------------------------------------------------------------------
-      subroutine set_uNS_divfrr
+      subroutine set_uns_divfrr
 
 c     Compute the divergence free
-c     riesz representators for unsteady Boussinesq 
-c     incompressible NS (quadratically nonlinear elliptic problem)
+c     Riesz representators for unsteady Boussinesq
+c     incompressible NSE (quadratically nonlinear elliptic problem)
 
       include 'SIZE'
       include 'TOTAL'
@@ -488,7 +489,7 @@ c     incompressible NS (quadratically nonlinear elliptic problem)
 
       n=lx1*ly1*lz1*nelv
 
-      if (nio.eq.0) write (6,*) 'inside set_uNS_divfrr'
+      if (nio.eq.0) write (6,*) 'inside set_uns_divfrr'
 
       call nekgsync
       srru_start=dnekclock()
@@ -503,7 +504,7 @@ c     incompressible NS (quadratically nonlinear elliptic problem)
          tolhv=1e-8
          tolht(2)=1e-8
 c        nmxh=1000
-         call steady_stoke_solve(xi_u(1,1,l1),xi_u(1,2,l1),
+         call steady_stokes_solve(xi_u(1,1,l1),xi_u(1,2,l1),
      $       xi_u(1,ldim,l1),work,riesz_ru(1,1,l1),    
      $       riesz_ru(1,2,l1),riesz_ru(1,ldim,l1))
          if (nid.eq.0) write(6,*)'riesz_u',l1,'completed'
@@ -528,7 +529,7 @@ c        nmxh=1000
          tolhv=1e-8
          tolht(2)=1e-8
 c        nmxh=1000
-         call steady_stoke_solve(xi_u(1,1,l1),xi_u(1,2,l1),
+         call steady_stokes_solve(xi_u(1,1,l1),xi_u(1,2,l1),
      $       xi_u(1,ldim,l1),work,riesz_ru(1,1,l1),    
      $       riesz_ru(1,2,l1),riesz_ru(1,ldim,l1))
          if (nid.eq.0) write(6,*)'riesz_u',l1,'completed'
@@ -552,7 +553,7 @@ c        nmxh=1000
          ifield=1
          tolhv=1e-8
          tolht(2)=1e-8
-         call steady_stoke_solve(xi_u(1,1,l1),xi_u(1,2,l1),
+         call steady_stokes_solve(xi_u(1,1,l1),xi_u(1,2,l1),
      $       xi_u(1,ldim,l1),work,riesz_ru(1,1,l1),    
      $       riesz_ru(1,2,l1),riesz_ru(1,ldim,l1))
          if (nid.eq.0) write(6,*)'riesz_u',l1,'completed'
@@ -564,7 +565,7 @@ c        nmxh=1000
          ifield=1
          tolhv=1e-8
          tolht(2)=1e-8
-         call steady_stoke_solve(xi_u(1,1,l1),xi_u(1,2,l1),
+         call steady_stokes_solve(xi_u(1,1,l1),xi_u(1,2,l1),
      $       xi_u(1,ldim,l1),work,riesz_ru(1,1,l1),    
      $       riesz_ru(1,2,l1),riesz_ru(1,ldim,l1))
          if (nid.eq.0) write(6,*)'riesz_u',l1,'completed'
@@ -577,7 +578,7 @@ c        nmxh=1000
             ifield=1
             tolhv=1e-8
             tolht(2)=1e-8
-            call steady_stoke_solve(xi_u(1,1,l1),xi_u(1,2,l1),
+            call steady_stokes_solve(xi_u(1,1,l1),xi_u(1,2,l1),
      $          xi_u(1,ldim,l1),work,riesz_ru(1,1,l1), 
      $          riesz_ru(1,2,l1),riesz_ru(1,ldim,l1))
             if (nid.eq.0) write(6,*)'riesz_u',l1,'completed'
@@ -608,7 +609,7 @@ c        nmxh=1000
       endif
 
       call nekgsync
-      if (nio.eq.0) write (6,*) 'set_uNS_divfrr_time:',
+      if (nio.eq.0) write (6,*) 'set_uns_divfrr_time:',
      $             dnekclock()-srru_start
 
       return
@@ -616,7 +617,7 @@ c        nmxh=1000
 c-----------------------------------------------------------------------
       subroutine set_riesz_rep
 
-      ! compute the riesz representation (only one)
+      ! compute the Riesz representation (only one)
       ! solve one stoke problem and one poisson problem
 
       include 'SIZE'
@@ -640,7 +641,7 @@ c-----------------------------------------------------------------------
          ifield=1
          tolhv=1e-8
 
-         call steady_stoke_solve(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
+         call steady_stokes_solve(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
      $            work,res_u(1,1),res_u(1,2),res_u(1,ldim))
       endif
 
