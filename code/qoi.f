@@ -962,22 +962,20 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'TOTAL'
 
-      real fi(n,mdim),x(n),y(n),z(n),f(lx1,ly1,lz1,lelt,mdim)
+      real fi(n,mdim),f(lx1,ly1,lz1,lelt,mdim),x(n),y(n),z(n)
 
-      integer intp_h
-      save    intp_h
-      data    intp_h /0/
+      integer ih
+      save    ih
+      data    ih /0/
 
       common /rwk_intp/ rwk(INTP_NMAX,ldim+1)
       common /iwk_intp/ iwk(INTP_NMAX,3)
 
-      if (n.gt.INTP_NMAX) call exitti ('n > INTP_NMAX in intpf!$',n)
+      if (n.gt.INTP_NMAX) call exitti ('n > INTP_NMAX in gfldi!$',n)
 
       if (intp_h.eq.0) call interp_setup(intp_h,0.0,0,nelt)
 
-      ! interpolate
-      call interp_nfld(fi,f,mdim,x,y,z,n,iwk,rwk,
-     $   INTP_NMAX,.true.,intp_h)
+      call interp_nfld(fi,f,mdim,x,y,z,n,iwk,rwk,INTP_NMAX,.true.,ih)
 
       return
       end
@@ -999,12 +997,7 @@ c-----------------------------------------------------------------------
 
       common /rwk_intp_pts/ pts(ldim*INTP_NMAX)
 
-      if (n.gt.INTP_NMAX) call exitti ('n > INTP_NMAX in interp_t!$',n)
-
-      if (nelgt.ne.nelgv) call exitti
-     $   ('nelgt.ne.nelgv not yet supported in interp_t!$',nelgv)
-
-      do i=1,n ! ? not moving -> save?
+      do i=1,n
          pts(i)     = xyz(1,i)
          pts(i + n) = xyz(2,i)
          if (ldim.eq.3) pts(i + n*2) = xyz(3,i)
@@ -1030,14 +1023,9 @@ c-----------------------------------------------------------------------
       real vi(n,ldim),xyz(ldim,n)
       real v(lx1,ly1,lz1,lelt,ldim)
 
-      common /rwk_intp_t/ pts(ldim*INTP_NMAX)
+      common /rwk_intp_pts/ pts(ldim*INTP_NMAX)
 
-      if (n.gt.INTP_NMAX) call exitti ('n > INTP_NMAX in interp_t!$',n)
-
-      if (nelgt.ne.nelgv) call exitti
-     $   ('nelgt.ne.nelgv not yet supported in interp_t!$',nelgv)
-
-      do i=1,n ! ? not moving -> save?
+      do i=1,n
          pts(i)     = xyz(1,i)
          pts(i + n) = xyz(2,i)
          if (ldim.eq.3) pts(i + n*2) = xyz(3,i)
