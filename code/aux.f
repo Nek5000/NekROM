@@ -2430,3 +2430,39 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine splitvec(x,y,z,xyz,ndim,n)
+
+      ! split vector list into component lists
+
+      ! <x,y,z> := vector component lists
+      ! xyz     := vector lies
+
+      real x(n),y(n),z(n),xyz(ndim,n)
+
+      do i=1,n
+         x(i) = xyz(1,i)
+         y(i) = xyz(2,i)
+         if (ndim.eq.3) z(i) = xyz(3,i)
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine combvec(xyz,x,y,z,ndim,n)
+
+      ! combine vector component lists into vector list
+
+      ! xyz     := vector lies
+      ! <x,y,z> := vector component lists
+
+      real xyz(ndim,n),x(n),y(n),z(n)
+
+      do i=1,n
+         xyz(1,i) = x(i)
+         xyz(2,i) = y(i)
+         if (ndim.eq.3) xyz(3,i) = z(i)
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
