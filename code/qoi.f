@@ -990,20 +990,12 @@ c-----------------------------------------------------------------------
       ! n    := number of interpolation points
 
       include 'SIZE'
-      include 'TOTAL'
 
-      real si(n),xyz(ldim,n)
-      real s(lx1,ly1,lz1,lelt)
+      common /rwk_intp_pts/ x(INTP_NMAX),y(INTP_NMAX),z(INTP_NMAX)
+      real si(n),s(lx1,ly1,lz1,lelt),xyz(ldim,n)
 
-      common /rwk_intp_pts/ pts(ldim*INTP_NMAX)
-
-      do i=1,n
-         pts(i)     = xyz(1,i)
-         pts(i + n) = xyz(2,i)
-         if (ldim.eq.3) pts(i + n*2) = xyz(3,i)
-      enddo
-
-      call gfldi(si,s,pts(1),pts(1+n),pts(1+2*n),n,1)
+      call splitvec(x,y,z,xyz,ldim,n)
+      call gfldi(si,s,x,y,z,n,1)
 
       return
       end
@@ -1018,20 +1010,12 @@ c-----------------------------------------------------------------------
       ! n    := number of interpolation points
 
       include 'SIZE'
-      include 'TOTAL'
 
-      real vi(n,ldim),xyz(ldim,n)
-      real v(lx1,ly1,lz1,lelt,ldim)
+      common /rwk_intp_pts/ x(INTP_NMAX),y(INTP_NMAX),z(INTP_NMAX)
+      real vi(n,ldim),v(lx1,ly1,lz1,lelt,ldim),xyz(ldim,n)
 
-      common /rwk_intp_pts/ pts(ldim*INTP_NMAX)
-
-      do i=1,n
-         pts(i)     = xyz(1,i)
-         pts(i + n) = xyz(2,i)
-         if (ldim.eq.3) pts(i + n*2) = xyz(3,i)
-      enddo
-
-      call gfldi(vi,v,pts(1),pts(1+n),pts(1+2*n),n,ldim)
+      call splitvec(x,y,z,xyz,ldim,n)
+      call gfldi(vi,v,x,y,z,n,ldim)
 
       return
       end
