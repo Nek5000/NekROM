@@ -980,14 +980,14 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine interp_s(si,xyz,n,s)
+      subroutine interp_s(si,s,xyz,n)
 
       ! scalar field interpolation
 
       ! si   := interpolated field
+      ! s    := original scalar field
       ! xyz  := interpolation points
       ! n    := number of interpolation points
-      ! s    := original scalar field
 
       include 'SIZE'
       include 'TOTAL'
@@ -1008,14 +1008,14 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine interp_v(vi,xyz,n,v)
+      subroutine interp_v(vi,v,xyz,n)
 
       ! vector field interpolation
 
       ! vi   := interpolated field
+      ! v    := original vector field
       ! xyz  := interpolation points
       ! n    := number of interpolation points
-      ! v    := original vector field
 
       include 'SIZE'
       include 'TOTAL'
