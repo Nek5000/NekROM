@@ -4,7 +4,7 @@ c     Note: Keys have to be in capital letters
 c
       integer MORDICT_NKEYS
 
-      parameter (MORDICT_NKEYS = 45)
+      parameter (MORDICT_NKEYS = 46)
 
       character*132 mordictkey(MORDICT_NKEYS)
       data
@@ -46,10 +46,11 @@ c
      &  mordictkey(36) / 'FILTER' /
      &  mordictkey(37) / 'FILTER:LOCATION' /
      &  mordictkey(38) / 'FILTER:TYPE' /
-     &  mordictkey(39) / 'FILTER:RADIUS' /
-     &  mordictkey(40) / 'BUOYANCY' /
-     &  mordictkey(41) / 'BUOYANCY:MAGNITUDE' /
-     &  mordictkey(42) / 'BUOYANCY:ANGLE' /
-     &  mordictkey(43) / 'BUOYANCY:GX' /
-     &  mordictkey(44) / 'BUOYANCY:GY' /
-     &  mordictkey(45) / 'BUOYANCY:GZ' /
+     &  mordictkey(39) / 'FILTER:MODES' /
+     &  mordictkey(40) / 'FILTER:RADIUS' /
+     &  mordictkey(41) / 'BUOYANCY' /
+     &  mordictkey(42) / 'BUOYANCY:MAGNITUDE' /
+     &  mordictkey(43) / 'BUOYANCY:ANGLE' /
+     &  mordictkey(44) / 'BUOYANCY:GX' /
+     &  mordictkey(45) / 'BUOYANCY:GY' /
+     &  mordictkey(46) / 'BUOYANCY:GZ' /
