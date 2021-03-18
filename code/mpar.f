@@ -65,16 +65,6 @@ c-----------------------------------------------------------------------
          endif
       endif
 
-      if (rmode.eq.'ON '.or.rmode.eq.'ONB'.or.rmode.eq.'CP ') then
-         open (unit=10,file='ops/ips')
-         read (10,*) chartmp
-         close (unit=10)
-         if (chartmp.ne.ips) then
-            write (6,*) 'online ips does not match offline ips',nb
-            ierr=ierr+1
-         endif
-      endif
-
       ifrecon=rmode.ne.'ON '.and.rmode.ne.'CP '
 
       call finiparser_getstring(c_out,'general:field',ifnd)
@@ -376,6 +366,16 @@ c-----------------------------------------------------------------------
          mb=rtmp1(1,1)
          if (mb.lt.nb) then
             write (6,*) 'mb less than nb... ',mb
+            ierr=ierr+1
+         endif
+      endif
+
+      if (rmode.eq.'ON '.or.rmode.eq.'ONB'.or.rmode.eq.'CP ') then
+         open (unit=10,file='ops/ips')
+         read (10,*) chartmp
+         close (unit=10)
+         if (chartmp.ne.ips) then
+            write (6,*) 'online ips does not match offline ips',nb
             ierr=ierr+1
          endif
       endif
