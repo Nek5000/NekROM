@@ -234,6 +234,9 @@ c-----------------------------------------------------------------------
       call finiparser_getdbl(d_out,'qoi:nu',ifnd)
       if (ifnd.eq.1) inus=min(max(nint(d_out),0),6)
 
+      call finiparser_getdbl(d_out,'qoi:nintp',ifnd)
+      if (ifnd.eq.1) nintp=nint(d_out)
+
       ! COPT
 
       call finiparser_getstring(c_out,'copt:mode',ifnd)
@@ -413,6 +416,7 @@ c-----------------------------------------------------------------------
       call bcast(barr_func,isize)
       call bcast(ubarrseq,isize)
       call bcast(tbarrseq,isize)
+      call bcast(nintp,isize)
 
       ! reals
 

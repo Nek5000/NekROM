@@ -17,6 +17,8 @@
       parameter (lres_u=1) ! size of residual storage for vel
       parameter (lres_t=1) ! size of residual storage for temp
 
+      parameter (lintp=1) ! max number of interpolation points
+
       ! Auxiliary
 
       parameter (lsu=(lcs-1)*lmu+1) ! size of velocity snapshots allocation

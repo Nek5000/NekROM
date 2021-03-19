@@ -430,6 +430,18 @@ c-----------------------------------------------------------------------
          endif
       endif
 
+      if (nintp.gt.0) then
+         m=0
+         if (nid.eq.0) m=nintp
+         do i=0,nb
+            call gfldi(tbintp(1+nintp*i),tb(1,i),xintp,yintp,zintp,m,1)
+         enddo
+         call dump_serial(xintp,nintp*(nb+1),'qoi/xintp',nid)
+         call dump_serial(yintp,nintp*(nb+1),'qoi/yintp',nid)
+         call dump_serial(zintp,nintp*(nb+1),'qoi/zintp',nid)
+         call dump_serial(tbintp,nintp*(nb+1),'qoi/tintp',nid)
+      endif
+
       if (nio.eq.0) write (6,*) 'end setup for qoi'
 
       return
@@ -678,6 +690,8 @@ c-----------------------------------------------------------------------
       gx=0.
       gy=0.
       gz=0.
+
+      nintp=0
 
       if (nio.eq.0) write (6,*) 'exiting mor_init_params'
 
