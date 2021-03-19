@@ -973,7 +973,7 @@ c-----------------------------------------------------------------------
 
       if (n.gt.INTP_NMAX) call exitti ('n > INTP_NMAX in gfldi!$',n)
 
-      if (intp_h.eq.0) call interp_setup(intp_h,0.0,0,nelt)
+      if (ih.eq.0) call interp_setup(ih,0.0,0,nelt)
 
       call interp_nfld(fi,f,mdim,x,y,z,n,iwk,rwk,INTP_NMAX,.true.,ih)
 
