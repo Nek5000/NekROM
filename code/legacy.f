@@ -378,3 +378,9 @@ c     This routine reads files specificed in fname
       return
       end
 c-----------------------------------------------------------------------
+      subroutine interp_t(scalar,xyz,n,s)
+      real scalar(1),xyz(1),s(1)
+      call interp_s(scalar,s,xyz,n)
+      return
+      end
+c-----------------------------------------------------------------------

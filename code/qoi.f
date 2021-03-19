@@ -949,55 +949,73 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine interp_t(scalar,xyz,n,s)
-c
-c     evaluate scalar for list of points xyz
-c
+      subroutine gfldi(fi,f,x,y,z,n,mdim)
+
+      ! generic field interpolation
+
+      ! fi      := interpolated field
+      ! f       := original field
+      ! <x,y,z> := interpolation points
+      ! n       := number of interpolation points
+      ! mdim    := dimension of f
+
       include 'SIZE'
       include 'TOTAL'
 
-      real scalar(n),xyz(ldim,n)
-      real s(lx1,ly1,lz1,lelt)
+      real fi(n,mdim),f(lx1,ly1,lz1,lelt,mdim),x(n),y(n),z(n)
 
-      real    rwk(INTP_NMAX,ldim+1) ! r, s, t, dist2
-      integer iwk(INTP_NMAX,3)      ! code, proc, el
-      save    rwk, iwk
+      integer ih
+      save    ih
+      data    ih /0/
 
-      integer intp_h
-      save    intp_h
+      common /rwk_intp/ rwk(INTP_NMAX,ldim+1)
+      common /iwk_intp/ iwk(INTP_NMAX,3)
 
-      common /rwk_intp/ 
-     $       fwrk(lx1*ly1*lz1*lelt,ldim),
-     $       fpts(ldim*INTP_NMAX),
-     $       pts(ldim*INTP_NMAX)
+      if (n.gt.INTP_NMAX) call exitti ('n > INTP_NMAX in gfldi!$',n)
 
-      integer icalld,e
-      save    icalld
-      data    icalld /0/
+      if (ih.eq.0) call interp_setup(ih,0.0,0,nelt)
 
-      nxyz  = nx1*ny1*nz1
-      ntot  = nxyz*nelt
+      call interp_nfld(fi,f,mdim,x,y,z,n,iwk,rwk,INTP_NMAX,.true.,ih)
 
-      if (n.gt.INTP_NMAX) call exitti ('n > INTP_NMAX in interp_v!$',n)
-      
-      if (nelgt.ne.nelgv) call exitti
-     $   ('nelgt.ne.nelgv not yet supported in interp_v!$',nelgv)
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine interp_s(si,s,xyz,n)
 
-      do i=1,n ! ? not moving -> save?
-         pts(i)     = xyz(1,i)
-         pts(i + n) = xyz(2,i)
-         if (if3d) pts(i + n*2) = xyz(3,i)
-      enddo
+      ! scalar field interpolation
 
-      if (icalld.eq.0) then
-        icalld = 1
-        call interp_setup(intp_h,0.0,0,nelt)
-      endif
+      ! si   := interpolated field
+      ! s    := original scalar field
+      ! xyz  := interpolation points
+      ! n    := number of interpolation points
 
-      ! interpolate
-      call interp_nfld(scalar,s,1,pts(1),pts(1+n),pts(2*n+1),
-     $                 n,iwk,rwk,INTP_NMAX,.true.,intp_h)
+      include 'SIZE'
 
+      common /rwk_intp_pts/ x(INTP_NMAX),y(INTP_NMAX),z(INTP_NMAX)
+      real si(n),s(lx1,ly1,lz1,lelt),xyz(ldim,n)
+
+      call splitvec(x,y,z,xyz,ldim,n)
+      call gfldi(si,s,x,y,z,n,1)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine interp_v(vi,v,xyz,n)
+
+      ! vector field interpolation
+
+      ! vi   := interpolated field
+      ! v    := original vector field
+      ! xyz  := interpolation points
+      ! n    := number of interpolation points
+
+      include 'SIZE'
+
+      common /rwk_intp_pts/ x(INTP_NMAX),y(INTP_NMAX),z(INTP_NMAX)
+      real vi(n,ldim),v(lx1,ly1,lz1,lelt,ldim),xyz(ldim,n)
+
+      call splitvec(x,y,z,xyz,ldim,n)
+      call gfldi(vi,v,x,y,z,n,ldim)
 
       return
       end
