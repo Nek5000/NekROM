@@ -11,7 +11,7 @@ jobs:
         ips: [L2, H10]
     env:
       MOR_DIR: /home/runner/work/NekMOR/NekMOR
-      USR: "ana.o aux.o conv.o dump.o ei.o filter.o lapack.o pod.o qoi.o rom.o read.o time.o const.o unit.o rk.o legacy.o mpar.o tensor.o"
+      USR: "ana.o aux.o conv.o dump.o ei.o filter.o lapack.o pod.o qoi.o rom.o read.o time.o const.o unit.o rk.o legacy.o mpar.o tensor.o riesz.o"
 
     steps:
       - uses: actions/checkout@v2
