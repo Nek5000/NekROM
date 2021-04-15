@@ -59,12 +59,13 @@ c     parameters and common blocks for MOR
       common /morifops/ ihlu(lb,2),ihlu2(lb,2)
 
       common /morvops/ au0((lub+1)**2),bu0((lub+1)**2),
-     $                 au(lub**2),bu(lub**2),cul((lcloc-1)*lmu+1)
+     $                 au(lub**2),bu(lub**2),cul((lcloc-1)*lmu+1),
+     $                 aules((lub+1)**2)
 
       common /mortops/ at0((ltb+1)**2),bt0((ltb+1)**2),
      $                 at(ltb**2),bt(ltb**2),
      $                 ctl((lcloc-1)*lmt+1),
-     $                 st0(0:ltb),
+     $                 st0(0:ltb),atles((ltb+1)**2),
      $                 e1(0:ltb),e2(0:ltb),e3(0:lub,0:ltb)
 
       common /moreops/ aue((lub+1)**3),ate((ltb+1)**3)
