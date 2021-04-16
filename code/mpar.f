@@ -320,11 +320,11 @@ c-----------------------------------------------------------------------
       if (ifnd.eq.1) then
          call capit(c_out,132)
          if (index(c_out,'NONE').eq.1) then
-            rfilter='STD'
+            cfloc='NONE'
          else if (index(c_out,'CONV').eq.1) then
-            rfilter='LER'
+            cfloc='CONV'
          else if (index(c_out,'POST').eq.1) then
-            rfilter='EF '
+            cfloc='POST'
          else
             write (6,*) 'invalid option for filter:location ',c_out
             ierr=ierr+1
@@ -335,6 +335,7 @@ c-----------------------------------------------------------------------
       if (ifnd.eq.1) then
          call capit(c_out,132)
          if (index(c_out,'TFUNC').eq.1) then
+            cftype='TFUN'
             call finiparser_getdbl(d_out,'filter:modes',ifnd)
             if (ifnd.eq.1) then
                rbf=d_out
@@ -348,6 +349,7 @@ c-----------------------------------------------------------------------
                ierr=ierr+1
             endif
          else if (index(c_out,'DIFF').eq.1) then
+            cftype='DIFF'
             call finiparser_getdbl(d_out,'filter:radius',ifnd)
             if (ifnd.eq.1) then
                rdft=d_out
@@ -356,6 +358,7 @@ c-----------------------------------------------------------------------
                ierr=ierr+1
             endif
          else
+            cftype='INVA'
             write (6,*) 'invalid option for filter:type ',c_out
             ierr=ierr+1
          endif
@@ -401,7 +404,8 @@ c-----------------------------------------------------------------------
 
       call bcast(rmode,csize*3)
       call bcast(ips,csize*3)
-      call bcast(rfilter,csize*3)
+      call bcast(cfloc,csize*4)
+      call bcast(cftype,csize*4)
 
       ! integers
 
