@@ -106,6 +106,15 @@ c     if (icount.le.2) then
      $                           tbarr0,tbarrseq,tcopt_count)
             call mxm(rhstmp(1),1,wt(1,2),nb,rhs(1,2),nb)
          endif
+
+         if (cfloc.eq.'POST') then
+         if (cftype.eq.'TFUN') then
+            call pod_proj(rhs(1,2),rbf,nb,'step  ')
+         else if (cftype.eq.'DIFF') then
+            call pod_df(rhs(1,2))
+         endif
+         endif
+
          tsolve_time=tsolve_time+dnekclock()-ttime
          if (nplay.gt.0) then
             do i=1,nplay
@@ -174,6 +183,15 @@ c     if (icount.le.2) then
 
          endif
          endif
+
+         if (cfloc.eq.'POST') then
+         if (cftype.eq.'TFUN') then
+            call pod_proj(rhs(1,1),rbf,nb,'step  ')
+         else if (cftype.eq.'DIFF') then
+            call pod_df(rhs(1,1))
+         endif
+         endif
+
          solve_time=solve_time+dnekclock()-ttime
          if (nplay.gt.0) then
             do i=1,nplay
@@ -425,36 +443,28 @@ c-----------------------------------------------------------------------
          call rzero(cu,nb)
          if (ncloc.ne.0) then
             if ((kc2-kc1).lt.64.and.(jc2-jc1).lt.64
-     $          .and.rfilter.eq.'STD') then
+     $          .and.cfloc.eq.'NONE') then
                call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),
      $                  u(kc1),(kc2-kc1+1),cm,1)
                call mxm(cm,(ic2-ic1+1),uu(jc1),(jc2-jc1+1),cu(ic1),1)
             else
-               if (rfilter.eq.'STD'.or.rfilter.eq.'EF ') then
-                  do k=kc1,kc2
-                  do j=jc1,jc2
-                  do i=ic1,ic2
-                     cu(i)=cu(i)+cl(i,j,k)*uu(j)*u(k)
-                  enddo
-                  enddo
-                  enddo
-               else if (rfilter.eq.'LER') then
-                  call copy(ucft,u,nb+1)
+               call copy(ucft,u,nb+1)
 
-                  if (rbf.lt.0) then
-                     call pod_df(ucft(1))
-                  else if (rbf.gt.0) then
-                     call pod_proj(ucft(1),rbf,nb,'step  ')
-                  endif
-
-                  do k=kc1,kc2
-                  do j=jc1,jc2
-                  do i=ic1,ic2
-                     cu(i)=cu(i)+cl(i,j,k)*uu(j)*ucft(k)
-                  enddo
-                  enddo
-                  enddo
+               if (cfloc.eq.'CONV') then
+               if (cftype.eq.'TFUN') then
+                  call pod_proj(ucft(1),rbf,nb,'step  ')
+               else if (cftype.eq.'DIFF') then
+                  call pod_df(ucft(1))
                endif
+               endif
+
+               do k=kc1,kc2
+               do j=jc1,jc2
+               do i=ic1,ic2
+                  cu(i)=cu(i)+cl(i,j,k)*uu(j)*ucft(k)
+               enddo
+               enddo
+               enddo
             endif
          endif
          call gop(cu,work,'+  ',nb)
@@ -1126,11 +1136,16 @@ c-----------------------------------------------------------------------
       real s1(0:nb),s2(0:nb,0:nb),t1(0:nb,3)
       real tmp(0:nb)
 
+      character*3 rfilter
+
       logical ifbdf1,ifbdf2,ifbdf3
 
       ifbdf1 = navg_step.eq.1.and.ad_step.eq.navg_step+1
       ifbdf2 = navg_step.eq.2.and.ad_step.eq.navg_step
       ifbdf3 = navg_step.ge.3.and.ad_step.eq.navg_step-1
+
+      rfilter='   '
+      if (cfloc.eq.'CONV'.and.cftype.eq.'TFUN') rfilter='LER'
 
       if (ifbdf1.or.ifbdf2.or.ifbdf3) then
          call rzero(s1,(nb+1))
@@ -1209,9 +1224,14 @@ c-----------------------------------------------------------------------
 
       logical ifbdf1,ifbdf2,ifbdf3
 
+      character*3 rfilter
+
       ifbdf1 = navg_step.eq.1.and.ad_step.eq.navg_step+1
       ifbdf2 = navg_step.eq.2.and.ad_step.eq.navg_step
       ifbdf3 = navg_step.ge.3.and.ad_step.eq.navg_step-1
+
+      rfilter='   '
+      if (cfloc.eq.'CONV'.and.cftype.eq.'TFUN') rfilter='LER'
 
       if (ifbdf1.or.ifbdf2.or.ifbdf3) then
          call rzero(s1,(nb+1))
@@ -1284,6 +1304,11 @@ c-----------------------------------------------------------------------
 
       real s1(0:nb,8),s2(0:nb,0:nb,8)
       real s3(0:nb,8),t1(0:nb,5)
+
+      character*3 rfilter
+
+      rfilter='   '
+      if (cfloc.eq.'CONV'.and.cftype.eq.'TFUN') rfilter='LER'
 
       mj=5
       nj=3
