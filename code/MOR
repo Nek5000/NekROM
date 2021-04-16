@@ -203,8 +203,10 @@ c     parameters and common blocks for MOR
 
       character*6 cts
       character*5 scopt
-      character*3 ips,eqn,rmode,rfilter
-      common /morchar/ ips,eqn,rmode,rfilter,cts,scopt
+      character*3 ips,eqn,rmode
+      character*4 cftype,cfloc
+
+      common /morchar/ ips,eqn,rmode,cts,scopt,cftype,cfloc
 
       common /morid/ ones(lx1*ly1*lz1*lelm),zeros(lx1*ly1*lz1*lelm)
       common /morrk/ grk(lb*6*2),urki(lb*2),urko(lb*2),
