@@ -275,15 +275,3 @@ c
       return
       end
 c-----------------------------------------------------------------------
-      subroutine cnvl(du)
-
-      include 'SIZE'
-      include 'TOTAL'
-
-      real du(1)
-
-      ! TODO: implement convolutions
-
-      return
-      end
-c-----------------------------------------------------------------------
