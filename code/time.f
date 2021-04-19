@@ -230,6 +230,9 @@ c     if (icount.le.2) then
          call copy(rhs(1,2),rhs(1,1),nb)
       endif
 
+      if (cfloc.eq.'POST'.and.cftype.eq.'POLY')
+     $   call apply_les_imp(rhs(0,1),rhs(0,2),rdft,fles1,fles2,rtmp1)
+
       if (ifrom(2)) call shift(ut,rhs(0,2),nb+1,5)
       if (ifrom(1)) call shift(u,rhs,nb+1,5)
 

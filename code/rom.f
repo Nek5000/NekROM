@@ -442,6 +442,12 @@ c-----------------------------------------------------------------------
          call dump_serial(tbintp,nintp*(nb+1),'qoi/tintp',nid)
       endif
 
+      if (cftype.eq.'POLY') then
+         call set_les_imp(aules,atles)
+      else if (cftype.eq.'SMAG') then
+         call set_les_exp(aules,atles)
+      endif
+
       if (nio.eq.0) write (6,*) 'end setup for qoi'
 
       return
