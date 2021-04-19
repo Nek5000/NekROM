@@ -215,18 +215,29 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine evalnut(nut,u1,u2,u3,ifmol)
+      subroutine evalnut(nut,u1,u2,u3)
 
       include 'SIZE'
       include 'TOTAL'
 
       parameter (lt=lx1*ly1*lz1*lelt)
-      real nut(lt),u1(lt),u2(lt),u3(lt)
+      real nut(lx1,ly1,lz1,lelt),u1(lt),u2(lt),u3(lt)
 
-      common /scrns/ du(lt),t1(lt),t2(lt),t3(lt),t4(lt),t5(lt),t6(lt)
+      common /scrns/ du(lx1,ly1,lz1,lelt),
+     $   t1(lt),t2(lt),t3(lt),t4(lt),t5(lt),t6(lt)
       common /scruz/ t7(lt),t8(lt),t9(lt)
+      common /cfldx/ dri(lx1),dsi(ly1),dti(lz1)
+c
+      integer icalld
+      save    icalld
+      data    icalld /0/
 
-      logical ifmol
+      if (icalld.eq.0) then
+         icalld=1
+         call getdr(dri,zgm1(1,1),lx1)
+         call getdr(dsi,zgm1(1,2),ly1)
+         if (if3d) call getdr(dti,zgm1(1,3),lz1)
+      endif
 
       n=lx1*ly1*lz1*nelv
 
@@ -236,21 +247,29 @@ c-----------------------------------------------------------------------
 
       do i=1,n
          if (ldim.eq.2) then
-            du(i)=sqrt(t1(i)*t1(i)+t2(i)*t2(i)+t3(i)*t3(i)
+            du(i,1,1,1)=sqrt(t1(i)*t1(i)+t2(i)*t2(i)+t3(i)*t3(i)
      $                +t4(i)*t4(i)+t5(i)*t5(i)+t6(i)*t6(i))
          else
-            du(i)=sqrt(t1(i)*t1(i)+t2(i)*t2(i)+t3(i)*t3(i)
+            du(i,1,1,1)=sqrt(t1(i)*t1(i)+t2(i)*t2(i)+t3(i)*t3(i)
      $                +t4(i)*t4(i)+t5(i)*t5(i)+t6(i)*t6(i)
      $                +t7(i)*t7(i)+t8(i)*t8(i)+t9(i)*t9(i))
          endif
       enddo
 
-      if (ifmol) call cnvl(du)
+      sq2=sqrt(2.)
+      cs=.2
 
-      do i=1,n
-         cs=1.
-         hk=1.
-         nut(i)=(cs*hk)**2*du(i)
+      do ie=1,nelt
+         l=0
+         do iz=1,lz1
+         do iy=1,ly1
+         do ix=1,lx1
+            l=l+1
+            hk=min(min(dri(ix),dsi(iy)),dti(iz))*jacmi(l,ie)
+            nut(ix,iy,iz,ie)=sq2*du(ix,iy,iz,ie)*(cs*hk)**2
+         enddo
+         enddo
+         enddo
       enddo
 
       return
