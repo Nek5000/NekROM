@@ -696,7 +696,7 @@ c-----------------------------------------------------------------------
 
       do ix=1,nxi
       do idim=1,mdim
-         call copy(xi_b(1,idim,ix),sb(1,idim,ix),lx1*ly1*lz1*nel)
+         call binvb(xi_b(1,idim,ix),sb(1,idim,ix),jfld)
       enddo
       enddo
 
@@ -753,6 +753,27 @@ c-----------------------------------------------------------------------
 
       call axhelm(bia,s,dfld,zeros,jfld,idir)
       call invcol2(bia,bm1,lx1*ly1*lz1*nel)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine binvb(bib,s,jfld)
+
+      ! apply local B^{-1} B to a scalar field
+
+      ! s    := input scalar field
+      ! jfld := field # of s
+      ! bib  := B^{-1} B s
+
+      include 'SIZE'
+      include 'MASS'
+
+      real bib(1),s(1)
+
+      nel=nelt
+      if (jfield.eq.1) nel=nelv
+
+      call copy(bib,s,lx1*ly1*lz1*nel)
 
       return
       end
