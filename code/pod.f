@@ -583,9 +583,9 @@ c-----------------------------------------------------------------------
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
          jfield=ifield
          ifield=1
-         if (ifpod(1)) call gengram(ug(1,1,1),us0,ns,ldim)
+         if (ifpod(1)) call gengram(ug(1,1,1),us0,ns,ldim,ips)
          ifield=2
-         if (ifpod(2)) call gengram(ug(1,1,2),ts0,ns,1)
+         if (ifpod(2)) call gengram(ug(1,1,2),ts0,ns,1,ips)
          ifield=jfield
       endif
 
@@ -833,7 +833,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine gengram(gram,s,ms,mdim)
+      subroutine gengram(gram,s,ms,mdim,cips)
 
       ! set the Gramian based on the inner-product set by ips
 
@@ -841,21 +841,16 @@ c-----------------------------------------------------------------------
       ! s    := snapshots
       ! ms   := number of snapshots
       ! mdim := vector dimension
+      ! cips := inner-product space specifier
 
-      include 'SIZE'
-      include 'TOTAL'
-      include 'MOR'
+      real gram(1),s(1)
+      character*3 cips
 
-      parameter (lt=lx1*ly1*lz1*lelt)
-
-      real gram(ms,ms)
-      real s(lt,mdim,ms)
-
-      if (ips.eq.'L2 ') then
+      if (cips.eq.'L2 ') then
          call gengraml2(gram,s,ms,mdim)
-      else if (ips.eq.'H10') then
+      else if (cips.eq.'H10') then
          call h10gg(gram,s,ms,mdim)
-      else if (ips.eq.'HLM') then
+      else if (cips.eq.'HLM') then
          call hlmgg(gram,s,ms,mdim)
       else
          if (nid.eq.0) write (6,*) 'unsupported ips in gengram'
