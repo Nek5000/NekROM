@@ -620,12 +620,12 @@ c                 call cnmax(eval(1,i),fname,i)
 c              endif
 c           enddo
             if (ifpod(1)) then 
-               call genevec(evec(1,1,1),eval(1,1),ug(1,1,1),1)
+               call genevec(evec(1,1,1),eval(1,1),ug(1,1,1),ns,1)
                call cnmax(eval(1,1),'ops/enlu ',1)
                call cenpm(eval(1,1),'ops/enru ',1)
             endif
             if (ifpod(2)) then 
-               call genevec(evec(1,1,2),eval(1,2),ug(1,1,2),2)
+               call genevec(evec(1,1,2),eval(1,2),ug(1,1,2),ns,2)
                call cnmax(eval(1,2),'ops/enlt ',2)
             endif
          else
@@ -865,51 +865,40 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine genevec(vec,val,gram,ifld)
+      subroutine genevec(vec,val,gram,ms,mb,ifld)
 
       ! set the eigenvectors based on the given Gramian
 
       ! vec  := eigenvectors
       ! val  := eigenvalues
       ! gram := Gramian
+      ! ms   := number of snapshots
+      ! mb   := number of basis
       ! ifld := field number
-
-      !!! does not work if ns.lt.ls !!!
 
       include 'SIZE'
       include 'TSTEP'
       include 'MOR'
-
-      parameter (lt=lx1*ly1*lz1*lelt)
-
-      integer icalld
-      save    icalld
-      data    icalld /0/
       
-      common /scrgvec/ gc(ls,ls),wk(ls,ls,2)
+      common /scrgvec/ gc(ls*ls),wk(ls*ls*2)
 
-      real gram(ls,ls),vec(ls,nb),val(ls)
-      real total,ena(ls),enl(ls)
+      real gram(ms,ms),vec(ms,mb),val(ms)
 
       if (nio.eq.0) write (6,*) 'inside genevec'
 
       call nekgsync
       eig_time=dnekclock()
 
-      if (icalld.eq.0) then
-         icalld=1
-      endif
+      call copy(gc,gram,ms*ms)
 
-      call copy(gc,gram,ls*ls)
-
-      call regularev(gc,val,ls,wk)
-      call copy(wk,gc,ls*ls)
+      call regularev(gc,val,ms,wk)
+      call copy(wk,gc,ms*ms)
 
       call nekgsync
       eval_time=dnekclock()
 
-      do l = 1,nb
-         call copy(vec(1,l),wk(1,ls-l+1,1),ls) ! reverse order of wk
+      do l = 1,mb
+         call copy(vec(1,l),wk(1+(ms-l)*ms),ms) ! reverse order of wk
       enddo
 
       do i=1,ns
