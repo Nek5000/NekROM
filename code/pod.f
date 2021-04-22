@@ -1330,3 +1330,28 @@ c-----------------------------------------------------------------------
 
       return
       end
+c-----------------------------------------------------------------------
+      subroutine pod(basis,evec,eval,gram,snaps,ndim,cips,nb,ns)
+
+      include 'SIZE'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real basis(lt,ndim,nb),snaps(lt,ndim,ns),
+     $   evec(ns,ns),eval(ns),gram(ns,ns),
+
+      character*3 cips
+
+      n=lx1*ly1*lz1*nelt
+
+      call gengram(gram,snaps,ns,ndim,cips)
+      call genevec(evec,eval,gram,ns,nb,ndim)
+
+      do i=1,ndim
+         call dgemm('N','N',n,nb,ns,1.,
+     $      snaps(1,i,1),lt*ndim,evec,ns,0.,basis(1,i,1),lt*ndim)
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
