@@ -860,13 +860,13 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine genevec(vec,val,gram,ms,mb,ifld)
+      subroutine genevec(vec,val,gg,ms,mb,ifld)
 
       ! set the eigenvectors based on the given Gramian
 
       ! vec  := eigenvectors
       ! val  := eigenvalues
-      ! gram := Gramian
+      ! gg   := Gramian
       ! ms   := number of snapshots
       ! mb   := number of basis
       ! ifld := field number
@@ -877,14 +877,14 @@ c-----------------------------------------------------------------------
       
       common /scrgvec/ gc(ls*ls),wk(ls*ls*2)
 
-      real gram(ms,ms),vec(ms,mb),val(ms)
+      real gg(ms,ms),vec(ms,mb),val(ms)
 
       if (nio.eq.0) write (6,*) 'inside genevec'
 
       call nekgsync
       eig_time=dnekclock()
 
-      call copy(gc,gram,ms*ms)
+      call copy(gc,gg,ms*ms)
 
       call regularev(gc,val,ms,wk)
       call copy(wk,gc,ms*ms)
