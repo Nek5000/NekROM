@@ -224,9 +224,7 @@ c-----------------------------------------------------------------------
       if (nid.eq.0) write (6,*) 'post show params'
 
       call mor_set_params_uni_pre
-
       call mor_init_fields
-
       call mor_set_params_uni_post
 
       inquire (file='ops/evec',exist=ifexist)
@@ -237,8 +235,6 @@ c-----------------------------------------------------------------------
          enddo
          close (unit=10)
       else
-         call setgram
-         call setevec
          call setbases
       endif
 

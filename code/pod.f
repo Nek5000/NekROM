@@ -4,87 +4,43 @@ c-----------------------------------------------------------------------
       ! set ub,vb,wb,tb in /morbasis/ with pod basis
 
       include 'SIZE'
-      include 'TOTAL'
       include 'MOR'
-
-      parameter (lt=lx1*ly1*lz1*lelt)
-
-      real u0(lt,3)
 
       if (nio.eq.0) write (6,*) 'inside setbases'
 
       call nekgsync
       bas_time=dnekclock()
 
-      n=lx1*ly1*lz1*nelt
-
       if (rmode.ne.'ON ') ifrecon=.true.
 
       if (rmode.eq.'ONB'.or.rmode.eq.'CP ') then
          call loadbases
       else if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
-         n=lx1*ly1*lz1*nelt
-
-         do i=1,nb
-            call rzero(ub(1,i),n)
-            call rzero(vb(1,i),n)
-            if (ldim.eq.3) call rzero(wb(1,i),n)
-         enddo
-
-         ! ub, vb, wb, are the modes
          if (ifrom(1)) then
-           if (ifpb) then
-              do j=1,ns
-              do i=1,nb
-                 call opadds(ub(1,i),vb(1,i),wb(1,i),
-     $              us0(1,1,j),us0(1,2,j),us0(1,ldim,j),evec(j,i,1),n,2)
-              enddo
-              enddo
-
-              if (.not.ifcomb) call vnorm(ub,vb,wb)
-           else
-              do i=1,nb
-                 call opcopy(ub(1,i),vb(1,i),wb(1,i),
-     $                       us0(1,1,i),us0(1,2,i),us0(1,ldim,i))
-              enddo
-           endif
-
+            call pod(uvwb(1,1,1),evec(1,1,1),eval(1,1),ug(1,1,1),
+     $         us0,ldim,ips,nb,ns,ifpb)
+            do ib=1,nb
+               call opcopy(ub(1,ib),vb(1,ib),wb(1,ib),
+     $            uvwb(1,1,ib),uvwb(1,2,ib),uvwb(1,ldim,ib))
+            enddo
+            if (.not.ifcomb.and.ifpb) call vnorm(ub,vb,wb)
          else
             call opcopy(ub,vb,wb,uic,vic,wic)
          endif
-
          if (ifrom(2)) then
-            if (ifpb) then
-               do i=1,nb
-                  call rzero(tb(1,i),n)
-                  do j=1,ns
-                     call add2s2(tb(1,i),ts0(1,j),evec(j,i,2),n)
-                  enddo
-               enddo
-               if (.not.ifcomb) call snorm(tb)
-            else
-               do i=1,nb
-                  call copy(tb(1,i),ts0(1,i),n)
-               enddo
-            endif
+            call pod(tb(1,1),evec(1,1,2),eval(1,2),ug(1,1,2),
+     $         ts0,1,ips,nb,ns,ifpb)
+            if (.not.ifcomb.and.ifpb) call snorm(tb)
          endif
 
          if (ifcomb.and.ifpb) call cnorm(ub,vb,wb,tb)
       endif
-
-      ! only load the anchor point pressure
-      ! we do not need to solve for pressure in ROM
-c        nn=lx2*ly2*lz2*nelt
-c     do i=1,ns
-c        call copy(pb(1,i),prs(1,i),nn)
-c     enddo
 
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ')
      $   call dump_bas
 
       call nekgsync
       if (nio.eq.0) write (6,*) 'bas_time:',dnekclock()-bas_time
-
       if (nio.eq.0) write (6,*) 'exiting setbases'
 
       return
