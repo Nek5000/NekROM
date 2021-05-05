@@ -1331,25 +1331,25 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine pod(basis,evec,eval,gram,snaps,ndim,cips,nb,ns)
+      subroutine pod(basis,evec,eval,gram,snaps,mdim,cips,nb,ns)
 
       include 'SIZE'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real basis(lt,ndim,nb),snaps(lt,ndim,ns),
-     $   evec(ns,ns),eval(ns),gram(ns,ns),
+      real basis(lt,mdim,nb),snaps(lt,mdim,ns),
+     $   evec(ns,ns),eval(ns),gram(ns,ns)
 
       character*3 cips
 
       n=lx1*ly1*lz1*nelt
 
-      call gengram(gram,snaps,ns,ndim,cips)
-      call genevec(evec,eval,gram,ns,nb,ndim)
+      call gengram(gram,snaps,ns,mdim,cips)
+      call genevec(evec,eval,gram,ns,nb,mdim)
 
-      do i=1,ndim
+      do i=1,mdim
          call dgemm('N','N',n,nb,ns,1.,
-     $      snaps(1,i,1),lt*ndim,evec,ns,0.,basis(1,i,1),lt*ndim)
+     $      snaps(1,i,1),lt*mdim,evec,ns,0.,basis(1,i,1),lt*mdim)
       enddo
 
       return
