@@ -1331,7 +1331,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine pod(basis,evec,eval,gram,snaps,mdim,cips,nb,ns)
+      subroutine pod(basis,evec,eval,gram,snaps,mdim,cips,nb,ns,ifpod)
 
       include 'SIZE'
 
@@ -1341,16 +1341,19 @@ c-----------------------------------------------------------------------
      $   evec(ns,ns),eval(ns),gram(ns,ns)
 
       character*3 cips
+      logical ifpod
 
       n=lx1*ly1*lz1*nelt
 
       call gengram(gram,snaps,ns,mdim,cips)
-      call genevec(evec,eval,gram,ns,nb,mdim)
 
-      do i=1,mdim
-         call dgemm('N','N',n,nb,ns,1.,
-     $      snaps(1,i,1),lt*mdim,evec,ns,0.,basis(1,i,1),lt*mdim)
-      enddo
+      if (ifpod) then
+         call genevec(evec,eval,gram,ns,nb,mdim)
+         do i=1,mdim
+            call dgemm('N','N',n,nb,ns,1.,
+     $         snaps(1,i,1),lt*mdim,evec,ns,0.,basis(1,i,1),lt*mdim)
+         enddo
+      endif
 
       return
       end
