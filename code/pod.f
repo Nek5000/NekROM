@@ -620,12 +620,12 @@ c                 call cnmax(eval(1,i),fname,i)
 c              endif
 c           enddo
             if (ifpod(1)) then 
-               call genevec(evec(1,1,1),eval(1,1),ug(1,1,1),ns,1)
+               call genevec(evec(1,1,1),eval(1,1),ug(1,1,1),ns,nb,1)
                call cnmax(eval(1,1),'ops/enlu ',1)
                call cenpm(eval(1,1),'ops/enru ',1)
             endif
             if (ifpod(2)) then 
-               call genevec(evec(1,1,2),eval(1,2),ug(1,1,2),ns,2)
+               call genevec(evec(1,1,2),eval(1,2),ug(1,1,2),ns,nb,2)
                call cnmax(eval(1,2),'ops/enlt ',2)
             endif
          else
