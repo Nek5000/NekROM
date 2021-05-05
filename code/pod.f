@@ -873,7 +873,7 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'
       include 'TSTEP'
-      include 'MOR'
+      include 'LMOR'
       
       common /scrgvec/ gc(ls*ls),wk(ls*ls*2)
 
