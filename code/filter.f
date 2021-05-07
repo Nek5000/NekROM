@@ -126,7 +126,7 @@ c-----------------------------------------------------------------------
 
          call q_filter(1.)
          if (ifrom(1)) call pv2b(fles1(0,i),vx,vy,vz,ub,vb,wb)
-         if (ifrom(2)) call ps2b(fles2(0,i),t,vy,vz,tb)
+         if (ifrom(2)) call ps2b(fles2(0,i),t,tb)
       enddo
 
       do i=1,nb
