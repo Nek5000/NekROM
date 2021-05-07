@@ -4,87 +4,43 @@ c-----------------------------------------------------------------------
       ! set ub,vb,wb,tb in /morbasis/ with pod basis
 
       include 'SIZE'
-      include 'TOTAL'
       include 'MOR'
-
-      parameter (lt=lx1*ly1*lz1*lelt)
-
-      real u0(lt,3)
 
       if (nio.eq.0) write (6,*) 'inside setbases'
 
       call nekgsync
       bas_time=dnekclock()
 
-      n=lx1*ly1*lz1*nelt
-
       if (rmode.ne.'ON ') ifrecon=.true.
 
       if (rmode.eq.'ONB'.or.rmode.eq.'CP ') then
          call loadbases
       else if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
-         n=lx1*ly1*lz1*nelt
-
-         do i=1,nb
-            call rzero(ub(1,i),n)
-            call rzero(vb(1,i),n)
-            if (ldim.eq.3) call rzero(wb(1,i),n)
-         enddo
-
-         ! ub, vb, wb, are the modes
          if (ifrom(1)) then
-           if (ifpb) then
-              do j=1,ns
-              do i=1,nb
-                 call opadds(ub(1,i),vb(1,i),wb(1,i),
-     $              us0(1,1,j),us0(1,2,j),us0(1,ldim,j),evec(j,i,1),n,2)
-              enddo
-              enddo
-
-              if (.not.ifcomb) call vnorm(ub,vb,wb)
-           else
-              do i=1,nb
-                 call opcopy(ub(1,i),vb(1,i),wb(1,i),
-     $                       us0(1,1,i),us0(1,2,i),us0(1,ldim,i))
-              enddo
-           endif
-
+            call pod(uvwb(1,1,1),evec(1,1,1),eval(1,1),ug(1,1,1),
+     $         us0,ldim,ips,nb,ns,ifpb)
+            do ib=1,nb
+               call opcopy(ub(1,ib),vb(1,ib),wb(1,ib),
+     $            uvwb(1,1,ib),uvwb(1,2,ib),uvwb(1,ldim,ib))
+            enddo
+            if (.not.ifcomb.and.ifpb) call vnorm(ub,vb,wb)
          else
             call opcopy(ub,vb,wb,uic,vic,wic)
          endif
-
          if (ifrom(2)) then
-            if (ifpb) then
-               do i=1,nb
-                  call rzero(tb(1,i),n)
-                  do j=1,ns
-                     call add2s2(tb(1,i),ts0(1,j),evec(j,i,2),n)
-                  enddo
-               enddo
-               if (.not.ifcomb) call snorm(tb)
-            else
-               do i=1,nb
-                  call copy(tb(1,i),ts0(1,i),n)
-               enddo
-            endif
+            call pod(tb(1,1),evec(1,1,2),eval(1,2),ug(1,1,2),
+     $         ts0,1,ips,nb,ns,ifpb)
+            if (.not.ifcomb.and.ifpb) call snorm(tb)
          endif
 
          if (ifcomb.and.ifpb) call cnorm(ub,vb,wb,tb)
       endif
-
-      ! only load the anchor point pressure
-      ! we do not need to solve for pressure in ROM
-c        nn=lx2*ly2*lz2*nelt
-c     do i=1,ns
-c        call copy(pb(1,i),prs(1,i),nn)
-c     enddo
 
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ')
      $   call dump_bas
 
       call nekgsync
       if (nio.eq.0) write (6,*) 'bas_time:',dnekclock()-bas_time
-
       if (nio.eq.0) write (6,*) 'exiting setbases'
 
       return
@@ -583,9 +539,9 @@ c-----------------------------------------------------------------------
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
          jfield=ifield
          ifield=1
-         if (ifpod(1)) call gengram(ug(1,1,1),us0,ns,ldim)
+         if (ifpod(1)) call gengram(ug(1,1,1),us0,ns,ldim,ips)
          ifield=2
-         if (ifpod(2)) call gengram(ug(1,1,2),ts0,ns,1)
+         if (ifpod(2)) call gengram(ug(1,1,2),ts0,ns,1,ips)
          ifield=jfield
       endif
 
@@ -620,12 +576,12 @@ c                 call cnmax(eval(1,i),fname,i)
 c              endif
 c           enddo
             if (ifpod(1)) then 
-               call genevec(evec(1,1,1),eval(1,1),ug(1,1,1),1)
+               call genevec(evec(1,1,1),eval(1,1),ug(1,1,1),ns,nb,1)
                call cnmax(eval(1,1),'ops/enlu ',1)
                call cenpm(eval(1,1),'ops/enru ',1)
             endif
             if (ifpod(2)) then 
-               call genevec(evec(1,1,2),eval(1,2),ug(1,1,2),2)
+               call genevec(evec(1,1,2),eval(1,2),ug(1,1,2),ns,nb,2)
                call cnmax(eval(1,2),'ops/enlt ',2)
             endif
          else
@@ -833,7 +789,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine gengram(gram,s,ms,mdim)
+      subroutine gengram(gram,s,ms,mdim,cips)
 
       ! set the Gramian based on the inner-product set by ips
 
@@ -841,21 +797,16 @@ c-----------------------------------------------------------------------
       ! s    := snapshots
       ! ms   := number of snapshots
       ! mdim := vector dimension
+      ! cips := inner-product space specifier
 
-      include 'SIZE'
-      include 'TOTAL'
-      include 'MOR'
+      real gram(1),s(1)
+      character*3 cips
 
-      parameter (lt=lx1*ly1*lz1*lelt)
-
-      real gram(ms,ms)
-      real s(lt,mdim,ms)
-
-      if (ips.eq.'L2 ') then
+      if (cips.eq.'L2 ') then
          call gengraml2(gram,s,ms,mdim)
-      else if (ips.eq.'H10') then
+      else if (cips.eq.'H10') then
          call h10gg(gram,s,ms,mdim)
-      else if (ips.eq.'HLM') then
+      else if (cips.eq.'HLM') then
          call hlmgg(gram,s,ms,mdim)
       else
          if (nid.eq.0) write (6,*) 'unsupported ips in gengram'
@@ -865,51 +816,40 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine genevec(vec,val,gram,ifld)
+      subroutine genevec(vec,val,gg,ms,mb,ifld)
 
       ! set the eigenvectors based on the given Gramian
 
       ! vec  := eigenvectors
       ! val  := eigenvalues
-      ! gram := Gramian
+      ! gg   := Gramian
+      ! ms   := number of snapshots
+      ! mb   := number of basis
       ! ifld := field number
-
-      !!! does not work if ns.lt.ls !!!
 
       include 'SIZE'
       include 'TSTEP'
-      include 'MOR'
-
-      parameter (lt=lx1*ly1*lz1*lelt)
-
-      integer icalld
-      save    icalld
-      data    icalld /0/
+      include 'LMOR'
       
-      common /scrgvec/ gc(ls,ls),wk(ls,ls,2)
+      common /scrgvec/ gc(ls*ls),wk(ls*ls*2)
 
-      real gram(ls,ls),vec(ls,nb),val(ls)
-      real total,ena(ls),enl(ls)
+      real gg(ms,ms),vec(ms,mb),val(ms)
 
       if (nio.eq.0) write (6,*) 'inside genevec'
 
       call nekgsync
       eig_time=dnekclock()
 
-      if (icalld.eq.0) then
-         icalld=1
-      endif
+      call copy(gc,gg,ms*ms)
 
-      call copy(gc,gram,ls*ls)
-
-      call regularev(gc,val,ls,wk)
-      call copy(wk,gc,ls*ls)
+      call regularev(gc,val,ms,wk)
+      call copy(wk,gc,ms*ms)
 
       call nekgsync
       eval_time=dnekclock()
 
-      do l = 1,nb
-         call copy(vec(1,l),wk(1,ls-l+1,1),ls) ! reverse order of wk
+      do l = 1,mb
+         call copy(vec(1,l),wk(1+(ms-l)*ms),ms) ! reverse order of wk
       enddo
 
       do i=1,ns
@@ -1346,3 +1286,31 @@ c-----------------------------------------------------------------------
 
       return
       end
+c-----------------------------------------------------------------------
+      subroutine pod(basis,evec,eval,gram,snaps,mdim,cips,nb,ns,ifpod)
+
+      include 'SIZE'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real basis(lt,mdim,nb),snaps(lt,mdim,ns),
+     $   evec(ns,ns),eval(ns),gram(ns,ns)
+
+      character*3 cips
+      logical ifpod
+
+      n=lx1*ly1*lz1*nelt
+
+      call gengram(gram,snaps,ns,mdim,cips)
+
+      if (ifpod) then
+         call genevec(evec,eval,gram,ns,nb,mdim)
+         do i=1,mdim
+            call dgemm('N','N',n,nb,ns,1.,
+     $         snaps(1,i,1),lt*mdim,evec,ns,0.,basis(1,i,1),lt*mdim)
+         enddo
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
