@@ -5,9 +5,14 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
+      character*3 rfilter
+
       real rhs(0:lb),rhstmp(0:lb)
       logical ifdebug
       integer chekbc
+
+      rfilter='   '
+      if (cfloc.eq.'POST'.and.cftype.eq.'DIFF') rfilter='EF '
 
       chekbc=0
 

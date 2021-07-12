@@ -224,9 +224,7 @@ c-----------------------------------------------------------------------
       if (nid.eq.0) write (6,*) 'post show params'
 
       call mor_set_params_uni_pre
-
       call mor_init_fields
-
       call mor_set_params_uni_post
 
       inquire (file='ops/evec',exist=ifexist)
@@ -237,8 +235,6 @@ c-----------------------------------------------------------------------
          enddo
          close (unit=10)
       else
-         call setgram
-         call setevec
          call setbases
       endif
 
@@ -683,7 +679,8 @@ c-----------------------------------------------------------------------
 
       podrat=0.5
 
-      rfilter='STD'
+      cfloc='NONE'
+      cftype='NONE'
       rbf=0.5
       rdft=0.5
 
@@ -815,11 +812,14 @@ c     ifrom(1)=(ifpod(1).and.eqn.ne.'ADE')
       ! filter technique
       np198=nint(param(198))
       if (np198.eq.0) then
-         rfilter='STD'
+         cfloc='NONE'
+         cftype='NONE'
       else if (np198.eq.1) then
-         rfilter='LER'
+         cfloc='CONV'
+         cftype='TFUN'
       else if (np198.eq.2) then
-         rfilter='EF '
+         cfloc='POST'
+         cftype='DIFF'
       else
          call exitti('unsupported param(198), exiting...$',np198)
       endif
@@ -954,7 +954,8 @@ c-----------------------------------------------------------------------
          write (6,*) 'mp_tbarr0      ',tbarr0
          write (6,*) 'mp_tbarrseq    ',tbarrseq
          write (6,*) ' '
-         write (6,*) 'mp_rfilter     ',rfilter
+         write (6,*) 'mp_cfloc       ',cfloc
+         write (6,*) 'mp_cftype      ',cftype
          write (6,*) 'mp_rbf         ',rbf
          write (6,*) 'mp_rdft        ',rdft
          write (6,*) ' '
