@@ -811,7 +811,6 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'
       include 'MASS'
-      include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
