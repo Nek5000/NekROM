@@ -757,7 +757,7 @@ c-----------------------------------------------------------------------
       if (melg.eq.nelgv) imsh=1 
 
       call axhelm(bia,s,dfld,zeros,imsh,idir)
-      call invcol2(bia,bm1,lx1*ly1*lz1*nel)
+      call binv(bia,jfld)
 
       return
       end
@@ -778,7 +778,8 @@ c     include 'MASS'
 
       nel=nelfld(jfld)
 
-      call copy(bib,s,lx1*ly1*lz1*nel)
+      call col3(bib,s,bm1,lx1*ly1*lz1*nel)
+      call binv(bib,jfld)
 
       return
       end
@@ -802,8 +803,50 @@ c-----------------------------------------------------------------------
       logical ifcf,ifuf
 
       call convect_new(bic,s,ifuf,ux,uy,uz,ifcf)
-      call invcol2(bic,bm1,lx1*ly1*lz1*nelv)
-      call rzero(bic(lx1*ly1*lz1*nelv+1),lx1*ly1*lz1*(nelt-nelv))
+      call binv(bic,jfld)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine binv(fldi,ifld)
+
+      ! compute fldi = B^-1 * fldi
+
+      ! fldi: input field, can be a vector if ifld==1 
+      ! ifld: field number associated with fldi
+
+      include 'SIZE'
+      include 'MASS'  ! dep: binvm1, bintm1
+      include 'SOLN'  ! dep: tmask
+      include 'TSTEP' ! dep: ifield, nelfld
+
+      real fldi(lx1*ly1*lz1*lelt,1)
+
+      jfield=ifield
+      ifield=ifld
+
+      nel=nelfld(ifield)
+      n=lx1*ly1*lz1*nel
+
+      if (ifield.eq.1) then
+         call opmask(fldi(1,1),fldi(1,2),fldi(1,3))
+         call opdssum(fldi(1,1),fldi(1,2),fldi(1,3))
+      else
+         call col2(fldi,tmask(1,1,1,1,ifield-1),n)
+         call dssum(fldi,lx1,ly1,lz1)
+      endif
+
+      if (nel.eq.nelv) then
+         call col2(fldi(1,1),binvm1,n)
+         if (ifield.eq.1) then
+            call col2(fldi(1,2),binvm1,n)
+            if (ldim.eq.3) call col2(fldi(1,3),binvm1,n)
+         endif
+      else if (nel.eq.nelt) then
+         call col2(fldi(1,1),bintm1,n)
+      endif
+
+      ifield=jfield
 
       return
       end
