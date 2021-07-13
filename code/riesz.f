@@ -16,9 +16,9 @@ c-----------------------------------------------------------------------
         call exitti('(set_xi_poisson) ifield.eq.1 not supported...$',nb)
       else
          if (ips.eq.'L2 ') then
-            call set_xi_a(xi(1,l),tb(1,1),ones,1,nb)
+            call set_xi_a(xi(1,l),tb(1,1),ones,1,nb,2)
             l=l+nb
-            call set_xi_b(xi(1,l),qq,1,1)
+            call set_xi_b(xi(1,l),qq,1,1,2)
             l=l+1
             do i=1,nb
                call set_gradn(wk,tb(1,i))
@@ -49,11 +49,11 @@ c-----------------------------------------------------------------------
          call exitti('(set_xi_heat) ifield.eq.1 not supported...$',nb)
       else
          if (ips.eq.'L2 ') then
-            call set_xi_b(xi(1,l),tb,1,nb+1)
+            call set_xi_b(xi(1,l),tb,1,nb+1,2)
             l=l+nb+1
-            call set_xi_a(xi(1,l),tb,ones,1,nb+1)
+            call set_xi_a(xi(1,l),tb,ones,1,nb+1,2)
             l=l+nb+1
-            call set_xi_b(xi(1,l),qq,1,1)
+            call set_xi_b(xi(1,l),qq,1,1,2)
             l=l+1
          else
             call exitti('(set_xi_heat) ips != L2 not supported...$',ips)
@@ -82,7 +82,7 @@ c-----------------------------------------------------------------------
          call exitti('(set_xi_ad) ifield.eq.1 not supported...$',nb)
       else
          if (ips.eq.'L2 ') then
-            call set_xi_b(xi(1,l),tb,1,nb+1)
+            call set_xi_b(xi(1,l),tb,1,nb+1,2)
             l=l+nb+1
             if (ifrom(1)) then
                if (ifaxis) then
@@ -96,14 +96,14 @@ c-----------------------------------------------------------------------
                   enddo
                   call pop_op(vx,vy,vz)
                else
-                  call set_xi_c(xi(1,l),ub,vb,wb,tb,1,nb+1,nb+1)
+                  call set_xi_c(xi(1,l),ub,vb,wb,tb,1,nb+1,nb+1,2)
                   l=l+(nb+1)**2
                endif
             else
-               call set_xi_c(xi(1,l),ub,vb,wb,tb,1,1,nb+1)
+               call set_xi_c(xi(1,l),ub,vb,wb,tb,1,1,nb+1,2)
                l=l+nb+1
             endif
-            call set_xi_a(xi(1,l),tb,ones,1,nb+1)
+            call set_xi_a(xi(1,l),tb,ones,1,nb+1,2)
             l=l+nb+1
          else
             call exitti('(set_xi_ad) ips != L2 not supported...$',ips)
