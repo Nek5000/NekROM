@@ -646,7 +646,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine set_xi_a(xi_a,sb,dfld,mdim,nxi)
+      subroutine set_xi_a(xi_a,sb,dfld,mdim,nxi,jfld)
 
       ! set Riesz representation corresponding to diffusion term
 
@@ -661,8 +661,8 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
       real xi_a(lt,mdim,nxi),sb(lt,mdim,nxi),dfld(lt,mdim)
 
-      jfld=1
-      if (mdim.eq.1) jfld=2
+c     jfld=1
+c     if (mdim.eq.1) jfld=2
 
       do ix=1,nxi
       do idim=1,mdim
@@ -674,7 +674,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine set_xi_b(xi_b,sb,mdim,nxi)
+      subroutine set_xi_b(xi_b,sb,mdim,nxi,jfld)
 
       ! set Riesz representation corresponding to mass term
 
@@ -688,11 +688,11 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
       real xi_b(lt,mdim,nxi),sb(lt,mdim,nxi)
 
-      jfld=1
-      if (mdim.eq.1) jfld=2
+c     jfld=1
+c     if (mdim.eq.1) jfld=2
 
-      nel=nelv
-      if (jfld.eq.2) nel=nelt
+c     nel=nelv
+c     if (jfld.eq.2) nel=nelt
 
       do ix=1,nxi
       do idim=1,mdim
@@ -703,7 +703,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine set_xi_c(xi_c,cxb,cyb,czb,sb,mdim,mxi,nxi)
+      subroutine set_xi_c(xi_c,cxb,cyb,czb,sb,mdim,mxi,nxi,jfld)
 
       ! set Riesz representation corresponding to advection term
 
@@ -724,7 +724,7 @@ c-----------------------------------------------------------------------
       do ix=1,nxi
       do idim=1,mdim
          call binvc(xi_c(1,idim,ix,jx),cxb(1,jx),cyb(1,jx),czb(1,jx),
-     $     sb(1,idim,ix),.false.,.false.)
+     $     sb(1,idim,ix),.false.,.false.,jfld)
       enddo
       enddo
       enddo
@@ -743,15 +743,20 @@ c-----------------------------------------------------------------------
       ! bia  := B^{-1} A s
 
       include 'SIZE'
-      include 'MASS'
-      include 'MOR'
+      include 'MASS'     ! dep: bm1
+      include 'MOR'      ! dep: zeros
+      include 'TSTEP'    ! dep: nelfld
+      include 'PARALLEL' ! dep: nelg,nelgv
 
       real bia(1),s(1),dfld(1)
 
-      nel=nelt
-      if (jfield.eq.1) nel=nelv
+      nel=nelfld(jfld)
+      melg=nelg(jfld)
 
-      call axhelm(bia,s,dfld,zeros,jfld,idir)
+      imsh=2
+      if (melg.eq.nelgv) imsh=1 
+
+      call axhelm(bia,s,dfld,zeros,imsh,idir)
       call invcol2(bia,bm1,lx1*ly1*lz1*nel)
 
       return
@@ -766,19 +771,19 @@ c-----------------------------------------------------------------------
       ! bib  := B^{-1} B s
 
       include 'SIZE'
-      include 'MASS'
+c     include 'MASS'
+      include 'TSTEP' ! dep: nelfld
 
       real bib(1),s(1)
 
-      nel=nelt
-      if (jfield.eq.1) nel=nelv
+      nel=nelfld(jfld)
 
       call copy(bib,s,lx1*ly1*lz1*nel)
 
       return
       end
 c-----------------------------------------------------------------------
-      subroutine binvc(bic,ux,uy,uz,s,ifcf,ifuf)
+      subroutine binvc(bic,ux,uy,uz,s,ifcf,ifuf,jfld)
       
       ! apply local B^{-1} C to a scalar field
 
@@ -787,6 +792,7 @@ c-----------------------------------------------------------------------
       ! ifcf     := true when ux,uy,uz is on the fine mesh
       ! ifuf     := true when s is on the fine mesh
       ! bic      := B^{-1} C(ux,uy,uz) s
+      ! jfld     := field # of s
 
       include 'SIZE'
       include 'MASS'
