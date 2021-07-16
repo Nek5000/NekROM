@@ -748,7 +748,8 @@ c-----------------------------------------------------------------------
       include 'TSTEP'    ! dep: nelfld
       include 'PARALLEL' ! dep: nelg,nelgv
 
-      real bia(1),s(1),dfld(1)
+      parameter (lt=lx1*ly1*lz1*lelt)
+      real bia(lt,1),s(lt,1),dfld(lt,1)
 
       nel=nelfld(jfld)
       melg=nelg(jfld)
@@ -756,7 +757,13 @@ c-----------------------------------------------------------------------
       imsh=2
       if (melg.eq.nelgv) imsh=1 
 
-      call axhelm(bia,s,dfld,zeros,imsh,idir)
+      mfld=1
+      if (jfld.eq.1) mfld=ldim
+
+      do i=1,mfld
+         call axhelm(bia(1,i),s(1,i),dfld(1,i),zeros,imsh,idir)
+      enddo
+
       call binv(bia,jfld)
 
       return
@@ -774,11 +781,18 @@ c-----------------------------------------------------------------------
 c     include 'MASS'
       include 'TSTEP' ! dep: nelfld
 
-      real bib(1),s(1)
+      parameter (lt=lx1*ly1*lz1*lelt)
+      real bib(lt,1),s(lt,1)
 
       nel=nelfld(jfld)
 
-      call col3(bib,s,bm1,lx1*ly1*lz1*nel)
+      mfld=1
+      if (jfld.eq.1) mfld=ldim
+
+      do i=1,mfld
+         call col3(bib(1,i),s(1,i),bm1,lx1*ly1*lz1*nel)
+      enddo
+
       call binv(bib,jfld)
 
       return
@@ -797,12 +811,19 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'
       include 'MASS'
-      include 'MOR'
 
-      real bic(1),ux(1),uy(1),uz(1),s(1)
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real bic(lt,1),ux(lt),uy(lt),uz(lt),s(lt,1)
       logical ifcf,ifuf
 
-      call convect_new(bic,s,ifuf,ux,uy,uz,ifcf)
+      mfld=1
+      if (jfld.eq.1) mfld=ldim
+
+      do i=1,mfld
+         call convect_new(bic(1,i),s(1,i),ifuf,ux,uy,uz,ifcf)
+      enddo
+
       call binv(bic,jfld)
 
       return
