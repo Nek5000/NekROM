@@ -814,7 +814,7 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real bic(lt,1),ux(lt),uy(lt),uz(lt),s(lt)
+      real bic(lt,1),ux(lt),uy(lt),uz(lt),s(lt,1)
       logical ifcf,ifuf
 
       mfld=1
