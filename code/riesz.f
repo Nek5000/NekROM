@@ -872,3 +872,192 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine ainva(aia,s,dfld,jfld,idir)
+
+      ! apply local A^{-1} A to a scalar field
+
+      ! s    := input scalar field
+      ! dfld := diffusivity field
+      ! jfld := field # of s
+      ! idir := direction of s
+      ! aia  := A^{-1} A s
+
+      include 'SIZE'
+      include 'MASS'     ! dep: bm1
+      include 'MOR'      ! dep: zeros
+      include 'TSTEP'    ! dep: nelfld
+      include 'PARALLEL' ! dep: nelg,nelgv
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      real aia(lt,1),s(lt,1),dfld(lt,1)
+
+      nel=nelfld(jfld)
+      melg=nelg(jfld)
+
+      imsh=2
+      if (melg.eq.nelgv) imsh=1 
+
+      mfld=1
+      if (jfld.eq.1) mfld=ldim
+
+      do i=1,mfld
+         call axhelm(aia(1,i),s(1,i),dfld(1,i),zeros,imsh,idir)
+      enddo
+
+      call ainv(aia,jfld)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine ainvb(aib,s,jfld)
+
+      ! apply local A^{-1} B to a scalar field
+
+      ! s    := input scalar field
+      ! jfld := field # of s
+      ! aib  := A^{-1} B s
+
+      include 'SIZE'
+c     include 'MASS'
+      include 'TSTEP' ! dep: nelfld
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      real aib(lt,1),s(lt,1)
+
+      nel=nelfld(jfld)
+
+      mfld=1
+      if (jfld.eq.1) mfld=ldim
+
+      do i=1,mfld
+         call col3(aib(1,i),s(1,i),bm1,lx1*ly1*lz1*nel)
+      enddo
+
+      call ainv(aib,jfld)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine ainvc(aic,ux,uy,uz,s,ifcf,ifuf,jfld)
+      
+      ! apply local A^{-1} C to a scalar field
+
+      ! ux,uy,uz := input vector field
+      ! s        := input scalar field
+      ! ifcf     := true when ux,uy,uz is on the fine mesh
+      ! ifuf     := true when s is on the fine mesh
+      ! aic      := A^{-1} C(ux,uy,uz) s
+      ! jfld     := field # of s
+
+      include 'SIZE'
+      include 'MASS'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real aic(lt,1),ux(lt),uy(lt),uz(lt),s(lt,1)
+      logical ifcf,ifuf
+
+      mfld=1
+      if (jfld.eq.1) mfld=ldim
+
+      do i=1,mfld
+         call convect_new(aic(1,i),s(1,i),ifuf,ux,uy,uz,ifcf)
+      enddo
+
+      call ainv(aic,jfld)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine ainv(fldi,ifld)
+
+      ! compute fldi = A^-1 * fldi
+
+      ! fldi: input field, can be a vector if ifld==1 
+      ! ifld: field number associated with fldi
+
+      include 'SIZE'
+      include 'MASS'   ! dep: binvm1, bintm1
+      include 'SOLN'   ! dep: v1mask, v2mask, v3mask, tmask
+      include 'TSTEP'  ! dep: ifield, nelfld
+      include 'INPUT'  ! dep: ifaxis, ifaziv
+      include 'ORTHOT' ! dep: napproxt, name4t
+      include 'VPROJ'  ! dep: vproj
+
+      real fldi(lx1*ly1*lz1*lelt,1)
+      real ifld1
+      real h1(1),h2(1)
+      real o1(lx1*ly1*lz1*lelt)
+      real rie_tol, rie_it
+
+      jfield=ifield
+      ifield=ifld
+
+      ifld1 = ifield-1
+
+      nel=nelfld(ifield)
+      n=lx1*ly1*lz1*nel
+
+      if1=ifield-1
+      write(name4t,1) if1-1
+    1 format('PS',i2)
+      if(ifield.eq.2) write(name4t,'(A4)') 'TEMP'
+
+      isd = 1
+      if (ifaxis.and.ifaziv.and.ifield.eq.2) isd = 2
+
+      call rone (h1,n)
+      call rzero(h2,n)
+
+      ! set the tolerance = 1e-10 for all fields
+      rie_tol = 1e-10
+      ! set the max iter = 500
+      rie_it = 500
+
+      ! initial guess = 0
+      if (ifield.eq.1) then
+         imesh = 1
+         call rzero(o1,n)
+         call hsolve ('VELX',o1,fldi(1,1),h1,h2,v1mask,vmult
+     $                      ,imesh,rie_tol,rie_it,1
+     $                      ,vproj(1,1),0,binvm1)
+         call copy(fldi(1,1),o1,n)
+
+         call rzero(o1,n)
+         call hsolve ('VELY',o1,fldi(1,2),h1,h2,v2mask,vmult
+     $                      ,imesh,rie_tol,rie_it,2
+     $                      ,vproj(1,2),0,binvm1)
+         call copy(fldi(1,2),o1,n)
+
+         if (if3d) then 
+            call rzero(o1,n)
+            call hsolve ('VELZ',o1,fldi(1,3),h1,h2,v3mask,vmult
+     $                         ,imesh,rie_tol,rie_it,3
+     $                         ,vproj(1,3),0,binvm1)
+            call copy(fldi(1,3),o1,n)
+         endif
+      else
+         call rzero(o1,n)
+         if(nel.eq.nelv) then
+            imesh = 1
+            call hsolve  (name4t,o1,fldi,h1,h2
+     $                    ,tmask(1,1,1,1,ifield-1)
+     $                    ,tmult(1,1,1,1,ifield-1)
+     $                    ,imesh,rie_tol,rie_it,1
+     $                    ,approxt(1,0,ifld1),0,bintm1)
+         else
+            imesh = 2
+            call hsolve  (name4t,o1,fldi,h1,h2
+     $                    ,tmask(1,1,1,1,ifield-1)
+     $                    ,tmult(1,1,1,1,ifield-1)
+     $                    ,imesh,rie_tol,rie_it,1
+     $                    ,approxt(1,0,ifld1),0,binvm1)
+         endif
+         call copy(fldi,o1,n)
+      endif
+
+      ifield=jfield
+
+      return
+      end
+c-----------------------------------------------------------------------
