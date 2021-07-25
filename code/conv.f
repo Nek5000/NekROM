@@ -133,28 +133,33 @@ c-----------------------------------------------------------------------
          else
             ic=ic+ni
          endif
-         ni=(nb+1)/npi+max(min(i-npi+(nb+1)-((nb+1)/npi)*np,1),0)
+         ni=ceiling(1.*(nb+1)/npi)
+     $     +max(min(i-npi+(nb+1)-((nb+1)/npi)*np,1),0)
          do j=1,npj
             if (j.eq.1) then
                jc=0
             else
-               jc=jc+nk
+               jc=jc+nj
             endif
-            nj=(nb+1)/npj+max(min(j-npj+(nb+1)-((nb+1)/npj)*np,1),0)
+            nj=ceiling(1.*(nb+1)/npj)+
+     $         max(min(j-npj+(nb+1)-((nb+1)/npj)*np,1),0)
             do k=1,npk
                if (k.eq.1) then
                   kc=1
                else
                   kc=kc+nk
                endif
-               nk=nb/npk+max(min(k-npk+nb-(nb/npk)*np,1),0)
+               nk=ceiling(1.*nb/npk)+max(min(k-npk+nb-(nb/npk)*np,1),0)
                if (ip.eq.l) then
                   ic1=ic
                   ic2=ic+ni-1
+                  if (ic2.ge.nb) ic2=nb
                   jc1=jc
                   jc2=jc+nj-1
+                  if (jc2.ge.nb) jc2=nb
                   kc1=kc
                   kc2=kc+nk-1
+                  if (kc2.ge.nb) kc2=nb
                   nloc=(ic2-ic1+1)*(jc2-jc1+1)*(kc2-kc1+1)
                endif
                l=l+1
