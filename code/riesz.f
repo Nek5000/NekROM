@@ -1044,14 +1044,14 @@ c-----------------------------------------------------------------------
      $                    ,tmask(1,1,1,1,ifield-1)
      $                    ,tmult(1,1,1,1,ifield-1)
      $                    ,imesh,rie_tol,rie_it,1
-     $                    ,approxt(1,0,ifld1),0,bintm1)
+     $                    ,approxt(1,0,ifld1),0,binvm1)
          else
             imesh = 2
             call hsolve  (name4t,o1,fldi,h1,h2
      $                    ,tmask(1,1,1,1,ifield-1)
      $                    ,tmult(1,1,1,1,ifield-1)
      $                    ,imesh,rie_tol,rie_it,1
-     $                    ,approxt(1,0,ifld1),0,binvm1)
+     $                    ,approxt(1,0,ifld1),0,bintm1)
          endif
          call copy(fldi,o1,n)
       endif
