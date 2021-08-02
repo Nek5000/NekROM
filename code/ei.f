@@ -1,6 +1,11 @@
 c-----------------------------------------------------------------------
       subroutine cres
 
+      ! This subroutine has been merged to cdres except
+      ! the computing eierr part
+
+      ! TODO: Verify and remove
+
       include 'SIZE'
       include 'MOR'
 
@@ -561,7 +566,7 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine set_residual
 
-c     Compute ROM residual for steady NS with Boussinesq 
+c     Compute ROM residual for steady NS with Boussinesq
 
       include 'SIZE'
       include 'TOTAL'
@@ -740,6 +745,8 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine set_sigma_new
 
+      ! TODO: Remove and put ifdebug piece somewhere else
+
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
@@ -828,6 +835,10 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine crd(num_ts)
+
+      ! This subroutine was made for debugging steady Boussinesq
+
+      ! TODO: Move to somewhere else
 
       include 'SIZE'
       include 'TOTAL'
@@ -923,6 +934,10 @@ c    $                   ,approxt(1,0,ifld1),napproxt(1,ifld1),binvm1)
       end
 c-----------------------------------------------------------------------
       subroutine cres_new(uu,angle)
+
+      ! This subroutine was made for debugging steady Boussinesq
+
+      ! TODO: Move to somewhere else
 
       include 'SIZE'
       include 'TOTAL'
@@ -1128,6 +1143,10 @@ c    $                   riesz_ru(1,ldim,l1),wk1)
 c-----------------------------------------------------------------------
       subroutine cres_new1(angle)
 
+      ! This subroutine was made for debugging steady Boussinesq
+
+      ! TODO: Move to somewhere else
+
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
@@ -1210,6 +1229,10 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine crd_test(num_ts)
+
+      ! This subroutine was made for debugging steady Boussinesq
+
+      ! TODO: Move to somewhere else
 
       include 'SIZE'
       include 'TOTAL'
@@ -1436,6 +1459,9 @@ c-----------------------------------------------------------------------
       subroutine crd_divf(num_ts)
 
       ! make representation to be divergence free
+      ! This subroutine was made for debugging steady Boussinesq
+
+      ! TODO: Move to somewhere else
 
       include 'SIZE'
       include 'TOTAL'
@@ -1523,6 +1549,8 @@ c        t5 = glsc3(xi_p(1,1),xi_p(1,1),bm2,nn)
       end
 c-----------------------------------------------------------------------
       subroutine set_residual_unsteady
+
+c     Compute ROM residual for unsteady NS with Boussinesq
 
       include 'SIZE'
       include 'TOTAL'
@@ -1765,6 +1793,10 @@ c     call set_alphaj
       end
 c-----------------------------------------------------------------------
       subroutine cres_uns(aa,bb)
+
+      ! This subroutine has been merged to cdres
+
+      ! TODO: Verify and remove
 
       include 'SIZE'
       include 'MOR'
@@ -2103,6 +2135,8 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine set_rom_residual
+
+      ! This subroutine is used when lei=0 and eqn = NS
 
       ! compute the rom residual
       ! make res_u and res_t in common block
