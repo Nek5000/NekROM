@@ -93,35 +93,121 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine set_sigma
 
+      ! Compute the inner product between
+      ! riesz respresentations and store it in
+      ! sigma matrix
+
+      ! TODO: Need to integrate the nres, nres_u and nres_t
+      ! for different equations
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      if (nio.eq.0) write (6,*) 'inside set_sigma'
+
+      call nekgsync
+      sigma_time=dnekclock()
+
+      if (lei.eq.1) then
+         ! compute the size of the sigma matrix based on the eqn
+         call set_nres
+
+         ! Read or construct sigma in the following
+         if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
+            call read_sigma
+         else
+            call set_riesz_reps
+            call c_sigma
+         endif
+      endif
+      call nekgsync
+
+      if (nio.eq.0) write (6,*) 'sigma_time:',dnekclock()-sigma_time
+
+      if (nio.eq.0) write (6,*) 'exiting set_sigma'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine set_nres
+
+      ! Compute the size of the sigma matrix
+      ! based on the eqn
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      if (eqn.eq.'POIS') then
+         nres=nb+1
+         nres=nb+1+nb
+      else if (eqn.eq.'HEAT') then
+         nres=(nb+1)*2+1
+      else if (eqn.eq.'ADVE') then
+         nres=(nb+1)*3
+         if (ifrom(1)) nres=(nb+1)*2 + (nb+1)**2
+      else if (eqn.eq.'VNS') then
+         nres=(nb+1)*2+(nb+1)**2
+         if (ifbuoy) nres=nres+nb+1
+      else if (eqn.eq.'NS') then
+         nres_u=(nb+1)*3+(nb+1)**2
+         if (ifrom(2)) nres_t=(nb+1)*2+(nb+1)**2
+         if (ifbuoy) nres_u=nres_u+nb+1
+      else if (eqn.eq.'SNS') then
+         nres_u=(nb+1)*2+(nb+1)**2
+         if (ifrom(2)) nres_t=(nb+1)*1+(nb+1)**2
+         if (ifbuoy) nres_u=nres_u+nb+1
+      endif
+
+      ! check whether allocation for sigma matrix is enough
+      if (eqn.eq.'NS'.OR.eqn.eq.'SNS') then
+         if (nres_u.gt.lres_u)
+     $       call exitti('nres_u > lres_u$',nres_u)
+         if (nres_u.le.0) call exitti('nres_u <= 0$',nres_u)
+         if (ifrom(2)) then
+            if (nres_t.gt.lres_t)
+     $         call exitti('nres_t > lres_t$',nres_t)
+            if (nres_t.le.0) call exitti('nres_t <= 0$',nres_t)
+         endif
+      else
+         if (nres.gt.lres) call exitti('nres > lres$',nres)
+         if (nres.le.0) call exitti('nres <= 0$',nres)
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine read_sigma
+
+      ! Read sigma matrix
+      
+      ! TODO: Need to resolve the sigma_u, sigma_t, and sigma
+      ! inconsistency
+
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
+      real wk1(lt)
 
       n=lx1*ly1*lz1*nelv
 
-      if (eqn.eq.'POI') then
-         nres=nb+1
-         nres=nb+1+nb
-      else if (eqn.eq.'HEA') then
-         nres=(nb+1)*2+1
-      else if (eqn.eq.'ADE') then
-         nres=(nb+1)*3
-         if (ifrom(1)) nres=(nb+1)*2 + (nb+1)**2
-      else if (eqn.eq.'NSE') then
-         nres=(nb+1)*2+(nb+1)**2
-         if (ifbuoy) nres=nres+nb+1
-      else if (eqn.eq.'SNSE') then
-         nres=(nb+1)*2+(nb+1)**2
-         if (ifbuoy) nres=nres+nb+1
-      endif
+      if (eqn.eq.'NS'.OR.eqn.eq.'SNS') then
+         if (nio.eq.0) write (6,*) 'reading sigma_u...'
+         call read_sigma_u_serial(sigma_u,nres_u,nres_u,
+     $                             'ops/sigma_u ',lres_u,nres_u,
+     $                             (lb+1),(nb+1),wk1,nid)
+         if (nio.eq.0) write (6,*) 'reading sigma_t...'
+         call read_sigma_t_serial(sigma_t,nres_t,nres_t,
+     $                             'ops/sigma_t ',lres_t,nres_t,
+     $                             (lb+1),(nb+1),wk1,nid)
 
-      if (nres.gt.lres) call exitti('nres > lres$',nres)
-      if (nres.le.0) call exitti('nres <= 0$',nres)
-
-      if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
-         call read_serial(sigtmp,nres*nres,'ops/sigma ',mor_sigma,nid)
+      else
+         if (nio.eq.0) write (6,*) 'reading sigma...'
+         call read_serial(sigtmp,nres*nres,'ops/sigma '
+     $                     ,mor_sigma,nid)
          l=1
          do j=1,nres
          do i=1,nres
@@ -129,23 +215,27 @@ c-----------------------------------------------------------------------
             l=l+1
          enddo
          enddo
-      else
-         if (eqn.eq.'POI') then
-            ifield=2
-            call set_xi_poisson
-         else if (eqn.eq.'HEA') then
-            ifield=2
-            call set_xi_heat
-         else if (eqn.eq.'ADE') then
-            ifield=2
-            call set_xi_ad
-         else if (eqn.eq.'NSE') then
-            ifield=1
-            call set_xi_ns
-         else if (eqn.eq.'SNSE') then
-            call set_rr_ns
-         endif
+      endif
 
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine c_sigma
+
+      ! Compute sigma matrix
+
+      ! TODO: Need to resolve the xi_u, xi_t, and xi inconsistency
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      if (eqn.eq.'NS'.OR.eqn.eq.'SNS') then
+         call csigma_u(sigma_u)
+         call csigma_t(sigma_t)
+         call dump_serial(sigma_u,(nres_u)**2,'ops/sigma_u ',nid)
+         call dump_serial(sigma_t,(nres_t)**2,'ops/sigma_t ',nid)
+      else
          if (ifield.eq.2) then
             do i=1,nres
             do j=1,nres
@@ -170,6 +260,7 @@ c-----------------------------------------------------------------------
                enddo
             endif
          endif
+         call dump_serial(sigma,(nres)**2,'ops/sigma ',nid)
       endif
 
       return
@@ -2426,5 +2517,39 @@ c-----------------------------------------------------------------------
       endif
 
       if (nio.eq.0) write (6,*) 'exitting resid_in_source'
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine cdres
+
+      ! Computes the dual norm of the residual
+      ! which is the norm of its riesz representation(s)
+
+      include 'SIZE'
+      include 'MOR'
+
+      if (lei.eq.0) then
+c        call c_rieszrd_uns
+         call set_rom_residual
+         call set_riesz_one
+c        call get_dual_norm
+      else
+         if (eqn.eq.'POIS') then
+            call set_theta_poisson
+         else if (eqn.eq.'HEAT') then
+            call set_theta_heat
+         else if (eqn.eq.'ADVE') then
+            call set_theta_ad
+         else if (eqn.eq.'VNS') then
+            call set_theta_ns
+         else if (eqn.eq.'NS') then
+            call set_theta_uns
+         else if (eqn.eq.'SNS') then
+            call exitti('no supprot for Steady NS ROM$',eqn)
+         endif
+      endif
+
+      call c_riesz_norm
+
       return
       end

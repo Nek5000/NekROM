@@ -131,14 +131,9 @@ c        cts='rkck  '
 
     2 continue
 
-      if (ifei.and.(rmode.ne.'OFF'.and.rmode.ne.'AEQ')
-     $   .and.nint(param(175)).eq.1) then
-         call cres_uns(sigma_u,sigma_t)
+      if (ifei.and.(rmode.ne.'OFF'.and.rmode.ne.'AEQ')) then
+         call cdres
 c        call cres
-      endif
-
-      if (nint(param(175)).eq.2) then
-         call c_rieszrd_uns
       endif
 
       ifield=jfield
@@ -253,8 +248,8 @@ c     call average_in_y
             ! do nothing if only one residual
             continue
          else if (lei.eq.1) then
-c           call set_sigma
-            call set_sigma_new
+            call set_sigma
+c           call set_sigma_new
          else
             call exitti('Check your lei$',lei)
          endif
