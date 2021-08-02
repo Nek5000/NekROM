@@ -97,9 +97,6 @@ c-----------------------------------------------------------------------
       ! riesz respresentations and store it in
       ! sigma matrix
 
-      ! TODO: Need to integrate the nres, nres_u and nres_t
-      ! for different equations
-
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
@@ -134,6 +131,9 @@ c-----------------------------------------------------------------------
 
       ! Compute the size of the sigma matrix
       ! based on the eqn
+
+      ! TODO: Need to integrate the nres, nres_u and nres_t
+      ! for different equations
 
       include 'SIZE'
       include 'TOTAL'
@@ -225,6 +225,7 @@ c-----------------------------------------------------------------------
       ! Compute sigma matrix
 
       ! TODO: Need to resolve the xi_u, xi_t, and xi inconsistency
+      ! TODO: Need to resolve the sigma_u, sigma_t, and sigma inconsistency
 
       include 'SIZE'
       include 'TOTAL'

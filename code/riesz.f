@@ -599,6 +599,8 @@ c-----------------------------------------------------------------------
       ! compute the Riesz representation pieces
       ! solve multiple stoke problems and / or poisson problems
 
+      ! TODO: Need to resolve xi, xi_u, xi_t inconsistency
+
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
