@@ -51,3 +51,7 @@ location = none  # (none,conv=convecting field,post=entire field)
 type     = tfunc # (tfunc=transfer function,diff=differentiation) 
 modes    = 0.5   # number of modes to filter for tfunc, <0 -> percentage of nb
 radius   = 1     # radius of filter for the differentiation filter
+
+[EI]
+ei      = no  # error-indicator
+eqn     = NS  # equation

@@ -204,8 +204,8 @@ c     parameters and common blocks for MOR
 
       character*6 cts
       character*5 scopt
-      character*3 ips,eqn,rmode
-      character*4 cftype,cfloc
+      character*3 ips,rmode
+      character*4 cftype,cfloc,eqn
 
       common /morchar/ ips,eqn,rmode,cts,scopt,cftype,cfloc
 

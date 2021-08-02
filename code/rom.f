@@ -750,6 +750,23 @@ c-----------------------------------------------------------------------
       ifrecon=(rmode.ne.'ON '.and.rmode.ne.'CP ')
 
       ifei=nint(param(175)).ne.0
+      if (nint(param(175)).eq.1) then
+         eqn='NS'
+      else if (nint(param(175)).eq.2) then
+         eqn='SNS'
+      else if (nint(param(175)).eq.3) then
+         eqn='POIS'
+      else if (nint(param(175)).eq.4) then
+         eqn='HEAT'
+      else if (nint(param(175)).eq.5) then
+         eqn='ADVE'
+      else if (nint(param(175)).eq.6) then
+         eqn='VNS'
+      else if (nint(param(175)).eq.7) then
+         eqn='VSNS'
+      else
+         call exitti('invalid option for eqn$',eqn)
+      endif
 
       navg_step=nint(max(1.,param(176)))
       do i=1,3
