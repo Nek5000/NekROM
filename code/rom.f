@@ -750,7 +750,9 @@ c-----------------------------------------------------------------------
       ifrecon=(rmode.ne.'ON '.and.rmode.ne.'CP ')
 
       ifei=nint(param(175)).ne.0
-      if (nint(param(175)).eq.1) then
+      if (nint(param(175)).eq.0) then
+         continue
+      else if (nint(param(175)).eq.1) then
          eqn='NS'
       else if (nint(param(175)).eq.2) then
          eqn='SNS'
