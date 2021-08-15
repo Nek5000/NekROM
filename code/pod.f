@@ -36,8 +36,10 @@ c-----------------------------------------------------------------------
          if (ifcomb.and.ifpb) call cnorm(ub,vb,wb,tb)
       endif
 
-      if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ')
-     $   call dump_bas
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
+         call dump_gram
+         call dump_bas
+      endif
 
       call nekgsync
       if (nio.eq.0) write (6,*) 'bas_time:',dnekclock()-bas_time
