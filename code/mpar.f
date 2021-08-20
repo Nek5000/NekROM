@@ -165,7 +165,7 @@ c-----------------------------------------------------------------------
          ibuoy=ibuoy+16
       endif
 
-      if (ldim.eq.3) then
+      if (ldim.eq.2) then
          if (ibuoy.ne.12.and.ibuoy.ne.3.and.ibuoy.ne.0) then
             write (6,*) 'invalid options for buoyancy(2D)'
             ierr=ierr+1
