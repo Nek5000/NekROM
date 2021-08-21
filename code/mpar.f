@@ -161,7 +161,7 @@ c-----------------------------------------------------------------------
 
       call finiparser_getdbl(d_out,'buoyancy:gz',ifnd)
       if (ifnd.eq.1) then
-         gy=d_out
+         gz=d_out
          ibuoy=ibuoy+16
       endif
 
