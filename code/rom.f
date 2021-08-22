@@ -914,6 +914,8 @@ c-----------------------------------------------------------------------
          write (6,*) 'mp_ls         ',ls
          write (6,*) 'mp_lsu        ',lsu
          write (6,*) 'mp_lst        ',lst
+         write (6,*) 'mp_ns         ',ns
+         write (6,*) 'mp_nskip      ',nskip
          write (6,*) ' '
          write (6,*) 'mp_ad_re      ',ad_re
          write (6,*) 'mp_ad_pe      ',ad_pe
