@@ -18,6 +18,7 @@ c-----------------------------------------------------------------------
       stime=dnekclock()
 
       if (icalld.eq.0) then
+         ns=ls
          rom_time=0.
          icalld=1
          call rom_setup
