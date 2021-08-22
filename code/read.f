@@ -201,8 +201,8 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
       parameter (lt2=lx2*ly2*lz2*lelt)
 
-      real usave(lt,ldim,nsu),psave(lt2,nsp),tsave(lt,nst)
-      real tk(nsu)
+      real usave(lt,ldim,1),psave(lt2,1),tsave(lt,1)
+      real tk(1)
 
       character*128 fn
       character*128 fnlint
