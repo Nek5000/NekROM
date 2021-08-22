@@ -245,7 +245,7 @@ c-----------------------------------------------------------------------
   998       call bcast(initc,127)
   127       format(a127)
          enddo
-         if (nio.eq.0) write (6,*) ipass,' '
+         if (nio.eq.0) write (6,*) ip,' '
 
          if (indx1(initc,'done ',5).eq.0) then ! We're not done
             icount = icount+1
