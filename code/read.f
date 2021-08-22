@@ -238,6 +238,7 @@ c-----------------------------------------------------------------------
       icount = 0
       do ip=1,ns
          do i=1,nskp+1
+            if (nio.eq.0) write (6,*) 'wp 1',i,nskp
             call blank(initc,127)
             initc(1) = 'done '
             if (nid.eq.0) read(77,127,end=998) initc(1)
