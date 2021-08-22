@@ -663,6 +663,8 @@ c-----------------------------------------------------------------------
       ifei=.false.
       navg_step=1
       nb=lb
+      ns=ls
+      nskip=0
       rktol=0.
       ad_qstep=ad_iostep
       iftneu=.false.
