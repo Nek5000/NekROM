@@ -4,7 +4,7 @@ c     Note: Keys have to be in capital letters
 c
       integer MORDICT_NKEYS
 
-      parameter (MORDICT_NKEYS = 47)
+      parameter (MORDICT_NKEYS = 49)
 
       character*132 mordictkey(MORDICT_NKEYS)
       data
@@ -12,46 +12,48 @@ c
      &  mordictkey(2)  / 'GENERAL:MODE' /
      &  mordictkey(3)  / 'GENERAL:FIELD' /
      &  mordictkey(4)  / 'GENERAL:NB' /
-     &  mordictkey(5)  / 'GENERAL:EI' /         
-     &  mordictkey(6)  / 'GENERAL:AVGINIT' /
-     &  mordictkey(7)  / 'GENERAL:RKTOL' /
-     &  mordictkey(8)  / 'GENERAL:TNEUBC' /
-     &  mordictkey(9)  / 'GENERAL:NPLAY' /
-     &  mordictkey(10) / 'POD' /
-     &  mordictkey(11) / 'POD:TYPE' /
-     &  mordictkey(12) / 'POD:MODE0' /
-     &  mordictkey(13) / 'POD:COMBINED' /
-     &  mordictkey(14) / 'POD:RATIO' /
-     &  mordictkey(15) / 'QOI' /
-     &  mordictkey(16) / 'QOI:FREQ' /
-     &  mordictkey(17) / 'QOI:TKE' /
-     &  mordictkey(18) / 'QOI:DRAG' /
-     &  mordictkey(19) / 'QOI:NU' /
-     &  mordictkey(20) / 'QOI:NINTP' /
-     &  mordictkey(21) / 'COPT' /
-     &  mordictkey(22) / 'COPT:MODE' /
-     &  mordictkey(23) / 'COPT:FIELD' /
-     &  mordictkey(24) / 'COPT:BARRIER' /
-     &  mordictkey(25) / 'COPT:BOXTOL' /
-     &  mordictkey(26) / 'COPT:VPAR0' /
-     &  mordictkey(27) / 'COPT:VNLOOP' /
-     &  mordictkey(28) / 'COPT:TPAR0' /
-     &  mordictkey(29) / 'COPT:TNLOOP' /
-     &  mordictkey(30) / 'FAST' /
-     &  mordictkey(31) / 'FAST:CEVAL' /
-     &  mordictkey(32) / 'FAST:HEVAL' /
-     &  mordictkey(33) / 'FORCING' /
-     &  mordictkey(34) / 'FORCING:BODY' /
-     &  mordictkey(35) / 'FORCING:SOURCE' /
-     &  mordictkey(36) / 'FORCING:BUOYANCY' /
-     &  mordictkey(37) / 'FILTER' /
-     &  mordictkey(38) / 'FILTER:LOCATION' /
-     &  mordictkey(39) / 'FILTER:TYPE' /
-     &  mordictkey(40) / 'FILTER:MODES' /
-     &  mordictkey(41) / 'FILTER:RADIUS' /
-     &  mordictkey(42) / 'BUOYANCY' /
-     &  mordictkey(43) / 'BUOYANCY:MAGNITUDE' /
-     &  mordictkey(44) / 'BUOYANCY:ANGLE' /
-     &  mordictkey(45) / 'BUOYANCY:GX' /
-     &  mordictkey(46) / 'BUOYANCY:GY' /
-     &  mordictkey(47) / 'BUOYANCY:GZ' /
+     &  mordictkey(5)  / 'GENERAL:NS' /
+     &  mordictkey(6)  / 'GENERAL:NSKIP' /
+     &  mordictkey(7)  / 'GENERAL:EI' /         
+     &  mordictkey(8)  / 'GENERAL:AVGINIT' /
+     &  mordictkey(9)  / 'GENERAL:RKTOL' /
+     &  mordictkey(10) / 'GENERAL:TNEUBC' /
+     &  mordictkey(11) / 'GENERAL:NPLAY' /
+     &  mordictkey(12) / 'POD' /
+     &  mordictkey(13) / 'POD:TYPE' /
+     &  mordictkey(14) / 'POD:MODE0' /
+     &  mordictkey(15) / 'POD:COMBINED' /
+     &  mordictkey(16) / 'POD:RATIO' /
+     &  mordictkey(17) / 'QOI' /
+     &  mordictkey(18) / 'QOI:FREQ' /
+     &  mordictkey(19) / 'QOI:TKE' /
+     &  mordictkey(20) / 'QOI:DRAG' /
+     &  mordictkey(21) / 'QOI:NU' /
+     &  mordictkey(22) / 'QOI:NINTP' /
+     &  mordictkey(23) / 'COPT' /
+     &  mordictkey(24) / 'COPT:MODE' /
+     &  mordictkey(25) / 'COPT:FIELD' /
+     &  mordictkey(26) / 'COPT:BARRIER' /
+     &  mordictkey(27) / 'COPT:BOXTOL' /
+     &  mordictkey(28) / 'COPT:VPAR0' /
+     &  mordictkey(29) / 'COPT:VNLOOP' /
+     &  mordictkey(30) / 'COPT:TPAR0' /
+     &  mordictkey(31) / 'COPT:TNLOOP' /
+     &  mordictkey(32) / 'FAST' /
+     &  mordictkey(33) / 'FAST:CEVAL' /
+     &  mordictkey(34) / 'FAST:HEVAL' /
+     &  mordictkey(35) / 'FORCING' /
+     &  mordictkey(36) / 'FORCING:BODY' /
+     &  mordictkey(37) / 'FORCING:SOURCE' /
+     &  mordictkey(38) / 'FORCING:BUOYANCY' /
+     &  mordictkey(39) / 'FILTER' /
+     &  mordictkey(40) / 'FILTER:LOCATION' /
+     &  mordictkey(41) / 'FILTER:TYPE' /
+     &  mordictkey(42) / 'FILTER:MODES' /
+     &  mordictkey(43) / 'FILTER:RADIUS' /
+     &  mordictkey(44) / 'BUOYANCY' /
+     &  mordictkey(45) / 'BUOYANCY:MAGNITUDE' /
+     &  mordictkey(46) / 'BUOYANCY:ANGLE' /
+     &  mordictkey(47) / 'BUOYANCY:GX' /
+     &  mordictkey(48) / 'BUOYANCY:GY' /
+     &  mordictkey(49) / 'BUOYANCY:GZ' /

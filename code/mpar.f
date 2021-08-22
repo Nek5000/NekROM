@@ -102,6 +102,14 @@ c-----------------------------------------------------------------------
          ierr=ierr+1
       endif
 
+      call finiparser_getdbl(d_out,'general:ns',ifnd)
+      if (ifnd.eq.1) ns=min(nint(d_out),ls)
+      if (ns.eq.0) ns=ls
+
+      call finiparser_getdbl(d_out,'general:nskip',ifnd)
+      nskip=0
+      if (ifnd.eq.1) nskip=nint(d_out)
+
       call finiparser_getbool(i_out,'general:ei',ifnd)
       if (ifnd.eq.1) ifei=i_out.eq.1
 
@@ -411,6 +419,8 @@ c-----------------------------------------------------------------------
 
       call bcast(max_tr,isize)
       call bcast(nb,isize)
+      call bcast(ns,isize)
+      call bcast(nskip,isize)
       call bcast(navg_step,isize)
       call bcast(nplay,isize)
       call bcast(ad_qstep,isize)

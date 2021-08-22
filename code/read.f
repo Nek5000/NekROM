@@ -181,12 +181,14 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine read_fields(usave,psave,tsave,nsu,nsp,nst,tk,fn,ifa)
+      subroutine read_fields(usave,psave,tsave,ns,nskp,ifread,tk,fn,ifa)
 
       ! Reads and stores field files in given arrays
 
       ! usave,psave,tsave := velocity, pressure, temperature storage
-      ! nsu,nsp,nst       := number of fields to save in each field
+      ! ns                := number of fields to save
+      ! nskp              := skipping interval
+      ! ifread            := flags for reading each field
       ! tk                := time at each snapshot
       ! fn                := file name of the list file
       ! ifa               := to average or not to average
@@ -205,7 +207,7 @@ c-----------------------------------------------------------------------
       character*128 fn
       character*128 fnlint
 
-      logical ifa
+      logical ifa,ifread(3)
 
       common /scrk2/ t4(lt),t5(lt),t6(lt)
 
@@ -231,17 +233,17 @@ c-----------------------------------------------------------------------
 
       call opcopy(t4,t5,t6,xm1,ym1,zm1)
 
-      nsave=max(max(nsu,nsp),nst)
-
-      if (nio.eq.0) write (6,*) 'nu,np,nt:',nsu,nsp,nst
+      if (nio.eq.0) write (6,*) 'ns:',ns
 
       icount = 0
-      do ip=1,nsave
-         call blank(initc,127)
-         initc(1) = 'done '
-         if (nid.eq.0) read(77,127,end=998) initc(1)
-  998    call bcast(initc,127)
-  127    format(a127)
+      do ip=1,ns
+         do i=1,nskp+1
+            call blank(initc,127)
+            initc(1) = 'done '
+            if (nid.eq.0) read(77,127,end=998) initc(1)
+  998       call bcast(initc,127)
+  127       format(a127)
+         enddo
          if (nio.eq.0) write (6,*) ipass,' '
 
          if (indx1(initc,'done ',5).eq.0) then ! We're not done
@@ -263,12 +265,12 @@ c-----------------------------------------------------------------------
                if (ldim.eq.3) call add2col2(uvms,vz,t,n)
             endif
 
-            if (icount.le.nsu)
+            if (ifread(1))
      $         call opcopy(usave(1,1,ip),usave(1,2,ip),usave(1,ldim,ip),
      $                    vx,vy,vz)
 
-            if (icount.le.nsp) call copy(psave(1,ip),pr,n2)
-            if (icount.le.nst) call copy(tsave(1,ip),t,n)
+            if (ifread(2)) call copy(psave(1,ip),pr,n2)
+            if (ifread(3)) call copy(tsave(1,ip),t,n)
          else
             goto 999
          endif
@@ -277,18 +279,16 @@ c-----------------------------------------------------------------------
   999 continue  ! clean up averages
       if (nid.eq.0) close(77)
 
-      nsave = icount ! Actual number of files read
+      ns = icount ! Actual number of files read
 
       call pop_sol(vx,vy,vz,pr,t)
 
       if (ifa) then
-         su=1./real(min(nsave,nsu))
-         sp=1./real(min(nsave,nsp))
-         st=1./real(min(nsave,nst))
+         s=1./real(ns)
 
-         call scale_sol(uavg,vavg,wavg,pavg,tavg,su)
-         call scale_sol(urms,vrms,wrms,prms,trms,su)
-         call opcmult(vwms,wums,uvms,su,n)
+         call scale_sol(uavg,vavg,wavg,pavg,tavg,s)
+         call scale_sol(urms,vrms,wrms,prms,trms,s)
+         call opcmult(vwms,wums,uvms,s,n)
       endif
 
       call opcopy(xm1,ym1,zm1,t4,t5,t6)
