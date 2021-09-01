@@ -233,8 +233,6 @@ c     parameters and common blocks for MOR
 
       ! Average Equation
 
-      parameter (lbavg=lb)
-
       common /moravg/ uafld(lx1*ly1*lz1*lelt,ldim,lbavg),
      $                uufld(lx1*ly1*lz1*lelt,ldim,lbavg),
      $                uvfld(lx1*ly1*lz1*lelt,ldim,lbavg),
