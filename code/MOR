@@ -5,13 +5,6 @@ c     parameters and common blocks for MOR
       common /morgram/ ug(ls,ls,0:ldimt1)
       common /moreig/ evec(ls,lb,0:ldimt1),eval(ls,0:ldimt1)
 
-      common /morconvect/ c1v(lxd*lyd*lzd*lelm,0:lub),
-     $                    c2v(lxd*lyd*lzd*lelm,0:lub),
-     $                    c3v(lxd*lyd*lzd*lelm,0:lub),
-     $                    u1v(lxd*lyd*lzd*lelm,0:lub),
-     $                    u2v(lxd*lyd*lzd*lelm,0:lub),
-     $                    u3v(lxd*lyd*lzd*lelm,0:lub)
-
       common /morbasis/ ub(lx1*ly1*lz1*lelm,0:lub),
      $                  vb(lx1*ly1*lz1*lelm,0:lub),
      $                  wb(lx1*ly1*lz1*lelm,0:lub),
