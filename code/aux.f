@@ -2466,3 +2466,23 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine tfunc(u,rad,wt,n)
+
+      ! apply transfer function defined by rad and wt to a vector
+
+      ! u   := input/output coefficient set
+      ! rad := radius of the damping (percentage of trailing modes)
+      ! wt  := weight of the damping (percent attenuation for mode n)
+      ! n   := length of coefficient set
+
+      real u(n)
+
+      m=n*rad
+
+      do i=0,m-1
+         u(n-i)=u(n-i)*(1.0-wt*(m*1.0-i)/(m*1.0))
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
