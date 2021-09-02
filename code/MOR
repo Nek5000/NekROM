@@ -14,7 +14,7 @@ c     parameters and common blocks for MOR
       common /moric/ uic(lx1*ly1*lz1*lelm),
      $               vic(lx1*ly1*lz1*lelm),
      $               wic(lx1*ly1*lz1*lelm),
-     $               pic(lx1*ly1*lz1*lelm),
+     $               pic(lx2*ly2*lz2*lelm),
      $               tic(lx1*ly1*lz1*lelm)
 
       common /morcoef/ uk(0:lub,lsu),tk(0:ltb,lst),timek(lcs)
