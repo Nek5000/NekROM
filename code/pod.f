@@ -35,7 +35,6 @@ c-----------------------------------------------------------------------
       endif
 
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
-         call dump_gram
          call dump_bas
       endif
 
