@@ -1368,7 +1368,7 @@ c-----------------------------------------------------------------------
 
       real h(n,n),wt(n,n),wk(n)
 
-      call regularev(h,wk,n,wt)
+      call regularev(h,wk,n,wt,max(n*n,2))
 
       do j=1,n
       do i=1,n

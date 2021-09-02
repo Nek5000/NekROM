@@ -17,8 +17,7 @@ c-----------------------------------------------------------------------
          call loadbases
       else if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
          if (ifrom(1)) then
-            call pod(uvwb(1,1,1),evec(1,1,1),eval(1,1),ug(1,1,1),
-     $         us0,ldim,ips,nb,ns,ifpb)
+            call pod(uvwb(1,1,1),eval,ug,us0,ldim,ips,nb,ns,ifpb)
             do ib=1,nb
                call opcopy(ub(1,ib),vb(1,ib),wb(1,ib),
      $            uvwb(1,1,ib),uvwb(1,2,ib),uvwb(1,ldim,ib))
@@ -28,8 +27,7 @@ c-----------------------------------------------------------------------
             call opcopy(ub,vb,wb,uic,vic,wic)
          endif
          if (ifrom(2)) then
-            call pod(tb(1,1),evec(1,1,2),eval(1,2),ug(1,1,2),
-     $         ts0,1,ips,nb,ns,ifpb)
+            call pod(tb(1,1),eval,ug,ts0,1,ips,nb,ns,ifpb)
             if (.not.ifcomb.and.ifpb) call snorm(tb)
          endif
 
@@ -818,13 +816,12 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine genevec(vec,val,gg,ms,mb,ifld)
+      subroutine genevec(vec,val,ms,mb,ifld)
 
-      ! set the eigenvectors based on the given Gramian
+      ! solve eigensystem based on the given Gramian (vec)
 
-      ! vec  := eigenvectors
+      ! vec  := eigenvectors (initially Gramian)
       ! val  := eigenvalues
-      ! gg   := Gramian
       ! ms   := number of snapshots
       ! mb   := number of basis
       ! ifld := field number
@@ -832,31 +829,35 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'TSTEP'
       include 'LMOR'
-      
-      common /scrgvec/ gc(ls*ls),wk(ls*ls*2)
 
-      real gg(ms,ms),vec(ms,mb),val(ms)
+      parameter (lwork=5*ls)
+      
+      common /scrgvec/ wk(lwork)
+
+      real vec(ms,ms),val(ms)
 
       if (nio.eq.0) write (6,*) 'inside genevec'
 
       call nekgsync
       eig_time=dnekclock()
 
-      call copy(gc,gg,ms*ms)
+      call regularev(vec,val,ms,wk,lwork)
 
-      call regularev(gc,val,ms,wk)
-      call copy(wk,gc,ms*ms)
+      do i=1,ms/2
+         call copy(wk,vec(1,i),ms)
+         call copy(vec(1,i),vec(1,ms-i+1),ms)
+         call copy(vec(1,ms-i+1),wk,ms)
+         tmp=val(i)
+         val(i)=val(ms-i+1)
+         val(ms-i+1)=tmp
+      enddo
 
       call nekgsync
       eval_time=dnekclock()
 
-      do l = 1,mb
-         call copy(vec(1,l),wk(1+(ms-l)*ms),ms) ! reverse order of wk
-      enddo
-
-      do i=1,ns
+      do i=1,ms
          if (nio.eq.0) write (6,'(i5,1p1e16.6,3x,a,i1)')
-     $      i,val(ns-i+1),'eval',ifld
+     $      i,val(i),'eval',ifld
       enddo
 
       call nekgsync
@@ -1069,7 +1070,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine regularev(a,lam,n,wk)
+      subroutine regularev(a,lam,n,wk,lwork)
  
 c     Solve the eigenvalue problem  A x = lam x
 c
@@ -1087,7 +1088,7 @@ c     should be called.
 
       call copy(aa,a,100)
 
-      call dsyev('V','U',n,a,n,lam,wk,2*n*n,info)
+      call dsyev('V','U',n,a,n,lam,wk,lwork,info)
 
       if (info.ne.0) then
          if (nid.eq.0) then
@@ -1221,14 +1222,14 @@ c       if (nio.eq.0) write(6,*)i,enr(i),'Nmax for field',ifld
       return
       end
 c-----------------------------------------------------------------------
-      subroutine pod(basis,evec,eval,gram,snaps,mdim,cips,nb,ns,ifpod)
+      subroutine pod(basis,eval,gram,snaps,mdim,cips,nb,ns,ifpod)
 
       include 'SIZE'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
       real basis(lt,mdim,nb),snaps(lt,mdim,ns),
-     $   evec(ns,ns),eval(ns),gram(ns,ns)
+     $   eval(ns),gram(ns,ns)
 
       character*3 cips
       logical ifpod
@@ -1238,10 +1239,10 @@ c-----------------------------------------------------------------------
       call gengram(gram,snaps,ns,mdim,cips)
 
       if (ifpod) then
-         call genevec(evec,eval,gram,ns,nb,mdim)
+         call genevec(gram,eval,ns,nb,mdim)
          do i=1,mdim
             call dgemm('N','N',n,nb,ns,1.,
-     $         snaps(1,i,1),lt*mdim,evec,ns,0.,basis(1,i,1),lt*mdim)
+     $         snaps(1,i,1),lt*mdim,gram,ns,0.,basis(1,i,1),lt*mdim)
          enddo
       endif
 
