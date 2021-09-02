@@ -227,16 +227,7 @@ c-----------------------------------------------------------------------
       call mor_init_fields
       call mor_set_params_uni_post
 
-      inquire (file='ops/evec',exist=ifexist)
-      if (ifexist) then
-         open (unit=10,file='ops/evec')
-         do i=1,ns
-            read (10,*) (evec(i,j,1),j=1,nb)
-         enddo
-         close (unit=10)
-      else
-         call setbases
-      endif
+      call setbases
 
 c     call average_in_xy
 c     call average_in_y
