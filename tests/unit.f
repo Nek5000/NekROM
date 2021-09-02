@@ -113,7 +113,7 @@ c-----------------------------------------------------------------------
       if (nio.eq.0) write (6,*) 'edif',edif,s1,s2
 
       iexit=1
-      if (edif.lt.4.e-13) iexit=0
+      if (edif.lt.8.e-13) iexit=0
 
       call exit(iexit)
 
@@ -382,7 +382,7 @@ c-----------------------------------------------------------------------
       enddo
 
       edif=sqrt(s1/s3)
-      if (edif.gt.2.e-12) iexit=iexit+1
+      if (edif.gt.2.e-10) iexit=iexit+1
       if (nio.eq.0) write (6,*) 'edif',edif,s1,s3
 
       eskew=sqrt(s2/s3)
