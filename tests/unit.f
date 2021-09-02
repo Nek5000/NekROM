@@ -47,7 +47,7 @@ c-----------------------------------------------------------------------
          s1=s1+(ug(i,j)-ug(j,i))**2
          s2=s2+(ug(i,j)-vv(i,j))**2
          s3=s3+vv(i,j)**2
-         if (nio.eq.0) write (6,*) 'gram',i,j,ug(i,j,1),vv(i,j)
+         if (nio.eq.0) write (6,*) 'gram',i,j,ug(i,j),vv(i,j)
       enddo
       enddo
 
