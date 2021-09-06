@@ -78,6 +78,7 @@ c     first frontal slice and first lateral slice.
       local_size = (ic2-ic1+1)*(jc2-jc1+1)*(kc2-kc1+1)
       write(6,*)'local_size',local_size
       norm_c = vlsc2(cl,cl,local_size)
+      if (nid.eq.0) write(6,*)'norm_tens:',norm_tens
 
       if (ifcore) then
          call set_c_slice(cj0,c0k,cl,ic1,ic2,jc1,jc2,kc1,kc2,nb)
@@ -291,18 +292,20 @@ c-----------------------------------------------------------------------
          reldiff = abs(pre_relres-cp_relres)/pre_relres
 
          pre_relres = cp_relres
-         if (nid.eq.0) write(6,1)'iter:', ii,'rel difference:',reldiff,
-     $   'relative residual:', cp_relres, 'rank:', nn
+         if (nid.eq.0) write(6,1)'iter:',ii,'rel difference:',reldiff,
+     $   'relative residual:',cp_relres,'residual:',cp_res,'rank:',nn
          if (cp_relres.lt.cp_tol.OR.ii.ge.maxit.OR.reldiff.le.1e-5) then
             exit
          endif
+         call exitt0
       enddo
 
       call copy(cp_a,fcm(1,1),mm*nn)
       call copy(cp_b,fcm(1,2),mm*nn)
       call copy(cp_c,fcm(1,3),mm*nn)
 
-    1 format(a,i4,x,a,1p1e13.5,x,a,1p1e13.5,x,a,i4)
+    1 format(a,i4,x,a,1p1e13.5,x,a,1p1e13.5,x,a,1p1e13.5,x,a,i4)
+
       if (nid.eq.0) write(6,*) 'exitting als'
 
       return
@@ -689,12 +692,15 @@ c     exact tensor
 c     compute the frobenius norm of the approximated tensor
       do ii=1,nn
          call col2c(lsm(1,ii),fcmpm(1,ii),cp_weight(ii),nn)
-         call cmult(lsm(1,ii),cp_weight(ii),nn)
+      enddo
+      do jj=1,nn
+      do ii=1,nn
+         lsm(ii,jj) = lsm(ii,jj) * cp_weight(ii)
+      enddo
       enddo
       norm_approx = vlsum(lsm,nn**2)
 
-      residual = sqrt((norm_tens - 2*inner_prod + norm_approx))
-
+      residual = sqrt(abs(norm_tens - 2*inner_prod + norm_approx))
       return
       end
 c-----------------------------------------------------------------------
