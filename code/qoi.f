@@ -174,7 +174,7 @@ c-----------------------------------------------------------------------
       common /scrk1/ ux(lt),uy(lt),uz(lt),w(lub+1)
 
       if (ifcdrag) then
-         if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
+         if (rmode.eq.'ON '.or.rmode.eq.'ONB'.or.rmode.eq.'CP ') then
             call read_serial(rdgx,nb+1,'qoi/rdgx ',w,nid)
             call read_serial(rdgy,nb+1,'qoi/rdgy ',w,nid)
             if (ldim.eq.3) call read_serial(rdgz,nb+1,'qoi/rdgz ',w,nid)

@@ -169,14 +169,15 @@ c     parameters and common blocks for MOR
      $        ifcdrag,ifrms,ifread,ifforce,ifpod(0:ldimt1),
      $        ifbuoy,ifrom(0:ldimt1),ifcintp,iffastc,ifcnuss,ifctke,
      $        iffasth,ifavisc,ifsource,ifei,ifsub0,ifrecon,iftneu,
-     $        ifdecpl,ifcore,ifquad,ifhelm,ifsrct,iftflux,ifcomb,ifpb
+     $        ifdecpl,ifcore,ifquad,ifhelm,ifsrct,iftflux,ifcomb,ifpb,
+     $        ifcp
 
       common /morflags/ ifl2,ifvort,ifstep,ifavg0,ifplay,
      $                  ifcdrag,ifrms,ifread,ifforce,ifpod,
      $                  ifbuoy,ifrom,ifcintp,iffastc,ifcnuss,ifctke,
      $                  iffasth,ifavisc,ifsource,ifei,ifsub0,ifrecon,
      $                  iftneu,ifdecpl,ifcore,ifquad,ifhelm,ifsrct,
-     $                  iftflux,ifcomb,ifpb
+     $                  iftflux,ifcomb,ifpb,ifcp
 
       real last_time,misc_time,lu_time,
      $     copt_time,quasi_time,lnsrch_time,

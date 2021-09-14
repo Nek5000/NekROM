@@ -21,6 +21,7 @@ c-----------------------------------------------------------------------
          rom_time=0.
          icalld=1
          call rom_setup
+         if (ifcp) call cp_setup
       endif
 
       ad_step = istep
@@ -339,8 +340,7 @@ c-----------------------------------------------------------------------
 
       real visc(10)
 
-      logical iftmp,ifexist
-      real wk(lb+1)
+      logical iftmp
 
       if (nio.eq.0) write (6,*) 'inside setops'
 
@@ -353,26 +353,14 @@ c-----------------------------------------------------------------------
          call seta(au,au0,'ops/au ')
          if (rmode.eq.'AEQ') call setae(aue,'ops/aue ')
          call setb(bu,bu0,'ops/bu ')
-         if (rmode.eq.'CP ') then 
-            inquire (file='ops/u0',exist=ifexist)
-            if (ifexist) call read_serial(u,nb+1,'ops/u0 ',wk,nid)
-            call set_cp(cua,cub,cuc,cp_uw,cuj0,cu0k,cul,'ops/cu ',u)
-         else
-            call setc(cul,'ops/cu ')
-         endif
+         call setc(cul,'ops/cu ')
       endif
       if (ifrom(2)) then
          ifield=2
          call seta(at,at0,'ops/at ')
          if (rmode.eq.'AEQ') call setae(ate,'ops/ate ')
          call setb(bt,bt0,'ops/bt ')
-         if (rmode.eq.'CP ') then 
-            inquire (file='ops/t0',exist=ifexist)
-            if (ifexist) call read_serial(ut,nb+1,'ops/t0 ',wk,nid)
-            call set_cp(cta,ctb,ctc,cp_tw,ctj0,ct0k,ctl,'ops/ct ',ut)
-         else
-            call setc(ctl,'ops/ct ')
-         endif
+         call setc(ctl,'ops/ct ')
          call sets(st0,tb,'ops/ct ')
       endif
 
@@ -643,6 +631,7 @@ c-----------------------------------------------------------------------
       ifsub0=.true.
       ifcomb=.false.
       ifpb=.true.
+      ifcp=.false.
 
       do i=0,ldimt1
          ifpod(i)=.false.
@@ -655,7 +644,7 @@ c-----------------------------------------------------------------------
       ifcintp=.false.
 
       ifcore=.true.
-      ifquad=.true.
+      ifquad=.false.
 
       ips='L2 '
       isolve=0
@@ -725,10 +714,6 @@ c-----------------------------------------------------------------------
          rmode='ON '
       else if (np173.eq.3) then
          rmode='ONB'
-      else if (np173.eq.4) then
-         rmode='CP '
-         max_tr = ltr
-      else
          call exitti('unsupported param(173), exiting...$',np173)
       endif
 
@@ -912,6 +897,7 @@ c-----------------------------------------------------------------------
          write (6,*) 'mp_ls         ',ls
          write (6,*) 'mp_lsu        ',lsu
          write (6,*) 'mp_lst        ',lst
+         write (6,*) 'mp_ltr        ',ltr
          write (6,*) ' '
          write (6,*) 'mp_ad_re      ',ad_re
          write (6,*) 'mp_ad_pe      ',ad_pe
@@ -938,6 +924,7 @@ c-----------------------------------------------------------------------
          write (6,*) 'mp_ifvort     ',ifvort
          write (6,*) 'mp_ifcintp    ',ifcintp
          write (6,*) 'mp_ifdecpl    ',ifdecpl
+         write (6,*) 'mp_ifcp       ',ifcp
          write (6,*) ' '
          do i=0,ldimt1
             write (6,*) 'mp_ifpod(',i,')   ',ifpod(i)
@@ -959,7 +946,6 @@ c-----------------------------------------------------------------------
          write (6,*) 'mp_rbf         ',rbf
          write (6,*) 'mp_rdft        ',rdft
          write (6,*) ' '
-         write (6,*) 'mp_max_tr      ',max_tr
          write (6,*) 'mp_navg_step   ',navg_step
          write (6,*) 'mp_rk_tol      ',rk_tol
          write (6,*) 'mp_iftneu      ',iftneu
