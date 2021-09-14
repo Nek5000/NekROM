@@ -5,21 +5,42 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
+      common /scrtens_norm/ norm_c,norm_c0
+
       logical ifexist
-      real wk(lb+1)
+      real wk(lb+1),cl0(lcglo)
+      real norm_c,norm_c0
 
       jfield=ifield
       if (ifrom(1)) then
          ifield=1
          inquire (file='ops/u0',exist=ifexist)
          if (ifexist) call read_serial(u,nb+1,'ops/u0 ',wk,nid)
-         call set_cp(cua,cub,cuc,cp_uw,cuj0,cu0k,cul,'ops/cu ',u)
+
+         if (ifquad) then
+            call force_skew(cul,ic1,ic2,jc1,jc2,kc1,kc2)
+         endif
+         local_size = (ic2-ic1+1)*(jc2-jc1+1)*(kc2-kc1+1)
+         write(6,*)'local_size',local_size
+         norm_c = vlsc2(cul,cul,local_size)
+         if (nid.eq.0) write(6,*)'norm_tens:',norm_c
+
+         if (ifcore) then
+            call set_c_slice(cuj0,cu0k,cul,ic1,ic2,jc1,jc2,kc1,kc2,nb)
+            call set_c_core(cl0,cul,ic1,ic2,jc1,jc2,kc1,kc2,nb)
+            local_size = (ic2-ic1+1)*(jc2-jc1)*(kc2-kc1)
+            write(6,*)'local_core_size',local_size
+            norm_c0 = vlsc2(cl0,cl0,local_size)
+         if (nid.eq.0) write(6,*)'norm_tens:',norm_c0
+         endif
+
+         call compute_cp(cua,cub,cuc,cp_uw,cuj0,cu0k,cul,'ops/cu ',u)
       endif
       if (ifrom(2)) then
          ifield=2
          inquire (file='ops/t0',exist=ifexist)
          if (ifexist) call read_serial(ut,nb+1,'ops/t0 ',wk,nid)
-         call set_cp(cta,ctb,ctc,cp_tw,ctj0,ct0k,ctl,'ops/ct ',ut)
+         call compute_cp(cta,ctb,ctc,cp_tw,ctj0,ct0k,ctl,'ops/ct ',ut)
       endif
 c     call read_cp_weight
 c     call read_cp_mode
@@ -28,7 +49,7 @@ c     call read_cp_mode
       return
       end
 c-----------------------------------------------------------------------
-      subroutine set_cp(cp_a,cp_b,cp_c,cp_w,cj0,c0k,cl,fname,uu)
+      subroutine compute_cp(cp_a,cp_b,cp_c,cp_w,cj0,c0k,cl,fname,uu)
 
 c     This subroutine requires fname and uu and
 c     returns cp_a, cp_b, cp_c ,cp_w, cj0, c0k, cl where
@@ -54,16 +75,14 @@ c     first frontal slice and first lateral slice.
 
       real cp_a((nb+1)*ltr),cp_b((nb+1)*ltr)
       real cp_c((nb+1)*ltr),cp_w(ltr)
-      real fcm(3*ltr*(lb+1))
-      real fcmpm(3*ltr**2)
-      real lsm(3*ltr**2)
-      real lsminv(3*ltr**2)
+      real fcm(ltr*(lb+1),3),fcmpm(ltr**2,3)
+      real lsm(ltr**2,3),lsminv(ltr**2,3)
       real lsr(ltr*(lb+1))
       real cl(lcglo),cl0(lcglo)
       real cj0((nb+1)**2),c0k((nb+1)**2)
       real uu(0:nb)
       real wk1((nb+1)*ltr),wk2(ltr)
-      real norm_c,norm_c0,cu_err
+      real cu_err,norm_c,norm_c0
 
       integer rank_list(2,ltr),mm
       integer glo_i,work
@@ -71,76 +90,34 @@ c     first frontal slice and first lateral slice.
       character*128 fname
       character*128 fnlint
 
-      if (nio.eq.0) write (6,*) 'inside set_cp'
+      if (nio.eq.0) write (6,*) 'inside compute_cp'
 
       call nekgsync
       tcp_time=dnekclock()
-
-      ! set global index
-      ic1=1
-      ic2=nb
-      jc1=0
-      jc2=nb
-      kc1=0
-      kc2=nb
-
-      n=lx1*ly1*lz1*nelv
-
-      call lints(fnlint,fname,128)
-      if (nid.eq.0) open (unit=100,file=fnlint)
-      if (nio.eq.0) write (6,*) 'setc file:',fnlint
-
-      do k=0,nb
-      do j=0,mb
-      do i=1,mb
-         cel=0.
-         if (nid.eq.0) read(100,*) cel
-         cel=glsum(cel,1)
-         call setc_local(cl,cel,ic1,ic2,jc1,jc2,kc1,kc2,i,j,k)
-      enddo
-      enddo
-      enddo
-      write(6,*)'check index',ic1,ic2,jc1,jc2,kc1,kc2,nid
-      call nekgsync
-
-      if (ifquad) then
-         call force_skew(cl,ic1,ic2,jc1,jc2,kc1,kc2)
-      endif
-      local_size = (ic2-ic1+1)*(jc2-jc1+1)*(kc2-kc1+1)
-      write(6,*)'local_size',local_size
-      norm_c = vlsc2(cl,cl,local_size)
-      if (nid.eq.0) write(6,*)'norm_tens:',norm_c
-
-      if (ifcore) then
-         call set_c_slice(cj0,c0k,cl,ic1,ic2,jc1,jc2,kc1,kc2,nb)
-         call set_c_core(cl0,cl,ic1,ic2,jc1,jc2,kc1,kc2,nb)
-         local_size = (ic2-ic1+1)*(jc2-jc1)*(kc2-kc1)
-         write(6,*)'local_core_size',local_size
-         norm_c0 = vlsc2(cl0,cl0,local_size)
-      endif
 
       call set_rank(rank_list,mm)
       do kk=1,1
 c        ntr = rank_list(2,kk)
          ntr = 80
          if (ifcore) then
+               call rand_initial(cp_b,nb,ntr)
+               call rand_initial(cp_c,nb,ntr)
             if (ifquad) then
                call als_quad(cp_a,cp_b,cp_c,cp_w,fcm,fcmpm,lsm,lsminv,
      $                       lsr,tmp1,tmp2,tmp4,tmp5,cmr,crm,
      $                       cl0,ic1,ic2,jc1+1,jc2,kc1+1,kc2,nb,ntr)
             else
-               call als_core(cp_a,cp_b,cp_c,cp_w,fcm,fcmpm,lsm,lsminv,
-     $                       lsr,tmp1,tmp4,tmp5,cmr,crm,
-     $                       cl0,ic1,ic2,jc1+1,jc2,kc1+1,kc2,nb,ntr)
+               call als_core(cp_a,cp_b,cp_c,cp_w,cl0,
+     $                       ic1,ic2,jc1+1,jc2,kc1+1,kc2,nb,ntr)
             endif
             call check_conv_err_new(cu_err,cl,cp_a,cp_b,cp_c,cp_w,uu,
-     $                          tmp4,tmp5,tmp6,tmp7,tmp8,tmp9,tmp3,
      $                          ic1,ic2,jc1,jc2,kc1,kc2,
      $                          nb+1,ntr,ifcore,cj0,c0k)
          else
-            call als(cp_a,cp_b,cp_c,cp_w,fcm,fcmpm,lsm,lsminv,lsr,
-     $               tmp1,tmp2,tmp3,cmr,crm,
-     $               cl,ic1,ic2,jc1,jc2,kc1,kc2,nb+1,ntr)
+            call rand_initial(cp_b,nb+1,ntr)
+            call rand_initial(cp_c,nb+1,ntr)
+            call als(cp_a,cp_b,cp_c,cp_w,cl,
+     $               ic1,ic2,jc1,jc2,kc1,kc2,nb+1,ntr)
 
             call check_conv_err(cu_err,cl,cp_a,cp_b,cp_c,cp_w,uu,
      $                          tmp4,tmp5,tmp6,tmp7,tmp8,tmp9,tmp3,
@@ -214,7 +191,7 @@ c        enddo
       if (nio.eq.0) write (6,*) 'lcglo=',lcglo
       if (nio.eq.0) write (6,*) 'lcloc=',lcloc
 
-      if (nio.eq.0) write (6,*) 'exiting set_cp'
+      if (nio.eq.0) write (6,*) 'exiting compute_cp'
 
       return
       end
@@ -272,16 +249,17 @@ c     call exitt0
       return
       end
 c-----------------------------------------------------------------------
-      subroutine als(cp_a,cp_b,cp_c,cp_w,fcm,fcmpm,lsm,lsminv,lsr,tmp1,
-     $               tmp2,tmp3,cmr,crm,cl,ic1,ic2,jc1,jc2,kc1,kc2,mm,nn)
+      subroutine als(cp_a,cp_b,cp_c,cp_w,cl,
+     $               ic1,ic2,jc1,jc2,kc1,kc2,mm,nn)
 
       real cp_a(mm*nn),cp_b(mm*nn),cp_c(mm*nn),cp_w(nn)
       real cl(ic1:ic2,jc1:jc2,kc1:kc2)
+
       real fcm(mm*nn,3),fcmpm(nn*nn,3)
       real lsm(nn*nn,3),lsminv(nn*nn,3),lsr(mm*nn)
-      real tmp1(nn*nn)
       real cmr(ic1:ic2,jc1:jc2,nn),crm(ic1:ic2,nn,kc1:kc2)
       real cp_res,cp_relres,cp_fit,cp_tol,pre_relres,reldiff
+      real tmp1(nn*nn)
 
       integer tmp2(nn),tmp3(nn)
       integer mode,maxit,mm,nn
@@ -292,11 +270,13 @@ c-----------------------------------------------------------------------
       if (nid.eq.0) write(6,*) 'inside als'
 
       maxit = 500
-      cp_tol = 0.2
+      cp_tol = 1e-12
       pre_relres = 1
 
+      call copy(fcm(1,2),cp_b,mm*nn)
+      call copy(fcm(1,3),cp_c,mm*nn)
+
       do mode=2,3
-         call rand_initial(fcm(1,mode),mm,nn)
          call set_product_matrix(fcmpm(1,mode),fcm(1,mode),mm,nn)
       enddo
 
@@ -343,7 +323,6 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine check_conv_err_new(cu_err,cl,fac_a,fac_b,fac_c,cp_w,uu,
-     $                          bcu,cuu,tmp,cu,cu_diff,approx_cu,cm,
      $                          ic1,ic2,jc1,jc2,kc1,kc2,mm,nn,ifcore,
      $                          cj0,c0k)
 
@@ -1028,9 +1007,8 @@ c     kc2=3
       return
       end
 c-----------------------------------------------------------------------
-      subroutine als_core(cp_a,cp_b,cp_c,cp_w,fcm,fcmpm,lsm,lsminv,lsr,
-     $                    tmp1,tmp2,tmp3,cmr,crm,cl,ic1,ic2,jc1,jc2,kc1,
-     $                    kc2,mm,nn)
+      subroutine als_core(cp_a,cp_b,cp_c,cp_w,cl,
+     $                    ic1,ic2,jc1,jc2,kc1,kc2,mm,nn)
 
 c     This subroutine requires tensor cl, indices ic1, ic2, jc1, jc2,
 c     kc1, kc2, mm and nn where mm and nn are the dimensions of the
@@ -1038,10 +1016,11 @@ c     factor matrices. It returns cp_a, cp_b, cp_c ,cp_w.
 
       real cp_a(mm*nn),cp_b(mm*nn),cp_c(mm*nn),cp_w(nn)
       real cl(ic1:ic2,jc1:jc2,kc1:kc2)
+
+      real cmr(ic1:ic2,jc1:jc2,nn),crm(ic1:ic2,nn,kc1:kc2)
       real fcm(mm*nn,3),fcmpm(nn*nn,3)
       real lsm(nn*nn,3),lsminv(nn*nn,3),lsr(mm*nn)
       real tmp1(nn*nn)
-      real cmr(ic1:ic2,jc1:jc2,nn),crm(ic1:ic2,nn,kc1:kc2)
       real cp_res,cp_relres,cp_fit,cp_tol,pre_relres,reldiff
 
       integer tmp2(nn),tmp3(nn)
@@ -1050,16 +1029,17 @@ c     factor matrices. It returns cp_a, cp_b, cp_c ,cp_w.
       real norm_c,norm_c0
       common /scrtens_norm/ norm_c,norm_c0
 
-
       if (nid.eq.0) write(6,*) 'inside als_core'
 
       maxit = 500
-      cp_tol = 0.2
+      cp_tol = 1e-12
       pre_relres = 1
+
+      call copy(fcm(1,2),cp_b,mm*nn)
+      call copy(fcm(1,3),cp_c,mm*nn)
 
       ! Compute A^TA
       do mode=2,3
-         call rand_initial(fcm(1,mode),mm,nn)
          call set_product_matrix(fcmpm(1,mode),fcm(1,mode),mm,nn)
       enddo
 
@@ -1088,9 +1068,10 @@ c     factor matrices. It returns cp_a, cp_b, cp_c ,cp_w.
          reldiff = abs(pre_relres-cp_relres)/pre_relres
 
          pre_relres = cp_relres
-         if (nid.eq.0) write(6,1)'iter:', ii,'rel difference:',reldiff,
-     $   'relative residual:', cp_relres, 'rank:', nn
-         if (cp_relres.lt.cp_tol.OR.ii.ge.maxit.OR.reldiff.le.1e-5) then
+         if (nid.eq.0) write(6,1)'iter:',ii,'rel difference:',reldiff,
+     $   'relative residual:',cp_relres,'residual:',cp_res,'rank:',nn
+         if (cp_relres.lt.cp_tol.OR.ii.ge.maxit.OR.
+     $       reldiff.le.1e-12) then
             exit
          endif
       enddo
@@ -1099,7 +1080,7 @@ c     factor matrices. It returns cp_a, cp_b, cp_c ,cp_w.
       call copy(cp_b,fcm(1,2),mm*nn)
       call copy(cp_c,fcm(1,3),mm*nn)
 
-    1 format(a,i4,x,a,1p1e13.5,x,a,1p1e13.5,x,a,i4)
+    1 format(a,i4,x,a,1p1e13.5,x,a,1p1e13.5,x,a,1p1e13.5,x,a,i4)
       if (nid.eq.0) write(6,*) 'exitting als_core'
 
       return
@@ -1134,6 +1115,8 @@ c     one is c(i,j,0) and the other is c(i,0,k)
       end
 c-----------------------------------------------------------------------
       subroutine set_c_core(cl0,cl,ic1,ic2,jc1,jc2,kc1,kc2,nb)
+
+      ! TODO: fix the for loop
 
       real cl0(ic1:ic2,jc1+1:jc2,kc1+1:kc2)
       real cl(ic1:ic2,jc1:jc2,kc1:kc2)
