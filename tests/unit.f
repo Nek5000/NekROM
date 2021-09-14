@@ -392,3 +392,139 @@ c     if (eskew.gt.1.e-16) iexit=iexit+2
       return
       end
 c-----------------------------------------------------------------------
+      subroutine cp_l2_unit
+      call cp_unit(.true.)
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine cp_h10_unit
+      call cp_unit(.false.)
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine cp_unit(iflag)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /scrtens_norm/ norm_c,norm_c0
+
+      logical iflag
+      real wk(lb*ltr),wk3(lt)
+      real cp_a(lb*ltr),cp_b(lb*ltr),cp_c(lb*ltr),cp_w(ltr)
+      real cl0(lcglo)
+      real norm_c,norm_c0
+
+      param(171) = 1.
+      if (iflag) param(171) = 0.
+      param(172) = 1.
+      param(173) = 1.
+
+      call rom_setup
+
+      ntr = 80
+      ifcore=.true.
+      if (nio.eq.0) write (6,*) 'reading initial A2...'
+      call read_mat_serial(cub,nb,ntr,'./tcp/cub0 ',nb,ntr,wk3,nid)
+
+      if (nio.eq.0) write (6,*) 'reading initial A3...'
+      call read_mat_serial(cuc,nb,ntr,'./tcp/cuc0 ',nb,ntr,wk3,nid)
+
+      local_size = (ic2-ic1+1)*(jc2-jc1+1)*(kc2-kc1+1)
+      norm_c = vlsc2(cul,cul,local_size)
+      if (ifcore) then
+         call set_c_slice(cuj0,cu0k,cul,ic1,ic2,jc1,jc2,kc1,kc2,nb)
+         call set_c_core(cl0,cul,ic1,ic2,jc1,jc2,kc1,kc2,nb)
+         local_size = (ic2-ic1+1)*(jc2-jc1)*(kc2-kc1)
+         norm_c0 = vlsc2(cl0,cl0,local_size)
+      endif
+      call als_core(cua,cub,cuc,cp_uw,cl0,
+     $              ic1,ic2,jc1+1,jc2,kc1+1,kc2,nb,ntr)
+
+      call read_serial(cp_a,nb*ntr,'./tcp/cua ',wk,nid)
+      call read_serial(cp_b,nb*ntr,'./tcp/cub ',wk,nid)
+      call read_serial(cp_c,nb*ntr,'./tcp/cuc ',wk,nid)
+      call read_serial(cp_w,ntr   ,'./tcp/cuw ',wk,nid)
+
+      iexit=0
+
+      s1=0.
+      s2=0.
+
+      if (nio.eq.0) write (6,*) 'live | data'
+
+      do j=1,ntr
+      do i=1,nb
+         s1=s1+(cua(i+(j-1)*nb)-cp_a(i+(j-1)*nb))**2
+         s2=s2+cua(i+(j-1)*nb)**2
+         if (nio.eq.0) write (6,*) 'cp a factor',
+     $                 i,j,cua(i+(j-1)*nb),cp_a(i+(j-1)*nb)
+      enddo
+      enddo
+
+      edif=sqrt(s1/s2)
+
+      if (nio.eq.0) write (6,*) 'edif',edif,s1,s2
+
+      if (edif.gt.9.e-11) iexit=iexit+1
+
+      s1=0.
+      s2=0.
+
+      do j=1,ntr
+      do i=1,nb
+         s1=s1+(cub(i+(j-1)*nb)-cp_b(i+(j-1)*nb))**2
+         s2=s2+cub(i+(j-1)*nb)**2
+         if (nio.eq.0) write (6,*) 'cp b factor',
+     $                 i,j,cub(i+(j-1)*nb),cp_b(i+(j-1)*nb)
+      enddo
+      enddo
+
+      edif=sqrt(s1/s2)
+
+      if (nio.eq.0) write (6,*) 'edif',edif,s1,s2
+
+      if (edif.gt.9.e-11) iexit=iexit+2
+
+      s1=0.
+      s2=0.
+
+      do j=1,ntr
+      do i=1,nb
+         s1=s1+(cuc(i+(j-1)*nb)-cp_c(i+(j-1)*nb))**2
+         s2=s2+cuc(i+(j-1)*nb)**2
+         if (nio.eq.0) write (6,*) 'cp c factor',
+     $                 i,j,cuc(i+(j-1)*nb),cp_c(i+(j-1)*nb)
+      enddo
+      enddo
+
+      edif=sqrt(s1/s2)
+
+      if (nio.eq.0) write (6,*) 'edif',edif,s1,s2
+
+      if (edif.gt.9.e-11) iexit=iexit+3
+
+      s1=0.
+      s2=0.
+
+      do j=1,ntr
+         s1=s1+(cp_uw(j)-cp_w(j))**2
+         s2=s2+cp_uw(j)**2
+         if (nio.eq.0) write (6,*) 'cp w factor',
+     $                 j,cp_uw(j),cp_w(j)
+      enddo
+
+      edif=sqrt(s1/s2)
+
+      if (nio.eq.0) write (6,*) 'edif',edif,s1,s2
+
+      if (edif.gt.9.e-11) iexit=iexit+4
+
+      call exit(iexit)
+      
+      return
+      end
+c-----------------------------------------------------------------------

@@ -68,6 +68,7 @@ jobs:
   - env: TYPE=UNIT TEST=A0                IPS=H10
   - env: TYPE=UNIT TEST=B0                IPS=H10
   - env: TYPE=UNIT TEST=C0                IPS=H10
+  - env: TYPE=UNIT TEST=CP                IPS=H10
   - stage: integration
     env: TYPE=INTEG TEST=CYL IPS=L2 NP=1 NB=20 LB=20 SCR=tdragx
   - env: TYPE=INTEG TEST=CYL IPS=L2 NP=2 NB=20 LB=20 SCR=tdragx

@@ -26,6 +26,13 @@ fi
 mv ops tops
 mkdir ops &> /dev/null
 
+if [ "$TEST" = "CP" ]; then
+    fold_start gbas "Get cp operators"; $MOR_DIR/bin/gcp cyl_rect_h10; fold_end gbas
+else
+    echo "inner-product space $IPS not supported..."
+    exit 1
+fi
+
 if [ "$TYPE" = "UNIT" ]; then
     bash $MOR_DIR/tests/unit.sh
 elif [ "$TYPE" = "INTEG" ]; then
