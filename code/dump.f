@@ -190,7 +190,6 @@ c-----------------------------------------------------------------------
       dump_time=dnekclock()
 
       if (ifpod(1)) then
-         call dump_serial(ug(1,1,1),ls*ls,'ops/gu ',nid)
          call dump_serial(au0,(nb+1)**2,'ops/au ',nid)
          call dump_serial(bu0,(nb+1)**2,'ops/bu ',nid)
          call dump_serial(u,(nb+1)*3,'ops/u ',nid)
@@ -212,7 +211,6 @@ c-----------------------------------------------------------------------
       endif
 
       if (ifpod(2)) then
-         call dump_serial(ug(1,1,2),ls*ls,'ops/gt ',nid)
          call dump_serial(at0,(nb+1)**2,'ops/at ',nid)
          call dump_serial(bt0,(nb+1)**2,'ops/bt ',nid)
          call dump_serial(ut,(nb+1)*3,'ops/t ',nid)
@@ -363,31 +361,6 @@ c-----------------------------------------------------------------------
 
       call nekgsync
       if (nio.eq.0) write (6,*) 'dbas_time:',dnekclock()-dbas_time
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine dump_gram
-
-      ! dump the velocity and temperature Gramians according to `ifpod`
-
-      include 'SIZE'
-      include 'TOTAL'
-      include 'MOR'
-
-      call nekgsync
-      dgram_time=dnekclock()
-
-      if (ifpod(1)) then
-         call dump_serial(ug(1,1,1),ls*ls,'ops/gu ',nid)
-      endif
-
-      if (ifpod(2)) then
-         call dump_serial(ug(1,1,2),ls*ls,'ops/gt ',nid)
-      endif
-
-      call nekgsync
-      if (nio.eq.0) write (6,*) 'dgram_time:',dnekclock()-dgram_time
 
       return
       end
