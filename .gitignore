@@ -37,6 +37,7 @@ archive
 *.dra
 out.*
 *.png
+*.bbproject*
 
 # Visit
 
