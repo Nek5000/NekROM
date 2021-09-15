@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        test: [GRAMIAN, IC, A0, B0, C0]
+        test: [GRAMIAN, IC, A0, B0, C0, CP]
         ips: [L2, H10]
     env:
       MOR_DIR: /home/runner/work/NekMOR/NekMOR
@@ -48,6 +48,3 @@ jobs:
       - name: Unit Test
         run: |
           TYPE=UNIT TEST=${{ matrix.test }} IPS=${{ matrix.ips }} $MOR_DIR/tests/test.sh
-      - name: CP Test
-        run: |
-          TYPE=UNIT TEST=CP IPS=H10 $MOR_DIR/tests/test.sh
