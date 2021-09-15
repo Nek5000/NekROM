@@ -26,8 +26,9 @@ fi
 mv ops tops
 mkdir ops &> /dev/null
 
+echo $TEST
 if [ "$TEST" = "CP" ]; then
-    fold_start gbas "Get cp operators"; $MOR_DIR/bin/gcp cyl_rect_h10; fold_end gbas
+    fold_start gcp "Get cp operators"; $MOR_DIR/bin/gcp cyl_rect_h10; fold_end gcp
 fi
 
 if [ "$TYPE" = "UNIT" ]; then
