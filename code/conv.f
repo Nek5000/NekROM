@@ -23,10 +23,10 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
       parameter (ltd=lxd*lyd*lzd*lelt)
 
-      common /convect/ c1v(ltd), c2v(ltd), c3v(ltd),
-     $                 u1v(ltd), u2v(ltd), u3v(ltd)
+      common /convect/ c1v(ltd),c2v(ltd),c3v(ltd),
+     $                 u1v(ltd),u2v(ltd),u3v(ltd)
 
-      real ux(lt), uy(lt), uz(lt)
+      real ux(lt),uy(lt),uz(lt)
 
       call intp_rstd_all(u1v,ux,nelv)
       call intp_rstd_all(u2v,uy,nelv)
@@ -35,71 +35,60 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine cct(ct,i,j) ! compute C(u) * t set by setcnv
+      subroutine cc(ct,mdim) ! compute C(u) * t set by setcnv
 
-      include 'SIZE'
-      include 'SOLN'
-      include 'INPUT'
-      include 'MASS'
-      include 'MOR'
+      ! compute c * u set by setcnv_c and set_cnv_u
 
-      parameter(lt=lx1*ly1*lz1*lelt)
+      ! ct   := output convected field
+      ! mdim := dimension of ct and u field
 
-      real ct(lt)
+      include 'SIZE' ! dep: lt,ltd
 
-      if (ifaxis) then
-         n=lx1*ly1*lz1*nelv
-         call push_op(vx,vy,vz)
-         call opcopy(vx,vy,vz,ub(1,i),vb(1,i),wb(1,i))
-         call conv1d(ct,tb(1,j))
-         call col2(ct,bm1,n)
-         call pop_op(vx,vy,vz)
-      else
-         call convect_new(ct,u1v(1,j),.true.,
-     $                    c1v(1,i),c2v(1,i),c3v(1,i),.true.)
-      endif
+      parameter (lt=lx1*ly1*lz1*lelt)
+      parameter (ltd=lxd*lyd*lzd*lelt)
+
+      common /convect/ c1v(ltd),c2v(ltd),c3v(ltd),uv(ltd,3)
+
+      real ct(lt,mdim)
+
+      do idim=1,mdim
+         call convect_new(
+     $      ct(1,idim),uv(1,idim),.true.,c1v,c2v,c3v,.true.)
+      enddo
 
       return
       end
 c-----------------------------------------------------------------------
-      subroutine ccu(cu1,cu2,cu3,i,j) ! compute C(u) * u set by setcnv
+      subroutine convect_axis(ct,mdim,ux,uy,uz,s)
 
-      include 'SIZE'
-      include 'INPUT'
-      include 'SOLN'
-      include 'MOR'
-      include 'MASS'
+      ! convect vector/scalar field in axisymmetric formulation
 
-      parameter(lt=lx1*ly1*lz1*lelt)
+      ! ct         := advection field
+      ! mdim       := dimension of input field s and output field ct
+      ! <ux,uy,uz> := advecting velocity field
+      ! s          := advected field
 
-      common /scrwk/ wk1(lt),wk2(lt),wk3(lt),wk4(lt),wk5(lt),wk6(lt)
+      include 'SIZE' ! dep: lt
+      include 'SOLN' ! dep: vx,vy,vz
+      include 'MASS' ! dep: bm1
+      include 'MOR'  ! dep: ub,vb,wb,tb
 
-      real cu1(lt),cu2(lt),cu3(lt)
+      parameter (lt=lx1*ly1*lz1*lelt)
 
-      if (ifaxis) then
-         n=lx1*ly1*lz1*nelv
-         call push_op(vx,vy,vz)
-         call opcopy(vx,vy,vz,ub(1,i),vb(1,i),wb(1,i))
-         call conv1d(cu1,ub(1,j))
-         call conv1d(cu2,vb(1,j))
-         call col2(cu1,bm1,n)
-         call col2(cu2,bm1,n)
-         call pop_op(vx,vy,vz)
-      else
-         call convect_new(cu1,u1v(1,j),.true.,
-     $                    c1v(1,i),c2v(1,i),c3v(1,i),.true.)
-         call convect_new(cu2,u2v(1,j),.true.,
-     $                    c1v(1,i),c2v(1,i),c3v(1,i),.true.)
-         if (ldim.eq.3) call convect_new(cu3,u3v(1,j),.true.,
-     $                                c1v(1,i),c2v(1,i),c3v(1,i),.true.)
-      endif
+      real ct(lt,mdim),ux(lt),uy(lt),uz(lt),s(lt,mdim)
 
-      if (ifcdrag.and.ifield.eq.1 .and.
-     $   (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ')) then
-         call opcopy(wk4,wk5,wk6,cu1,cu2,cu3)
-         call opbinv1(wk1,wk2,wk3,wk4,wk5,wk6,1.)
-         call cint(fd2(ldim*j+ldim*(nb+1)*i),wk1,wk2,wk3)
-      endif
+      n=lx1*ly1*lz1*nelv
+
+      call push_op(vx,vy,vz)
+
+      call opcopy(vx,vy,vz,ux,uy,uz)
+
+      do idim=1,mdim
+         call conv1d(ct(1,idim),s(1,idim))
+         call col2(ct(1,idim),bm1,n)
+      enddo
+
+      call pop_op(vx,vy,vz)
 
       return
       end

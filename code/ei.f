@@ -361,8 +361,8 @@ c     Matrices and vectors for advance
       call rom_init_params
       call rom_init_fields
 
-      call setgram
-      call setevec
+c     call setgram
+c     call setevec
 
       call setbases
 
