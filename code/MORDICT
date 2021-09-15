@@ -4,7 +4,7 @@ c     Note: Keys have to be in capital letters
 c
       integer MORDICT_NKEYS
 
-      parameter (MORDICT_NKEYS = 48)
+      parameter (MORDICT_NKEYS = 50)
 
       character*132 mordictkey(MORDICT_NKEYS)
       data
@@ -12,47 +12,49 @@ c
      &  mordictkey(2)  / 'GENERAL:MODE' /
      &  mordictkey(3)  / 'GENERAL:FIELD' /
      &  mordictkey(4)  / 'GENERAL:NB' /
-     &  mordictkey(5)  / 'GENERAL:EI' /         
-     &  mordictkey(6)  / 'GENERAL:AVGINIT' /
-     &  mordictkey(7)  / 'GENERAL:RKTOL' /
-     &  mordictkey(8)  / 'GENERAL:TNEUBC' /
-     &  mordictkey(9)  / 'GENERAL:NPLAY' /
-     &  mordictkey(10) / 'GENERAL:DECOUPLED' /
-     &  mordictkey(11) / 'POD' /
-     &  mordictkey(12) / 'POD:TYPE' /
-     &  mordictkey(13) / 'POD:MODE0' /
-     &  mordictkey(14) / 'POD:COMBINED' /
-     &  mordictkey(15) / 'POD:RATIO' /
-     &  mordictkey(16) / 'QOI' /
-     &  mordictkey(17) / 'QOI:FREQ' /
-     &  mordictkey(18) / 'QOI:TKE' /
-     &  mordictkey(19) / 'QOI:DRAG' /
-     &  mordictkey(20) / 'QOI:NU' /
-     &  mordictkey(21) / 'QOI:NINTP' /
-     &  mordictkey(22) / 'COPT' /
-     &  mordictkey(23) / 'COPT:MODE' /
-     &  mordictkey(24) / 'COPT:FIELD' /
-     &  mordictkey(25) / 'COPT:BARRIER' /
-     &  mordictkey(26) / 'COPT:BOXTOL' /
-     &  mordictkey(27) / 'COPT:VPAR0' /
-     &  mordictkey(28) / 'COPT:VNLOOP' /
-     &  mordictkey(29) / 'COPT:TPAR0' /
-     &  mordictkey(30) / 'COPT:TNLOOP' /
-     &  mordictkey(31) / 'FAST' /
-     &  mordictkey(32) / 'FAST:CEVAL' /
-     &  mordictkey(33) / 'FAST:HEVAL' /
-     &  mordictkey(34) / 'FORCING' /
-     &  mordictkey(35) / 'FORCING:BODY' /
-     &  mordictkey(36) / 'FORCING:SOURCE' /
-     &  mordictkey(37) / 'FORCING:BUOYANCY' /
-     &  mordictkey(38) / 'FILTER' /
-     &  mordictkey(39) / 'FILTER:LOCATION' /
-     &  mordictkey(40) / 'FILTER:TYPE' /
-     &  mordictkey(41) / 'FILTER:MODES' /
-     &  mordictkey(42) / 'FILTER:RADIUS' /
-     &  mordictkey(43) / 'BUOYANCY' /
-     &  mordictkey(44) / 'BUOYANCY:MAGNITUDE' /
-     &  mordictkey(45) / 'BUOYANCY:ANGLE' /
-     &  mordictkey(46) / 'BUOYANCY:GX' /
-     &  mordictkey(47) / 'BUOYANCY:GY' /
-     &  mordictkey(48) / 'BUOYANCY:GZ' /
+     &  mordictkey(5)  / 'GENERAL:NS' /
+     &  mordictkey(6)  / 'GENERAL:NSKIP' /
+     &  mordictkey(7)  / 'GENERAL:EI' /         
+     &  mordictkey(8)  / 'GENERAL:AVGINIT' /
+     &  mordictkey(9)  / 'GENERAL:RKTOL' /
+     &  mordictkey(10) / 'GENERAL:TNEUBC' /
+     &  mordictkey(11) / 'GENERAL:NPLAY' /
+     &  mordictkey(12) / 'GENERAL:DECOUPLED' /
+     &  mordictkey(13) / 'POD' /
+     &  mordictkey(14) / 'POD:TYPE' /
+     &  mordictkey(15) / 'POD:MODE0' /
+     &  mordictkey(16) / 'POD:COMBINED' /
+     &  mordictkey(17) / 'POD:RATIO' /
+     &  mordictkey(18) / 'QOI' /
+     &  mordictkey(19) / 'QOI:FREQ' /
+     &  mordictkey(20) / 'QOI:TKE' /
+     &  mordictkey(21) / 'QOI:DRAG' /
+     &  mordictkey(22) / 'QOI:NU' /
+     &  mordictkey(23) / 'QOI:NINTP' /
+     &  mordictkey(24) / 'COPT' /
+     &  mordictkey(25) / 'COPT:MODE' /
+     &  mordictkey(26) / 'COPT:FIELD' /
+     &  mordictkey(27) / 'COPT:BARRIER' /
+     &  mordictkey(28) / 'COPT:BOXTOL' /
+     &  mordictkey(29) / 'COPT:VPAR0' /
+     &  mordictkey(30) / 'COPT:VNLOOP' /
+     &  mordictkey(31) / 'COPT:TPAR0' /
+     &  mordictkey(32) / 'COPT:TNLOOP' /
+     &  mordictkey(33) / 'FAST' /
+     &  mordictkey(34) / 'FAST:CEVAL' /
+     &  mordictkey(35) / 'FAST:HEVAL' /
+     &  mordictkey(36) / 'FORCING' /
+     &  mordictkey(37) / 'FORCING:BODY' /
+     &  mordictkey(38) / 'FORCING:SOURCE' /
+     &  mordictkey(39) / 'FORCING:BUOYANCY' /
+     &  mordictkey(40) / 'FILTER' /
+     &  mordictkey(41) / 'FILTER:LOCATION' /
+     &  mordictkey(42) / 'FILTER:TYPE' /
+     &  mordictkey(43) / 'FILTER:MODES' /
+     &  mordictkey(44) / 'FILTER:RADIUS' /
+     &  mordictkey(45) / 'BUOYANCY' /
+     &  mordictkey(46) / 'BUOYANCY:MAGNITUDE' /
+     &  mordictkey(47) / 'BUOYANCY:ANGLE' /
+     &  mordictkey(48) / 'BUOYANCY:GX' /
+     &  mordictkey(49) / 'BUOYANCY:GY' /
+     &  mordictkey(50) / 'BUOYANCY:GZ' /

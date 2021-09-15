@@ -18,6 +18,7 @@ c-----------------------------------------------------------------------
       stime=dnekclock()
 
       if (icalld.eq.0) then
+         ns=ls
          rom_time=0.
          icalld=1
          call rom_setup
@@ -663,6 +664,8 @@ c-----------------------------------------------------------------------
       ifei=.false.
       navg_step=1
       nb=lb
+c     ns=ls
+      nskip=0
       rktol=0.
       ad_qstep=ad_iostep
       iftneu=.false.
@@ -912,6 +915,8 @@ c-----------------------------------------------------------------------
          write (6,*) 'mp_ls         ',ls
          write (6,*) 'mp_lsu        ',lsu
          write (6,*) 'mp_lst        ',lst
+         write (6,*) 'mp_ns         ',ns
+         write (6,*) 'mp_nskip      ',nskip
          write (6,*) ' '
          write (6,*) 'mp_ad_re      ',ad_re
          write (6,*) 'mp_ad_pe      ',ad_pe
@@ -1003,18 +1008,15 @@ c-----------------------------------------------------------------------
       if (ifrom(1)) call opcopy(uic,vic,wic,vx,vy,vz)
       if (ifrom(2)) call copy(tic,t,n)
 
-      ns = ls
-      ! ns should be set in get_saved_fields
-
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
          fname1='file.list '
-         nsu=1
-         nsp=1
-         nst=1
-         if (ifrom(0)) nsp=lsp
-         if (ifrom(1)) nsu=lsu
-         if (ifrom(2)) nst=lst
-         call get_saved_fields(us0,prs,ts0,nsu,nsp,nst,timek,fname1)
+
+         ifreads(1)=ifrom(1)
+         ifreads(2)=ifrom(0)
+         ifreads(3)=ifrom(2)
+
+         call read_fields(
+     $      us0,prs,ts0,ns,nskip,ifreads,timek,fname1,.false.)
 
          fname1='avg.list'
          inquire (file=fname1,exist=alist)
@@ -1090,16 +1092,20 @@ c           if (idc_t.gt.0) call rzero(tb,n)
          iftmp=.false.
          if (ifpod(1)) then
             fname1='uavg.list '
+            ifreads(1)=.true.
+            ifreads(2)=.true.
+            ifreads(3)=.false.
             call read_fields(uafld,pafld,fldtmp,
-     $         nbavg,nbavg,1,tk,fname1,iftmp)
+     $         nbavg,0,ifreads,1,tk,fname1,iftmp)
 
             fname1='urms.list'
+            ifreads(2)=.false.
             call read_fields(uufld,fldtmp,fldtmp,
-     $         nbavg,1,1,tk,fname1,iftmp)
+     $         nbavg,0,ifreads,tk,fname1,iftmp)
 
             fname1='urm2.list'
             call read_fields(uvfld,fldtmp,fldtmp,
-     $         nbavg,1,1,tk,fname1,iftmp)
+     $         nbavg,0,ifreads,tk,fname1,iftmp)
 
             ifxyo=.true.
 
@@ -1129,12 +1135,17 @@ c           if (idc_t.gt.0) call rzero(tb,n)
 
          if (ifpod(2)) then
             fname1='tavg.list'
+            ifreads(1)=.false.
+            ifreads(2)=.false.
+            ifreads(3)=.true.
             call read_fields(fldtmp,fldtmp,tafld,
-     $         1,1,nbavg,tk,fname1,iftmp)
+     $         nbavg,0,ifreads,tk,fname1,iftmp)
 
+            ifreads(1)=.true.
+            ifreads(3)=.false.
             fname1='utms.list'
             call read_fields(utfld,fldtmp,fldtmp,
-     $         nbavg,1,1,tk,fname1,iftmp)
+     $         nbavg,0,ifreads,tk,fname1,iftmp)
 
             do i=1,nbavg
                call setupvp(uptp(1,1,i),
