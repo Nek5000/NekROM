@@ -120,7 +120,7 @@ c-----------------------------------------------------------------------
       call rone(ones,n)
 
       call setgram
-      call setevec
+c     call setevec
 
       call setbases
 

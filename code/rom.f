@@ -228,16 +228,7 @@ c-----------------------------------------------------------------------
       call mor_init_fields
       call mor_set_params_uni_post
 
-      inquire (file='ops/evec',exist=ifexist)
-      if (ifexist) then
-         open (unit=10,file='ops/evec')
-         do i=1,ns
-            read (10,*) (evec(i,j,1),j=1,nb)
-         enddo
-         close (unit=10)
-      else
-         call setbases
-      endif
+      call setbases
 
 c     call average_in_xy
 c     call average_in_y
@@ -1183,7 +1174,7 @@ c-----------------------------------------------------------------------
 
       real cux(lt),cuy(lt),cuz(lt)
 
-      common /scrcwk/ wk(lcloc),wk2(0:lub)
+      common /scrcwk/ wk(lcloc),wk2(0:lub),cu(lt,ldim),wku(lt,ldim)
 
       real cl(lcloc)
 
@@ -1218,35 +1209,33 @@ c     call cpart(ic1,ic2,jc1,jc2,kc1,kc2,ncloc,nb,np,nid+1) ! new indexing
          enddo
          enddo
       else
-         if (.not.ifaxis) then
-            do i=0,nb
-               call set_convect_new(c1v(1,i),c2v(1,i),c3v(1,i),
-     $                              ub(1,i),vb(1,i),wb(1,i))
-               if (ifield.eq.1) then
-                  call intp_rstd_all(u1v(1,i),ub(1,i),nelv)
-                  call intp_rstd_all(u2v(1,i),vb(1,i),nelv)
-                  if (ldim.eq.3) 
-     $               call intp_rstd_all(u3v(1,i),wb(1,i),nelv)
-               else
-                  call intp_rstd_all(u1v(1,i),tb(1,i),nelv)
-               endif
-            enddo
-         endif
-
          do k=0,nb
             if (nio.eq.0) write (6,*) 'setc: ',k,'/',nb
+            call setcnv_c(ub(1,k),vb(1,k),wb(1,k))
             do j=0,nb
-               if (ifield.eq.1) then
-                  call ccu(cux,cuy,cuz,k,j)
+               if (ifaxis) then
+                  if (ifield.eq.1) then
+                     call opcopy(wku(1,1),wku(1,2),wku(1,ldim),
+     $                  ub(1,j),vb(1,j),wb(1,j))
+                     call convect_axis(cu,ldim,ux,uy,uz,wku)
+                  else
+                     call convect_axis(cu,1,ux,uy,uz,tb(1,j))
+                  endif
                else
-                  call cct(cux,k,j)
+                  if (ifield.eq.1) then
+                     call setcnv_u(ub(1,j),vb(1,j),wb(1,j))
+                     call cc(cu,ldim)
+                  else
+                     call setcnv_u(tb(1,j),vb(1,j),wb(1,j))
+                     call cc(cu,1)
+                  endif
                endif
                do i=1,nb
                   if (ifield.eq.1) then
-                     cel=op_glsc2_wt(
-     $                  ub(1,i),vb(1,i),wb(1,i),cux,cuy,cuz,ones)
+                     cel=op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),
+     $                  cu(1,1),cu(1,2),cu(1,ldim),ones)
                   else
-                     cel=glsc2(tb(1,i),cux,n)
+                     cel=glsc2(tb(1,i),cu,n)
                   endif
                   call setc_local(cl,cel,ic1,ic2,jc1,jc2,kc1,kc2,i,j,k)
                   if (nid.eq.0) write (100,*) cel

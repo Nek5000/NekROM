@@ -2,15 +2,7 @@ c     parameters and common blocks for MOR
 
       include 'LMOR'
 
-      common /morgram/ ug(ls,ls,0:ldimt1)
-      common /moreig/ evec(ls,lb,0:ldimt1),eval(ls,0:ldimt1)
-
-      common /morconvect/ c1v(lxd*lyd*lzd*lelm,0:lub),
-     $                    c2v(lxd*lyd*lzd*lelm,0:lub),
-     $                    c3v(lxd*lyd*lzd*lelm,0:lub),
-     $                    u1v(lxd*lyd*lzd*lelm,0:lub),
-     $                    u2v(lxd*lyd*lzd*lelm,0:lub),
-     $                    u3v(lxd*lyd*lzd*lelm,0:lub)
+      common /morgram/ ug(ls,ls),eval(ls)
 
       common /morbasis/ ub(lx1*ly1*lz1*lelm,0:lub),
      $                  vb(lx1*ly1*lz1*lelm,0:lub),
@@ -22,7 +14,7 @@ c     parameters and common blocks for MOR
       common /moric/ uic(lx1*ly1*lz1*lelm),
      $               vic(lx1*ly1*lz1*lelm),
      $               wic(lx1*ly1*lz1*lelm),
-     $               pic(lx1*ly1*lz1*lelm),
+     $               pic(lx2*ly2*lz2*lelm),
      $               tic(lx1*ly1*lz1*lelm)
 
       common /morcoef/ uk(0:lub,lsu),tk(0:ltb,lst),timek(lcs)
@@ -53,7 +45,7 @@ c     parameters and common blocks for MOR
       parameter (lcloc=lcglo/lpmin+1)
 
       common /morfops/ hlm(lb**2,2),hinv(lb**2,2),hlu(lb**2,2),
-     $                 wt(lb**2,2)
+     $                 wt(max(lb**2,2),2)
       common /morifops/ ihlu(lb,2),ihlu2(lb,2)
 
       common /morvops/ au0((lub+1)**2),bu0((lub+1)**2),
@@ -232,8 +224,6 @@ c     parameters and common blocks for MOR
      $                 ct0k((lub+1)**2), ctj0((lub+1)**2)
 
       ! Average Equation
-
-      parameter (lbavg=lb)
 
       common /moravg/ uafld(lx1*ly1*lz1*lelt,ldim,lbavg),
      $                uufld(lx1*ly1*lz1*lelt,ldim,lbavg),

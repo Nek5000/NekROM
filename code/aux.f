@@ -418,67 +418,6 @@ c     enddo
       return
       end
 c-----------------------------------------------------------------------
-      subroutine conv_sol(ux,uy,uz,vx,vy,vz) ! compute convection
-
-      include 'SIZE'
-      include 'INPUT'
-      include 'MASS'
-
-      parameter (lt1=lx1*ly1*lz1*lelt)
-      parameter (lt2=lx2*ly2*lz2*lelt)
-
-      real vx(lt1),vy(lt1),vz(lt1),pr(lt2),t(lt1,ldimt)
-      real ux(lt1),uy(lt1),uz(lt1)
-      common /scrctd/ t1(lt1),t2(lt1),t3(lt1),h1(lt1),h2(lt1)
-
-      n1=lx1*ly1*lz1*nelt
-      n2=lx2*ly2*lz2*nelt
-
-      call setcnv_c(vx,vy,vz)
-      call setcnv_u(vx,vy,vz)
-      call ccu(ux,uy,uz)
-      call opbinv1(ux,uy,uz,ux,uy,uz,1.)
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine ctd_sol(ux,uy,uz,vx,vy,vz,pr,t) ! compute the time-derivative
-
-      include 'SIZE'
-      include 'INPUT'
-      include 'MASS'
-
-      parameter (lt1=lx1*ly1*lz1*lelt)
-      parameter (lt2=lx2*ly2*lz2*lelt)
-
-      real vx(lt1),vy(lt1),vz(lt1),pr(lt2),t(lt1,ldimt)
-      real ux(lt1),uy(lt1),uz(lt1)
-      common /scrctd/ t1(lt1),t2(lt1),t3(lt1),h1(lt1),h2(lt1)
-
-      n1=lx1*ly1*lz1*nelt
-      n2=lx2*ly2*lz2*nelt
-
-      call gradp(ux,uy,uz,pr)
-      call opchsgn(ux,uy,uz)
-      call conv_sol(t1,t2,t3,vx,vy,vz)
-      call opchsgn(t1,t2,t3)
-
-      call opadd2(ux,uy,uz,t1,t2,t3)
-
-      call rone(h1,n1)
-      call rzero(h2,n1)
-
-      call lap2d(t1,vx)
-      call lap2d(t2,vy)
-      if (ldim.eq.3) call lap2d(t3,vz)
-      s=-param(2)
-      call opcmult(t1,t2,t3,s)
-
-      call opadd2(ux,uy,uz,t1,t2,t3)
-
-      return
-      end
-c-----------------------------------------------------------------------
       subroutine gradp(px,py,pz,pr)
 
       include 'SIZE'
@@ -1429,7 +1368,7 @@ c-----------------------------------------------------------------------
 
       real h(n,n),wt(n,n),wk(n)
 
-      call regularev(h,wk,n,wt)
+      call regularev(h,wk,n,wt,max(n*n,2))
 
       do j=1,n
       do i=1,n

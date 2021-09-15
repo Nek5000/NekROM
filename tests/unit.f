@@ -30,6 +30,8 @@ c-----------------------------------------------------------------------
       param(173) = 0.
 
       call rom_setup
+      call gengram(ug,us0,ns,ldim,ips)
+
       call read_serial(vv,ls*ls,'tops/gu ',wk,nid)
 
       iexit=0
@@ -42,10 +44,10 @@ c-----------------------------------------------------------------------
 
       do j=1,ls
       do i=1,ls
-         s1=s1+(ug(i,j,1)-ug(j,i,1))**2
-         s2=s2+(ug(i,j,1)-vv(i,j))**2
+         s1=s1+(ug(i,j)-ug(j,i))**2
+         s2=s2+(ug(i,j)-vv(i,j))**2
          s3=s3+vv(i,j)**2
-         if (nio.eq.0) write (6,*) 'gram',i,j,ug(i,j,1),vv(i,j)
+         if (nio.eq.0) write (6,*) 'gram',i,j,ug(i,j),vv(i,j)
       enddo
       enddo
 
@@ -111,7 +113,7 @@ c-----------------------------------------------------------------------
       if (nio.eq.0) write (6,*) 'edif',edif,s1,s2
 
       iexit=1
-      if (edif.lt.4.e-13) iexit=0
+      if (edif.lt.8.e-13) iexit=0
 
       call exit(iexit)
 
@@ -180,7 +182,7 @@ c-----------------------------------------------------------------------
       if (nio.eq.0) write (6,*) 'edif',edif,s1,s3
       if (nio.eq.0) write (6,*) 'esym',esym,s2,s3
 
-      if (edif.gt.3.e-13) iexit=iexit+1
+      if (edif.gt.5.e-11) iexit=iexit+1
       if (esym.gt.1.e-15) iexit=iexit+2
 
       s1=0.
@@ -275,7 +277,7 @@ c-----------------------------------------------------------------------
       edif=sqrt(s1/s3)
       esym=sqrt(s2/s3)
 
-      if (edif.gt.7.e-16) iexit=iexit+1
+      if (edif.gt.4.e-13) iexit=iexit+1
       if (esym.gt.1.e-16) iexit=iexit+2
 
       if (nio.eq.0) write (6,*) 'edif',edif,s1,s3
@@ -380,7 +382,7 @@ c-----------------------------------------------------------------------
       enddo
 
       edif=sqrt(s1/s3)
-      if (edif.gt.2.e-12) iexit=iexit+1
+      if (edif.gt.2.e-10) iexit=iexit+1
       if (nio.eq.0) write (6,*) 'edif',edif,s1,s3
 
       eskew=sqrt(s2/s3)
