@@ -460,7 +460,7 @@ c-----------------------------------------------------------------------
       do j=1,ntr
       do i=1,nb
          s1=s1+(cua(i+(j-1)*nb)-cp_a(i+(j-1)*nb))**2
-         s2=s2+cua(i+(j-1)*nb)**2
+         s2=s2+cp_a(i+(j-1)*nb)**2
          if (nio.eq.0) write (6,*) 'cp a factor',
      $                 i,j,cua(i+(j-1)*nb),cp_a(i+(j-1)*nb)
       enddo
@@ -478,7 +478,7 @@ c-----------------------------------------------------------------------
       do j=1,ntr
       do i=1,nb
          s1=s1+(cub(i+(j-1)*nb)-cp_b(i+(j-1)*nb))**2
-         s2=s2+cub(i+(j-1)*nb)**2
+         s2=s2+cp_b(i+(j-1)*nb)**2
          if (nio.eq.0) write (6,*) 'cp b factor',
      $                 i,j,cub(i+(j-1)*nb),cp_b(i+(j-1)*nb)
       enddo
@@ -496,7 +496,7 @@ c-----------------------------------------------------------------------
       do j=1,ntr
       do i=1,nb
          s1=s1+(cuc(i+(j-1)*nb)-cp_c(i+(j-1)*nb))**2
-         s2=s2+cuc(i+(j-1)*nb)**2
+         s2=s2+cp_c(i+(j-1)*nb)**2
          if (nio.eq.0) write (6,*) 'cp c factor',
      $                 i,j,cuc(i+(j-1)*nb),cp_c(i+(j-1)*nb)
       enddo
@@ -513,7 +513,7 @@ c-----------------------------------------------------------------------
 
       do j=1,ntr
          s1=s1+(cp_uw(j)-cp_w(j))**2
-         s2=s2+cp_uw(j)**2
+         s2=s2+cp_w(j)**2
          if (nio.eq.0) write (6,*) 'cp w factor',
      $                 j,cp_uw(j),cp_w(j)
       enddo
