@@ -363,26 +363,6 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine get_saved_fields(usave,psave,tsave,nsu,nsp,nst,tk,fn)
-
-c     This routine reads files specificed in fname
-
-      include 'SIZE'
-
-      parameter (lt=lx1*ly1*lz1*lelt)
-      parameter (lt2=lx2*ly2*lz2*lelt)
-
-      real usave(lt,ldim,nsu),psave(lt2,nsp),tsave(lt,nst)
-      real tk(nsu)
-
-      character*128 fn
-
-      if (nid.eq.0) write (6,*) 'get_saved_fields is deprecated...'
-      call read_fields(usave,psave,tsave,nsu,nsp,nst,tk,fn,.true.)
-
-      return
-      end
-c-----------------------------------------------------------------------
       subroutine interp_t(scalar,xyz,n,s)
       real scalar(1),xyz(1),s(1)
       call interp_s(scalar,s,xyz,n)
