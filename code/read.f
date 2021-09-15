@@ -135,15 +135,13 @@ c-----------------------------------------------------------------------
 
       if (ifexist) then
          nn=nb+1
-         nsu=1
-         nsp=1
-         nst=1
-         if (ifrom(0)) nsp=nn
-         if (ifrom(1)) nsu=nn
-         if (ifrom(2)) nst=nn
+         ifreads(1)=ifrom(1)
+         ifreads(2)=ifrom(0)
+         ifreads(3)=ifrom(2)
 
-         call get_saved_fields(us0,prs,ts0,nsu,nsp,nst,
-     $                         timek,'bas.list ')
+         call read_fields(
+     $      us0,prs,ts0,nn,0,ifreads,tk,'bas.list ',.false.)
+
          do i=0,nb
             if (ifrom(0)) call copy(pb(1,i),prs(1,i+1),n2)
             if (ifrom(1)) call opcopy(ub(1,i),vb(1,i),wb(1,i),
