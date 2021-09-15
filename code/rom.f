@@ -1028,7 +1028,7 @@ c-----------------------------------------------------------------------
          ifreads(3)=ifrom(2)
 
          call read_fields(
-     $      us0,prs,ts0,ns,nskip,ifreads,timek,fname1,.false.)
+     $      us0,prs,ts0,ns,nskip,ifreads,timek,fname1,.true.)
 
          fname1='avg.list'
          inquire (file=fname1,exist=alist)
