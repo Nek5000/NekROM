@@ -4,7 +4,7 @@
 
 case "$1" in
     cyl_rect_h10)
-        wget -nv -O t.t https://uofi.box.com/shared/static/qdsw9tmc50w0298mhqr2kc6uvd9cxvlh.gz 
+        wget -nv -O t.t https://uofi.box.com/shared/static/9iguj754fnjvrq5i9a3mqd3gg29jaipa.gz
 esac
 
 tar -xvf t.t
