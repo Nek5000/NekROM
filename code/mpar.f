@@ -129,6 +129,9 @@ c-----------------------------------------------------------------------
          ifplay=.false.
       endif
 
+      call finiparser_getbool(i_out,'general:decoupled',ifnd)
+      if (ifnd.eq.1) ifdecpl=i_out.eq.1
+
       ibuoy=0
 
       call finiparser_getdbl(d_out,'buoyancy:magnitude',ifnd)
@@ -161,11 +164,11 @@ c-----------------------------------------------------------------------
 
       call finiparser_getdbl(d_out,'buoyancy:gz',ifnd)
       if (ifnd.eq.1) then
-         gy=d_out
+         gz=d_out
          ibuoy=ibuoy+16
       endif
 
-      if (ldim.eq.3) then
+      if (ldim.eq.2) then
          if (ibuoy.ne.12.and.ibuoy.ne.3.and.ibuoy.ne.0) then
             write (6,*) 'invalid options for buoyancy(2D)'
             ierr=ierr+1
@@ -474,6 +477,7 @@ c-----------------------------------------------------------------------
       call bcast(ifbuoy,lsize)
 
       call bcast(ifpb,lsize)
+      call bcast(ifdecpl,lsize)
 
       return
       END

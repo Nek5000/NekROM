@@ -16,9 +16,9 @@ c-----------------------------------------------------------------------
         call exitti('(set_xi_poisson) ifield.eq.1 not supported...$',nb)
       else
          if (ips.eq.'L2 ') then
-            call set_xi_a(xi(1,l),tb(1,1),ones,1,nb)
+            call set_xi_a(xi(1,l),tb(1,1),ones,1,nb,2)
             l=l+nb
-            call set_xi_b(xi(1,l),qq,1,1)
+            call set_xi_b(xi(1,l),qq,1,1,2)
             l=l+1
             do i=1,nb
                call set_gradn(wk,tb(1,i))
@@ -49,11 +49,11 @@ c-----------------------------------------------------------------------
          call exitti('(set_xi_heat) ifield.eq.1 not supported...$',nb)
       else
          if (ips.eq.'L2 ') then
-            call set_xi_b(xi(1,l),tb,1,nb+1)
+            call set_xi_b(xi(1,l),tb,1,nb+1,2)
             l=l+nb+1
-            call set_xi_a(xi(1,l),tb,ones,1,nb+1)
+            call set_xi_a(xi(1,l),tb,ones,1,nb+1,2)
             l=l+nb+1
-            call set_xi_b(xi(1,l),qq,1,1)
+            call set_xi_b(xi(1,l),qq,1,1,2)
             l=l+1
          else
             call exitti('(set_xi_heat) ips != L2 not supported...$',ips)
@@ -82,7 +82,7 @@ c-----------------------------------------------------------------------
          call exitti('(set_xi_ad) ifield.eq.1 not supported...$',nb)
       else
          if (ips.eq.'L2 ') then
-            call set_xi_b(xi(1,l),tb,1,nb+1)
+            call set_xi_b(xi(1,l),tb,1,nb+1,2)
             l=l+nb+1
             if (ifrom(1)) then
                if (ifaxis) then
@@ -96,14 +96,14 @@ c-----------------------------------------------------------------------
                   enddo
                   call pop_op(vx,vy,vz)
                else
-                  call set_xi_c(xi(1,l),ub,vb,wb,tb,1,nb+1,nb+1)
+                  call set_xi_c(xi(1,l),ub,vb,wb,tb,1,nb+1,nb+1,2)
                   l=l+(nb+1)**2
                endif
             else
-               call set_xi_c(xi(1,l),ub,vb,wb,tb,1,1,nb+1)
+               call set_xi_c(xi(1,l),ub,vb,wb,tb,1,1,nb+1,2)
                l=l+nb+1
             endif
-            call set_xi_a(xi(1,l),tb,ones,1,nb+1)
+            call set_xi_a(xi(1,l),tb,ones,1,nb+1,2)
             l=l+nb+1
          else
             call exitti('(set_xi_ad) ips != L2 not supported...$',ips)
@@ -646,7 +646,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine set_xi_a(xi_a,sb,dfld,mdim,nxi)
+      subroutine set_xi_a(xi_a,sb,dfld,mdim,nxi,jfld)
 
       ! set Riesz representation corresponding to diffusion term
 
@@ -661,8 +661,8 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
       real xi_a(lt,mdim,nxi),sb(lt,mdim,nxi),dfld(lt,mdim)
 
-      jfld=1
-      if (mdim.eq.1) jfld=2
+c     jfld=1
+c     if (mdim.eq.1) jfld=2
 
       do ix=1,nxi
       do idim=1,mdim
@@ -674,7 +674,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine set_xi_b(xi_b,sb,mdim,nxi)
+      subroutine set_xi_b(xi_b,sb,mdim,nxi,jfld)
 
       ! set Riesz representation corresponding to mass term
 
@@ -688,11 +688,11 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
       real xi_b(lt,mdim,nxi),sb(lt,mdim,nxi)
 
-      jfld=1
-      if (mdim.eq.1) jfld=2
+c     jfld=1
+c     if (mdim.eq.1) jfld=2
 
-      nel=nelv
-      if (jfld.eq.2) nel=nelt
+c     nel=nelv
+c     if (jfld.eq.2) nel=nelt
 
       do ix=1,nxi
       do idim=1,mdim
@@ -703,7 +703,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine set_xi_c(xi_c,cxb,cyb,czb,sb,mdim,mxi,nxi)
+      subroutine set_xi_c(xi_c,cxb,cyb,czb,sb,mdim,mxi,nxi,jfld)
 
       ! set Riesz representation corresponding to advection term
 
@@ -724,7 +724,7 @@ c-----------------------------------------------------------------------
       do ix=1,nxi
       do idim=1,mdim
          call binvc(xi_c(1,idim,ix,jx),cxb(1,jx),cyb(1,jx),czb(1,jx),
-     $     sb(1,idim,ix),.false.,.false.)
+     $     sb(1,idim,ix),.false.,.false.,jfld)
       enddo
       enddo
       enddo
@@ -743,16 +743,28 @@ c-----------------------------------------------------------------------
       ! bia  := B^{-1} A s
 
       include 'SIZE'
-      include 'MASS'
-      include 'MOR'
+      include 'MASS'     ! dep: bm1
+      include 'MOR'      ! dep: zeros
+      include 'TSTEP'    ! dep: nelfld
+      include 'PARALLEL' ! dep: nelg,nelgv
 
-      real bia(1),s(1),dfld(1)
+      parameter (lt=lx1*ly1*lz1*lelt)
+      real bia(lt,1),s(lt,1),dfld(lt,1)
 
-      nel=nelt
-      if (jfield.eq.1) nel=nelv
+      nel=nelfld(jfld)
+      melg=nelg(jfld)
 
-      call axhelm(bia,s,dfld,zeros,jfld,idir)
-      call invcol2(bia,bm1,lx1*ly1*lz1*nel)
+      imsh=2
+      if (melg.eq.nelgv) imsh=1 
+
+      mfld=1
+      if (jfld.eq.1) mfld=ldim
+
+      do i=1,mfld
+         call axhelm(bia(1,i),s(1,i),dfld(1,i),zeros,imsh,idir)
+      enddo
+
+      call binv(bia,jfld)
 
       return
       end
@@ -766,19 +778,27 @@ c-----------------------------------------------------------------------
       ! bib  := B^{-1} B s
 
       include 'SIZE'
-      include 'MASS'
+c     include 'MASS'
+      include 'TSTEP' ! dep: nelfld
 
-      real bib(1),s(1)
+      parameter (lt=lx1*ly1*lz1*lelt)
+      real bib(lt,1),s(lt,1)
 
-      nel=nelt
-      if (jfield.eq.1) nel=nelv
+      nel=nelfld(jfld)
 
-      call copy(bib,s,lx1*ly1*lz1*nel)
+      mfld=1
+      if (jfld.eq.1) mfld=ldim
+
+      do i=1,mfld
+         call col3(bib(1,i),s(1,i),bm1,lx1*ly1*lz1*nel)
+      enddo
+
+      call binv(bib,jfld)
 
       return
       end
 c-----------------------------------------------------------------------
-      subroutine binvc(bic,ux,uy,uz,s,ifcf,ifuf)
+      subroutine binvc(bic,ux,uy,uz,s,ifcf,ifuf,jfld)
       
       ! apply local B^{-1} C to a scalar field
 
@@ -787,17 +807,256 @@ c-----------------------------------------------------------------------
       ! ifcf     := true when ux,uy,uz is on the fine mesh
       ! ifuf     := true when s is on the fine mesh
       ! bic      := B^{-1} C(ux,uy,uz) s
+      ! jfld     := field # of s
 
       include 'SIZE'
       include 'MASS'
-      include 'MOR'
 
-      real bic(1),ux(1),uy(1),uz(1),s(1)
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real bic(lt,1),ux(lt),uy(lt),uz(lt),s(lt,1)
       logical ifcf,ifuf
 
-      call convect_new(bic,s,ifuf,ux,uy,uz,ifcf)
-      call invcol2(bic,bm1,lx1*ly1*lz1*nelv)
-      call rzero(bic(lx1*ly1*lz1*nelv+1),lx1*ly1*lz1*(nelt-nelv))
+      mfld=1
+      if (jfld.eq.1) mfld=ldim
+
+      do i=1,mfld
+         call convect_new(bic(1,i),s(1,i),ifuf,ux,uy,uz,ifcf)
+      enddo
+
+      call binv(bic,jfld)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine binv(fldi,ifld)
+
+      ! compute fldi = B^-1 * fldi
+
+      ! fldi: input field, can be a vector if ifld==1 
+      ! ifld: field number associated with fldi
+
+      include 'SIZE'
+      include 'MASS'  ! dep: binvm1, bintm1
+      include 'SOLN'  ! dep: tmask
+      include 'TSTEP' ! dep: ifield, nelfld
+
+      real fldi(lx1*ly1*lz1*lelt,1)
+
+      jfield=ifield
+      ifield=ifld
+
+      nel=nelfld(ifield)
+      n=lx1*ly1*lz1*nel
+
+      if (ifield.eq.1) then
+         call opmask(fldi(1,1),fldi(1,2),fldi(1,3))
+         call opdssum(fldi(1,1),fldi(1,2),fldi(1,3))
+      else
+         call col2(fldi,tmask(1,1,1,1,ifield-1),n)
+         call dssum(fldi,lx1,ly1,lz1)
+      endif
+
+      if (nel.eq.nelv) then
+         call col2(fldi(1,1),binvm1,n)
+         if (ifield.eq.1) then
+            call col2(fldi(1,2),binvm1,n)
+            if (ldim.eq.3) call col2(fldi(1,3),binvm1,n)
+         endif
+      else if (nel.eq.nelt) then
+         call col2(fldi(1,1),bintm1,n)
+      endif
+
+      ifield=jfield
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine ainva(aia,s,dfld,jfld,idir)
+
+      ! apply local A^{-1} A to a scalar field
+
+      ! s    := input scalar field
+      ! dfld := diffusivity field
+      ! jfld := field # of s
+      ! idir := direction of s
+      ! aia  := A^{-1} A s
+
+      include 'SIZE'
+      include 'MASS'     ! dep: bm1
+      include 'MOR'      ! dep: zeros
+      include 'TSTEP'    ! dep: nelfld
+      include 'PARALLEL' ! dep: nelg,nelgv
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      real aia(lt,1),s(lt,1),dfld(lt,1)
+
+      nel=nelfld(jfld)
+      melg=nelg(jfld)
+
+      imsh=2
+      if (melg.eq.nelgv) imsh=1 
+
+      mfld=1
+      if (jfld.eq.1) mfld=ldim
+
+      do i=1,mfld
+         call axhelm(aia(1,i),s(1,i),dfld(1,i),zeros,imsh,idir)
+      enddo
+
+      call ainv(aia,jfld)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine ainvb(aib,s,jfld)
+
+      ! apply local A^{-1} B to a scalar field
+
+      ! s    := input scalar field
+      ! jfld := field # of s
+      ! aib  := A^{-1} B s
+
+      include 'SIZE'
+c     include 'MASS'
+      include 'TSTEP' ! dep: nelfld
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      real aib(lt,1),s(lt,1)
+
+      nel=nelfld(jfld)
+
+      mfld=1
+      if (jfld.eq.1) mfld=ldim
+
+      do i=1,mfld
+         call col3(aib(1,i),s(1,i),bm1,lx1*ly1*lz1*nel)
+      enddo
+
+      call ainv(aib,jfld)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine ainvc(aic,ux,uy,uz,s,ifcf,ifuf,jfld)
+      
+      ! apply local A^{-1} C to a scalar field
+
+      ! ux,uy,uz := input vector field
+      ! s        := input scalar field
+      ! ifcf     := true when ux,uy,uz is on the fine mesh
+      ! ifuf     := true when s is on the fine mesh
+      ! aic      := A^{-1} C(ux,uy,uz) s
+      ! jfld     := field # of s
+
+      include 'SIZE'
+      include 'MASS'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real aic(lt,1),ux(lt),uy(lt),uz(lt),s(lt,1)
+      logical ifcf,ifuf
+
+      mfld=1
+      if (jfld.eq.1) mfld=ldim
+
+      do i=1,mfld
+         call convect_new(aic(1,i),s(1,i),ifuf,ux,uy,uz,ifcf)
+      enddo
+
+      call ainv(aic,jfld)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine ainv(fldi,ifld)
+
+      ! compute fldi = A^-1 * fldi
+
+      ! fldi: input field, can be a vector if ifld==1 
+      ! ifld: field number associated with fldi
+
+      include 'SIZE'
+      include 'MASS'   ! dep: binvm1, bintm1
+      include 'SOLN'   ! dep: v1mask, v2mask, v3mask, tmask
+      include 'TSTEP'  ! dep: ifield, nelfld
+      include 'INPUT'  ! dep: ifaxis, ifaziv
+      include 'ORTHOT' ! dep: napproxt, name4t
+      include 'VPROJ'  ! dep: vproj
+
+      real fldi(lx1*ly1*lz1*lelt,1)
+      real ifld1
+      real h1(1),h2(1)
+      real o1(lx1*ly1*lz1*lelt)
+      real rie_tol, rie_it
+
+      jfield=ifield
+      ifield=ifld
+
+      ifld1 = ifield-1
+
+      nel=nelfld(ifield)
+      n=lx1*ly1*lz1*nel
+
+      if1=ifield-1
+      write(name4t,1) if1-1
+    1 format('PS',i2)
+      if(ifield.eq.2) write(name4t,'(A4)') 'TEMP'
+
+      isd = 1
+      if (ifaxis.and.ifaziv.and.ifield.eq.2) isd = 2
+
+      call rone (h1,n)
+      call rzero(h2,n)
+
+      ! set the tolerance = 1e-10 for all fields
+      rie_tol = 1e-10
+      ! set the max iter = 500
+      rie_it = 500
+
+      ! initial guess = 0
+      if (ifield.eq.1) then
+         imesh = 1
+         call rzero(o1,n)
+         call hsolve ('VELX',o1,fldi(1,1),h1,h2,v1mask,vmult
+     $                      ,imesh,rie_tol,rie_it,1
+     $                      ,vproj(1,1),0,binvm1)
+         call copy(fldi(1,1),o1,n)
+
+         call rzero(o1,n)
+         call hsolve ('VELY',o1,fldi(1,2),h1,h2,v2mask,vmult
+     $                      ,imesh,rie_tol,rie_it,2
+     $                      ,vproj(1,2),0,binvm1)
+         call copy(fldi(1,2),o1,n)
+
+         if (if3d) then 
+            call rzero(o1,n)
+            call hsolve ('VELZ',o1,fldi(1,3),h1,h2,v3mask,vmult
+     $                         ,imesh,rie_tol,rie_it,3
+     $                         ,vproj(1,3),0,binvm1)
+            call copy(fldi(1,3),o1,n)
+         endif
+      else
+         call rzero(o1,n)
+         if(nel.eq.nelv) then
+            imesh = 1
+            call hsolve  (name4t,o1,fldi,h1,h2
+     $                    ,tmask(1,1,1,1,ifield-1)
+     $                    ,tmult(1,1,1,1,ifield-1)
+     $                    ,imesh,rie_tol,rie_it,1
+     $                    ,approxt(1,0,ifld1),0,binvm1)
+         else
+            imesh = 2
+            call hsolve  (name4t,o1,fldi,h1,h2
+     $                    ,tmask(1,1,1,1,ifield-1)
+     $                    ,tmult(1,1,1,1,ifield-1)
+     $                    ,imesh,rie_tol,rie_it,1
+     $                    ,approxt(1,0,ifld1),0,bintm1)
+         endif
+         call copy(fldi,o1,n)
+      endif
+
+      ifield=jfield
 
       return
       end

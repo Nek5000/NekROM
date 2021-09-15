@@ -952,6 +952,10 @@ c-----------------------------------------------------------------------
             write (6,*) 'mp_ifrom(',i,')   ',ifrom(i)
          enddo
          write (6,*) ' '
+         write (6,*) 'mp_gx          ',gx
+         write (6,*) 'mp_gy          ',gy
+         write (6,*) 'mp_gz          ',gz
+         write (6,*) ' '
          write (6,*) 'mp_icopt       ',icopt
          write (6,*) 'mp_barr_func   ',barr_func
          write (6,*) 'mp_box_tol     ',box_tol

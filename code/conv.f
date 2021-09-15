@@ -133,21 +133,21 @@ c-----------------------------------------------------------------------
          else
             ic=ic+ni
          endif
-         ni=(nb+1)/npi+max(min(i-npi+(nb+1)-((nb+1)/npi)*np,1),0)
+         ni=(nb+1)/npi+max(min(i-npi+(nb+1)-((nb+1)/npi)*npi,1),0)
          do j=1,npj
             if (j.eq.1) then
                jc=0
             else
-               jc=jc+nk
+               jc=jc+nj
             endif
-            nj=(nb+1)/npj+max(min(j-npj+(nb+1)-((nb+1)/npj)*np,1),0)
+            nj=(nb+1)/npj+max(min(j-npj+(nb+1)-((nb+1)/npj)*npj,1),0)
             do k=1,npk
                if (k.eq.1) then
                   kc=1
                else
                   kc=kc+nk
                endif
-               nk=nb/npk+max(min(k-npk+nb-(nb/npk)*np,1),0)
+               nk=nb/npk+max(min(k-npk+nb-(nb/npk)*npk,1),0)
                if (ip.eq.l) then
                   ic1=ic
                   ic2=ic+ni-1
