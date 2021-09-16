@@ -1,5 +1,55 @@
 c-----------------------------------------------------------------------
-      subroutine set_cp(cp_a,cp_b,cp_c,cp_w,cj0,c0k,cl,fname,uu)
+      subroutine cp_setup
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      common /scrtens_norm/ norm_c,norm_c0
+
+      logical ifexist
+      real wk(lb+1),cl0(lcglo)
+      real norm_c,norm_c0
+
+      jfield=ifield
+      if (ifrom(1)) then
+         ifield=1
+         inquire (file='ops/u0',exist=ifexist)
+         if (ifexist) call read_serial(u,nb+1,'ops/u0 ',wk,nid)
+
+         if (ifquad) then
+            call force_skew(cul,ic1,ic2,jc1,jc2,kc1,kc2)
+         endif
+         local_size = (ic2-ic1+1)*(jc2-jc1+1)*(kc2-kc1+1)
+         write(6,*)'local_size',local_size
+         norm_c = vlsc2(cul,cul,local_size)
+         if (nid.eq.0) write(6,*)'norm_tens:',norm_c
+
+         if (ifcore) then
+            call set_c_slice(cuj0,cu0k,cul,ic1,ic2,jc1,jc2,kc1,kc2,nb)
+            call set_c_core(cl0,cul,ic1,ic2,jc1,jc2,kc1,kc2,nb)
+            local_size = (ic2-ic1+1)*(jc2-jc1)*(kc2-kc1)
+            write(6,*)'local_core_size',local_size
+            norm_c0 = vlsc2(cl0,cl0,local_size)
+         if (nid.eq.0) write(6,*)'norm_tens:',norm_c0
+         endif
+
+         call compute_cp(cua,cub,cuc,cp_uw,cuj0,cu0k,cul,'ops/cu ',u)
+      endif
+      if (ifrom(2)) then
+         ifield=2
+         inquire (file='ops/t0',exist=ifexist)
+         if (ifexist) call read_serial(ut,nb+1,'ops/t0 ',wk,nid)
+         call compute_cp(cta,ctb,ctc,cp_tw,ctj0,ct0k,ctl,'ops/ct ',ut)
+      endif
+c     call read_cp_weight
+c     call read_cp_mode
+      ifield=jfield
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine compute_cp(cp_a,cp_b,cp_c,cp_w,cj0,c0k,cl,fname,uu)
 
 c     This subroutine requires fname and uu and
 c     returns cp_a, cp_b, cp_c ,cp_w, cj0, c0k, cl where
@@ -14,10 +64,6 @@ c     first frontal slice and first lateral slice.
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /scrals/ fcm(3*ltr*(lb+1)),fcmpm(3*ltr**2),
-     $                lsm(3*ltr**2),lsminv(3*ltr**2),
-     $                lsr(ltr*(lb+1))
-
       common /scrtens_norm/ norm_c,norm_c0
 
       common /scralstwrk/ tmp1(ltr**2),tmp2(ltr*(lb+1)),tmp3((lb+1)**2),
@@ -25,89 +71,53 @@ c     first frontal slice and first lateral slice.
      $                    tmp8((lb+1)),tmp9((lb+1))
 
       common /scrmttkrp/ cmr((lb+1)**2*ltr),crm((lb+1)**2*ltr)
+      common /scrsetmode/ wk3(lt)
 
-      real cp_a((nb+1)*max_tr),cp_b((nb+1)*max_tr)
-      real cp_c((nb+1)*max_tr),cp_w(max_tr)
+      real cp_a((nb+1)*ltr),cp_b((nb+1)*ltr)
+      real cp_c((nb+1)*ltr),cp_w(ltr)
+      real fcm(ltr*(lb+1),3),fcmpm(ltr**2,3)
+      real lsm(ltr**2,3),lsminv(ltr**2,3)
+      real lsr(ltr*(lb+1))
       real cl(lcglo),cl0(lcglo)
-      real uu(0:nb)
       real cj0((nb+1)**2),c0k((nb+1)**2)
-      real wk1((nb+1)*max_tr),wk2(max_tr)
-      real norm_c,norm_c0,cu_err
+      real uu(0:nb)
+      real wk1((nb+1)*ltr),wk2(ltr)
+      real cu_err,norm_c,norm_c0
 
-      integer rank_list(2,max_tr),mm
+      integer rank_list(2,ltr),mm
       integer glo_i,work
 
       character*128 fname
       character*128 fnlint
 
-      if (nio.eq.0) write (6,*) 'inside set_cp'
+      if (nio.eq.0) write (6,*) 'inside compute_cp'
 
       call nekgsync
       tcp_time=dnekclock()
 
-      ! set global index
-      ic1=1
-      ic2=nb
-      jc1=0
-      jc2=nb
-      kc1=0
-      kc2=nb
-
-      n=lx1*ly1*lz1*nelv
-
-      call lints(fnlint,fname,128)
-      if (nid.eq.0) open (unit=100,file=fnlint)
-      if (nio.eq.0) write (6,*) 'setc file:',fnlint
-
-      do k=0,nb
-      do j=0,mb
-      do i=1,mb
-         cel=0.
-         if (nid.eq.0) read(100,*) cel
-         cel=glsum(cel,1)
-         call setc_local(cl,cel,ic1,ic2,jc1,jc2,kc1,kc2,i,j,k)
-      enddo
-      enddo
-      enddo
-      write(6,*)'check index',ic1,ic2,jc1,jc2,kc1,kc2,nid
-      call nekgsync
-
-      if (ifquad) then
-         call force_skew(cl,ic1,ic2,jc1,jc2,kc1,kc2)
-      endif
-      local_size = (ic2-ic1+1)*(jc2-jc1+1)*(kc2-kc1+1)
-      write(6,*)'local_size',local_size
-      norm_c = vlsc2(cl,cl,local_size)
-
-      if (ifcore) then
-         call set_c_slice(cj0,c0k,cl,ic1,ic2,jc1,jc2,kc1,kc2,nb)
-         call set_c_core(cl0,cl,ic1,ic2,jc1,jc2,kc1,kc2,nb)
-         local_size = (ic2-ic1+1)*(jc2-jc1)*(kc2-kc1)
-         write(6,*)'local_core_size',local_size
-         norm_c0 = vlsc2(cl0,cl0,local_size)
-      endif
-
       call set_rank(rank_list,mm)
       do kk=1,1
 c        ntr = rank_list(2,kk)
-         ntr = 2
+         ntr = 80
          if (ifcore) then
+               call rand_initial(cp_b,nb,ntr)
+               call rand_initial(cp_c,nb,ntr)
             if (ifquad) then
                call als_quad(cp_a,cp_b,cp_c,cp_w,fcm,fcmpm,lsm,lsminv,
      $                       lsr,tmp1,tmp2,tmp4,tmp5,cmr,crm,
      $                       cl0,ic1,ic2,jc1+1,jc2,kc1+1,kc2,nb,ntr)
             else
-               call als_core(cp_a,cp_b,cp_c,cp_w,fcm,fcmpm,lsm,lsminv,
-     $                       lsr,tmp1,tmp4,tmp5,cmr,crm,
-     $                       cl0,ic1,ic2,jc1+1,jc2,kc1+1,kc2,nb,ntr)
+               call als_core(cp_a,cp_b,cp_c,cp_w,cl0,
+     $                       ic1,ic2,jc1+1,jc2,kc1+1,kc2,nb,ntr)
             endif
-            call check_conv_err(cu_err,cl0,cp_a,cp_b,cp_c,cp_w,uu(1),
-     $                          tmp4,tmp5,tmp6,tmp7,tmp8,tmp9,tmp3,
-     $                          ic1,ic2,jc1+1,jc2,kc1+1,kc2,nb,ntr)
+            call check_conv_err_new(cu_err,cl,cp_a,cp_b,cp_c,cp_w,uu,
+     $                          ic1,ic2,jc1,jc2,kc1,kc2,
+     $                          nb+1,ntr,ifcore,cj0,c0k)
          else
-            call als(cp_a,cp_b,cp_c,cp_w,fcm,fcmpm,lsm,lsminv,lsr,
-     $               tmp1,tmp2,tmp3,cmr,crm,
-     $               cl,ic1,ic2,jc1,jc2,kc1,kc2,nb+1,ntr)
+            call rand_initial(cp_b,nb+1,ntr)
+            call rand_initial(cp_c,nb+1,ntr)
+            call als(cp_a,cp_b,cp_c,cp_w,cl,
+     $               ic1,ic2,jc1,jc2,kc1,kc2,nb+1,ntr)
 
             call check_conv_err(cu_err,cl,cp_a,cp_b,cp_c,cp_w,uu,
      $                          tmp4,tmp5,tmp6,tmp7,tmp8,tmp9,tmp3,
@@ -139,18 +149,18 @@ c        ntr = rank_list(2,kk)
       ! lowest error reset factor matrices and weight
       if (nid.ne.glo_i) then 
          write(6,*)glo_i,nid,'check'
-         call rzero(cp_a,(nb+1)*max_tr)
-         call rzero(cp_b,(nb+1)*max_tr)
-         call rzero(cp_c,(nb+1)*max_tr)
-         call rzero(cp_w,max_tr)
+         call rzero(cp_a,(nb+1)*ltr)
+         call rzero(cp_b,(nb+1)*ltr)
+         call rzero(cp_c,(nb+1)*ltr)
+         call rzero(cp_w,ltr)
          ntr = 0
       endif
       call nekgsync
 
-      call gop(cp_a,wk1,'+  ',(nb+1)*max_tr)
-      call gop(cp_b,wk1,'+  ',(nb+1)*max_tr)
-      call gop(cp_c,wk1,'+  ',(nb+1)*max_tr)
-      call gop(cp_w,wk2,'+  ',max_tr)
+      call gop(cp_a,wk1,'+  ',(nb+1)*ltr)
+      call gop(cp_b,wk1,'+  ',(nb+1)*ltr)
+      call gop(cp_c,wk1,'+  ',(nb+1)*ltr)
+      call gop(cp_w,wk2,'+  ',ltr)
       call igop(ntr,work,'M  ',1)
 
          ! read in the cp decomposition
@@ -181,7 +191,7 @@ c        enddo
       if (nio.eq.0) write (6,*) 'lcglo=',lcglo
       if (nio.eq.0) write (6,*) 'lcloc=',lcloc
 
-      if (nio.eq.0) write (6,*) 'exiting set_cp'
+      if (nio.eq.0) write (6,*) 'exiting compute_cp'
 
       return
       end
@@ -192,14 +202,14 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
-      integer rank_list(2,max_tr)
+      integer rank_list(2,ltr)
       integer mm
 
-      mm = ceiling(real(max_tr/np))
+      mm = ceiling(real(ltr/np))
       write(6,*)mm,'length for each proc'
 
 
-      call izero(rank_list,2*max_tr)
+      call izero(rank_list,2*ltr)
       if (nid.eq.0) then
          do i=1,10
             ii = i*10
@@ -211,13 +221,13 @@ c-----------------------------------------------------------------------
       call nekgsync
 
       if (nid.eq.0) then
-         ni = max_tr
+         ni = ltr
          call fgslib_crystal_ituple_transfer(cr_h, rank_list,2,ni,
-     $                                    20*max_tr,ky)
+     $                                    20*ltr,ky)
       else
          ni = 0
          call fgslib_crystal_ituple_transfer(cr_h, rank_list,2,ni,
-     $                                    20*max_tr,ky)
+     $                                    20*ltr,ky)
       endif
 
 c     if (nid.eq.0) then
@@ -239,17 +249,17 @@ c     call exitt0
       return
       end
 c-----------------------------------------------------------------------
-      subroutine als(cp_a,cp_b,cp_c,cp_w,fcm,fcmpm,lsm,lsminv,lsr,tmp1,
-     $               tmp2,tmp3,cmr,crm,cl,ic1,ic2,jc1,jc2,kc1,kc2,mm,nn)
-
+      subroutine als(cp_a,cp_b,cp_c,cp_w,cl,
+     $               ic1,ic2,jc1,jc2,kc1,kc2,mm,nn)
 
       real cp_a(mm*nn),cp_b(mm*nn),cp_c(mm*nn),cp_w(nn)
       real cl(ic1:ic2,jc1:jc2,kc1:kc2)
+
       real fcm(mm*nn,3),fcmpm(nn*nn,3)
       real lsm(nn*nn,3),lsminv(nn*nn,3),lsr(mm*nn)
-      real tmp1(nn*nn)
       real cmr(ic1:ic2,jc1:jc2,nn),crm(ic1:ic2,nn,kc1:kc2)
       real cp_res,cp_relres,cp_fit,cp_tol,pre_relres,reldiff
+      real tmp1(nn*nn)
 
       integer tmp2(nn),tmp3(nn)
       integer mode,maxit,mm,nn
@@ -260,11 +270,13 @@ c-----------------------------------------------------------------------
       if (nid.eq.0) write(6,*) 'inside als'
 
       maxit = 500
-      cp_tol = 0.2
+      cp_tol = 1e-12
       pre_relres = 1
 
+      call copy(fcm(1,2),cp_b,mm*nn)
+      call copy(fcm(1,3),cp_c,mm*nn)
+
       do mode=2,3
-         call rand_initial(fcm(1,mode),mm,nn)
          call set_product_matrix(fcmpm(1,mode),fcm(1,mode),mm,nn)
       enddo
 
@@ -291,9 +303,10 @@ c-----------------------------------------------------------------------
          reldiff = abs(pre_relres-cp_relres)/pre_relres
 
          pre_relres = cp_relres
-         if (nid.eq.0) write(6,1)'iter:', ii,'rel difference:',reldiff,
-     $   'relative residual:', cp_relres, 'rank:', nn
-         if (cp_relres.lt.cp_tol.OR.ii.ge.maxit.OR.reldiff.le.1e-5) then
+         if (nid.eq.0) write(6,1)'iter:',ii,'rel difference:',reldiff,
+     $   'relative residual:',cp_relres,'residual:',cp_res,'rank:',nn
+         if (cp_relres.lt.cp_tol.OR.ii.ge.maxit.OR.
+     $       reldiff.le.1e-12) then
             exit
          endif
       enddo
@@ -302,32 +315,70 @@ c-----------------------------------------------------------------------
       call copy(cp_b,fcm(1,2),mm*nn)
       call copy(cp_c,fcm(1,3),mm*nn)
 
-    1 format(a,i4,x,a,1p1e13.5,x,a,1p1e13.5,x,a,i4)
+    1 format(a,i4,x,a,1p1e13.5,x,a,1p1e13.5,x,a,1p1e13.5,x,a,i4)
+
       if (nid.eq.0) write(6,*) 'exitting als'
 
       return
       end
 c-----------------------------------------------------------------------
-      subroutine check_conv_err(cu_err,cl,fac_a,fac_b,fac_c,cp_w,uu,
-     $                          bcu,cuu,tmp,cu,cu_diff,approx_cu,cm,
-     $                          ic1,ic2,jc1,jc2,kc1,kc2,mm,nn)
+      subroutine check_conv_err_new(cu_err,cl,fac_a,fac_b,fac_c,cp_w,uu,
+     $                          ic1,ic2,jc1,jc2,kc1,kc2,mm,nn,ifcore,
+     $                          cj0,c0k)
 
       real cu_err
       real cl(ic1:ic2,jc1:jc2,kc1:kc2)
       real fac_a(mm*nn),fac_b(mm*nn),fac_c(mm*nn),cp_w(nn)
-      real uu(mm),cu(mm),cu_diff(mm),approx_cu(mm)
+      real uu(0:mm-1),cu(mm),cu_diff(mm),approx_cu(mm)
       real cm(ic1:ic2,jc1:jc2)
       real bcu(nn),cuu(nn),tmp(nn)
-      integer ic1,ic2,jc1,jc2,kc1,kc2,mm,nn
+      real cj0(ic1:ic2,jc1:jc2),c0k(ic1:ic2,kc1:kc2)
+      integer ic1,ic2,jc1,jc2,kc1,kc2,mm,nn,i1
+      logical ifcore
 
+      write(6,*)'check index again',ic1,ic2,jc1,jc2,kc1,kc2
       ! approximated tensor-vector multiplication
       call rzero(cu,mm)
+      i1 = 0
+      if (ifcore) then 
+         mb=mm-1
+         i1 = 1
+      endif
       do kk=1,nn
-         bcu(kk) = vlsc2(uu,fac_b(1+(kk-1)*mm),mm)
-         cuu(kk) = vlsc2(uu,fac_c(1+(kk-1)*mm),mm)
+         bcu(kk) = vlsc2(uu(i1),fac_b(1+(kk-1)*mb),mb)
+         cuu(kk) = vlsc2(uu(i1),fac_c(1+(kk-1)*mb),mb)
+         do i=1,mb
+c        write(6,*)'check factor matrices:',
+c    $             fac_a(i+(kk-1)*mb),fac_b(i+(kk-1)*mb),
+c    $             fac_c(i+(kk-1)*mb),cp_w(kk)
+         enddo
       enddo
       call col4(tmp,bcu,cuu,cp_w,nn)
-      call mxm(fac_a,mm,tmp,nn,approx_cu,1)
+      do kk=1,nn
+      write(6,*)'tmp',kk,tmp(kk)
+      enddo
+      call mxm(fac_a,mb,tmp,nn,approx_cu,1)
+      do kk=1,mm
+      write(6,*)'approx_cu',kk,approx_cu(kk)
+      enddo
+      do k=kc1,kc2
+      do i=ic1,ic2
+         approx_cu(i)=approx_cu(i)+c0k(i,k)*uu(0)*uu(k)
+      enddo
+      enddo
+
+      do j=jc1,jc2
+      do i=ic1,ic2
+         approx_cu(i)=approx_cu(i)+cj0(i,j)*uu(j)*uu(0)
+      enddo
+      enddo
+
+      do i=ic1,ic2
+         approx_cu(i)=approx_cu(i)-cj0(i,0)*uu(0)*uu(0)
+      enddo
+      do kk=1,mm
+         write(6,*)'approx_cu',approx_cu(kk)
+      enddo
 
       ! exact tensor-vector multiplication
       call rzero(cu,mm)
@@ -352,8 +403,67 @@ c-----------------------------------------------------------------------
      $             'cu:',cu(ii),'approximated cu:',approx_cu(ii)
       enddo
 
-    2 format(i4,x,a,1p1e13.5,x,a,1p1e13.5)
-    1 format(i4,x,a,1p1e13.5,x,a,1p1e13.5,x,a,1p1e13.5)
+    2 format(i4,x,a,1p1e16.6,x,a,1p1e16.6)
+    1 format(i4,x,a,1p1e16.6,x,a,1p1e16.6,x,a,1p1e16.6)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine check_conv_err(cu_err,cl,fac_a,fac_b,fac_c,cp_w,uu,
+     $                          bcu,cuu,tmp,cu,cu_diff,approx_cu,cm,
+     $                          ic1,ic2,jc1,jc2,kc1,kc2,mm,nn)
+
+      real cu_err
+      real cl(ic1:ic2,jc1:jc2,kc1:kc2)
+      real fac_a(mm*nn),fac_b(mm*nn),fac_c(mm*nn),cp_w(nn)
+      real uu(0:mm-1),cu(mm),cu_diff(mm),approx_cu(mm)
+      real cm(ic1:ic2,jc1:jc2)
+      real bcu(nn),cuu(nn),tmp(nn)
+      integer ic1,ic2,jc1,jc2,kc1,kc2,mm,nn
+
+      write(6,*)'check index again',ic1,ic2,jc1,jc2,kc1,kc2
+      ! approximated tensor-vector multiplication
+      call rzero(cu,mm)
+      do kk=1,nn
+         bcu(kk) = vlsc2(uu,fac_b(1+(kk-1)*mm),mm)
+         cuu(kk) = vlsc2(uu,fac_c(1+(kk-1)*mm),mm)
+         do i=1,mm
+         write(6,*)'check factor matrices:',
+     $             fac_a(i+(kk-1)*mm),fac_b(i+(kk-1)*mm),
+     $             fac_c(i+(kk-1)*mm),cp_w(kk)
+         enddo
+      enddo
+      call col4(tmp,bcu,cuu,cp_w,nn)
+      call mxm(fac_a,mm,tmp,nn,approx_cu,1)
+      do kk=1,nn
+         write(6,*)'approx_cu',approx_cu(kk)
+      enddo
+
+      ! exact tensor-vector multiplication
+      call rzero(cu,mm)
+      do k=kc1,kc2
+      do j=jc1,jc2
+      do i=ic1,ic2
+         cu(i)=cu(i)+cl(i,j,k)*uu(j)*uu(k)
+      enddo
+      enddo
+      enddo
+
+      ! difference
+      call sub3(cu_diff,cu,approx_cu,mm)
+      ! error
+      cu_err = sqrt(vlsc2(cu_diff,cu_diff,mm))
+
+      write(6,2) nid,'cu_err:',cu_err,'cu_relerr:',
+     $           cu_err/sqrt(vlsc2(cu,cu,mm))
+
+      do ii=1,mm
+         write(6,1)ii,'difference:',cu_diff(ii),
+     $             'cu:',cu(ii),'approximated cu:',approx_cu(ii)
+      enddo
+
+    2 format(i4,x,a,1p1e16.6,x,a,1p1e16.6)
+    1 format(i4,x,a,1p1e16.6,x,a,1p1e16.6,x,a,1p1e16.6)
 
       return
       end
@@ -689,12 +799,15 @@ c     exact tensor
 c     compute the frobenius norm of the approximated tensor
       do ii=1,nn
          call col2c(lsm(1,ii),fcmpm(1,ii),cp_weight(ii),nn)
-         call cmult(lsm(1,ii),cp_weight(ii),nn)
+      enddo
+      do jj=1,nn
+      do ii=1,nn
+         lsm(ii,jj) = lsm(ii,jj) * cp_weight(ii)
+      enddo
       enddo
       norm_approx = vlsum(lsm,nn**2)
 
-      residual = sqrt((norm_tens - 2*inner_prod + norm_approx))
-
+      residual = sqrt(abs(norm_tens - 2*inner_prod + norm_approx))
       return
       end
 c-----------------------------------------------------------------------
@@ -894,9 +1007,8 @@ c     kc2=3
       return
       end
 c-----------------------------------------------------------------------
-      subroutine als_core(cp_a,cp_b,cp_c,cp_w,fcm,fcmpm,lsm,lsminv,lsr,
-     $                    tmp1,tmp2,tmp3,cmr,crm,cl,ic1,ic2,jc1,jc2,kc1,
-     $                    kc2,mm,nn)
+      subroutine als_core(cp_a,cp_b,cp_c,cp_w,cl,
+     $                    ic1,ic2,jc1,jc2,kc1,kc2,mm,nn)
 
 c     This subroutine requires tensor cl, indices ic1, ic2, jc1, jc2,
 c     kc1, kc2, mm and nn where mm and nn are the dimensions of the
@@ -904,10 +1016,11 @@ c     factor matrices. It returns cp_a, cp_b, cp_c ,cp_w.
 
       real cp_a(mm*nn),cp_b(mm*nn),cp_c(mm*nn),cp_w(nn)
       real cl(ic1:ic2,jc1:jc2,kc1:kc2)
+
+      real cmr(ic1:ic2,jc1:jc2,nn),crm(ic1:ic2,nn,kc1:kc2)
       real fcm(mm*nn,3),fcmpm(nn*nn,3)
       real lsm(nn*nn,3),lsminv(nn*nn,3),lsr(mm*nn)
       real tmp1(nn*nn)
-      real cmr(ic1:ic2,jc1:jc2,nn),crm(ic1:ic2,nn,kc1:kc2)
       real cp_res,cp_relres,cp_fit,cp_tol,pre_relres,reldiff
 
       integer tmp2(nn),tmp3(nn)
@@ -916,16 +1029,17 @@ c     factor matrices. It returns cp_a, cp_b, cp_c ,cp_w.
       real norm_c,norm_c0
       common /scrtens_norm/ norm_c,norm_c0
 
-
       if (nid.eq.0) write(6,*) 'inside als_core'
 
       maxit = 500
-      cp_tol = 0.2
+      cp_tol = 1e-12
       pre_relres = 1
+
+      call copy(fcm(1,2),cp_b,mm*nn)
+      call copy(fcm(1,3),cp_c,mm*nn)
 
       ! Compute A^TA
       do mode=2,3
-         call rand_initial(fcm(1,mode),mm,nn)
          call set_product_matrix(fcmpm(1,mode),fcm(1,mode),mm,nn)
       enddo
 
@@ -954,9 +1068,10 @@ c     factor matrices. It returns cp_a, cp_b, cp_c ,cp_w.
          reldiff = abs(pre_relres-cp_relres)/pre_relres
 
          pre_relres = cp_relres
-         if (nid.eq.0) write(6,1)'iter:', ii,'rel difference:',reldiff,
-     $   'relative residual:', cp_relres, 'rank:', nn
-         if (cp_relres.lt.cp_tol.OR.ii.ge.maxit.OR.reldiff.le.1e-5) then
+         if (nid.eq.0) write(6,1)'iter:',ii,'rel difference:',reldiff,
+     $   'relative residual:',cp_relres,'residual:',cp_res,'rank:',nn
+         if (cp_relres.lt.cp_tol.OR.ii.ge.maxit.OR.
+     $       reldiff.le.1e-12) then
             exit
          endif
       enddo
@@ -965,7 +1080,7 @@ c     factor matrices. It returns cp_a, cp_b, cp_c ,cp_w.
       call copy(cp_b,fcm(1,2),mm*nn)
       call copy(cp_c,fcm(1,3),mm*nn)
 
-    1 format(a,i4,x,a,1p1e13.5,x,a,1p1e13.5,x,a,i4)
+    1 format(a,i4,x,a,1p1e13.5,x,a,1p1e13.5,x,a,1p1e13.5,x,a,i4)
       if (nid.eq.0) write(6,*) 'exitting als_core'
 
       return
@@ -1000,6 +1115,8 @@ c     one is c(i,j,0) and the other is c(i,0,k)
       end
 c-----------------------------------------------------------------------
       subroutine set_c_core(cl0,cl,ic1,ic2,jc1,jc2,kc1,kc2,nb)
+
+      ! TODO: fix the for loop
 
       real cl0(ic1:ic2,jc1+1:jc2,kc1+1:kc2)
       real cl(ic1:ic2,jc1:jc2,kc1:kc2)
