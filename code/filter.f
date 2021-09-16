@@ -139,50 +139,6 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine set_les_exp(fles1,fles2)
-
-      include 'SIZE'
-      include 'TOTAL'
-      include 'MOR'
-
-      parameter (lt=lx1*ly1*lz1*lelt)
-      common /mytmp/ dfld(lt),t1(lt)
-
-      real fles1(0:nb,0:nb),fles2(0:nb,0:nb)
-
-      n=lx1*ly1*lz1*nelv
-
-      if (ifrom(1)) then
-         call rzero(fles1,(nb+1)**2)
-         do i=0,nb
-            call evalnut(dfld,ub(1,i),vb(1,i),wb(1,i),.false.)
-            do j=0,nb
-               call axhelm(t1,dfld,zeros,1,1)
-               fles1(i,j)=fles1(i,j)+glsc2(t1,ub(1,j),n)
-               call axhelm(t1,dfld,zeros,1,2)
-               fles1(i,j)=fles1(i,j)+glsc2(t1,vb(1,j),n)
-               if (ldim.eq.3) then
-                  call axhelm(t1,dfld,zeros,1,3)
-                  fles1(i,j)=fles1(i,j)+glsc2(t1,wb(1,j),n)
-               endif
-            enddo
-         enddo
-      endif
-
-      if (ifrom(2)) then
-         call rzero(fles2,(nb+1)**2)
-         do i=0,nb
-            call evalnut(dfld,ub(1,i),vb(1,i),wb(1,i),.true.)
-            do j=0,nb
-               call axhelm(t1,dfld,zeros,1,1)
-               fles2(i,j)=fles2(i,j)+glsc2(t1,ub(1,j),n)
-            enddo
-         enddo
-      endif
-
-      return
-      end
-c-----------------------------------------------------------------------
       subroutine apply_les_imp(uu,tt,sig,fles1,fles2,tmp)
 
       include 'SIZE'
@@ -206,11 +162,6 @@ c-----------------------------------------------------------------------
             call add2s1(tmp,tt,-sig,nb+1)
          endif
       enddo
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine apply_les_exp(uu,fles1,fles2)
 
       return
       end
