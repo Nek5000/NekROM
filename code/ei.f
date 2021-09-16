@@ -111,7 +111,10 @@ c-----------------------------------------------------------------------
       call nekgsync
       sigma_time=dnekclock()
 
-      if (lei.eq.1) then
+      if (lei.eq.0) then
+         ! do nothing if only one residual
+         continue
+      else if (lei.eq.1) then
          ! compute the size of the sigma matrix based on the eqn
          call set_nres
 
@@ -122,11 +125,13 @@ c-----------------------------------------------------------------------
             call set_riesz_reps
             call c_sigma
          endif
+      else
+         call exitti('Check your lei$',lei)
       endif
+
       call nekgsync
 
       if (nio.eq.0) write (6,*) 'sigma_time:',dnekclock()-sigma_time
-
       if (nio.eq.0) write (6,*) 'exiting set_sigma'
 
       return

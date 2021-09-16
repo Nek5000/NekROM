@@ -236,15 +236,7 @@ c     call average_in_y
       call setmisc
 
       if (ifei) then
-         if (lei.eq.0) then
-            ! do nothing if only one residual
-            continue
-         else if (lei.eq.1) then
-            call set_sigma
-c           call set_sigma_new
-         else
-            call exitti('Check your lei$',lei)
-         endif
+         call set_sigma
       endif
 
       if (ifplay) call set_trace
