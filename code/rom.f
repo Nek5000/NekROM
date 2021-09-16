@@ -742,9 +742,9 @@ c-----------------------------------------------------------------------
       if (nint(param(175)).eq.0) then
          continue
       else if (nint(param(175)).eq.1) then
-         eqn='NS'
+         eqn='NS  '
       else if (nint(param(175)).eq.2) then
-         eqn='SNS'
+         eqn='SNS '
       else if (nint(param(175)).eq.3) then
          eqn='POIS'
       else if (nint(param(175)).eq.4) then
@@ -752,7 +752,7 @@ c-----------------------------------------------------------------------
       else if (nint(param(175)).eq.5) then
          eqn='ADVE'
       else if (nint(param(175)).eq.6) then
-         eqn='VNS'
+         eqn='VNS '
       else if (nint(param(175)).eq.7) then
          eqn='VSNS'
       else

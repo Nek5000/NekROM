@@ -110,9 +110,6 @@ c-----------------------------------------------------------------------
       nskip=0
       if (ifnd.eq.1) nskip=nint(d_out)
 
-      call finiparser_getbool(i_out,'general:ei',ifnd)
-      if (ifnd.eq.1) ifei=i_out.eq.1
-
       call finiparser_getdbl(d_out,'general:avginit',ifnd)
       if (ifnd.eq.1) navg_step=nint(max(1.,d_out))
 
@@ -384,11 +381,11 @@ c-----------------------------------------------------------------------
       if (ifnd.eq.1) then
          call capit(c_out,132)
          if (index(c_out,'NS').eq.1) then
-            eqn='NS'
+            eqn='NS  '
          else if (index(c_out,'SNS').eq.1) then
-            eqn='SNS'
+            eqn='SNS '
          else if (index(c_out,'VNS').eq.1) then
-            eqn='VNS'
+            eqn='VNS '
          else if (index(c_out,'VSNS').eq.1) then
             eqn='VSNS'
          else if (index(c_out,'POIS').eq.1) then

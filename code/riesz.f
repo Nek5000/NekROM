@@ -616,13 +616,13 @@ c-----------------------------------------------------------------------
       else if (eqn.eq.'ADVE') then
          ifield=2
          call set_xi_ad
-      else if (eqn.eq.'VNS') then
+      else if (eqn.eq.'VNS ') then
          ifield=1
          call set_xi_ns
-      else if (eqn.eq.'NS') then
+      else if (eqn.eq.'NS  ') then
          call set_residual_unsteady
          call set_uNS_divfrr
-      else if (eqn.eq.'SNS') then
+      else if (eqn.eq.'SNS ') then
          call set_residual
          call set_sNS_divfrr
       endif
@@ -978,7 +978,7 @@ c-----------------------------------------------------------------------
          if (nid.eq.0) write (6,*) 'residual in l2 norm:'
      $                             ,resid_l2_norm
       else
-         if (eqn.eq.'NS') then
+         if (eqn.eq.'NS  ') then
             res_uu=0.
             res_tt=0.
             res=0.

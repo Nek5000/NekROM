@@ -13,13 +13,13 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      if (eqn.eq.'POI') then
+      if (eqn.eq.'POIS') then
          call set_theta_poisson
-      else if (eqn.eq.'HEA') then
+      else if (eqn.eq.'HEAT') then
          call set_theta_heat
-      else if (eqn.eq.'ADE') then
+      else if (eqn.eq.'ADVE') then
          call set_theta_ad
-      else if (eqn.eq.'NSE') then
+      else if (eqn.eq.'VNS ') then
          call set_theta_ns
       endif
 
@@ -152,21 +152,21 @@ c-----------------------------------------------------------------------
       else if (eqn.eq.'ADVE') then
          nres=(nb+1)*3
          if (ifrom(1)) nres=(nb+1)*2 + (nb+1)**2
-      else if (eqn.eq.'VNS') then
+      else if (eqn.eq.'VNS ') then
          nres=(nb+1)*2+(nb+1)**2
          if (ifbuoy) nres=nres+nb+1
-      else if (eqn.eq.'NS') then
+      else if (eqn.eq.'NS  ') then
          nres_u=(nb+1)*3+(nb+1)**2
          if (ifrom(2)) nres_t=(nb+1)*2+(nb+1)**2
          if (ifbuoy) nres_u=nres_u+nb+1
-      else if (eqn.eq.'SNS') then
+      else if (eqn.eq.'SNS ') then
          nres_u=(nb+1)*2+(nb+1)**2
          if (ifrom(2)) nres_t=(nb+1)*1+(nb+1)**2
          if (ifbuoy) nres_u=nres_u+nb+1
       endif
 
       ! check whether allocation for sigma matrix is enough
-      if (eqn.eq.'NS'.OR.eqn.eq.'SNS') then
+      if (eqn.eq.'NS  '.OR.eqn.eq.'SNS ') then
          if (nres_u.gt.lres_u)
      $       call exitti('nres_u > lres_u$',nres_u)
          if (nres_u.le.0) call exitti('nres_u <= 0$',nres_u)
@@ -199,7 +199,7 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelv
 
-      if (eqn.eq.'NS'.OR.eqn.eq.'SNS') then
+      if (eqn.eq.'NS  '.OR.eqn.eq.'SNS ') then
          if (nio.eq.0) write (6,*) 'reading sigma_u...'
          call read_sigma_u_serial(sigma_u,nres_u,nres_u,
      $                             'ops/sigma_u ',lres_u,nres_u,
@@ -236,7 +236,7 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
-      if (eqn.eq.'NS'.OR.eqn.eq.'SNS') then
+      if (eqn.eq.'NS  '.OR.eqn.eq.'SNS ') then
          call csigma_u(sigma_u)
          call csigma_t(sigma_t)
          call dump_serial(sigma_u,(nres_u)**2,'ops/sigma_u ',nid)
@@ -448,7 +448,7 @@ c     Matrices and vectors for advance
 
       n=lx1*ly1*lz1*nelt
 
-      eqn='POI'
+      eqn='POIS'
 
       ifflow=.false.
       ifheat=.true.
@@ -2575,11 +2575,11 @@ c        call get_dual_norm
             call set_theta_heat
          else if (eqn.eq.'ADVE') then
             call set_theta_ad
-         else if (eqn.eq.'VNS') then
+         else if (eqn.eq.'VNS ') then
             call set_theta_ns
-         else if (eqn.eq.'NS') then
+         else if (eqn.eq.'NS  ') then
             call set_theta_uns
-         else if (eqn.eq.'SNS') then
+         else if (eqn.eq.'SNS ') then
             call exitti('no supprot for Steady NS ROM$',eqn)
          endif
       endif
