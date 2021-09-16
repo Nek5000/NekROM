@@ -365,6 +365,19 @@ c-----------------------------------------------------------------------
                write (6,*) 'diff. filter needs a filter:radius value'
                ierr=ierr+1
             endif
+         else if (index(c_out,'POLY').eq.1) then
+            cftype='POLY'
+            call finiparser_getdbl(d_out,'filter:radius',ifnd)
+            if (ifnd.eq.1) then
+               rdft=d_out
+            else
+               write (6,*) 'poly. filter needs a filter:radius value'
+               ierr=ierr+1
+            endif
+         else if (index(c_out,'SMAG').eq.1) then
+            cftype='SMAG'
+            write (6,*) 'smag. filter type not supported ',c_out
+            ierr=ierr+1
          else
             cftype='INVA'
             write (6,*) 'invalid option for filter:type ',c_out
