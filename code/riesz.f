@@ -594,10 +594,50 @@ c        nmxh=1000
       return
       end
 c-----------------------------------------------------------------------
-      subroutine set_riesz_rep
+      subroutine set_riesz_reps
+
+      ! compute the Riesz representation pieces
+      ! solve multiple stoke problems and / or poisson problems
+
+      ! TODO: Need to resolve xi, xi_u, xi_t inconsistency
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      if (nio.eq.0) write (6,*) 'inside set_riesz_reps'
+
+      if (eqn.eq.'POIS') then
+         ifield=2
+         call set_xi_poisson
+      else if (eqn.eq.'HEAT') then
+         ifield=2
+         call set_xi_heat
+      else if (eqn.eq.'ADVE') then
+         ifield=2
+         call set_xi_ad
+      else if (eqn.eq.'VNS ') then
+         ifield=1
+         call set_xi_ns
+      else if (eqn.eq.'NS  ') then
+         call set_residual_unsteady
+         call set_uNS_divfrr
+      else if (eqn.eq.'SNS ') then
+         call set_residual
+         call set_sNS_divfrr
+      endif
+
+      call nekgsync
+
+      if (nio.eq.0) write (6,*) 'exiting set_riesz_reps'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine set_riesz_one
 
       ! compute the Riesz representation (only one)
-      ! solve one stoke problem and one poisson problem
+      ! solve one stoke problem and / or one poisson problem
 
       include 'SIZE'
       include 'TOTAL'
@@ -869,6 +909,117 @@ c-----------------------------------------------------------------------
 
       ifield=jfield
 
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine c_riesz_norm
+
+      ! compute the norm of the riesz
+      ! TODO: use ips to determine the norm
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      real u_resid_h1_norm,u_resid_h10_norm,u_resid_l2_norm
+      real t_resid_h1_norm,t_resid_h10_norm,t_resid_l2_norm
+      real resid_h1_norm,resid_h10_norm,resid_l2_norm
+
+      if (nio.eq.0) write (6,*) 'inside c_riesz_norm'
+
+      if (lei.eq.0) then
+
+         u_resid_h10_norm = 0
+         u_resid_l2_norm = 0
+         t_resid_h10_norm = 0
+         t_resid_l2_norm = 0
+
+         if (ifrom(1)) then
+            ifield=1
+            u_resid_h10_norm = h10vip(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
+     $                                eh_u(1,1),eh_u(1,2),eh_u(1,ldim))
+            u_resid_l2_norm = wl2vip(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),
+     $                               eh_u(1,1),eh_u(1,2),eh_u(1,ldim))
+            u_resid_h1_norm = u_resid_h10_norm + u_resid_l2_norm
+            if (nid.eq.0) write(6,*)'vel residual in h1 norm',
+     $                               sqrt(u_resid_h1_norm)
+            if (nid.eq.0) write(6,*)'vel residual in h10 norm',
+     $                               sqrt(u_resid_h10_norm)
+            if (nid.eq.0) write(6,*)'vel residual in l2 norm',
+     $                               sqrt(u_resid_l2_norm)
+         endif
+
+         if (ifrom(2)) then
+            ifield=2
+            t_resid_h10_norm = h10sip(eh_t,eh_t)
+            t_resid_l2_norm = wl2sip(eh_t,eh_t)
+
+            t_resid_h1_norm = t_resid_h10_norm + t_resid_l2_norm
+            if (nid.eq.0) write(6,*)'temp residual in h1 norm',
+     $                               sqrt(t_resid_h1_norm)
+            if (nid.eq.0) write(6,*)'temp residual in h10 norm',
+     $                               sqrt(t_resid_h10_norm)
+            if (nid.eq.0) write(6,*)'temp residual in l2 norm',
+     $                               sqrt(t_resid_l2_norm)
+         endif
+
+         resid_h1_norm = sqrt(u_resid_h10_norm+u_resid_l2_norm+
+     $                        t_resid_h10_norm+t_resid_l2_norm)
+         resid_h10_norm = sqrt(u_resid_h10_norm+t_resid_h10_norm)
+         resid_l2_norm = sqrt(u_resid_l2_norm+t_resid_l2_norm)
+
+         if (resid_h1_norm.le.0) call
+     $                exitti('negative semidefinite dual norm$',n)
+
+         if (nid.eq.0) write (6,*) 'residual in h1 norm:'
+     $                             ,resid_h1_norm
+         if (nid.eq.0) write (6,*) 'residual in h10 norm:'
+     $                             ,resid_h10_norm
+         if (nid.eq.0) write (6,*) 'residual in l2 norm:'
+     $                             ,resid_l2_norm
+      else
+         if (eqn.eq.'NS  ') then
+            res_uu=0.
+            res_tt=0.
+            res=0.
+
+            do j=1,nres_u
+            do i=1,nres_u
+               res_uu=res_uu
+     $               +sigma_u(i+(nres_u)*(j-1))*theta_u(i)*theta_u(j)
+            enddo
+            enddo
+            if (nid.eq.0)write(6,*)'velocity dual norm',sqrt(res_uu)
+            if (ifrom(2)) then
+               do j=1,nres_t
+               do i=1,nres_t
+                  res_tt=res_tt
+     $                  +sigma_t(i+(nres_t)*(j-1))*theta_t(i)*theta_t(j)
+               enddo
+               enddo
+               if (nid.eq.0)write(6,*)'temp dual norm',sqrt(res_tt)
+            endif
+            res=sqrt(res_uu+res_tt)
+         else
+            ! This block of code is to support when eqn .ne. NS
+            res=0.
+
+            do j=1,nres
+            do i=1,nres
+               res=res+mor_sigma(i,j)*mor_theta(i)*mor_theta(j)
+            enddo
+            enddo
+
+            res=sqrt(res)
+         endif
+         if (res.le.0)
+     $      call exitti('negative semidefinite dual norm$',nb)
+
+         if (nid.eq.0) write (6,*) 'dual norm:',res
+      endif
+
+      call nekgsync
+      if (nio.eq.0) write (6,*) 'exiting c_riesz_norm'
       return
       end
 c-----------------------------------------------------------------------

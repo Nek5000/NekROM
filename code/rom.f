@@ -133,14 +133,9 @@ c        cts='rkck  '
 
     2 continue
 
-      if (ifei.and.(rmode.ne.'OFF'.and.rmode.ne.'AEQ')
-     $   .and.nint(param(175)).eq.1) then
-         call cres_uns(sigma_u,sigma_t)
+      if (ifei.and.(rmode.ne.'OFF'.and.rmode.ne.'AEQ')) then
+         call cdres
 c        call cres
-      endif
-
-      if (nint(param(175)).eq.2) then
-         call c_rieszrd_uns
       endif
 
       ifield=jfield
@@ -242,8 +237,7 @@ c     call average_in_y
       call setmisc
 
       if (ifei) then
-c        call set_sigma
-         call set_sigma_new
+         call set_sigma
       endif
 
       if (ifplay) call set_trace
@@ -722,6 +716,25 @@ c-----------------------------------------------------------------------
       ifrecon=(rmode.ne.'ON '.and.rmode.ne.'CP ')
 
       ifei=nint(param(175)).ne.0
+      if (nint(param(175)).eq.0) then
+         continue
+      else if (nint(param(175)).eq.1) then
+         eqn='NS  '
+      else if (nint(param(175)).eq.2) then
+         eqn='SNS '
+      else if (nint(param(175)).eq.3) then
+         eqn='POIS'
+      else if (nint(param(175)).eq.4) then
+         eqn='HEAT'
+      else if (nint(param(175)).eq.5) then
+         eqn='ADVE'
+      else if (nint(param(175)).eq.6) then
+         eqn='VNS '
+      else if (nint(param(175)).eq.7) then
+         eqn='VSNS'
+      else
+         call exitti('invalid option for eqn$',eqn)
+      endif
 
       navg_step=nint(max(1.,param(176)))
       do i=1,3

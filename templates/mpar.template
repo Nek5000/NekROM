@@ -2,7 +2,6 @@
 mode    = all # (off=offline,on=online,all=both,onb=online with bases,cp)
 field   = vt  # fields to perform the pod-rom (v=vel.,t=temp.,vt=both)
 nb      = 10  # number of modes for the pod-rom
-ei      = no  # error-indicator
 avginit = 0   # starting time-step of rom averaging
 rktol   = 0   # adaptive Runge-Kutta error tolerance
 tneubc  = no  # inhomogeneous Neumann BC for temperature
@@ -51,3 +50,7 @@ location = none  # (none,conv=convecting field,post=entire field)
 type     = tfunc # (tfunc=transfer function,diff=differentiation) 
 modes    = 0.5   # number of modes to filter for tfunc, <0 -> percentage of nb
 radius   = 1     # radius of filter for the differentiation filter
+
+[EI]
+mode    = no  # error-indicator
+eqn     = NS  # equation
