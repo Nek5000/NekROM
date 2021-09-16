@@ -17,7 +17,8 @@ c-----------------------------------------------------------------------
          call loadbases
       else if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
          if (ifrom(1)) then
-            call pod(uvwb(1,1,1),eval,ug,us0,ldim,ips,nb,ns,ifpb)
+            call pod(
+     $         uvwb(1,1,1),eval,ug,us0,ldim,ips,nb,ns,ifpb,'ops/gu  ')
             do ib=1,nb
                call opcopy(ub(1,ib),vb(1,ib),wb(1,ib),
      $            uvwb(1,1,ib),uvwb(1,2,ib),uvwb(1,ldim,ib))
@@ -27,7 +28,7 @@ c-----------------------------------------------------------------------
             call opcopy(ub,vb,wb,uic,vic,wic)
          endif
          if (ifrom(2)) then
-            call pod(tb(1,1),eval,ug,ts0,1,ips,nb,ns,ifpb)
+            call pod(tb(1,1),eval,ug,ts0,1,ips,nb,ns,ifpb,'ops/gt  ')
             if (.not.ifcomb.and.ifpb) call snorm(tb)
          endif
 
@@ -1148,7 +1149,7 @@ c       if (nio.eq.0) write(6,*)i,enr(i),'Nmax for field',ifld
       return
       end
 c-----------------------------------------------------------------------
-      subroutine pod(basis,eval,gram,snaps,mdim,cips,nb,ns,ifpod)
+      subroutine pod(basis,eval,gram,snaps,mdim,cips,nb,ns,ifpod,cop)
 
       include 'SIZE'
 
@@ -1158,11 +1159,15 @@ c-----------------------------------------------------------------------
      $   eval(ns),gram(ns,ns)
 
       character*3 cips
+      character*8 cop
+
       logical ifpod
 
       n=lx1*ly1*lz1*nelt
 
       call gengram(gram,snaps,ns,mdim,cips)
+
+      call dump_serial(gram,ns*ns,cop,nid)
 
       if (ifpod) then
          call genevec(gram,eval,ns,nb,mdim)
