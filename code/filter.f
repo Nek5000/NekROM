@@ -99,6 +99,11 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine set_les_imp(fles1,fles2)
 
+      ! set implicit les matrices
+
+      ! fles1 := filtering matrix for velocity
+      ! fles2 := filtering matrix for temperature
+
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
@@ -141,6 +146,15 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine apply_les_imp(uu,tt,sig,fles1,fles2,tmp)
 
+      ! apply implicit les filter to coefficients
+
+      ! uu    := velocity coefficients
+      ! tt    := temperature coefficients
+      ! sig   := filter strength
+      ! fles1 := filter matrix for velocity
+      ! fles2 := filter matrix for temperature
+      ! tmp   := work array
+
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
@@ -167,6 +181,11 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine evalnut(nut,u1,u2,u3)
+
+      ! evaluate eddy viscosity
+
+      ! nut        := eddy viscosity field
+      ! <u1,u2,u3> := velocity field
 
       include 'SIZE'
       include 'TOTAL'
