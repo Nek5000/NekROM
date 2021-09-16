@@ -624,6 +624,8 @@ c-----------------------------------------------------------------------
       ifcomb=.false.
       ifpb=.true.
       ifcp=.false.
+      ifcore=.true.
+      ifquad=.false.
 
       do i=0,ldimt1
          ifpod(i)=.false.
@@ -634,9 +636,6 @@ c-----------------------------------------------------------------------
 
       ifpart=.false.
       ifcintp=.false.
-
-      ifcore=.true.
-      ifquad=.false.
 
       ips='L2 '
       isolve=0
@@ -940,6 +939,8 @@ c-----------------------------------------------------------------------
          write (6,*) 'mp_ifcintp    ',ifcintp
          write (6,*) 'mp_ifdecpl    ',ifdecpl
          write (6,*) 'mp_ifcp       ',ifcp
+         write (6,*) 'mp_ifcore     ',ifcore
+         write (6,*) 'mp_ifquad     ',ifquad
          write (6,*) ' '
          do i=0,ldimt1
             write (6,*) 'mp_ifpod(',i,')   ',ifpod(i)
