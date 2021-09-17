@@ -426,7 +426,7 @@ c-----------------------------------------------------------------------
          endif
       endif
 
-      call finiparser_getdbl(d_out,'gtendec:rank',ifnd)
+      call finiparser_getdbl(d_out,'tendec:rank',ifnd)
       if (ifnd.eq.1) ntr=min(nint(d_out),ltr)
       if (ntr.eq.0) ntr=ltr
 
