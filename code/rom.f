@@ -18,7 +18,6 @@ c-----------------------------------------------------------------------
       stime=dnekclock()
 
       if (icalld.eq.0) then
-         ns=ls
          rom_time=0.
          icalld=1
          call rom_setup
@@ -207,6 +206,7 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelt
 
+      ns=ls
       call set_bdf_coef(ad_alpha,ad_beta)
       call mor_init_params
 
