@@ -4,7 +4,7 @@ mkdir t
 cd t
 $MOR_DIR/bin/linkm
 
-sed 's/(ltr=.*)/(ltr=100)/g' LMOR > LMOR.tmp
+sed 's/(ltr=.*)/(ltr=80)/g' LMOR > LMOR.tmp
 mv LMOR.tmp LMOR
 
 cp $MOR_DIR/tests/test.rea .
