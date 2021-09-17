@@ -97,31 +97,27 @@ c     first frontal slice and first lateral slice.
       call set_rank(rank_list,mm)
       do kk=1,1
 c        ntr = rank_list(2,kk)
-         ntr = 80
          if (ifcore) then
                call rand_initial(cp_b,nb,ntr)
                call rand_initial(cp_c,nb,ntr)
             if (ifquad) then
                call als_quad(cp_a,cp_b,cp_c,cp_w,fcm,fcmpm,lsm,lsminv,
      $                       lsr,tmp1,tmp2,tmp4,tmp5,cmr,crm,
-     $                       cl0,ic1,ic2,jc1+1,jc2,kc1+1,kc2,nb,ntr)
+     $                       cl,ic1,ic2,jc1+1,jc2,kc1+1,kc2,nb,ntr)
             else
                call als_core(cp_a,cp_b,cp_c,cp_w,cl0,
      $                       ic1,ic2,jc1+1,jc2,kc1+1,kc2,nb,ntr)
             endif
-            call check_conv_err_new(cu_err,cl,cp_a,cp_b,cp_c,cp_w,uu,
-     $                          ic1,ic2,jc1,jc2,kc1,kc2,
-     $                          nb+1,ntr,ifcore,cj0,c0k)
          else
             call rand_initial(cp_b,nb+1,ntr)
             call rand_initial(cp_c,nb+1,ntr)
             call als(cp_a,cp_b,cp_c,cp_w,cl,
      $               ic1,ic2,jc1,jc2,kc1,kc2,nb+1,ntr)
 
-            call check_conv_err(cu_err,cl,cp_a,cp_b,cp_c,cp_w,uu,
-     $                          tmp4,tmp5,tmp6,tmp7,tmp8,tmp9,tmp3,
-     $                          ic1,ic2,jc1,jc2,kc1,kc2,nb+1,ntr)
          endif
+         call check_conv_err(cu_err,cl,cp_a,cp_b,cp_c,cp_w,uu,
+     $                       ic1,ic2,jc1,jc2,kc1,kc2,
+     $                       nb+1,ntr,ifcore,cj0,c0k)
 
          if (cu_err.le.1e-4) then
             glo_i = nid
@@ -321,7 +317,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine check_conv_err_new(cu_err,cl,fac_a,fac_b,fac_c,cp_w,uu,
+      subroutine check_conv_err(cu_err,cl,fac_a,fac_b,fac_c,cp_w,uu,
      $                          ic1,ic2,jc1,jc2,kc1,kc2,mm,nn,ifcore,
      $                          cj0,c0k)
 
@@ -335,108 +331,40 @@ c-----------------------------------------------------------------------
       integer ic1,ic2,jc1,jc2,kc1,kc2,mm,nn,i1
       logical ifcore
 
-      write(6,*)'check index again',ic1,ic2,jc1,jc2,kc1,kc2
       ! approximated tensor-vector multiplication
       call rzero(cu,mm)
+
       i1 = 0
-      if (ifcore) then 
+      mb = mm
+      if (ifcore) then
          mb=mm-1
          i1 = 1
       endif
+
       do kk=1,nn
          bcu(kk) = vlsc2(uu(i1),fac_b(1+(kk-1)*mb),mb)
          cuu(kk) = vlsc2(uu(i1),fac_c(1+(kk-1)*mb),mb)
-         do i=1,mb
-c        write(6,*)'check factor matrices:',
-c    $             fac_a(i+(kk-1)*mb),fac_b(i+(kk-1)*mb),
-c    $             fac_c(i+(kk-1)*mb),cp_w(kk)
-         enddo
       enddo
       call col4(tmp,bcu,cuu,cp_w,nn)
-      do kk=1,nn
-      write(6,*)'tmp',kk,tmp(kk)
-      enddo
       call mxm(fac_a,mb,tmp,nn,approx_cu,1)
-      do kk=1,mm
-      write(6,*)'approx_cu',kk,approx_cu(kk)
-      enddo
-      do k=kc1,kc2
-      do i=ic1,ic2
-         approx_cu(i)=approx_cu(i)+c0k(i,k)*uu(0)*uu(k)
-      enddo
-      enddo
 
-      do j=jc1,jc2
-      do i=ic1,ic2
-         approx_cu(i)=approx_cu(i)+cj0(i,j)*uu(j)*uu(0)
-      enddo
-      enddo
-
-      do i=ic1,ic2
-         approx_cu(i)=approx_cu(i)-cj0(i,0)*uu(0)*uu(0)
-      enddo
-      do kk=1,mm
-         write(6,*)'approx_cu',approx_cu(kk)
-      enddo
-
-      ! exact tensor-vector multiplication
-      call rzero(cu,mm)
-      do k=kc1,kc2
-      do j=jc1,jc2
-      do i=ic1,ic2
-         cu(i)=cu(i)+cl(i,j,k)*uu(j)*uu(k)
-      enddo
-      enddo
-      enddo
-
-      ! difference
-      call sub3(cu_diff,cu,approx_cu,mm)
-      ! error
-      cu_err = sqrt(vlsc2(cu_diff,cu_diff,mm))
-
-      write(6,2) nid,'cu_err:',cu_err,'cu_relerr:',
-     $           cu_err/sqrt(vlsc2(cu,cu,mm))
-
-      do ii=1,mm
-         write(6,1)ii,'difference:',cu_diff(ii),
-     $             'cu:',cu(ii),'approximated cu:',approx_cu(ii)
-      enddo
-
-    2 format(i4,x,a,1p1e16.6,x,a,1p1e16.6)
-    1 format(i4,x,a,1p1e16.6,x,a,1p1e16.6,x,a,1p1e16.6)
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine check_conv_err(cu_err,cl,fac_a,fac_b,fac_c,cp_w,uu,
-     $                          bcu,cuu,tmp,cu,cu_diff,approx_cu,cm,
-     $                          ic1,ic2,jc1,jc2,kc1,kc2,mm,nn)
-
-      real cu_err
-      real cl(ic1:ic2,jc1:jc2,kc1:kc2)
-      real fac_a(mm*nn),fac_b(mm*nn),fac_c(mm*nn),cp_w(nn)
-      real uu(0:mm-1),cu(mm),cu_diff(mm),approx_cu(mm)
-      real cm(ic1:ic2,jc1:jc2)
-      real bcu(nn),cuu(nn),tmp(nn)
-      integer ic1,ic2,jc1,jc2,kc1,kc2,mm,nn
-
-      write(6,*)'check index again',ic1,ic2,jc1,jc2,kc1,kc2
-      ! approximated tensor-vector multiplication
-      call rzero(cu,mm)
-      do kk=1,nn
-         bcu(kk) = vlsc2(uu,fac_b(1+(kk-1)*mm),mm)
-         cuu(kk) = vlsc2(uu,fac_c(1+(kk-1)*mm),mm)
-         do i=1,mm
-         write(6,*)'check factor matrices:',
-     $             fac_a(i+(kk-1)*mm),fac_b(i+(kk-1)*mm),
-     $             fac_c(i+(kk-1)*mm),cp_w(kk)
+      if (ifcore) then
+         do k=kc1,kc2
+         do i=ic1,ic2
+            approx_cu(i)=approx_cu(i)+c0k(i,k)*uu(0)*uu(k)
          enddo
-      enddo
-      call col4(tmp,bcu,cuu,cp_w,nn)
-      call mxm(fac_a,mm,tmp,nn,approx_cu,1)
-      do kk=1,nn
-         write(6,*)'approx_cu',approx_cu(kk)
-      enddo
+         enddo
+
+         do j=jc1,jc2
+         do i=ic1,ic2
+            approx_cu(i)=approx_cu(i)+cj0(i,j)*uu(j)*uu(0)
+         enddo
+         enddo
+
+         do i=ic1,ic2
+            approx_cu(i)=approx_cu(i)-cj0(i,0)*uu(0)*uu(0)
+         enddo
+      endif
 
       ! exact tensor-vector multiplication
       call rzero(cu,mm)
