@@ -534,7 +534,7 @@ c-----------------------------------------------------------------------
       subroutine exitm(iexit)
 
       open (unit=10,file='ecode')
-      write (6,*) iexit
+      write (10,*) iexit
       close (unit=10)
 
       call exit(iexit)
