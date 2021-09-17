@@ -1,6 +1,8 @@
 c-----------------------------------------------------------------------
       subroutine rom_update
 
+      ! set ROM operators and update rom solutions
+
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
@@ -152,7 +154,9 @@ c        call cres
       return
       end
 c-----------------------------------------------------------------------
-      subroutine offline_mode ! offline-wrapper for MOR
+      subroutine offline_mode
+
+      ! offline-wrapper for MOR
 
       include 'SIZE'
       include 'INPUT'
@@ -163,7 +167,9 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine online_mode ! online-wrapper for MOR
+      subroutine online_mode
+
+      ! online-wrapper for MOR
 
       include 'SIZE'
       include 'INPUT'
@@ -174,7 +180,9 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine recon_mode ! reconstruction online-wrapper for MOR
+      subroutine recon_mode
+
+      ! reconstruction online-wrapper for MOR
 
       include 'SIZE'
       include 'INPUT'
@@ -186,6 +194,8 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine rom_setup
+
+      ! set rom ic, ops, qoi, etc.
 
       include 'SIZE'
       include 'SOLN'
@@ -260,6 +270,8 @@ c     call average_in_y
 c-----------------------------------------------------------------------
       subroutine asnap
 
+      ! averaging of coefficients obtained from snapshots
+
       include 'SIZE'
       include 'MOR'
       include 'AVG'
@@ -318,6 +330,8 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine setops
 
+      ! set rom operators
+
       include 'SIZE'
       include 'MOR'
       include 'TSTEP'
@@ -372,6 +386,8 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine setqoi
 
+      ! set qoi factors
+
       include 'SIZE'
       include 'MOR'
 
@@ -425,6 +441,8 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine update_k
 
+      ! update snapshot coefficients with transformation wt
+
       include 'SIZE'
       include 'MOR'
 
@@ -455,6 +473,8 @@ c     call hyperpar
       end
 c-----------------------------------------------------------------------
       subroutine update_hyper
+
+      ! update hyper parameters
 
       include 'SIZE'
       include 'MOR'
@@ -531,6 +551,8 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine setmisc
 
+      ! set miscellaneous quantities
+
       include 'SIZE'
       include 'MOR'
 
@@ -576,6 +598,8 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine mor_init_params
+
+      ! initialize rom parameters before .rea / .par read
 
       include 'SIZE'
       include 'TOTAL'
@@ -679,6 +703,8 @@ c     ns=ls
       end
 c-----------------------------------------------------------------------
       subroutine mor_set_params_rea
+
+      ! set rom parameters with .rea
 
       include 'SIZE'
       include 'TOTAL'
@@ -897,6 +923,8 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine mor_show_params
 
+      ! dump out parameter settings
+
       include 'SIZE'
       include 'MOR'
 
@@ -974,6 +1002,8 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine mor_init_fields
+
+      ! initialize FOM fields needed for ROM generation
 
       include 'SIZE'
       include 'TOTAL'
@@ -1171,6 +1201,11 @@ c           if (idc_t.gt.0) call rzero(tb,n)
 c-----------------------------------------------------------------------
       subroutine setc(cl,fname)
 
+      ! set local convection tensor C
+
+      ! cl    := local partition of C
+      ! fname := name of C location for writing / reading
+
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
@@ -1261,6 +1296,12 @@ c     call cpart(ic1,ic2,jc1,jc2,kc1,kc2,ncloc,nb,np,nid+1) ! new indexing
       end
 c-----------------------------------------------------------------------
       subroutine seta(a,a0,fname)
+
+      ! set diffusion operator A
+
+      ! a     := rom operator A w/o 0th mode interactions
+      ! a0    := rom operator A w/  0th mode interactions
+      ! fname := read target
 
       include 'SIZE'
       include 'TOTAL'
@@ -1364,6 +1405,12 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine setb(b,b0,fname)
 
+      ! set mass operator B
+
+      ! b     := rom operator B w/o 0th mode interactions
+      ! b0    := rom operator B w/  0th mode interactions
+      ! fname := read target
+
       include 'SIZE'
       include 'TSTEP'
       include 'MOR'
@@ -1409,6 +1456,11 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine setae(a,fname)
 
+      ! set eddy-viscosity/diffusivity operator
+
+      ! a     := eddy-diffusion matrix
+      ! fname := read target
+
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
@@ -1449,6 +1501,8 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine setu
+
+      ! set initial condition for ROM coefficients
 
       include 'SIZE'
       include 'SOLN'
@@ -1556,6 +1610,8 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine setf
+
+      ! set forcing terms
 
       include 'SIZE'
       include 'SOLN'
@@ -1671,6 +1727,8 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine final
 
+      ! dump out coefficients, time, and misc. stats
+
       include 'SIZE'
       include 'MOR'
 
@@ -1727,6 +1785,10 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine setbut(bx,by,bz)
+
+      ! set buoyancy operators
+
+      ! <bx,by,bz> := buoyancy operator in x,y,z
 
       include 'SIZE'
       include 'MOR'
