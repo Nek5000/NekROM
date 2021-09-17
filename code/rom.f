@@ -18,7 +18,6 @@ c-----------------------------------------------------------------------
       stime=dnekclock()
 
       if (icalld.eq.0) then
-         ns=ls
          rom_time=0.
          icalld=1
          call rom_setup
@@ -644,7 +643,7 @@ c-----------------------------------------------------------------------
       ifei=.false.
       navg_step=1
       nb=lb
-c     ns=ls
+      ns=ls
       nskip=0
       rktol=0.
       ad_qstep=ad_iostep
