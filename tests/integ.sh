@@ -18,6 +18,8 @@ if [[ "$SCR" == "tbox" ]]; then sed -i.bu "s/^.*p170.*\$/1 p170/g" test.rea; fi
 sed -i.bu "s/^.*p177.*\$/$NB p177/g" LMOR
 sed -i.bu "s/^.*p177.*\$/$NB p177/g" LMOR
 
+echo 99 > ecode
+
 mpiexec -np $NP ./nek5000 | tee test.log | grep -v 'drag\(x\|y\)'
 
 cp test.log logfile
@@ -27,7 +29,7 @@ head drag.log
 tail drag.log
 
 ../$SCR
-iexit=${PIPESTATUS[0]}
+iexit=$(cat ./ecode)
 if [ "$iexit" != "0" ]; then cp logfile fail.log; fi
 
 ls -latr
