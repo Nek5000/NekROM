@@ -16,9 +16,11 @@ test
 .01
 Z
 fold_end genmap
+
+echo 99 > ecode
  
 ./nek5000 | tee logfile
-iexit=${PIPESTATUS[0]}
+iexit=$(cat ./ecode)
 
 if [ "$iexit" != "0" ]; then cp logfile fail.log; fi
 exit $iexit

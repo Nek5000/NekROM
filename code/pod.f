@@ -1151,6 +1151,19 @@ c       if (nio.eq.0) write(6,*)i,enr(i),'Nmax for field',ifld
 c-----------------------------------------------------------------------
       subroutine pod(basis,eval,gram,snaps,mdim,cips,nb,ns,ifpod,cop)
 
+      ! return pod basis created from snapshots
+
+      ! basis := POD basis generated from snaps
+      ! eval  := e-values to be set in genevec
+      ! gram  := Gramian set in gengram
+      ! snaps := snapshots of solution field
+      ! mdim  := dimension of vector in snaps fields
+      ! cips  := inner-product space used from Gramian
+      ! nb    := number of desired POD basis
+      ! ns    := number of snapshots
+      ! ifpod := apply POD procedure
+      ! cop   := Gramian dump target
+
       include 'SIZE'
 
       parameter (lt=lx1*ly1*lz1*lelt)

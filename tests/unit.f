@@ -61,7 +61,7 @@ c-----------------------------------------------------------------------
       if (ips.eq.'H10'.and.esym.gt.1e-14) iexit=iexit+1
       if (edif.gt.5.e-15) iexit=iexit+2
 
-      call exit(iexit)
+      call exitm(iexit)
 
       return
       end
@@ -115,7 +115,7 @@ c-----------------------------------------------------------------------
       iexit=1
       if (edif.lt.8.e-13) iexit=0
 
-      call exit(iexit)
+      call exitm(iexit)
 
       return
       end
@@ -211,7 +211,7 @@ c-----------------------------------------------------------------------
       if (nio.eq.0) write (6,*) 'euni',euni,s1,s2
       if (ips.eq.'H10'.and.euni.gt.1.e-13) iexit=iexit+8
 
-      call exit(iexit)
+      call exitm(iexit)
 
       return
       end
@@ -309,7 +309,7 @@ c-----------------------------------------------------------------------
       if (ips.eq.'L2 '.and.euni.gt.1.e-14) iexit=iexit+8
       if (nio.eq.0) write (6,*) 'euni',euni,s1,s2
 
-      call exit(iexit)
+      call exitm(iexit)
 
       return
       end
@@ -389,7 +389,7 @@ c-----------------------------------------------------------------------
 c     if (eskew.gt.1.e-16) iexit=iexit+2
       if (nio.eq.0) write (6,*) 'eskew',eskew,s2,s3
 
-      call exit(iexit)
+      call exitm(iexit)
 
       return
       end
@@ -526,8 +526,19 @@ c-----------------------------------------------------------------------
 
       if (edif.gt.9.e-11) iexit=iexit+4
 
-      call exit(iexit)
+      call exitm(iexit)
       
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine exitm(iexit)
+
+      open (unit=10,file='ecode')
+      write (10,*) iexit
+      close (unit=10)
+
+      call exit(iexit)
+
       return
       end
 c-----------------------------------------------------------------------
