@@ -667,6 +667,7 @@ c-----------------------------------------------------------------------
       navg_step=1
       nb=lb
       ns=ls
+      ntr=ltr
       nskip=0
       rktol=0.
       ad_qstep=ad_iostep
