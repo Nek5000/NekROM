@@ -21,7 +21,6 @@ c-----------------------------------------------------------------------
             call force_skew(cul,ic1,ic2,jc1,jc2,kc1,kc2)
          endif
          local_size = (ic2-ic1+1)*(jc2-jc1+1)*(kc2-kc1+1)
-         write(6,*)'local_size',local_size
          norm_c = vlsc2(cul,cul,local_size)
          if (nid.eq.0) write(6,*)'norm_tens:',norm_c
 
@@ -29,18 +28,19 @@ c-----------------------------------------------------------------------
             call set_c_slice(cuj0,cu0k,cul,ic1,ic2,jc1,jc2,kc1,kc2,nb)
             call set_c_core(cl0,cul,ic1,ic2,jc1,jc2,kc1,kc2,nb)
             local_size = (ic2-ic1+1)*(jc2-jc1)*(kc2-kc1)
-            write(6,*)'local_core_size',local_size
             norm_c0 = vlsc2(cl0,cl0,local_size)
          if (nid.eq.0) write(6,*)'norm_tens:',norm_c0
          endif
 
-         call compute_cp(cua,cub,cuc,cp_uw,cuj0,cu0k,cul,'ops/cu ',u)
+         call compute_cp(cua,cub,cuc,cp_uw,cul,cl0,
+     $                   cuj0,cu0k,'ops/cu ',u)
       endif
       if (ifrom(2)) then
          ifield=2
          inquire (file='ops/t0',exist=ifexist)
          if (ifexist) call read_serial(ut,nb+1,'ops/t0 ',wk,nid)
-         call compute_cp(cta,ctb,ctc,cp_tw,ctj0,ct0k,ctl,'ops/ct ',ut)
+         call compute_cp(cta,ctb,ctc,cp_tw,ctl,cl0,
+     $                   ctj0,ct0k,'ops/ct ',ut)
       endif
 c     call read_cp_weight
 c     call read_cp_mode
@@ -49,7 +49,7 @@ c     call read_cp_mode
       return
       end
 c-----------------------------------------------------------------------
-      subroutine compute_cp(cp_a,cp_b,cp_c,cp_w,cj0,c0k,cl,fname,uu)
+      subroutine compute_cp(cp_a,cp_b,cp_c,cp_w,cl,cl0,cj0,c0k,fname,uu)
 
 c     This subroutine requires fname and uu and
 c     returns cp_a, cp_b, cp_c ,cp_w, cj0, c0k, cl where
@@ -73,13 +73,12 @@ c     first frontal slice and first lateral slice.
       common /scrmttkrp/ cmr((lb+1)**2*ltr),crm((lb+1)**2*ltr)
       common /scrsetmode/ wk3(lt)
 
-      real cp_a((nb+1)*ltr),cp_b((nb+1)*ltr)
-      real cp_c((nb+1)*ltr),cp_w(ltr)
+      real cp_a((nb+1)*ltr),cp_b((nb+1)*ltr),cp_c((nb+1)*ltr),cp_w(ltr)
+      real cl(lcglo),cl0(lcglo),cj0((nb+1)**2),c0k((nb+1)**2)
+
       real fcm(ltr*(lb+1),3),fcmpm(ltr**2,3)
       real lsm(ltr**2,3),lsminv(ltr**2,3)
       real lsr(ltr*(lb+1))
-      real cl(lcglo),cl0(lcglo)
-      real cj0((nb+1)**2),c0k((nb+1)**2)
       real uu(0:nb)
       real wk1((nb+1)*ltr),wk2(ltr)
       real cu_err,norm_c,norm_c0
