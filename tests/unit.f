@@ -575,7 +575,7 @@ c-----------------------------------------------------------------------
             dl2=vlsc2(cu,cu,nb)
             cl2=vlsc2(cu_ref,cu_ref,nb)
             el2=dl2/cl2
-            write (6,*) mb,mp,'error'
+            write (6,*) mb,mp,dl2,cl2,el2,'error'
          enddo
       enddo
 
