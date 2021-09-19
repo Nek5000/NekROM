@@ -569,6 +569,7 @@ c-----------------------------------------------------------------------
 
       mp=1
       mb=1
+      ip=1
 
       call cpart(kc1,kc2,jc1,jc2,ic1,ic2,nloc,mb,mp,ip)
       write (6,*) ip,ic1,ic2,jc1,jc2,kc1,kc2,nloc,'cpart'
