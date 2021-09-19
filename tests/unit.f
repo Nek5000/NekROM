@@ -574,8 +574,8 @@ c-----------------------------------------------------------------------
             do ip=1,mp
                call cpart(ic1,ic2,jc1,jc2,kc1,kc2,nloc,mb,mp,ip)
                write (6,*) ip,ic1,ic2,jc1,jc2,kc1,kc2,nloc,'cpart'
-               if (mp.eq.1) call evalc(cu_ref,ctmp,c_ref,u_ref)
-               call evalc(wk,ctmp,c_ref,u_ref)
+               if (mp.eq.1) call evalc(cu_ref,ctmp,c_ref,u_ref,u_ref)
+               call evalc(wk,ctmp,c_ref,u_ref,u_ref)
                call add2(cu,wk,mb)
             enddo
             call sub2(cu,cu_ref,nb)
