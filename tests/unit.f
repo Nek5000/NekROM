@@ -572,7 +572,7 @@ c-----------------------------------------------------------------------
          do mp=1,2
             call rzero(cu,mb)
             do ip=1,mp
-               call cpart(ic1,ic2,jc1,jc2,kc1,kc2,nloc,mp,ip)
+               call cpart(ic1,ic2,jc1,jc2,kc1,kc2,nloc,mb,mp,ip)
                write (6,*) ip,ic1,ic2,jc1,jc2,kc1,kc2,nloc,'cpart'
                if (mp.eq.1) call evalc(cu_ref,ctmp,c_ref,u_ref)
                call evalc(wk,ctmp,c_ref,u_ref)
