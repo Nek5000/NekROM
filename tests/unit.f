@@ -581,17 +581,13 @@ c-----------------------------------------------------------------------
          write (6,*) i,cu_ref(i),'cu_ref'
       enddo
 
-      call exitm(0)
-
-      return
-
       do mb=1,llb
          nb=mb
          do mp=1,2
             call rzero(cu,mb)
             do ip=1,mp
-               call cpart(ic1,ic2,jc1,jc2,kc1,kc2,nloc,mb,mp,ip)
-               write (6,*) ip,ic1,ic2,jc1,jc2,kc1,kc2,nloc,'cpart'
+               call cpart(kc1,kc2,jc1,jc2,ic1,ic2,ncloc,mb,mp,ip)
+               write (6,*) ip,ic1,ic2,jc1,jc2,kc1,kc2,ncloc,'cpart'
                if (mp.eq.1) call evalc(cu_ref,ctmp,c_ref,u_ref,u_ref)
                call evalc(wk,ctmp,c_ref,u_ref,u_ref)
                call add2(cu,wk,mb)
@@ -608,6 +604,8 @@ c-----------------------------------------------------------------------
       enddo
 
       write (6,*) dl2max,cl2max,el2max,'errormax'
+
+      call exitm(0)
 
       call exitm(iexit)
 
