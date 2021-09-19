@@ -554,11 +554,11 @@ c-----------------------------------------------------------------------
       call srand(123)
 
       do i=1,llb*(llb+1)**2
-         c_ref(i)=rand(0)
+         c_ref(i)=rand()
       enddo
 
       do i=1,llb+1
-         u_ref(i)=rand(0)
+         u_ref(i)=rand()
       enddo
 
       dl2max=0.
