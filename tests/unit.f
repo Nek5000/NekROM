@@ -561,6 +561,10 @@ c-----------------------------------------------------------------------
          u_ref(i)=rand(0)
       enddo
 
+      dl2max=0.
+      cl2max=0.
+      el2max=0.
+
       do mb=1,llb
          nb=mb
          do mp=1,128
@@ -575,9 +579,14 @@ c-----------------------------------------------------------------------
             dl2=vlsc2(cu,cu,nb)
             cl2=vlsc2(cu_ref,cu_ref,nb)
             el2=dl2/cl2
+            cl2max=max(cl2,cl2max)
+            dl2max=max(dl2,dl2max)
+            el2max=max(el2,el2max)
             write (6,*) mb,mp,dl2,cl2,el2,'error'
          enddo
       enddo
+
+      write (6,*) dl2max,cl2max,el2max,'errormax'
 
       call exitm(iexit)
 
