@@ -547,7 +547,7 @@ c-----------------------------------------------------------------------
       include 'SOLN'
       include 'MOR'
 
-      parameter (llb=100)
+      parameter (llb=3)
       common /scrtest_ceval/ cu(llb),wk(llb),
      $   c_ref(llb*(llb+1)**2),u_ref(llb+1),cu_ref(llb)
 
@@ -555,10 +555,12 @@ c-----------------------------------------------------------------------
 
       do i=1,llb*(llb+1)**2
          c_ref(i)=rand()
+         write (6,*) i,c_ref(i),'c_ref'
       enddo
 
       do i=1,llb+1
          u_ref(i)=rand()
+         write (6,*) i,u_ref(i),'u_ref'
       enddo
 
       dl2max=0.
@@ -567,10 +569,11 @@ c-----------------------------------------------------------------------
 
       do mb=1,llb
          nb=mb
-         do mp=1,128
+         do mp=1,2
             call rzero(cu,mb)
             do ip=1,mp
                call cpart(ic1,ic2,jc1,jc2,kc1,kc2,nloc,mp,ip)
+               write (6,*) ip,ic1,ic2,jc1,jc2,kc1,kc2,nloc,'cpart'
                if (mp.eq.1) call evalc(cu_ref,ctmp,c_ref,u_ref)
                call evalc(wk,ctmp,c_ref,u_ref)
                call add2(cu,wk,mb)
