@@ -531,6 +531,49 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine ceval_unit(iflag)
+
+      include 'SIZE'
+      include 'SOLN'
+      include 'MOR'
+
+      parameter (llb=100)
+      common /scrtest_ceval/ cu(llb),wk(llb),
+     $   c_ref(llb*(llb+1)**2),u_ref(llb+1),cu_ref(llb)
+
+      call srand(123)
+
+      do i=1,llb*(llb+1)**2
+         c_ref(i)=rand(0)
+      enddo
+
+      do i=1,llb+1
+         u_ref(i)=rand(0)
+      enddo
+
+      do mb=1,llb
+         nb=mb
+         do mp=1,128
+            call rzero(cu,mb)
+            do ip=1,mp
+               call cpart(ic1,ic2,jc1,jc2,kc1,kc2,nloc,mp,ip)
+               if (mp.eq.1) call evalc(cu_ref,ctmp,c_ref,u_ref)
+               call evalc(wk,ctmp,c_ref,u_ref)
+               call add2(cu,wk,mb)
+            enddo
+            call sub2(cu,cu_ref,nb)
+            dl2=vlsc2(cu,cu,nb)
+            cl2=vlsc2(cu_ref,cu_ref,nb)
+            el2=dl2/cl2
+            write (6,*) mb,mp,'error'
+         enddo
+      enddo
+
+      call exitm(iexit)
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine exitm(iexit)
 
       open (unit=10,file='ecode')
