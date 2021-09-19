@@ -46,6 +46,6 @@ jobs:
           (cd Nek5000/tools; ./maketools genmap)
 
       - name: Unit Test
-        if: ${{ always() }}
+        if: always()
         run: |
           TYPE=UNIT TEST=${{ matrix.test }} IPS=${{ matrix.ips }} $MOR_DIR/tests/test.sh
