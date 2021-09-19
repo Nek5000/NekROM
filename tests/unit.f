@@ -567,6 +567,19 @@ c-----------------------------------------------------------------------
       cl2max=0.
       el2max=0.
 
+      mp=1
+      mb=1
+
+      call cpart(kc1,kc2,jc1,jc2,ic1,ic2,nloc,mb,mp,ip)
+      write (6,*) ip,ic1,ic2,jc1,jc2,kc1,kc2,nloc,'cpart'
+      call evalc(cu_ref,ctmp,c_ref,u_ref,u_ref)
+
+      do i=1,mb
+         write (6,*) i,cu_ref(i),'cu_ref'
+      enddo
+
+      return
+
       do mb=1,llb
          nb=mb
          do mp=1,2
