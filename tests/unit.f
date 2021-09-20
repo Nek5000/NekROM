@@ -547,7 +547,7 @@ c-----------------------------------------------------------------------
       include 'SOLN'
       include 'MOR'
 
-      parameter (llb=3)
+      parameter (llb=8)
       common /scrtest_ceval/ cu(llb),wk(llb),
      $   c_ref(llb*(llb+1)**2),u_ref(llb+1),cu_ref(llb)
 
@@ -573,28 +573,33 @@ c-----------------------------------------------------------------------
 
       nb=mb
 
-      call cpart(kc1,kc2,jc1,jc2,ic1,ic2,ncloc,mb,mp,ip)
-      write (6,*) ip,ic1,ic2,jc1,jc2,kc1,kc2,ncloc,'cpart'
-      call evalc(cu_ref,ctmp,c_ref,u_ref,u_ref)
+c     call cpart(kc1,kc2,jc1,jc2,ic1,ic2,ncloc,mb,mp,ip)
+c     write (6,*) ip,ic1,ic2,jc1,jc2,kc1,kc2,ncloc,'cpart'
+c     call evalc(cu_ref,ctmp,c_ref,u_ref,u_ref)
 
-      do i=1,mb
-         write (6,*) i,cu_ref(i),'cu_ref'
-      enddo
+c     do i=1,mb
+c        write (6,*) i,cu_ref(i),'cu_ref'
+c     enddo
 
       do mb=1,llb
          nb=mb
          do mp=1,2
             call rzero(cu,mb)
+            call rzero(cu_ref,mb)
             do ip=1,mp
                call cpart(kc1,kc2,jc1,jc2,ic1,ic2,ncloc,mb,mp,ip)
                write (6,*) ip,ic1,ic2,jc1,jc2,kc1,kc2,ncloc,'cpart'
+
                if (mp.eq.1) call evalc(cu_ref,ctmp,c_ref,u_ref,u_ref)
+
+               call rzero(wk,mb)
                call evalc(wk,ctmp,c_ref,u_ref,u_ref)
+
                call add2(cu,wk,mb)
             enddo
-            call sub2(cu,cu_ref,nb)
-            dl2=vlsc2(cu,cu,nb)
-            cl2=vlsc2(cu_ref,cu_ref,nb)
+            call sub2(cu,cu_ref,mb)
+            dl2=vlsc2(cu,cu,mb)
+            cl2=vlsc2(cu_ref,cu_ref,mb)
             el2=dl2/cl2
             cl2max=max(cl2,cl2max)
             dl2max=max(dl2,dl2max)
