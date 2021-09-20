@@ -605,10 +605,16 @@ c     enddo
                enddo
                enddo
 
+               do i=1,mb*(mb+1)**2
+                  write (6,*) i,c(i),cu_ref(i),'c-comp'
+               enddo
+
+               call exitm(0)
+
                call rzero(wk,mb)
                call evalc(wk,tmp,c,u_ref,u_ref)
 
-               call add2(cu,wk,mb)
+               call add2(cu(ic1),wk,mb)
                do i=1,mb
                   write (6,*) i,cu(i),cu_ref(i),'comp'
                enddo
