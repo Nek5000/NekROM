@@ -549,7 +549,8 @@ c-----------------------------------------------------------------------
 
       parameter (llb=8)
       common /scrtest_ceval/ cu(llb),wk(llb),
-     $   c_ref(llb*(llb+1)**2),u_ref(llb+1),cu_ref(llb)
+     $   c_ref(llb*(llb+1)**2),u_ref(llb+1),cu_ref(llb),
+     $   tmp(llb*(llb+1)),c(llb*(llb+1)**2)
 
       call srand(123)
 
@@ -587,15 +588,25 @@ c     enddo
             call rzero(cu,mb)
             do ip=1,mp
                call cpart(kc1,kc2,jc1,jc2,ic1,ic2,ncloc,mb,mp,ip)
+
                write (6,*) ip,ic1,ic2,jc1,jc2,kc1,kc2,ncloc,'cpart'
 
                if (mp.eq.1) then
                   call rzero(cu_ref,mb)
-                  call evalc(cu_ref,ctmp,c_ref,u_ref,u_ref)
+                  call evalc(cu_ref,tmp,c_ref,u_ref,u_ref)
                endif
 
+               do k=0,nb
+               do j=0,mb
+               do i=1,mb
+                  cel=cu_ref(i+(j-1)*mb+(k-1)*mb*(mb+1))
+                  call setc_local(c,cel,ic1,ic2,jc1,jc2,kc1,kc2,i,j,k)
+               enddo
+               enddo
+               enddo
+
                call rzero(wk,mb)
-               call evalc(wk,ctmp,c_ref,u_ref,u_ref)
+               call evalc(wk,tmp,c,u_ref,u_ref)
 
                call add2(cu,wk,mb)
                do i=1,mb
