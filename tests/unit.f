@@ -566,6 +566,8 @@ c-----------------------------------------------------------------------
       cl2max=0.
       el2max=0.
 
+      iexit=0.
+
       do mb=1,llb
          nb=mb
          do mp=1,32
@@ -605,7 +607,7 @@ c-----------------------------------------------------------------------
 
       write (6,*) dl2max,cl2max,el2max,'errormax'
 
-      call exitm(0)
+      if (el2max.gt.3.5e-15) iexit=iexit+1
 
       call exitm(iexit)
 
