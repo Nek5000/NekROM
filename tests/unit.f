@@ -598,6 +598,9 @@ c     enddo
                call evalc(wk,ctmp,c_ref,u_ref,u_ref)
 
                call add2(cu,wk,mb)
+               do i=1,mb
+                  write (6,*) i,cu(i),cu_ref(i),'comp'
+               enddo
             enddo
             call sub2(cu,cu_ref,mb)
             dl2=vlsc2(cu,cu,mb)
