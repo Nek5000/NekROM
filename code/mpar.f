@@ -460,6 +460,7 @@ c-----------------------------------------------------------------------
 
       call bcast(max_tr,isize)
       call bcast(nb,isize)
+      call bcast(mb,isize)
       call bcast(ns,isize)
       call bcast(nskip,isize)
       call bcast(navg_step,isize)
@@ -484,6 +485,7 @@ c-----------------------------------------------------------------------
       call bcast(gx,wdsize)
       call bcast(gy,wdsize)
       call bcast(gz,wdsize)
+      call bcast(podrat,wdsize)
 
       ! logicals
 
@@ -513,6 +515,7 @@ c-----------------------------------------------------------------------
 
       call bcast(ifpb,lsize)
       call bcast(ifdecpl,lsize)
+      call bcast(ifcp,lsize)
 
       return
       END
