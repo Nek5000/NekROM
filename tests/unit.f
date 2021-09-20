@@ -547,7 +547,7 @@ c-----------------------------------------------------------------------
       include 'SOLN'
       include 'MOR'
 
-      parameter (llb=8)
+      parameter (llb=100)
       common /scrtest_ceval/ cu(llb),wk(llb),
      $   c_ref(llb*(llb+1)**2),u_ref(llb+1),cu_ref(llb),
      $   tmp(llb*(llb+1)),c(llb*(llb+1)**2)
@@ -556,40 +556,22 @@ c-----------------------------------------------------------------------
 
       do i=1,llb*(llb+1)**2
          c_ref(i)=rand()
-         write (6,*) i,c_ref(i),'c_ref'
       enddo
 
       do i=1,llb+1
          u_ref(i)=rand()
-         write (6,*) i,u_ref(i),'u_ref'
       enddo
 
       dl2max=0.
       cl2max=0.
       el2max=0.
 
-      mp=1
-      mb=1
-      ip=1
-
-      nb=mb
-
-c     call cpart(kc1,kc2,jc1,jc2,ic1,ic2,ncloc,mb,mp,ip)
-c     write (6,*) ip,ic1,ic2,jc1,jc2,kc1,kc2,ncloc,'cpart'
-c     call evalc(cu_ref,ctmp,c_ref,u_ref,u_ref)
-
-c     do i=1,mb
-c        write (6,*) i,cu_ref(i),'cu_ref'
-c     enddo
-
       do mb=1,llb
          nb=mb
-         do mp=1,2
+         do mp=1,32
             call rzero(cu,mb)
             do ip=1,mp
                call cpart(kc1,kc2,jc1,jc2,ic1,ic2,ncloc,mb,mp,ip)
-
-               write (6,*) ip,ic1,ic2,jc1,jc2,kc1,kc2,ncloc,'cpart'
 
                if (mp.eq.1) then
                   call rzero(cu_ref,mb)
@@ -599,29 +581,20 @@ c     enddo
                do k=0,nb
                do j=0,mb
                do i=1,mb
-                  cel=cu_ref(i+j*mb+k*mb*(mb+1))
+                  cel=c_ref(i+j*mb+k*mb*(mb+1))
                   call setc_local(c,cel,ic1,ic2,jc1,jc2,kc1,kc2,i,j,k)
                enddo
                enddo
                enddo
 
-               do i=1,mb*(mb+1)**2
-                  write (6,*) i,c(i),cu_ref(i),'c-comp'
-               enddo
-
-               call exitm(0)
-
                call rzero(wk,mb)
                call evalc(wk,tmp,c,u_ref,u_ref)
 
-               call add2(cu(ic1),wk,mb)
-               do i=1,mb
-                  write (6,*) i,cu(i),cu_ref(i),'comp'
-               enddo
+               call add2(cu,wk,mb)
             enddo
             call sub2(cu,cu_ref,mb)
-            dl2=vlsc2(cu,cu,mb)
-            cl2=vlsc2(cu_ref,cu_ref,mb)
+            dl2=sqrt(vlsc2(cu,cu,mb))
+            cl2=sqrt(vlsc2(cu_ref,cu_ref,mb))
             el2=dl2/cl2
             cl2max=max(cl2,cl2max)
             dl2max=max(dl2,dl2max)
