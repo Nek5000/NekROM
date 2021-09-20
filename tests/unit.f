@@ -585,12 +585,14 @@ c     enddo
          nb=mb
          do mp=1,2
             call rzero(cu,mb)
-            call rzero(cu_ref,mb)
             do ip=1,mp
                call cpart(kc1,kc2,jc1,jc2,ic1,ic2,ncloc,mb,mp,ip)
                write (6,*) ip,ic1,ic2,jc1,jc2,kc1,kc2,ncloc,'cpart'
 
-               if (mp.eq.1) call evalc(cu_ref,ctmp,c_ref,u_ref,u_ref)
+               if (mp.eq.1) then
+                  call rzero(cu_ref,mb)
+                  call evalc(cu_ref,ctmp,c_ref,u_ref,u_ref)
+               endif
 
                call rzero(wk,mb)
                call evalc(wk,ctmp,c_ref,u_ref,u_ref)
