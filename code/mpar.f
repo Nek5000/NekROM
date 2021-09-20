@@ -417,7 +417,7 @@ c-----------------------------------------------------------------------
          rtmp1(1,1)=nb*1.
          call dump_serial(rtmp1(1,1),1,'ops/nb ',nid)
       else
-         call read_serial(rtmp1(1,1),1,'ops/nb ',b,nid)
+         call read_serial(rtmp1(1,1),1,'ops/nb ',rtmp2,-1)
          mb=rtmp1(1,1)
          if (mb.lt.nb) then
             write (6,*) 'mb less than nb... ',mb

@@ -14,7 +14,7 @@ c-----------------------------------------------------------------------
 
       real a(n),wk(n)
 
-      if (nid.eq.0) then
+      if (nid.le.0) then
          call blank(fntrunc,128)
          len=ltruncr(fname,128)
          call chcopy(fntrunc,fname,len)
@@ -23,7 +23,7 @@ c-----------------------------------------------------------------------
          call rzero(a,n)
       endif
 
-      call gop(a,wk,'+  ',n)
+      if (nid.ge.0) call gop(a,wk,'+  ',n)
 
       return
       end
