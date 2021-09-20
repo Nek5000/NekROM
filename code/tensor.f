@@ -1,8 +1,9 @@
 c-----------------------------------------------------------------------
       subroutine cp_setup
 
+      ! preprossing on the tensor and call compute cp
+
       include 'SIZE'
-      include 'TOTAL'
       include 'MOR'
 
       common /scrtens_norm/ norm_c,norm_c0
@@ -51,15 +52,17 @@ c     call read_cp_mode
 c-----------------------------------------------------------------------
       subroutine compute_cp(cp_a,cp_b,cp_c,cp_w,cl,cl0,cj0,c0k,fname,uu)
 
-c     This subroutine requires fname and uu and
-c     returns cp_a, cp_b, cp_c ,cp_w, cj0, c0k, cl where
+c     Compute the cp factors with given tensor cl,
+c     cj0 and c0k represent the first frontal slice
+c     and first lateral slice.
+
+c     This subroutine requires cl, cj0, c0k, fname and uu and
+c     returns cp_a, cp_b, cp_c ,cp_w where
 c     cp_a, cp_b, cp_c, cp_w are the results of CPD (CP Decomposition),
 c     cp_a, cp_b and cp_c are the factor matrices and cp_w are
-c     the weights. cl is the tensor, cj0 and c0k represents the
-c     first frontal slice and first lateral slice.
+c     the weights.
 
       include 'SIZE'
-      include 'TOTAL'
       include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
