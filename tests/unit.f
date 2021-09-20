@@ -599,7 +599,7 @@ c     enddo
                do k=0,nb
                do j=0,mb
                do i=1,mb
-                  cel=cu_ref(i+(j-1)*mb+(k-1)*mb*(mb+1))
+                  cel=cu_ref(i+j*mb+k*mb*(mb+1))
                   call setc_local(c,cel,ic1,ic2,jc1,jc2,kc1,kc2,i,j,k)
                enddo
                enddo
