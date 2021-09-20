@@ -531,24 +531,24 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine ceval_l2_unit
-      call ceval_unit(.true.)
+      subroutine evalc_l2_unit
+      call evalc_unit(.true.)
       return
       end
 c-----------------------------------------------------------------------
-      subroutine ceval_h10_unit
-      call ceval_unit(.false.)
+      subroutine evalc_h10_unit
+      call evalc_unit(.false.)
       return
       end
 c-----------------------------------------------------------------------
-      subroutine ceval_unit(iflag)
+      subroutine evalc_unit(iflag)
 
       include 'SIZE'
       include 'SOLN'
       include 'MOR'
 
       parameter (llb=100)
-      common /scrtest_ceval/ cu(llb),wk(llb),
+      common /scrtest_evalc/ cu(llb),wk(llb),
      $   c_ref(llb*(llb+1)**2),u_ref(llb+1),cu_ref(llb),
      $   tmp(llb*(llb+1)),c(llb*(llb+1)**2)
 
