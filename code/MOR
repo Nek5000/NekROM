@@ -218,13 +218,13 @@ c     parameters and common blocks for MOR
 
       real cua,cub,cuc,cp_uw
       real cta,ctb,ctc,cp_tw
-      integer ntr,max_tr
+      integer ntr
 
       common /cp_decomp/ cua((lub+1)*ltr),cub((lub+1)*ltr),
      $                   cuc((lub+1)*ltr),cp_uw(ltr),
      $                   cta((lub+1)*ltr),ctb((lub+1)*ltr),
      $                   ctc((lub+1)*ltr),cp_tw(ltr)
-      common /cp_rank/ ntr,max_tr
+      common /cp_rank/ ntr
       common /cp_aux/  cu0k((lub+1)**2), cuj0((lub+1)**2),
      $                 ct0k((lub+1)**2), ctj0((lub+1)**2)
 
