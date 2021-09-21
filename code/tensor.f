@@ -101,13 +101,14 @@ c     the weights.
       do kk=1,1
 c        ntr = rank_list(2,kk)
          if (ifcore) then
+            if (ifquad) then
+c              call rand_initial(cp_b,nb,ntr)
+c              call rand_initial(cp_c,nb,ntr)
+               call als_quad(cp_a,cp_b,cp_c,cp_w,cl0,
+     $                       ic1,ic2,jc1+1,jc2,kc1+1,kc2,nb,ntr)
+            else
                call rand_initial(cp_b,nb,ntr)
                call rand_initial(cp_c,nb,ntr)
-            if (ifquad) then
-               call als_quad(cp_a,cp_b,cp_c,cp_w,fcm,fcmpm,lsm,lsminv,
-     $                       lsr,tmp1,tmp2,tmp4,tmp5,cmr,crm,
-     $                       cl,ic1,ic2,jc1+1,jc2,kc1+1,kc2,nb,ntr)
-            else
                call als_core(cp_a,cp_b,cp_c,cp_w,cl0,
      $                       ic1,ic2,jc1+1,jc2,kc1+1,kc2,nb,ntr)
             endif
@@ -1067,9 +1068,8 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine als_quad(cp_a,cp_b,cp_c,cp_w,fcm,fcmpm,lsm,lsminv,lsr,
-     $                    tmp1,tmp2,tmp3,tmp4,cmr,crm,cl,ic1,ic2,jc1,jc2
-     $                    ,kc1,kc2,mm,nn)
+      subroutine als_quad(cp_a,cp_b,cp_c,cp_w,cl,
+     $                    ic1,ic2,jc1,jc2,kc1,kc2,mm,nn)
 
 c     This subroutine requires tensor cl, indices ic1, ic2, jc1, jc2,
 c     kc1, kc2, mm and nn where mm and nn are the dimensions of the
@@ -1077,10 +1077,11 @@ c     factor matrices. It returns cp_a, cp_b, cp_c ,cp_w.
 
       real cp_a(mm*nn),cp_b(mm*nn),cp_c(mm*nn),cp_w(nn)
       real cl(ic1:ic2,jc1:jc2,kc1:kc2)
+
+      real cmr(ic1:ic2,jc1:jc2,nn),crm(ic1:ic2,nn,kc1:kc2)
       real fcm(mm*nn,3),fcmpm(nn*nn,3)
       real lsm(nn*nn,3),lsminv(nn*nn,3),lsr(mm*nn)
       real tmp1(nn*nn),tmp2(mm*nn)
-      real cmr(ic1:ic2,jc1:jc2,nn),crm(ic1:ic2,nn,kc1:kc2)
       real cp_res,cp_relres,cp_fit,cp_tol,pre_relres,reldiff
       real sub_para
 
@@ -1093,23 +1094,26 @@ c     factor matrices. It returns cp_a, cp_b, cp_c ,cp_w.
       if (nid.eq.0) write(6,*) 'inside als_quad'
 
       maxit = 500
-      cp_tol = 0.2
+      cp_tol = 1e-12
       pre_relres = 1
       sub_para = 0.7
 
       ! Compute A^TA
-      call rand_initial(fcm(1,1),mm,nn)
-      call copy(fcm(1,2),fcm((mm*nn/2)+1,1),mm*nn/2)
-      call copy(fcm((mm*nn/2)+1,2),fcm(1,1),mm*nn/2)
-      call chsign(fcm((mm*nn/2)+1,2),mm*nn/2)
+c     call rand_initial(fcm(1,1),mm,nn)
+c     call copy(fcm(1,2),fcm((mm*nn/2)+1,1),mm*nn/2)
+c     call copy(fcm((mm*nn/2)+1,2),fcm(1,1),mm*nn/2)
+c     call chsign(fcm((mm*nn/2)+1,2),mm*nn/2)
+      call copy(fcm(1,1),cp_a,mm*nn)
+      call copy(fcm(1,2),cp_b,mm*nn)
 
       do mode=1,2
          call set_product_matrix(fcmpm(1,mode),fcm(1,mode),mm,nn)
       enddo
 
-      call copy(tmp2,fcm(1,1),mm*nn)
       ! ALS with quad factor
+      call copy(tmp2,fcm(1,1),mm*nn)
       do ii=1,maxit
+            ! solve for mode 3 first
             call mttkrp(lsr,cl,cmr,crm,ic1,ic2,jc1,jc2,kc1,kc2,
      $                  fcm,mm,nn,3)
             call set_lsm(lsm,fcmpm,3,nn)
@@ -1119,7 +1123,6 @@ c     factor matrices. It returns cp_a, cp_b, cp_c ,cp_w.
                call mxm(lsr,mm,lsminv(1+(jj-1)*nn,3),nn,
      $         fcm(1+(mm)*(jj-1),3),1)
             enddo
-            call compute_cp_weight(cp_w,fcm(1,3),mm,nn)
             call mode_normalize(fcm(1,3),mm,nn)
             call set_product_matrix(fcmpm(1,3),fcm(1,3),mm,nn)
 
@@ -1145,7 +1148,7 @@ c     factor matrices. It returns cp_a, cp_b, cp_c ,cp_w.
 
                call set_product_matrix(fcmpm(1,2),fcm(1,2),mm,nn)
          enddo
-            call set_product_matrix(fcmpm(1,1),fcm(1,1),mm,nn)
+         call set_product_matrix(fcmpm(1,1),fcm(1,1),mm,nn)
 
          ! compute the relative error
          call compute_residual(cp_res,lsr,fcm(1,1),lsm(1,1),
@@ -1155,8 +1158,8 @@ c     factor matrices. It returns cp_a, cp_b, cp_c ,cp_w.
          reldiff = abs(pre_relres-cp_relres)/pre_relres
 
          pre_relres = cp_relres
-         if (nid.eq.0) write(6,1)'iter:', ii,'rel difference:',reldiff,
-     $   'relative residual:', cp_relres, 'rank:', nn
+         if (nid.eq.0) write(6,1)'iter:',ii,'rel difference:',reldiff,
+     $   'relative residual:',cp_relres,'residual:',cp_res,'rank:',nn
          if (cp_relres.lt.cp_tol.OR.ii.ge.maxit.OR.reldiff.le.1e-5) then
             exit
          endif
@@ -1166,7 +1169,7 @@ c     factor matrices. It returns cp_a, cp_b, cp_c ,cp_w.
       call copy(cp_b,fcm(1,2),mm*nn)
       call copy(cp_c,fcm(1,3),mm*nn)
 
-    1 format(a,i4,x,a,1p1e13.5,x,a,1p1e13.5,x,a,i4)
+    1 format(a,i4,x,a,1p1e13.5,x,a,1p1e13.5,x,a,1p1e13.5,x,a,i4)
       if (nid.eq.0) write(6,*) 'exitting als_quad'
 
       return
