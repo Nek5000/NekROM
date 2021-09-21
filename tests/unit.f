@@ -531,6 +531,89 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine evalc_l2_unit
+      call evalc_unit(.true.)
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine evalc_h10_unit
+      call evalc_unit(.false.)
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine evalc_unit(iflag)
+
+      include 'SIZE'
+      include 'SOLN'
+      include 'MOR'
+
+      parameter (llb=100)
+      common /scrtest_evalc/ cu(llb),wk(llb),
+     $   c_ref(llb*(llb+1)**2),u_ref(llb+1),cu_ref(llb),
+     $   tmp(llb*(llb+1)),c(llb*(llb+1)**2)
+
+      call srand(123)
+
+      do i=1,llb*(llb+1)**2
+         c_ref(i)=rand()
+      enddo
+
+      do i=1,llb+1
+         u_ref(i)=rand()
+      enddo
+
+      dl2max=0.
+      cl2max=0.
+      el2max=0.
+
+      iexit=0.
+
+      do mb=1,llb
+         nb=mb
+         do mp=1,32
+            call rzero(cu,mb)
+            do ip=1,mp
+               call cpart(kc1,kc2,jc1,jc2,ic1,ic2,ncloc,mb,mp,ip)
+
+               if (mp.eq.1) then
+                  call rzero(cu_ref,mb)
+                  call evalc(cu_ref,tmp,c_ref,u_ref,u_ref)
+               endif
+
+               do k=0,nb
+               do j=0,mb
+               do i=1,mb
+                  cel=c_ref(i+j*mb+k*mb*(mb+1))
+                  call setc_local(c,cel,ic1,ic2,jc1,jc2,kc1,kc2,i,j,k)
+               enddo
+               enddo
+               enddo
+
+               call rzero(wk,mb)
+               call evalc(wk,tmp,c,u_ref,u_ref)
+
+               call add2(cu,wk,mb)
+            enddo
+            call sub2(cu,cu_ref,mb)
+            dl2=sqrt(vlsc2(cu,cu,mb))
+            cl2=sqrt(vlsc2(cu_ref,cu_ref,mb))
+            el2=dl2/cl2
+            cl2max=max(cl2,cl2max)
+            dl2max=max(dl2,dl2max)
+            el2max=max(el2,el2max)
+            write (6,*) mb,mp,dl2,cl2,el2,'error'
+         enddo
+      enddo
+
+      write (6,*) dl2max,cl2max,el2max,'errormax'
+
+      if (el2max.gt.3.5e-15) iexit=iexit+1
+
+      call exitm(iexit)
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine exitm(iexit)
 
       open (unit=10,file='ecode')
