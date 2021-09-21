@@ -53,9 +53,6 @@ c-----------------------------------------------------------------------
             rmode='ON'
          else if (index(c_out,'OFF').eq.1) then
             rmode='OFF'
-         else if (index(c_out,'CP').eq.1) then
-            rmode='CP '
-            max_tr=ltr
          else if (index(c_out,'AEQ').eq.1) then
             rmode='AEQ'
             ifpb=.false.
@@ -413,6 +410,37 @@ c-----------------------------------------------------------------------
          endif
       endif
 
+      ! TENSOR DECOMP
+      call finiparser_getstring(c_out,'tendec:mode',ifnd)
+      if (ifnd.eq.1) then
+         call capit(c_out,132)
+         if (index(c_out,'CP').eq.1) then
+            ifcp=.true.
+            if (ltr.lt.1) then
+               write (6,*) 'increase CP rank ltr',ltr
+               ierr=ierr+1
+            endif
+         else
+            write (6,*) 'invalid option for tendec:mode ',c_out
+            ierr=ierr+1
+         endif
+      endif
+
+      call finiparser_getdbl(d_out,'tendec:rank',ifnd)
+      if (ifnd.eq.1) ntr=min(nint(d_out),ltr)
+      if (ntr.eq.0) ntr=ltr
+
+      if (ntr.gt.ltr) then
+         write (6,*) 'ntr > ltr is undefined configuration',ntr
+         ierr=ierr+1
+      endif
+
+      call finiparser_getbool(i_out,'tendec:core',ifnd)
+      if (ifnd.eq.1) ifcore=i_out.eq.1
+
+      call finiparser_getbool(i_out,'tendec:skew',ifnd)
+      if (ifnd.eq.1) ifquad=i_out.eq.1
+
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
          rtmp1(1,1)=nb*1.
          call dump_serial(rtmp1(1,1),1,'ops/nb ',nid)
@@ -452,13 +480,14 @@ c-----------------------------------------------------------------------
       ! characters
 
       call bcast(rmode,csize*3)
+      call bcast(eqn,csize*4)
       call bcast(ips,csize*3)
       call bcast(cfloc,csize*4)
       call bcast(cftype,csize*4)
 
       ! integers
 
-      call bcast(max_tr,isize)
+      call bcast(ntr,isize)
       call bcast(nb,isize)
       call bcast(mb,isize)
       call bcast(ns,isize)
@@ -516,6 +545,10 @@ c-----------------------------------------------------------------------
       call bcast(ifpb,lsize)
       call bcast(ifdecpl,lsize)
       call bcast(ifcp,lsize)
+
+      call bcast(ifcp,lsize)
+      call bcast(ifcore,lsize)
+      call bcast(ifquad,lsize)
 
       return
       END
