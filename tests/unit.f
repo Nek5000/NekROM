@@ -508,7 +508,7 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'edif',edif,s1,s2
 
-      if (edif.gt.9.e-11) iexit=iexit+3
+      if (edif.gt.9.e-11) iexit=iexit+4
 
       s1=0.
       s2=0.
@@ -524,7 +524,7 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'edif',edif,s1,s2
 
-      if (edif.gt.9.e-11) iexit=iexit+4
+      if (edif.gt.9.e-11) iexit=iexit+8
 
       call exitm(iexit)
       
@@ -745,7 +745,7 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'edif',edif,s1,s2
 
-      if (edif.gt.2.e-11) iexit=iexit+3
+      if (edif.gt.2.e-11) iexit=iexit+4
 
       s1=0.
       s2=0.
@@ -761,7 +761,7 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'edif',edif,s1,s2
 
-      if (edif.gt.3.e-11) iexit=iexit+4
+      if (edif.gt.3.e-11) iexit=iexit+8
 
       call exitm(iexit)
 
