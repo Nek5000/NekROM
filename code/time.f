@@ -617,7 +617,7 @@ c-----------------------------------------------------------------------
       enddo
 
       if (ifadvc(2)) then
-         if (rmode.eq.'CP ') then
+         if (ifcp) then
             if (ifcore) then
                call evalc4(tmp(1),cta,ctb,ctc,cp_tw,ctl,ctj0,ct0k,ut)
             else
@@ -674,7 +674,7 @@ c-----------------------------------------------------------------------
          rhs(i)=rhs(i)+s*au0(1+i)
       enddo
 
-      if (rmode.eq.'CP ') then
+      if (ifcp) then
          if (ifcore) then 
             call evalc4(tmp1(1),cua,cub,cuc,cp_uw,cul,cuj0,cu0k,u)
          else
