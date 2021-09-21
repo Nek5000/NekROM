@@ -5,8 +5,12 @@
 case "$1" in
     cyl_rect_h10)
         wget -nv -O t.t https://uofi.box.com/shared/static/4if5yx2402so3wcj5sazvje36rywkbcd.gz;;
+    cyl_rect_h10_skew)
+        wget -nv -O t.t https://uofi.box.com/shared/static/ramvgnyc9yme43w0s4t2kt15uildmwvp.gz;;
     cyl_rect_l2)
-        wget -nv -O t.t https://uofi.box.com/shared/static/sv4jnxftqvl1efsts53gd2hw6zmwvr5a.gz
+        wget -nv -O t.t https://uofi.box.com/shared/static/sv4jnxftqvl1efsts53gd2hw6zmwvr5a.gz;;
+    cyl_rect_l2_skew)
+        wget -nv -O t.t https://uofi.box.com/shared/static/1t0m2cpeeevmxe88bcbdyftue2jhnvap.gz
 esac
 
 tar -xvf t.t
