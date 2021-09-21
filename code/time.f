@@ -414,7 +414,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine evalc(cu,cm,cl,uu)
+      subroutine evalc(cu,cm,cl,uu,tt)
 
       include 'SIZE'
       include 'TOTAL'
@@ -423,7 +423,7 @@ c-----------------------------------------------------------------------
       common /evalctmp/ ucft(0:lb)
 
       real cu(nb)
-      real uu(0:nb)
+      real uu(0:nb),tt(0:nb)
       real cl(ic1:ic2,jc1:jc2,kc1:kc2)
       real cm(ic1:ic2,jc1:jc2)
 
@@ -448,10 +448,10 @@ c-----------------------------------------------------------------------
             if ((kc2-kc1).lt.64.and.(jc2-jc1).lt.64
      $          .and.cfloc.eq.'NONE') then
                call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),
-     $                  u(kc1),(kc2-kc1+1),cm,1)
-               call mxm(cm,(ic2-ic1+1),uu(jc1),(jc2-jc1+1),cu(ic1),1)
+     $                  uu(kc1),(kc2-kc1+1),cm,1)
+               call mxm(cm,(ic2-ic1+1),tt(jc1),(jc2-jc1+1),cu(ic1),1)
             else
-               call copy(ucft,u,nb+1)
+               call copy(ucft,uu,nb+1)
 
                if (cfloc.eq.'CONV') then
                if (cftype.eq.'TFUN') then
@@ -464,7 +464,7 @@ c-----------------------------------------------------------------------
                do k=kc1,kc2
                do j=jc1,jc2
                do i=ic1,ic2
-                  cu(i)=cu(i)+cl(i,j,k)*uu(j)*ucft(k)
+                  cu(i)=cu(i)+cl(i,j,k)*tt(j)*ucft(k)
                enddo
                enddo
                enddo
@@ -624,7 +624,7 @@ c-----------------------------------------------------------------------
                call evalc3(tmp(1),cta,ctb,ctc,cp_tw,ut)
             endif
          else
-            call evalc(tmp(1),ctmp,ctl,ut)
+            call evalc(tmp(1),ctmp,ctl,u,ut)
          endif
 c        call add2(tmp(1),st0(1),nb)
          call shift(ctr,tmp(1),nb,3)
@@ -681,7 +681,7 @@ c-----------------------------------------------------------------------
             call evalc3(tmp1(1),cua,cub,cuc,cp_uw,u)
          endif 
       else
-         call evalc(tmp1(1),ctmp,cul,u)
+         call evalc(tmp1(1),ctmp,cul,u,u)
       endif
 
       call chsign(tmp1(1),nb)
