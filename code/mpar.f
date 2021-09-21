@@ -544,7 +544,6 @@ c-----------------------------------------------------------------------
 
       call bcast(ifpb,lsize)
       call bcast(ifdecpl,lsize)
-      call bcast(ifcp,lsize)
 
       call bcast(ifcp,lsize)
       call bcast(ifcore,lsize)
