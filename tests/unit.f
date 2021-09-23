@@ -508,7 +508,7 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'edif',edif,s1,s2
 
-      if (edif.gt.9.e-11) iexit=iexit+3
+      if (edif.gt.9.e-11) iexit=iexit+4
 
       s1=0.
       s2=0.
@@ -524,10 +524,93 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'edif',edif,s1,s2
 
-      if (edif.gt.9.e-11) iexit=iexit+4
+      if (edif.gt.9.e-11) iexit=iexit+8
 
       call exitm(iexit)
       
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine evalc_l2_unit
+      call evalc_unit(.true.)
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine evalc_h10_unit
+      call evalc_unit(.false.)
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine evalc_unit(iflag)
+
+      include 'SIZE'
+      include 'SOLN'
+      include 'MOR'
+
+      parameter (llb=100)
+      common /scrtest_evalc/ cu(llb),wk(llb),
+     $   c_ref(llb*(llb+1)**2),u_ref(llb+1),cu_ref(llb),
+     $   tmp(llb*(llb+1)),c(llb*(llb+1)**2)
+
+      call srand(123)
+
+      do i=1,llb*(llb+1)**2
+         c_ref(i)=rand()
+      enddo
+
+      do i=1,llb+1
+         u_ref(i)=rand()
+      enddo
+
+      dl2max=0.
+      cl2max=0.
+      el2max=0.
+
+      iexit=0.
+
+      do mb=1,llb
+         nb=mb
+         do mp=1,32
+            call rzero(cu,mb)
+            do ip=1,mp
+               call cpart(kc1,kc2,jc1,jc2,ic1,ic2,ncloc,mb,mp,ip)
+
+               if (mp.eq.1) then
+                  call rzero(cu_ref,mb)
+                  call evalc(cu_ref,tmp,c_ref,u_ref,u_ref)
+               endif
+
+               do k=0,nb
+               do j=0,mb
+               do i=1,mb
+                  cel=c_ref(i+j*mb+k*mb*(mb+1))
+                  call setc_local(c,cel,ic1,ic2,jc1,jc2,kc1,kc2,i,j,k)
+               enddo
+               enddo
+               enddo
+
+               call rzero(wk,mb)
+               call evalc(wk,tmp,c,u_ref,u_ref)
+
+               call add2(cu,wk,mb)
+            enddo
+            call sub2(cu,cu_ref,mb)
+            dl2=sqrt(vlsc2(cu,cu,mb))
+            cl2=sqrt(vlsc2(cu_ref,cu_ref,mb))
+            el2=dl2/cl2
+            cl2max=max(cl2,cl2max)
+            dl2max=max(dl2,dl2max)
+            el2max=max(el2,el2max)
+            write (6,*) mb,mp,dl2,cl2,el2,'error'
+         enddo
+      enddo
+
+      write (6,*) dl2max,cl2max,el2max,'errormax'
+
+      if (el2max.gt.3.5e-15) iexit=iexit+1
+
+      call exitm(iexit)
+
       return
       end
 c-----------------------------------------------------------------------
@@ -542,3 +625,145 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine cp_skew_l2_unit
+      call cp_skew_unit(.true.)
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine cp_skew_h10_unit
+      call cp_skew_unit(.false.)
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine cp_skew_unit(iflag)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /scrtens_norm/ norm_c,norm_c0
+
+      logical iflag
+      real wk(lb*ltr),wk3(lt)
+      real cp_a(lb*ltr),cp_b(lb*ltr),cp_c(lb*ltr),cp_w(ltr)
+      real cl0(lcglo)
+      real norm_c,norm_c0
+
+      param(171) = 1.
+      if (iflag) param(171) = 0.
+      param(172) = 1.
+      param(173) = 0.
+      nb = 20
+
+      call rom_setup
+
+      ntr = 80
+      ifcore=.true.
+      ifquad=.true.
+      if (nio.eq.0) write (6,*) 'reading initial A1...'
+      call read_mat_serial(cua,nb,ntr,'./tcp/cua_r80skew ',
+     $                     nb,ntr,wk3,nid)
+
+      if (nio.eq.0) write (6,*) 'reading initial A2...'
+      call read_mat_serial(cub,nb,ntr,'./tcp/cub_r80skew ',
+     $                     nb,ntr,wk3,nid)
+
+      if (ifquad) then
+         call force_skew(cul,ic1,ic2,jc1,jc2,kc1,kc2)
+      endif
+      local_size = (ic2-ic1+1)*(jc2-jc1+1)*(kc2-kc1+1)
+      norm_c = vlsc2(cul,cul,local_size)
+      if (ifcore) then
+         call set_c_slice(cuj0,cu0k,cul,ic1,ic2,jc1,jc2,kc1,kc2,nb)
+         call set_c_core(cl0,cul,ic1,ic2,jc1,jc2,kc1,kc2,nb)
+         local_size = (ic2-ic1+1)*(jc2-jc1)*(kc2-kc1)
+         norm_c0 = vlsc2(cl0,cl0,local_size)
+      endif
+      call als_quad(cua,cub,cuc,cp_uw,cl0,
+     $              ic1,ic2,jc1+1,jc2,kc1+1,kc2,nb,ntr)
+
+      call read_serial(cp_a,nb*ntr,'./tcp/cua_skew ',wk,nid)
+      call read_serial(cp_b,nb*ntr,'./tcp/cub_skew ',wk,nid)
+      call read_serial(cp_c,nb*ntr,'./tcp/cuc_skew ',wk,nid)
+      call read_serial(cp_w,ntr   ,'./tcp/cuw_skew ',wk,nid)
+
+      iexit=0
+
+      s1=0.
+      s2=0.
+
+      if (nio.eq.0) write (6,*) 'live | data'
+
+      do j=1,ntr
+      do i=1,nb
+         s1=s1+(cua(i+(j-1)*nb)-cp_a(i+(j-1)*nb))**2
+         s2=s2+cp_a(i+(j-1)*nb)**2
+         if (nio.eq.0) write (6,*) 'cp a factor',
+     $                 i,j,cua(i+(j-1)*nb),cp_a(i+(j-1)*nb)
+      enddo
+      enddo
+
+      edif=sqrt(s1/s2)
+
+      if (nio.eq.0) write (6,*) 'edif',edif,s1,s2
+
+      if (edif.gt.2.e-11) iexit=iexit+1
+
+      s1=0.
+      s2=0.
+
+      do j=1,ntr
+      do i=1,nb
+         s1=s1+(cub(i+(j-1)*nb)-cp_b(i+(j-1)*nb))**2
+         s2=s2+cp_b(i+(j-1)*nb)**2
+         if (nio.eq.0) write (6,*) 'cp b factor',
+     $                 i,j,cub(i+(j-1)*nb),cp_b(i+(j-1)*nb)
+      enddo
+      enddo
+
+      edif=sqrt(s1/s2)
+
+      if (nio.eq.0) write (6,*) 'edif',edif,s1,s2
+
+      if (edif.gt.2.e-11) iexit=iexit+2
+
+      s1=0.
+      s2=0.
+
+      do j=1,ntr
+      do i=1,nb
+         s1=s1+(cuc(i+(j-1)*nb)-cp_c(i+(j-1)*nb))**2
+         s2=s2+cp_c(i+(j-1)*nb)**2
+         if (nio.eq.0) write (6,*) 'cp c factor',
+     $                 i,j,cuc(i+(j-1)*nb),cp_c(i+(j-1)*nb)
+      enddo
+      enddo
+
+      edif=sqrt(s1/s2)
+
+      if (nio.eq.0) write (6,*) 'edif',edif,s1,s2
+
+      if (edif.gt.2.e-11) iexit=iexit+4
+
+      s1=0.
+      s2=0.
+
+      do j=1,ntr
+         s1=s1+(cp_uw(j)-cp_w(j))**2
+         s2=s2+cp_w(j)**2
+         if (nio.eq.0) write (6,*) 'cp w factor',
+     $                 j,cp_uw(j),cp_w(j)
+      enddo
+
+      edif=sqrt(s1/s2)
+
+      if (nio.eq.0) write (6,*) 'edif',edif,s1,s2
+
+      if (edif.gt.3.e-11) iexit=iexit+8
+
+      call exitm(iexit)
+
+      return
+      end

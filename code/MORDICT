@@ -4,7 +4,7 @@ c     Note: Keys have to be in capital letters
 c
       integer MORDICT_NKEYS
 
-      parameter (MORDICT_NKEYS = 52)
+      parameter (MORDICT_NKEYS = 57)
 
       character*132 mordictkey(MORDICT_NKEYS)
       data
@@ -60,3 +60,8 @@ c
      &  mordictkey(50) / 'EI' /
      &  mordictkey(51) / 'EI:MODE' /
      &  mordictkey(52) / 'EI:EQN' /
+     &  mordictkey(53) / 'TENDEC' /
+     &  mordictkey(54) / 'TENDEC:MODE' /
+     &  mordictkey(55) / 'TENDEC:RANK' /
+     &  mordictkey(56) / 'TENDEC:CORE' /
+     &  mordictkey(57) / 'TENDEC:SKEW' /
