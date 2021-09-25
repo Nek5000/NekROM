@@ -266,21 +266,28 @@ c-----------------------------------------------------------------------
       if (inus.eq.1) then
          do j=0,nb
             do i=0,nb
-               call ctbulk_num(tbn(i,j),ub(1,i),vb(1,i),wb(1,i),tb(1,j))
+               call ctbulk_num(
+     $            tbn(i+j*(nb+1),0),ub(1,i),vb(1,i),wb(1,i),tb(1,j))
             enddo
             call ctbulk_den(tbd(j),ub(1,j),vb(1,j),wb(1,j))
             call ctsurf(tsa(j),tb(1,j))
          enddo
 
+         call dump_serial(tsa,nb+1,'qoi/tsa ',nid)
+
          do i=0,nb
             if (nio.eq.0) write (6,*) i,tsa(i),'tsa'
          enddo
 
+         call dump_serial(tbn,(nb+1)**2,'qoi/tbn ',nid)
+
          do j=0,nb
          do i=0,nb
-            if (nio.eq.0) write (6,*) i,j,tbn(i,j),'tbn'
+            if (nio.eq.0) write (6,*) i,j,tbn(i+j*(nb+1),0),'tbn'
          enddo
          enddo
+
+         call dump_serial(tbd,nb+1,'qoi/tbd ',nid)
 
          do i=0,nb
             if (nio.eq.0) write (6,*) i,tbd(i),'tbd'
