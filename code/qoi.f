@@ -264,34 +264,41 @@ c-----------------------------------------------------------------------
      $               tz(lx1,ly1,lz1,lelt)
 
       if (inus.eq.1) then
-         do j=0,nb
-            do i=0,nb
-               call ctbulk_num(
-     $            tbn(i+j*(nb+1),0),ub(1,i),vb(1,i),wb(1,i),tb(1,j))
+         if (rmode.ne.'ON '.and.rmode.ne.'ONB') then
+            call read_mat_serial(tbn,nb+1,nb+1,
+               'qoi/tbn ',mb+1,mb+1,rtmp1,nid)
+            call read_serial(tbd,nb+1,'qoi/tbd ',rtmp1,nid)
+            call read_serial(tsa,nb+1,'qoi/tsa ',rtmp1,nid)
+         else
+            do j=0,nb
+               do i=0,nb
+                  call ctbulk_num(
+     $               tbn(i+j*(nb+1),0),ub(1,i),vb(1,i),wb(1,i),tb(1,j))
+               enddo
+               call ctbulk_den(tbd(j),ub(1,j),vb(1,j),wb(1,j))
+               call ctsurf(tsa(j),tb(1,j))
             enddo
-            call ctbulk_den(tbd(j),ub(1,j),vb(1,j),wb(1,j))
-            call ctsurf(tsa(j),tb(1,j))
-         enddo
 
-         call dump_serial(tsa,nb+1,'qoi/tsa ',nid)
+            call dump_serial(tsa,nb+1,'qoi/tsa ',nid)
 
-         do i=0,nb
-            if (nio.eq.0) write (6,*) i,tsa(i),'tsa'
-         enddo
+            do i=0,nb
+               if (nio.eq.0) write (6,*) i,tsa(i),'tsa'
+            enddo
 
-         call dump_serial(tbn,(nb+1)**2,'qoi/tbn ',nid)
+            call dump_serial(tbn,(nb+1)**2,'qoi/tbn ',nid)
 
-         do j=0,nb
-         do i=0,nb
-            if (nio.eq.0) write (6,*) i,j,tbn(i+j*(nb+1),0),'tbn'
-         enddo
-         enddo
+            do j=0,nb
+            do i=0,nb
+               if (nio.eq.0) write (6,*) i,j,tbn(i+j*(nb+1),0),'tbn'
+            enddo
+            enddo
 
-         call dump_serial(tbd,nb+1,'qoi/tbd ',nid)
+            call dump_serial(tbd,nb+1,'qoi/tbd ',nid)
 
-         do i=0,nb
-            if (nio.eq.0) write (6,*) i,tbd(i),'tbd'
-         enddo
+            do i=0,nb
+               if (nio.eq.0) write (6,*) i,tbd(i),'tbd'
+            enddo
+         endif
       else if (inus.eq.2) then
          do i=0,nb
             call gradm1(tx,ty,tz,tb(1,i))
@@ -451,26 +458,26 @@ c-----------------------------------------------------------------------
          enddo
       endif
 
-      if (iftflux) then
-         do j=0,nbavg
-         do i=0,nbavg
-            if (idirf.eq.1) then
-               call calc_tbulk(tbulkn(i,j),tbulkd(i,j),tb(1,i),ub(1,j))
-            else if (idirf.eq.2) then
-               call calc_tbulk(tbulkn(i,j),tbulkd(i,j),tb(1,i),vb(1,j))
-            else if (idirf.eq.3) then
-               call calc_tbulk(tbulkn(i,j),tbulkd(i,j),tb(1,i),wb(1,j))
-            endif
-         enddo
-         enddo
+c     if (iftflux) then
+c        do j=0,nbavg
+c        do i=0,nbavg
+c           if (idirf.eq.1) then
+c              call calc_tbulk(tbulkn(i,j),tbulkd(i,j),tb(1,i),ub(1,j))
+c           else if (idirf.eq.2) then
+c              call calc_tbulk(tbulkn(i,j),tbulkd(i,j),tb(1,i),vb(1,j))
+c           else if (idirf.eq.3) then
+c              call calc_tbulk(tbulkn(i,j),tbulkd(i,j),tb(1,i),wb(1,j))
+c           endif
+c        enddo
+c        enddo
 
-         do i=0,nbavg
-            call calc_tsurf(tsurf(i),tb(1,i))
-            call calc_tmean(ttmean(i),tb(1,i))
-            call calc_sterm(st0(i),tb(1,i))
-            write (6,*) i,st0(i),'st0'
-         enddo
-      endif
+c        do i=0,nbavg
+c           call calc_tsurf(tsurf(i),tb(1,i))
+c           call calc_tmean(ttmean(i),tb(1,i))
+c           call calc_sterm(st0(i),tb(1,i))
+c           write (6,*) i,st0(i),'st0'
+c        enddo
+c     endif
 
       return
       end
