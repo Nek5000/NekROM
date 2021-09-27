@@ -266,7 +266,7 @@ c-----------------------------------------------------------------------
       if (inus.eq.1) then
          if (rmode.ne.'ON '.and.rmode.ne.'ONB') then
             call read_mat_serial(tbn,nb+1,nb+1,
-               'qoi/tbn ',mb+1,mb+1,rtmp1,nid)
+     $         'qoi/tbn ',mb+1,mb+1,rtmp1,nid)
             call read_serial(tbd,nb+1,'qoi/tbd ',rtmp1,nid)
             call read_serial(tsa,nb+1,'qoi/tsa ',rtmp1,nid)
          else
