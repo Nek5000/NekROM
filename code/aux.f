@@ -2425,3 +2425,78 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine evalf(f,uu,tt,gnn,mdim,ifcnvc)
+
+      ! evaluate f, the time-derivative based on the current solution
+
+      ! f      := time-derivative of the solution tt
+      ! uu     := advection field
+      ! tt     := solution field
+      ! gnn    := inhomogeneous Neumann value field
+      ! mdim   := dimension of tt
+      ! ifcnvc := flag to evaluate the dealiased convection field
+
+      include 'SIZE'  ! dep: SOLN,MOR,INPUT,lt,ltd,ldim
+      include 'SOLN'  ! dep: vdiff,plag
+      include 'MOR'   ! dep: zeros
+      include 'INPUT' ! dep: cbc
+      include 'GEOM'  ! dep: area
+
+      parameter (lt=lx1*ly1*lz1*lelt,ltd=lxd*lyd*lzd*lelt)
+
+      common /scrns/ wk(lx1,ly1,lz1,lelt)
+      common /convect/ c1v(ltd),c2v(ltd),c3v(ltd),
+     $                 u1v(ltd),u2v(ltd),u3v(ltd)
+
+      real f(lt,mdim),uu(lt,ldim),tt(lt,mdim),gnn(lx1,ly1,lz1,lelt)
+      logical ifcnvc
+
+      if (ifcnvc) call setcnv_c(uu(1,1),uu(1,2),uu(1,ldim))
+
+      if (mdim.eq.ldim) then
+         n=lx1*ly1*lz1*nelv
+         call setcnv_u(tt(1,1),tt(1,2),tt(1,ldim))
+         call cc(f(1,idim),mdim)
+
+         do idim=1,mdim
+            call axhelm(wk,tt(1,idim),vdiff(1,1,1,1,1),zeros,1,1)
+            call add2(f(1,idim),wk,n)
+            call chsign(f(1,idim),n)
+         enddo
+
+         call incomprn(f(1,1),f(1,2),f(1,ldim),plag)
+      else
+         n=lx1*ly1*lz1*nelt
+         call rzero(f,n)
+
+         call setcnv_u1(tt)
+         call cc(f,1)
+
+         call axhelm(wk,tt,vdiff(1,1,1,1,2),zeros,2,1)
+         call add2(f,wk,n)
+         call chsign(f,n)
+
+         call rzero(wk,n)
+         do ie=1,nelt
+         do ifc=1,2*ldim
+            if (cbc(ifc,ie,2).eq.'f  ') then
+               call facind(kx1,kx2,ky1,ky2,kz1,kz2,lx1,ly1,lz1,ifc)
+               l=1
+               do iz=kz1,kz2
+               do iy=ky1,ky2
+               do ix=kx1,kx2
+                  wk(ix,iy,iz,ie)=wk(ix,iy,iz,ie)
+     $               +gnn(ix,iy,iz,ie)*area(l,1,ifc,ie)
+                  l=l+1
+               enddo
+               enddo
+               enddo
+            endif
+         enddo
+         enddo
+         call add2(f,wk,n)
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
