@@ -5,6 +5,8 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'
       include 'MOR'
+      include 'SOLN'
+      include 'MASS'
 
       if (nio.eq.0) write (6,*) 'inside setbases'
 
@@ -23,9 +25,14 @@ c-----------------------------------------------------------------------
                call opcopy(ub(1,ib),vb(1,ib),wb(1,ib),
      $            uvwb(1,1,ib),uvwb(1,2,ib),uvwb(1,ldim,ib))
             enddo
-            if (.not.ifcomb.and.ifpb) call vnorm(ub,vb,wb)
+            if (.not.ifcomb.and.ifpb) then
+               call vnorm(ub,vb,wb)
+               call vnorm_(uvwb)
+            endif
          else
             call opcopy(ub,vb,wb,uic,vic,wic)
+            call opcopy(
+     $         uvwb(1,1,0),uvwb(1,2,0),uvwb(1,ldim,0),uic,vic,wic)
          endif
          if (ifrom(2)) then
             call pod(tb(1,1),eval,ug,ts0,1,ips,nb,ns,ifpb,'ops/gt  ')
@@ -33,6 +40,72 @@ c-----------------------------------------------------------------------
          endif
 
          if (ifcomb.and.ifpb) call cnorm(ub,vb,wb,tb)
+      endif
+
+      if (iaug.eq.3) then
+         call pv2k(uk,us0,ub,vb,wb)
+
+         n=lx1*ly1*lz1*nelv
+
+         do i=1,ns
+            call copy(rtmp1(2,1),uk(1,i),nb)
+            rtmp1(1,1)=0.
+            call reconv(vxlag,vylag,vzlag,rtmp1)
+            call sub3(upup(1,1,1),us0(1,1,i),vxlag,n)
+            call sub3(upup(1,2,1),us0(1,2,i),vylag,n)
+            if (ldim.eq.3) call sub2(upup(1,3,1),us0(1,3,i),vzlag,n)
+
+            call copy(flucv(1,1,1),upup(1,1,1),n)
+            call copy(flucv(1,2,1),upup(1,2,1),n)
+            if (ldim.eq.3) call copy(flucv(1,3,1),upup(1,3,1),n)
+
+            call add2(flucv(1,1,1),vxlag,n)
+            call add2(flucv(1,2,1),vylag,n)
+            if (ldim.eq.3) call add2(flucv(1,3,1),vzlag,n)
+
+            call add2(flucv(1,1,1),uvwb(1,1,0),n)
+            call add2(flucv(1,2,1),uvwb(1,2,0),n)
+            if (ldim.eq.3) call add2(flucv(1,3,1),uvwb(1,3,0),n)
+
+            call evalcflds(vxlag,flucv,upup(1,1,1),1,1)
+            call evalcflds(vylag,flucv,upup(1,2,1),1,1)
+            if (ldim.eq.3) call evalcflds(vzlag,flucv,upup(1,3,1),1,1)
+
+            ifield=1
+            call dsavg(vxlag)
+            call dsavg(vylag)
+            if (ldim.eq.3) call dsavg(vzlag)
+
+            call incomprn(vxlag,vylag,vzlag,prlag)
+
+            call copy(snaptmp(1,1,i),vxlag,n)
+            call copy(snaptmp(1,2,i),vylag,n)
+            if (ldim.eq.3) call copy(snaptmp(1,3,i),vzlag,n)
+         enddo
+
+         call pv2k(uk,snaptmp,ub,vb,wb)
+
+         do i=1,ns
+            call copy(rtmp1(2,1),uk(1,i),nb)
+            rtmp1(1,1)=0.
+            call reconv(vxlag,vylag,vzlag,rtmp1)
+            call sub2(snaptmp(1,1,i),vxlag,n)
+            call sub2(snaptmp(1,2,i),vylag,n)
+            if (ldim.eq.3) call sub2(snaptmp(1,3,i),vzlag,n)
+         enddo
+
+         call pod(
+     $      uvwb(1,1,nb+1),eval,ug,snaptmp,ldim,ips,nb,ns,ifpb,'gu  ')
+
+         do ib=nb+1,nb*2
+            call opcopy(ub(1,ib),vb(1,ib),wb(1,ib),
+     $         uvwb(1,1,ib),uvwb(1,2,ib),uvwb(1,ldim,ib))
+         enddo
+
+         call vnorm(ub(1,nb),vb(1,nb),wb(1,nb))
+         call vnorm_(uvwb(1,1,nb))
+
+         nb=nb*2
       endif
 
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
@@ -156,6 +229,39 @@ c-----------------------------------------------------------------------
       enddo
 
       if (nio.eq.0) write (6,*) 'exiting ps2b'
+
+    1 format(' coef',1p3e16.8,1x,a3)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine ps2b1(coef,tt,sb,nb2)
+
+      ! get coordinates of a scalar field for a given basis w/o 0th mode
+
+      ! ck  := coordinates of <ux> in <uub>
+      ! ux  := FOM scalar field
+      ! uub := basis functions
+
+      include 'SIZE'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real coef(nb),tt(lt),sb(lt,nb)
+
+      if (nio.eq.0) write (6,*) 'inside ps2b1'
+
+      n=lx1*ly1*lz1*nelt
+
+      do i=1,nb2
+         ww=sip(sb(1,i),sb(1,i))
+         vv=sip(sb(1,i),tt)
+         coef(i) = vv/ww
+         if (nio.eq.0) write (6,1) coef(i),vv,ww,ips
+      enddo
+
+      if (nio.eq.0) write (6,*) 'exiting ps2b1'
 
     1 format(' coef',1p3e16.8,1x,a3)
 
@@ -794,6 +900,35 @@ c-----------------------------------------------------------------------
       if (nio.eq.0) write (6,*) 'evec_time:',evec_time-eval_time
 
       if (nio.eq.0) write (6,*) 'exiting genevec'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine vnorm_(uvwbb)
+
+      ! normalizes vector field
+
+      ! uub,vvb,wwb := x,y,z components of vector field
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real uvwbb(lt,ldim,0:nb)
+
+      jfield=ifield
+      ifield=1
+      nio=-1
+      do i=1,nb
+         p=vip(uvwbb(1,1,i),uvwbb(1,2,i),uvwbb(1,ldim,i),
+     $         uvwbb(1,1,i),uvwbb(1,2,i),uvwbb(1,ldim,i))
+         s=1./sqrt(p)
+         call opcmult(uvwbb(1,1,i),uvwbb(1,2,i),uvwbb(1,3,i),s)
+      enddo
+      nio=nid
+      ifield=jfield
 
       return
       end

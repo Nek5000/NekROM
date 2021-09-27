@@ -673,6 +673,7 @@ c-----------------------------------------------------------------------
       ad_qstep=ad_iostep
       iftneu=.false.
       inus=0
+      iaug=0
       ifsub0=.true.
 
       ifforce=.false.
