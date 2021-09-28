@@ -86,66 +86,110 @@ c-----------------------------------------------------------------------
 
       if (iaug.eq.3) then
          call pv2k(uk,us0,ub,vb,wb)
+         if (ifrom(1)) then
+            n=lx1*ly1*lz1*nelv
 
-         n=lx1*ly1*lz1*nelv
+            do i=1,ns
+               call copy(rtmp1(2,1),uk(1,i),nb)
+               rtmp1(1,1)=0.
+               call reconv(vxlag,vylag,vzlag,rtmp1)
+               call sub3(upup(1,1,1),us0(1,1,i),vxlag,n)
+               call sub3(upup(1,2,1),us0(1,2,i),vylag,n)
+               if (ldim.eq.3) call sub2(upup(1,3,1),us0(1,3,i),vzlag,n)
 
-         do i=1,ns
-            call copy(rtmp1(2,1),uk(1,i),nb)
-            rtmp1(1,1)=0.
-            call reconv(vxlag,vylag,vzlag,rtmp1)
-            call sub3(upup(1,1,1),us0(1,1,i),vxlag,n)
-            call sub3(upup(1,2,1),us0(1,2,i),vylag,n)
-            if (ldim.eq.3) call sub2(upup(1,3,1),us0(1,3,i),vzlag,n)
+               call copy(flucv(1,1,1),upup(1,1,1),n)
+               call copy(flucv(1,2,1),upup(1,2,1),n)
+               if (ldim.eq.3) call copy(flucv(1,3,1),upup(1,3,1),n)
 
-            call copy(flucv(1,1,1),upup(1,1,1),n)
-            call copy(flucv(1,2,1),upup(1,2,1),n)
-            if (ldim.eq.3) call copy(flucv(1,3,1),upup(1,3,1),n)
+               call add2(flucv(1,1,1),vxlag,n)
+               call add2(flucv(1,2,1),vylag,n)
+               if (ldim.eq.3) call add2(flucv(1,3,1),vzlag,n)
 
-            call add2(flucv(1,1,1),vxlag,n)
-            call add2(flucv(1,2,1),vylag,n)
-            if (ldim.eq.3) call add2(flucv(1,3,1),vzlag,n)
+               call add2(flucv(1,1,1),uvwb(1,1,0),n)
+               call add2(flucv(1,2,1),uvwb(1,2,0),n)
+               if (ldim.eq.3) call add2(flucv(1,3,1),uvwb(1,3,0),n)
 
-            call add2(flucv(1,1,1),uvwb(1,1,0),n)
-            call add2(flucv(1,2,1),uvwb(1,2,0),n)
-            if (ldim.eq.3) call add2(flucv(1,3,1),uvwb(1,3,0),n)
+               call evalcflds(vxlag,flucv,upup(1,1,1),1,1)
+               call evalcflds(vylag,flucv,upup(1,2,1),1,1)
+               if (ldim.eq.3) call evalcflds(
+     $            vzlag,flucv,upup(1,3,1),1,1)
 
-            call evalcflds(vxlag,flucv,upup(1,1,1),1,1)
-            call evalcflds(vylag,flucv,upup(1,2,1),1,1)
-            if (ldim.eq.3) call evalcflds(vzlag,flucv,upup(1,3,1),1,1)
+               ifield=1
+               call dsavg(vxlag)
+               call dsavg(vylag)
+               if (ldim.eq.3) call dsavg(vzlag)
 
-            ifield=1
-            call dsavg(vxlag)
-            call dsavg(vylag)
-            if (ldim.eq.3) call dsavg(vzlag)
+               call incomprn(vxlag,vylag,vzlag,prlag)
 
-            call incomprn(vxlag,vylag,vzlag,prlag)
+               call copy(snaptmp(1,1,i),vxlag,n)
+               call copy(snaptmp(1,2,i),vylag,n)
+               if (ldim.eq.3) call copy(snaptmp(1,3,i),vzlag,n)
+            enddo
 
-            call copy(snaptmp(1,1,i),vxlag,n)
-            call copy(snaptmp(1,2,i),vylag,n)
-            if (ldim.eq.3) call copy(snaptmp(1,3,i),vzlag,n)
-         enddo
+            do i=1,ns
+               call pv2b(rtmp1,snaptmp(1,1,i),snaptmp(1,2,i),
+     $            snaptmp(1,ldim,i),ub,vb,wb)
+               rtmp1(1,1)=0.
+               call reconv(vxlag,vylag,vzlag,rtmp1)
+               call sub2(snaptmp(1,1,i),vxlag,n)
+               call sub2(snaptmp(1,2,i),vylag,n)
+               if (ldim.eq.3) call sub2(snaptmp(1,3,i),vzlag,n)
+            enddo
 
-         call pv2k(uk,snaptmp,ub,vb,wb)
+            call pod(uvwb(1,1,nb+1),
+     $         eval,ug,snaptmp,ldim,ips,nb,ns,ifpb,'ops/gu2 ')
 
-         do i=1,ns
-            call copy(rtmp1(2,1),uk(1,i),nb)
-            rtmp1(1,1)=0.
-            call reconv(vxlag,vylag,vzlag,rtmp1)
-            call sub2(snaptmp(1,1,i),vxlag,n)
-            call sub2(snaptmp(1,2,i),vylag,n)
-            if (ldim.eq.3) call sub2(snaptmp(1,3,i),vzlag,n)
-         enddo
+            do ib=nb+1,nb*2
+               call opcopy(ub(1,ib),vb(1,ib),wb(1,ib),
+     $            uvwb(1,1,ib),uvwb(1,2,ib),uvwb(1,ldim,ib))
+            enddo
 
-         call pod(
-     $      uvwb(1,1,nb+1),eval,ug,snaptmp,ldim,ips,nb,ns,ifpb,'gu  ')
+            call vnorm(ub(1,nb),vb(1,nb),wb(1,nb))
+            call vnorm_(uvwb(1,1,nb))
+         endif
 
-         do ib=nb+1,nb*2
-            call opcopy(ub(1,ib),vb(1,ib),wb(1,ib),
-     $         uvwb(1,1,ib),uvwb(1,2,ib),uvwb(1,ldim,ib))
-         enddo
+         if (ifrom(2)) then
+            nv=lx1*ly1*lz1*nelv
+            nt=lx1*ly1*lz1*nelt
 
-         call vnorm(ub(1,nb),vb(1,nb),wb(1,nb))
-         call vnorm_(uvwb(1,1,nb))
+            call ps2k(tk,ts0,tb)
+
+            do i=1,ns
+               call copy(rtmp1(2,1),tk(1,i),nb)
+               rtmp1(1,1)=0.
+               call recont(tlag,rtmp1)
+
+               call copy(rtmp1(2,1),uk(1,i),nb)
+               rtmp1(1,1)=1.
+               call reconv(flucv(1,1,1),flucv(1,2,1),flucv(1,3,1),rtmp1)
+
+               call sub3(upup,ts0(1,i),tlag,n)
+
+               call evalcflds(vxlag,flucv,upup,1,1)
+
+               ifield=2
+               call dsavg(vxlag)
+
+               call copy(snaptmp(1,i,1),vxlag,n)
+            enddo
+
+            do i=1,ns
+               call ps2b(rtmp1,snaptmp,tb)
+               rtmp1(1,1)=0.
+               call recont(vxlag,rtmp1)
+               call sub2(snaptmp(1,i,1),vxlag,n)
+            enddo
+
+            call pod(tb(1,nb+1),
+     $         eval,ug,snaptmp,1,ips,nb,ns,ifpb,'ops/gt2 ')
+
+            do ib=nb+1,nb*2
+               call opcopy(ub(1,ib),vb(1,ib),wb(1,ib),
+     $            uvwb(1,1,ib),uvwb(1,2,ib),uvwb(1,ldim,ib))
+            enddo
+
+            call snorm(tb(1,nb))
+         endif
 
          nb=nb*2
       endif
