@@ -2496,6 +2496,36 @@ c-----------------------------------------------------------------------
          enddo
          call add2(f,wk,n)
       endif
+c-----------------------------------------------------------------------
+      subroutine evalcflds(cfld,us0,ts0,mdim,ns)
+
+      ! evaluate convection field in the strong form
+
+      ! cfld := result of convection application
+      ! us0  := velocity fields
+      ! ts0  := scalar/vector advectee fields
+      ! mdim := dimension of ts0 at each point
+      ! ns   := number of convection fields to evaluate
+
+      include 'SIZE'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      common /scrkk3/ wk(lt,3)
+
+      real us0(lt,ldim,ns),ts0(lt,mdim,ns)
+      real cfld(lt,mdim,ns)
+
+      nv=lx1*ly1*lz1*nelv
+
+      do is=1,ns
+         do idim=1,mdim
+            call gradm1(wk(1,1),wk(1,2),wk(1,3),ts0(1,idim,is))
+            call col3(cfld(1,idim,is),us0(1,1,is),wk(1,1),nv)
+            call add2col2(cfld(1,idim,is),us0(1,2,is),wk(1,2),nv)
+            if (ldim.eq.3)
+     $         call add2col2(cfld(1,idim,is),us0(1,3,is),wk(1,3),nv)
+         enddo
+      enddo
 
       return
       end
