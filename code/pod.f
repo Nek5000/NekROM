@@ -122,23 +122,23 @@ c-----------------------------------------------------------------------
 
                call incomprn(vxlag,vylag,vzlag,prlag)
 
-               call copy(snaptmp(1,1,i),vxlag,n)
-               call copy(snaptmp(1,2,i),vylag,n)
-               if (ldim.eq.3) call copy(snaptmp(1,3,i),vzlag,n)
+               call copy(snapt(1,1,i),vxlag,n)
+               call copy(snapt(1,2,i),vylag,n)
+               if (ldim.eq.3) call copy(snapt(1,3,i),vzlag,n)
             enddo
 
             do i=1,ns
-               call pv2b(rtmp1,snaptmp(1,1,i),snaptmp(1,2,i),
-     $            snaptmp(1,ldim,i),ub,vb,wb)
+               call pv2b(rtmp1,snapt(1,1,i),snapt(1,2,i),
+     $            snapt(1,ldim,i),ub,vb,wb)
                rtmp1(1,1)=0.
                call reconv(vxlag,vylag,vzlag,rtmp1)
-               call sub2(snaptmp(1,1,i),vxlag,n)
-               call sub2(snaptmp(1,2,i),vylag,n)
-               if (ldim.eq.3) call sub2(snaptmp(1,3,i),vzlag,n)
+               call sub2(snapt(1,1,i),vxlag,n)
+               call sub2(snapt(1,2,i),vylag,n)
+               if (ldim.eq.3) call sub2(snapt(1,3,i),vzlag,n)
             enddo
 
             call pod(uvwb(1,1,nb+1),
-     $         eval,ug,snaptmp,ldim,ips,nb,ns,ifpb,'ops/gu2 ')
+     $         eval,ug,snapt,ldim,ips,nb,ns,ifpb,'ops/gu2 ')
 
             do ib=nb+1,nb*2
                call opcopy(ub(1,ib),vb(1,ib),wb(1,ib),
@@ -171,18 +171,18 @@ c-----------------------------------------------------------------------
                ifield=2
                call dsavg(vxlag)
 
-               call copy(snaptmp(1,i,1),vxlag,n)
+               call copy(snapt(1,i,1),vxlag,n)
             enddo
 
             do i=1,ns
-               call ps2b(rtmp1,snaptmp,tb)
+               call ps2b(rtmp1,snapt,tb)
                rtmp1(1,1)=0.
                call recont(vxlag,rtmp1)
-               call sub2(snaptmp(1,i,1),vxlag,n)
+               call sub2(snapt(1,i,1),vxlag,n)
             enddo
 
             call pod(tb(1,nb+1),
-     $         eval,ug,snaptmp,1,ips,nb,ns,ifpb,'ops/gt2 ')
+     $         eval,ug,snapt,1,ips,nb,ns,ifpb,'ops/gt2 ')
 
             do ib=nb+1,nb*2
                call opcopy(ub(1,ib),vb(1,ib),wb(1,ib),
