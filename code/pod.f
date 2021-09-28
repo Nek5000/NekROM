@@ -42,6 +42,30 @@ c-----------------------------------------------------------------------
          if (ifcomb.and.ifpb) call cnorm(ub,vb,wb,tb)
       endif
 
+      if (iaug.eq.2) then
+         n=lx1*ly1*lz1*nelv
+         call pod(uvwb(1,1,nb+1),eval,ug,us0,ldim,
+     $      'H10',nb,ns,ifpb,'ops/gu  ')
+
+         do i=nb+1,nb*2
+            do j=1,i-1
+               a=op_glsc2_wt(uvwb(1,1,j),uvwb(1,2,j),uvwb(1,ldim,j),
+     $                       uvwb(1,1,i),uvwb(1,2,i),uvwb(1,ldim,i),bm1)
+               call add2s2(uvwb(1,1,i),uvwb(1,1,j),-a,n)
+               call add2s2(uvwb(1,2,i),uvwb(1,2,j),-a,n)
+               if (ldim.eq.3) call add2s2(uvwb(1,3,i),uvwb(1,3,j),-a,n)
+            enddo
+            a=op_glsc2_wt(uvwb(1,1,i),uvwb(1,2,i),uvwb(1,ldim,i),
+     $                    uvwb(1,1,i),uvwb(1,2,i),uvwb(1,ldim,i),bm1)
+            a=1./sqrt(a)
+            call opcmult(uvwb(1,1,i),uvwb(1,2,i),uvwb(1,ldim,i),a,n)
+            call opcopy(ub(1,i),vb(1,i),wb(1,i),
+     $         uvwb(1,1,i),uvwb(1,2,i),uvwb(1,ldim,i))
+         enddo
+
+         nb=nb*2
+      endif
+
       if (iaug.eq.3) then
          call pv2k(uk,us0,ub,vb,wb)
 
