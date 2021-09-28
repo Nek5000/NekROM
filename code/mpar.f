@@ -505,6 +505,7 @@ c-----------------------------------------------------------------------
       call bcast(ubarrseq,isize)
       call bcast(tbarrseq,isize)
       call bcast(nintp,isize)
+      call bcast(iaug,isize)
 
       ! reals
 
