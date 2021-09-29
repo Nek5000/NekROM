@@ -7,6 +7,7 @@ c-----------------------------------------------------------------------
       include 'MOR'
       include 'SOLN'
       include 'MASS'
+      include 'TSTEP'
 
       if (nio.eq.0) write (6,*) 'inside setbases'
 
@@ -40,6 +41,107 @@ c-----------------------------------------------------------------------
          endif
 
          if (ifcomb.and.ifpb) call cnorm(ub,vb,wb,tb)
+      endif
+
+      if (iaug.eq.1) then
+         jfield=ifield
+         ifield=1
+         call pv2k(uk,us0,ub,vb,wb)
+         if (ifrom(1)) then
+            n=lx1*ly1*lz1*nelv
+
+            do i=1,ns
+               call copy(rtmp1(1,1),uk(0,i),nb+1)
+               call reconv(flucv(1,1,1),flucv(1,2,1),flucv(1,3,1),rtmp1)
+
+               call sub3(upup(1,1,1),flucv(1,1,1),us0(1,1,i),n)
+               call sub3(upup(1,2,1),flucv(1,2,1),us0(1,2,i),n)
+               if (ldim.eq.3)
+     $            call sub2(upup(1,3,1),flucv(1,3,1),us0(1,3,i),n)
+
+               call copy(flucv(1,1,1),upup(1,1,1),n)
+               call copy(flucv(1,2,1),upup(1,2,1),n)
+               if (ldim.eq.3) call copy(flucv(1,3,1),upup(1,3,1),n)
+
+               call evalcflds(vxlag,flucv,upup(1,1,1),1,1)
+               call evalcflds(vylag,flucv,upup(1,2,1),1,1)
+               if (ldim.eq.3) call evalcflds(
+     $            vzlag,flucv,upup(1,3,1),1,1)
+
+               call dsavg(vxlag)
+               call dsavg(vylag)
+               if (ldim.eq.3) call dsavg(vzlag)
+
+               call incomprn(vxlag,vylag,vzlag,prlag)
+
+               call copy(snapt(1,1,i),vxlag,n)
+               call copy(snapt(1,2,i),vylag,n)
+               if (ldim.eq.3) call copy(snapt(1,3,i),vzlag,n)
+
+               call pv2b(rtmp1,snapt(1,1,i),snapt(1,2,i),
+     $            snapt(1,ldim,i),ub,vb,wb)
+               rtmp1(1,1)=0.
+               call reconv(vxlag,vylag,vzlag,rtmp1)
+               call sub2(snapt(1,1,i),vxlag,n)
+               call sub2(snapt(1,2,i),vylag,n)
+               if (ldim.eq.3) call sub2(snapt(1,3,i),vzlag,n)
+            enddo
+
+            call pod(uvwb(1,1,nb+1),
+     $         eval,ug,snapt,ldim,ips,nb,ns,ifpb,'ops/gu2 ')
+
+            do ib=nb+1,nb*2
+               call opcopy(ub(1,ib),vb(1,ib),wb(1,ib),
+     $            uvwb(1,1,ib),uvwb(1,2,ib),uvwb(1,ldim,ib))
+            enddo
+
+            call vnorm(ub(1,nb),vb(1,nb),wb(1,nb))
+            call vnorm_(uvwb(1,1,nb))
+         endif
+
+         if (ifrom(2)) then
+            ifield=2
+            nv=lx1*ly1*lz1*nelv
+            nt=lx1*ly1*lz1*nelt
+
+            call ps2k(tk,ts0,tb)
+
+            do i=1,ns
+               call copy(rtmp1(1,1),tk(0,i),nb+1)
+               rtmp1(1,1)=0.
+               call recont(tlag,rtmp1)
+
+               call copy(rtmp1(1,1),uk(0,i),nb+1)
+               call reconv(flucv(1,1,1),flucv(1,2,1),flucv(1,3,1),rtmp1)
+
+               call sub3(upup,ts0(1,i),tlag,n)
+
+               call evalcflds(vxlag,flucv,upup,1,1)
+
+               ifield=2
+               call dsavg(vxlag)
+
+               call copy(snapt(1,i,1),vxlag,n)
+
+               call ps2b(rtmp1,snapt(1,i,1),tb)
+               rtmp1(1,1)=0.
+               call recont(vxlag,rtmp1)
+               call sub2(snapt(1,i,1),vxlag,n)
+            enddo
+
+            call pod(tb(1,nb+1),
+     $         eval,ug,snapt,1,ips,nb,ns,ifpb,'ops/gt2 ')
+
+            do ib=nb+1,nb*2
+               call opcopy(ub(1,ib),vb(1,ib),wb(1,ib),
+     $            uvwb(1,1,ib),uvwb(1,2,ib),uvwb(1,ldim,ib))
+            enddo
+
+            call snorm(tb(1,nb))
+         endif
+
+         ifield=jfield
+         nb=nb*2
       endif
 
       if (iaug.eq.2) then
@@ -86,6 +188,8 @@ c-----------------------------------------------------------------------
       endif
 
       if (iaug.eq.3) then
+         jfield=ifield
+         ifield=1
          call pv2k(uk,us0,ub,vb,wb)
          if (ifrom(1)) then
             n=lx1*ly1*lz1*nelv
@@ -104,7 +208,6 @@ c-----------------------------------------------------------------------
                if (ldim.eq.3) call evalcflds(
      $            vzlag,flucv,upup(1,3,1),1,1)
 
-               ifield=1
                call dsavg(vxlag)
                call dsavg(vylag)
                if (ldim.eq.3) call dsavg(vzlag)
@@ -114,9 +217,7 @@ c-----------------------------------------------------------------------
                call copy(snapt(1,1,i),vxlag,n)
                call copy(snapt(1,2,i),vylag,n)
                if (ldim.eq.3) call copy(snapt(1,3,i),vzlag,n)
-            enddo
 
-            do i=1,ns
                call pv2b(rtmp1,snapt(1,1,i),snapt(1,2,i),
      $            snapt(1,ldim,i),ub,vb,wb)
                rtmp1(1,1)=0.
@@ -139,6 +240,7 @@ c-----------------------------------------------------------------------
          endif
 
          if (ifrom(2)) then
+            ifield=2
             nv=lx1*ly1*lz1*nelv
             nt=lx1*ly1*lz1*nelt
 
@@ -179,6 +281,8 @@ c-----------------------------------------------------------------------
 
             call snorm(tb(1,nb))
          endif
+
+         ifield=jfield
 
          nb=nb*2
       endif
