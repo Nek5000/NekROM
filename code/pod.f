@@ -193,18 +193,22 @@ c-----------------------------------------------------------------------
       if (iaug.eq.3) then
          jfield=ifield
          ifield=1
-         call pv2k(uk,us0,ub,vb,wb)
          if (ifrom(1)) then
             n=lx1*ly1*lz1*nelv
 
             do i=1,ns
-               call copy(rtmp1(1,1),uk(0,i),nb+1)
+               call pv2b(
+     $            rtmp1,us0(1,1,i),us0(1,2,i),us0(1,ldim,i),ub,vb,wb)
                call reconv(flucv(1,1,1),flucv(1,2,1),flucv(1,3,1),rtmp1)
 
                call sub3(upup(1,1,1),flucv(1,1,1),us0(1,1,i),n)
                call sub3(upup(1,2,1),flucv(1,2,1),us0(1,2,i),n)
                if (ldim.eq.3)
-     $            call sub2(upup(1,3,1),flucv(1,3,1),us0(1,3,i),n)
+     $            call sub3(upup(1,3,1),flucv(1,3,1),us0(1,3,i),n)
+
+               call sub2(upup(1,1,1),ub,n)
+               call sub3(upup(1,2,1),vb,n)
+               if (ldim.eq.3) call sub3(upup(1,3,1),wb,n)
 
                call evalcflds(vxlag,flucv,upup(1,1,1),1,1)
                call evalcflds(vylag,flucv,upup(1,2,1),1,1)
@@ -247,17 +251,16 @@ c-----------------------------------------------------------------------
             nv=lx1*ly1*lz1*nelv
             nt=lx1*ly1*lz1*nelt
 
-            call ps2k(tk,ts0,tb)
-
             do i=1,ns
-               call copy(rtmp1(1,1),tk(0,i),nb+1)
-               rtmp1(1,1)=0.
+               call pv2b(rtmp1,ts0(1,i),tb)
                call recont(tlag,rtmp1)
 
-               call copy(rtmp1(1,1),uk(0,i),nb+1)
-               call reconv(flucv(1,1,1),flucv(1,2,1),flucv(1,3,1),rtmp1)
+               call ps2b(rtmp1,us0(1,1,i),us0(1,2,i),us0(1,3,i),tb)
+               call reconv(
+     $            flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1),rtmp1)
 
-               call sub3(upup,ts0(1,i),tlag,n)
+               call sub3(upup,tlag,ts0(1,i),n)
+               call sub2(upup,tb,n)
 
                call evalcflds(vxlag,flucv,upup,1,1)
 
@@ -265,9 +268,7 @@ c-----------------------------------------------------------------------
                call dsavg(vxlag)
 
                call copy(snapt(1,i,1),vxlag,n)
-            enddo
 
-            do i=1,ns
                call ps2b(rtmp1,snapt(1,i,1),tb)
                rtmp1(1,1)=0.
                call recont(vxlag,rtmp1)
@@ -276,11 +277,6 @@ c-----------------------------------------------------------------------
 
             call pod(tb(1,nb+1),
      $         eval,ug,snapt,1,ips,nb,ns,ifpb,'ops/gt2 ')
-
-            do ib=nb+1,nb*2
-               call opcopy(ub(1,ib),vb(1,ib),wb(1,ib),
-     $            uvwb(1,1,ib),uvwb(1,2,ib),uvwb(1,ldim,ib))
-            enddo
 
             call snorm(tb(1,nb))
          endif
