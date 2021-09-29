@@ -73,7 +73,7 @@ c     if (icount.le.2) then
                endif
             endif
             lu_time=lu_time+dnekclock()-ttime
-            call update_k(uk,tk)
+            call update_k(uk,ukp,tk,tkp)
          endif
 
          call setr_t(rhs(1,2),icount)
@@ -144,7 +144,7 @@ c     if (icount.le.2) then
                endif
             endif
             lu_time=lu_time+dnekclock()-ttime
-            call update_k(uk,tk)
+            call update_k(uk,ukp,tk,tkp)
          endif
 
          call setr_v(rhs(1,1),icount)
