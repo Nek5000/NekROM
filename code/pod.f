@@ -59,6 +59,10 @@ c-----------------------------------------------------------------------
                if (ldim.eq.3)
      $            call sub3(upup(1,3,1),flucv(1,3,1),us0(1,3,i),n)
 
+               call sub3(upup(1,1,1),ub,n)
+               call sub3(upup(1,2,1),vb,n)
+               if (ldim.eq.3) call sub3(upup(1,3,1),wb,n)
+
                call copy(flucv(1,1,1),upup(1,1,1),n)
                call copy(flucv(1,2,1),upup(1,2,1),n)
                if (ldim.eq.3) call copy(flucv(1,3,1),upup(1,3,1),n)
@@ -104,17 +108,16 @@ c-----------------------------------------------------------------------
             nv=lx1*ly1*lz1*nelv
             nt=lx1*ly1*lz1*nelt
 
-            call ps2k(tk,ts0,tb)
-
             do i=1,ns
-               call copy(rtmp1(1,1),tk(0,i),nb+1)
-               rtmp1(1,1)=0.
+               call ps2b(rtmp1,ts0(1,i),tb)
                call recont(tlag,rtmp1)
 
-               call copy(rtmp1(1,1),uk(0,i),nb+1)
+               call pv2b(
+     $            rtmp1,us0(1,1,i),us0(1,2,i),us0(1,ldim,i),ub,vb,wb)
                call reconv(flucv(1,1,1),flucv(1,2,1),flucv(1,3,1),rtmp1)
 
                call sub3(upup,ts0(1,i),tlag,n)
+               call add2(upup,tb,n)
 
                call evalcflds(vxlag,flucv,upup,1,1)
 
