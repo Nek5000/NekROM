@@ -493,6 +493,8 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
+      real uukp(0:nb,ns),ttkp(0:nb,ns)
+
       real ep
 
       call nekgsync
