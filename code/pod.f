@@ -46,12 +46,12 @@ c-----------------------------------------------------------------------
       if (iaug.eq.1) then
          jfield=ifield
          ifield=1
-         call pv2k(uk,us0,ub,vb,wb)
          if (ifrom(1)) then
             n=lx1*ly1*lz1*nelv
 
             do i=1,ns
-               call copy(rtmp1(1,1),uk(0,i),nb+1)
+               call pv2b(rtmp1,
+     $            us0(1,1,i),us0(1,2,i),us0(1,ldim,i),ub,vb,wb)
                call reconv(flucv(1,1,1),flucv(1,2,1),flucv(1,3,1),rtmp1)
 
                call sub3(upup(1,1,1),flucv(1,1,1),us0(1,1,i),n)
