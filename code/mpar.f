@@ -226,7 +226,7 @@ c-----------------------------------------------------------------------
       if (ifnd.eq.1) podrat=d_out
 
       call finiparser_getdbl(d_out,'pod:augment',ifnd)
-      if (ifnd.eq.1) iaug=d_out
+      if (ifnd.eq.1) iaug=nint(d_out)
 
       ! QOI
 

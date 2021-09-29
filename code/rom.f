@@ -959,6 +959,7 @@ c-----------------------------------------------------------------------
          write (6,*) 'mp_nplay      ',nplay
          write (6,*) 'mp_ifplay     ',ifplay
          write (6,*) 'mp_ifei       ',ifei
+         write (6,*) 'mp_iaug       ',iaug
          write (6,*) ' '
          write (6,*) 'mp_ifforce    ',ifforce
          write (6,*) 'mp_ifsource   ',ifsource
