@@ -91,24 +91,13 @@ c-----------------------------------------------------------------------
             n=lx1*ly1*lz1*nelv
 
             do i=1,ns
-               call copy(rtmp1(2,1),uk(1,i),nb)
-               rtmp1(1,1)=0.
-               call reconv(vxlag,vylag,vzlag,rtmp1)
-               call sub3(upup(1,1,1),us0(1,1,i),vxlag,n)
-               call sub3(upup(1,2,1),us0(1,2,i),vylag,n)
-               if (ldim.eq.3) call sub2(upup(1,3,1),us0(1,3,i),vzlag,n)
+               call copy(rtmp1(1,1),uk(0,i),nb+1)
+               call reconv(flucv(1,1,1),flucv(1,2,1),flucv(1,3,1),rtmp1)
 
-               call copy(flucv(1,1,1),upup(1,1,1),n)
-               call copy(flucv(1,2,1),upup(1,2,1),n)
-               if (ldim.eq.3) call copy(flucv(1,3,1),upup(1,3,1),n)
-
-               call add2(flucv(1,1,1),vxlag,n)
-               call add2(flucv(1,2,1),vylag,n)
-               if (ldim.eq.3) call add2(flucv(1,3,1),vzlag,n)
-
-               call add2(flucv(1,1,1),uvwb(1,1,0),n)
-               call add2(flucv(1,2,1),uvwb(1,2,0),n)
-               if (ldim.eq.3) call add2(flucv(1,3,1),uvwb(1,3,0),n)
+               call sub3(upup(1,1,1),flucv(1,1,1),us0(1,1,i),n)
+               call sub3(upup(1,2,1),flucv(1,2,1),us0(1,2,i),n)
+               if (ldim.eq.3)
+     $            call sub2(upup(1,3,1),flucv(1,3,1),us0(1,3,i),n)
 
                call evalcflds(vxlag,flucv,upup(1,1,1),1,1)
                call evalcflds(vylag,flucv,upup(1,2,1),1,1)
@@ -156,12 +145,11 @@ c-----------------------------------------------------------------------
             call ps2k(tk,ts0,tb)
 
             do i=1,ns
-               call copy(rtmp1(2,1),tk(1,i),nb)
+               call copy(rtmp1(1,1),tk(0,i),nb+1)
                rtmp1(1,1)=0.
                call recont(tlag,rtmp1)
 
-               call copy(rtmp1(2,1),uk(1,i),nb)
-               rtmp1(1,1)=1.
+               call copy(rtmp1(1,1),uk(0,i),nb+1)
                call reconv(flucv(1,1,1),flucv(1,2,1),flucv(1,3,1),rtmp1)
 
                call sub3(upup,ts0(1,i),tlag,n)
@@ -175,7 +163,7 @@ c-----------------------------------------------------------------------
             enddo
 
             do i=1,ns
-               call ps2b(rtmp1,snapt,tb)
+               call ps2b(rtmp1,snapt(1,i,1),tb)
                rtmp1(1,1)=0.
                call recont(vxlag,rtmp1)
                call sub2(snapt(1,i,1),vxlag,n)
