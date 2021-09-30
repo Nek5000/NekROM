@@ -448,7 +448,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine hyperpar
+      subroutine hyperpar(uuk,ttk)
 
       include 'SIZE'
       include 'MOR'
@@ -457,6 +457,7 @@ c-----------------------------------------------------------------------
 
       real ep
       real wk(nb)
+      real uuk(0:nb,ns),ttk(0:nb,ns)
 
       call nekgsync
       hpar_time=dnekclock()
@@ -475,8 +476,8 @@ c-----------------------------------------------------------------------
             call cfill(umax,-1.e9,nb)
             do j=1,ns
             do i=1,nb
-               if (uk(i,j).lt.umin(i)) umin(i)=uk(i,j)
-               if (uk(i,j).gt.umax(i)) umax(i)=uk(i,j)
+               if (uuk(i,j).lt.umin(i)) umin(i)=uuk(i,j)
+               if (uuk(i,j).gt.umax(i)) umax(i)=uuk(i,j)
             enddo
             enddo
             do j=1,nb                    ! compute hyper-parameter
@@ -510,8 +511,8 @@ c-----------------------------------------------------------------------
             call cfill(tmax,-1.e9,nb)
             do j=1,ns
             do i=1,nb
-               if (tk(i,j).lt.tmin(i)) tmin(i)=tk(i,j)
-               if (tk(i,j).gt.tmax(i)) tmax(i)=tk(i,j)
+               if (ttk(i,j).lt.tmin(i)) tmin(i)=ttk(i,j)
+               if (ttk(i,j).gt.tmax(i)) tmax(i)=ttk(i,j)
             enddo
             enddo
             do j=1,nb                    ! compute hyper-parameter
@@ -1271,99 +1272,6 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine trace
-
-      include 'SIZE'
-      include 'TSTEP'
-      include 'INPUT'
-      include 'SOLN'
-      include 'MASS'
-      include 'MOR'
-
-      parameter (lt=lx1*ly1*lz1*lelt)
-
-      common /scrtr/ ux(lt),uy(lt),uz(lt)
-
-      character*127 fmat
-
-      if (nid.eq.0) write (6,*) 'trace has been deprecated'
-      return
-
-      if (istep.eq.0) then
-c        call rom_init_params
-c        call rom_init_fields
-         call loadbases
-      else
-         if (istep.gt.lcs) then
-            if (nio.eq.0) write (6,*) 'WARNING: lcs <= nsteps'
-         else
-            if (ifheat) then
-               n=lx1*ly1*lz1*nelt
-               call sub3(ux,t,tb,n)
-               call ps2b(tk(0,istep),ux,uy,uz,ub,vb,wb)
-            endif
-            if (ifflow) then
-               call opsub3(ux,uy,uz,vx,vy,vz,ub,vb,wb)
-               call pv2b(uk(0,istep),ux,uy,uz,ub,vb,wb)
-            endif
-         endif
-      endif
-
-      if (istep.eq.nsteps) then
-      if (nio.eq.0) then
-         call blank(fmat,127)
-         write (fmat,2) nb+1
-         if (ifflow) then
-            open (unit=10,file='ops/utrace')
-            do i=1,min(lcs,nsteps)
-               write (10,fmat) (uk(j,i),j=0,nb)
-            enddo
-            close (unit=10)
-
-            call reconv(ux,uy,uz,uk(0,istep))
-            call outpost(vx,vy,vz,pr,t,'err')
-            call outpost(ux,uy,uz,pr,t,'err')
-            call opsub2(ux,uy,uz,vx,vy,vz)
-            call outpost(ux,uy,uz,pr,t,'err')
-
-            err=sqrt(op_glsc2_wt(ux,uy,uz,ux,uy,uz,bm1))
-            ul2=sqrt(op_glsc2_wt(vx,vy,vz,vx,vy,vz,bm1))
-            if (nio.eq.0) write (6,*) err,ul2,err/ul2,'err'
-         endif
-         if (ifheat) then
-            open (unit=10,file='ops/ttrace')
-            do i=1,min(lcs,nsteps)
-               write (10,fmat) (tk(j,i),j=0,nb)
-            enddo
-            close (unit=10)
-         endif
-      endif
-      endif
-
-    2 format ('(1p',i4,'e25.17)')
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine set_trace
-
-      include 'SIZE'
-      include 'MOR'
-
-      if (nio.eq.0) write (6,*) 'inside set_trace'
-
-      open (unit=10,file='ops/utrace')
-
-      if (nio.eq.0) write (6,*) ad_nsteps,lcs,nb
-      do i=1,min(ad_nsteps,lcs)
-         read (10,*) (uk(j,i),j=0,nb)
-      enddo
-
-      close (unit=10)
-
-      return
-      end
-c-----------------------------------------------------------------------
       subroutine diag(h,wt,wk,n)
 
       real h(n,n),wt(n,n),wk(n)
@@ -1636,7 +1544,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine projtoprerb(nocp)
+      subroutine projtoprerb(nocp,uuk,ttk)
 
       ! This subroutine is for p-greedy. It project the RB basis
       ! read in by loadbases onto space that is perpendicular to the
@@ -1653,35 +1561,37 @@ c-----------------------------------------------------------------------
 
       integer nocp
 
+      real uuk(0:nb,ns),ttk(0:nb,ns)
+
       n=lx1*ly1*lz1*nelt
 
       if (nio.eq.0) write (6,*) 'inside projtoprerb'
 
       ! project onto the previous RB space
       do j=1,ns
-      uk(0,j) = 1.
+      uuk(0,j) = 1.
       do i=1,nocp
          ww=vip(ub(1,i),vb(1,i),wb(1,i),ub(1,i),vb(1,i),wb(1,i))
          vv=vip(ub(1,i),vb(1,i),wb(1,i),
      $          us0(1,1,j),us0(1,2,j),us0(1,3,j))
-         uk(i,j) = vv/ww
+         uuk(i,j) = vv/ww
       enddo
       enddo
 
       do j=1,ns
-      tk(0,j) = 1.
+      ttk(0,j) = 1.
       do i=1,nocp
          ww=sip(tb(1,i),tb(1,i))
          vv=sip(tb(1,i),ts0(1,j))
-         tk(i,j) = vv/ww
+         ttk(i,j) = vv/ww
       enddo
       enddo
 
       ! project onto the space perpendicular to
       ! the previous RB space
       do i=1,ns
-         call reconv_wo0(vx,vy,vz,uk(0,i),nocp)
-         call recont_wo0(t,tk(0,i),nocp)
+         call reconv_wo0(vx,vy,vz,uuk(0,i),nocp)
+         call recont_wo0(t,ttk(0,i),nocp)
          if (ifrom(1)) then
             call sub2(us0(1,1,i),vx,n)
             call sub2(us0(1,2,i),vy,n)

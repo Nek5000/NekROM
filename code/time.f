@@ -73,7 +73,7 @@ c     if (icount.le.2) then
                endif
             endif
             lu_time=lu_time+dnekclock()-ttime
-            call update_k
+            call update_k(uk,ukp,tk,tkp)
          endif
 
          call setr_t(rhs(1,2),icount)
@@ -116,11 +116,6 @@ c     if (icount.le.2) then
          endif
 
          tsolve_time=tsolve_time+dnekclock()-ttime
-         if (nplay.gt.0) then
-            do i=1,nplay
-               rhs(i,2)=tk(i,ad_step)
-            enddo
-         endif
          endif
       endif
 
@@ -149,7 +144,7 @@ c     if (icount.le.2) then
                endif
             endif
             lu_time=lu_time+dnekclock()-ttime
-            call update_k
+            call update_k(uk,ukp,tk,tkp)
          endif
 
          call setr_v(rhs(1,1),icount)
@@ -193,11 +188,6 @@ c     if (icount.le.2) then
          endif
 
          solve_time=solve_time+dnekclock()-ttime
-         if (nplay.gt.0) then
-            do i=1,nplay
-               rhs(i,1)=uk(i,ad_step)
-            enddo
-         endif
       endif
 
       if (ifcomb) then
@@ -285,43 +275,6 @@ c-----------------------------------------------------------------------
          if (ifcdrag) call cdrag
          call cnuss
 c        call cubar
-      endif
-
-      if (ifplay.and.mod(ad_step,10).eq.0) then
-         do j=1,nb
-            if (nio.eq.0) write (6,2) ad_step,time,j,u(j),uk(j,ad_step)
-         enddo
-
-         call sub3(rtmp1,u(1),uk(1,ad_step),nb)
-         call mxm(bu,nb,rtmp1,nb,rtmp2,1)
-         err=vlsc2(rtmp2,rtmp1,nb)
-
-         call mxm(bu0,nb+1,u,nb+1,rtmp3,1)
-         sl2=vlsc2(rtmp3,u,nb+1)
-
-         rerr=err/sl2
-
-         if (nio.eq.0) write (6,1)
-     $      ad_step,time,err,sl2,rerr,nplay,nb,' errf'
-
-         err=0.
-         sl2=0.
-         if (nplay.ne.nb) then
-            do j=nplay+1,nb
-            do i=nplay+1,nb
-               err=err+rtmp1(i,1)*bu(i+(j-1)*nb)*rtmp1(j,1)
-               sl2=sl2+u(i)*bu(i+(j-1)*nb)*u(j)
-            enddo
-            enddo
-            err=sqrt(err)
-            sl2=sqrt(sl2)
-         endif
-
-         rerr=0.
-         if (sl2.ne.0.) rerr=err/sl2
-
-         if (nio.eq.0) write (6,1)
-     $      ad_step,time,err,sl2,rerr,nplay,nb,' err2'
       endif
 
       if (mod(ad_step,ad_iostep).eq.0) then
