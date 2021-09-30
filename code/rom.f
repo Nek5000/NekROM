@@ -249,8 +249,6 @@ c     call average_in_y
          call set_sigma
       endif
 
-      if (ifplay) call set_trace
-
       if (nio.eq.0) write (6,*) 'end range setup'
 
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ')
@@ -267,15 +265,20 @@ c     call average_in_y
       return
       end
 c-----------------------------------------------------------------------
-      subroutine asnap
+      subroutine asnap(uuk,ttk)
 
       ! averaging of coefficients obtained from snapshots
+
+      ! uuk := velocity coefficient set
+      ! ttk := velocity coefficient set
 
       include 'SIZE'
       include 'MOR'
       include 'AVG'
 
       common /scrasnap/ t1(0:lub)
+
+      real uuk(0:nb,ns),ttk(0:nb,ns)
 
       call nekgsync
       asnap_time=dnekclock()
@@ -297,7 +300,7 @@ c-----------------------------------------------------------------------
             call rzero(uvs,nb+1)
             do j=1,ns
                do i=0,nb
-                  uvs(i)=uvs(i)+(uk(i,j)-uas(i))**2
+                  uvs(i)=uvs(i)+(uuk(i,j)-uas(i))**2
                enddo
             enddo
             call cmult(uvs,s,nb+1)
@@ -311,7 +314,7 @@ c-----------------------------------------------------------------------
             call rzero(tvs,nb+1)
             do j=1,ns
                do i=0,nb
-                  tvs(i)=tvs(i)+(tk(i,j)-tas(i))**2
+                  tvs(i)=tvs(i)+(ttk(i,j)-tas(i))**2
                enddo
             enddo
             call cmult(tvs,s,nb+1)
@@ -438,12 +441,19 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine update_k
+      subroutine update_k(uuk,uukp,ttk,ttkp)
 
       ! update snapshot coefficients with transformation wt
 
+      ! uuk  := original velocity coefficient set
+      ! uukp := new velocity coefficient set
+      ! ttk  := original temperature coefficient set
+      ! ttkp := new temperature coefficient set
+
       include 'SIZE'
       include 'MOR'
+
+      real uuk(0:nb,ns),uukp(0:nb,ns),ttk(0:nb,ns),ttkp(0:nb,ns)
 
       if (nio.eq.0) write (6,*) 'begin update setup'
 
@@ -452,13 +462,13 @@ c-----------------------------------------------------------------------
 
       if (ifpod(1)) then
          do i=1,ns
-            call mxm(wt,nb,uk(1,i),nb,ukp(1,i),1)
+            call mxm(wt,nb,uuk(1,i),nb,uukp(1,i),1)
          enddo
       endif
 
       if (ifpod(2)) then
          do i=1,ns
-            call mxm(wt(1,2),nb,tk(1,i),nb,tkp(1,i),1)
+            call mxm(wt(1,2),nb,ttk(1,i),nb,ttkp(1,i),1)
          enddo
       endif
 
@@ -466,19 +476,24 @@ c-----------------------------------------------------------------------
       if (nio.eq.0) write (6,*) 'proj_time:',dnekclock()-proj_time
 
 c     call hyperpar
-      call update_hyper
+      call update_hyper(ukp,tkp)
 
       return
       end
 c-----------------------------------------------------------------------
-      subroutine update_hyper
+      subroutine update_hyper(uukp,ttkp)
 
       ! update hyper parameters
+
+      ! uukp := transformed velocity coefficient set
+      ! ttkp := transformed thermal coefficient set
 
       include 'SIZE'
       include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
+
+      real uukp(0:nb,ns),ttkp(0:nb,ns)
 
       real ep
 
@@ -495,8 +510,8 @@ c-----------------------------------------------------------------------
          call cfill(upmax,-1.e9,nb)
          do j=1,ns
          do i=1,nb
-            if (ukp(i,j).lt.upmin(i)) upmin(i)=ukp(i,j)
-            if (ukp(i,j).gt.upmax(i)) upmax(i)=ukp(i,j)
+            if (uukp(i,j).lt.upmin(i)) upmin(i)=uukp(i,j)
+            if (uukp(i,j).gt.upmax(i)) upmax(i)=uukp(i,j)
          enddo
          enddo
          do j=1,nb                    ! compute hyper-parameter
@@ -521,8 +536,8 @@ c-----------------------------------------------------------------------
          call cfill(tpmax,-1.e9,nb)
          do j=1,ns
          do i=1,nb
-            if (tkp(i,j).lt.tpmin(i)) tpmin(i)=tkp(i,j)
-            if (tkp(i,j).gt.tpmax(i)) tpmax(i)=tkp(i,j)
+            if (ttkp(i,j).lt.tpmin(i)) tpmin(i)=ttkp(i,j)
+            if (ttkp(i,j).gt.tpmax(i)) tpmax(i)=ttkp(i,j)
          enddo
          enddo
          do j=1,nb                    ! compute hyper-parameter
@@ -571,27 +586,18 @@ c-----------------------------------------------------------------------
       else if (rmode.eq.'ON '.or.rmode.eq.'ONB'.or.rmode.eq.'CP') then
          inquire (file='ops/uk',exist=ifexist)
          if (ifexist)
-     $      call read_mat_serial(uk,lb+1,ns,'ops/uk ',mb+1,ns,stmp,nid)
+     $      call read_mat_serial(uk,nb+1,ns,'ops/uk ',mb+1,ns,stmp,nid)
 
          inquire (file='ops/tk',exist=ifexist)
          if (ifexist)
-     $      call read_mat_serial(tk,lb+1,ns,'ops/tk ',mb+1,ns,stmp,nid)
+     $      call read_mat_serial(tk,nb+1,ns,'ops/tk ',mb+1,ns,stmp,nid)
       endif
 
-      if (ifpod(1)) then
-         do i=1,ns
-            call copy(ukp(0,i),uk(0,i),nb+1)
-         enddo
-      endif
+      if (ifpod(1)) call copy(ukp,uk,(nb+1)*ns)
+      if (ifpod(2)) call copy(tkp,tk,(nb+1)*ns)
 
-      if (ifpod(2)) then
-         do i=1,ns
-            call copy(tkp(0,i),tk(0,i),nb+1)
-         enddo
-      endif
-
-      call asnap
-      call hyperpar
+      call asnap(uk,tk)
+      call hyperpar(uk,tk)
 
       return
       end

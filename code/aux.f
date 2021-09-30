@@ -448,7 +448,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine hyperpar
+      subroutine hyperpar(uuk,ttk)
 
       include 'SIZE'
       include 'MOR'
@@ -457,6 +457,7 @@ c-----------------------------------------------------------------------
 
       real ep
       real wk(nb)
+      real uuk(0:nb,ns),ttk(0:nb,ns)
 
       call nekgsync
       hpar_time=dnekclock()
@@ -475,8 +476,8 @@ c-----------------------------------------------------------------------
             call cfill(umax,-1.e9,nb)
             do j=1,ns
             do i=1,nb
-               if (uk(i,j).lt.umin(i)) umin(i)=uk(i,j)
-               if (uk(i,j).gt.umax(i)) umax(i)=uk(i,j)
+               if (uuk(i,j).lt.umin(i)) umin(i)=uuk(i,j)
+               if (uuk(i,j).gt.umax(i)) umax(i)=uuk(i,j)
             enddo
             enddo
             do j=1,nb                    ! compute hyper-parameter
@@ -510,8 +511,8 @@ c-----------------------------------------------------------------------
             call cfill(tmax,-1.e9,nb)
             do j=1,ns
             do i=1,nb
-               if (tk(i,j).lt.tmin(i)) tmin(i)=tk(i,j)
-               if (tk(i,j).gt.tmax(i)) tmax(i)=tk(i,j)
+               if (ttk(i,j).lt.tmin(i)) tmin(i)=ttk(i,j)
+               if (ttk(i,j).gt.tmax(i)) tmax(i)=ttk(i,j)
             enddo
             enddo
             do j=1,nb                    ! compute hyper-parameter
@@ -1271,99 +1272,6 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine trace
-
-      include 'SIZE'
-      include 'TSTEP'
-      include 'INPUT'
-      include 'SOLN'
-      include 'MASS'
-      include 'MOR'
-
-      parameter (lt=lx1*ly1*lz1*lelt)
-
-      common /scrtr/ ux(lt),uy(lt),uz(lt)
-
-      character*127 fmat
-
-      if (nid.eq.0) write (6,*) 'trace has been deprecated'
-      return
-
-      if (istep.eq.0) then
-c        call rom_init_params
-c        call rom_init_fields
-         call loadbases
-      else
-         if (istep.gt.lcs) then
-            if (nio.eq.0) write (6,*) 'WARNING: lcs <= nsteps'
-         else
-            if (ifheat) then
-               n=lx1*ly1*lz1*nelt
-               call sub3(ux,t,tb,n)
-               call ps2b(tk(0,istep),ux,uy,uz,ub,vb,wb)
-            endif
-            if (ifflow) then
-               call opsub3(ux,uy,uz,vx,vy,vz,ub,vb,wb)
-               call pv2b(uk(0,istep),ux,uy,uz,ub,vb,wb)
-            endif
-         endif
-      endif
-
-      if (istep.eq.nsteps) then
-      if (nio.eq.0) then
-         call blank(fmat,127)
-         write (fmat,2) nb+1
-         if (ifflow) then
-            open (unit=10,file='ops/utrace')
-            do i=1,min(lcs,nsteps)
-               write (10,fmat) (uk(j,i),j=0,nb)
-            enddo
-            close (unit=10)
-
-            call reconv(ux,uy,uz,uk(0,istep))
-            call outpost(vx,vy,vz,pr,t,'err')
-            call outpost(ux,uy,uz,pr,t,'err')
-            call opsub2(ux,uy,uz,vx,vy,vz)
-            call outpost(ux,uy,uz,pr,t,'err')
-
-            err=sqrt(op_glsc2_wt(ux,uy,uz,ux,uy,uz,bm1))
-            ul2=sqrt(op_glsc2_wt(vx,vy,vz,vx,vy,vz,bm1))
-            if (nio.eq.0) write (6,*) err,ul2,err/ul2,'err'
-         endif
-         if (ifheat) then
-            open (unit=10,file='ops/ttrace')
-            do i=1,min(lcs,nsteps)
-               write (10,fmat) (tk(j,i),j=0,nb)
-            enddo
-            close (unit=10)
-         endif
-      endif
-      endif
-
-    2 format ('(1p',i4,'e25.17)')
-
-      return
-      end
-c-----------------------------------------------------------------------
-      subroutine set_trace
-
-      include 'SIZE'
-      include 'MOR'
-
-      if (nio.eq.0) write (6,*) 'inside set_trace'
-
-      open (unit=10,file='ops/utrace')
-
-      if (nio.eq.0) write (6,*) ad_nsteps,lcs,nb
-      do i=1,min(ad_nsteps,lcs)
-         read (10,*) (uk(j,i),j=0,nb)
-      enddo
-
-      close (unit=10)
-
-      return
-      end
-c-----------------------------------------------------------------------
       subroutine diag(h,wt,wk,n)
 
       real h(n,n),wt(n,n),wk(n)
@@ -1636,7 +1544,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine projtoprerb(nocp)
+      subroutine projtoprerb(nocp,uuk,ttk)
 
       ! This subroutine is for p-greedy. It project the RB basis
       ! read in by loadbases onto space that is perpendicular to the
@@ -1653,35 +1561,37 @@ c-----------------------------------------------------------------------
 
       integer nocp
 
+      real uuk(0:nb,ns),ttk(0:nb,ns)
+
       n=lx1*ly1*lz1*nelt
 
       if (nio.eq.0) write (6,*) 'inside projtoprerb'
 
       ! project onto the previous RB space
       do j=1,ns
-      uk(0,j) = 1.
+      uuk(0,j) = 1.
       do i=1,nocp
          ww=vip(ub(1,i),vb(1,i),wb(1,i),ub(1,i),vb(1,i),wb(1,i))
          vv=vip(ub(1,i),vb(1,i),wb(1,i),
      $          us0(1,1,j),us0(1,2,j),us0(1,3,j))
-         uk(i,j) = vv/ww
+         uuk(i,j) = vv/ww
       enddo
       enddo
 
       do j=1,ns
-      tk(0,j) = 1.
+      ttk(0,j) = 1.
       do i=1,nocp
          ww=sip(tb(1,i),tb(1,i))
          vv=sip(tb(1,i),ts0(1,j))
-         tk(i,j) = vv/ww
+         ttk(i,j) = vv/ww
       enddo
       enddo
 
       ! project onto the space perpendicular to
       ! the previous RB space
       do i=1,ns
-         call reconv_wo0(vx,vy,vz,uk(0,i),nocp)
-         call recont_wo0(t,tk(0,i),nocp)
+         call reconv_wo0(vx,vy,vz,uuk(0,i),nocp)
+         call recont_wo0(t,ttk(0,i),nocp)
          if (ifrom(1)) then
             call sub2(us0(1,1,i),vx,n)
             call sub2(us0(1,2,i),vy,n)
@@ -2421,6 +2331,81 @@ c-----------------------------------------------------------------------
       do i=0,m-1
          u(n-i)=u(n-i)*(1.0-wt*(m*1.0-i)/(m*1.0))
       enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine evalf(f,uu,tt,gnn,mdim,ifcnvc)
+
+      ! evaluate f, the time-derivative based on the current solution
+
+      ! f      := time-derivative of the solution tt
+      ! uu     := advection field
+      ! tt     := solution field
+      ! gnn    := inhomogeneous Neumann value field
+      ! mdim   := dimension of tt
+      ! ifcnvc := flag to evaluate the dealiased convection field
+
+      include 'SIZE'  ! dep: SOLN,MOR,INPUT,lt,ltd,ldim
+      include 'SOLN'  ! dep: vdiff,plag
+      include 'MOR'   ! dep: zeros
+      include 'INPUT' ! dep: cbc
+      include 'GEOM'  ! dep: area
+
+      parameter (lt=lx1*ly1*lz1*lelt,ltd=lxd*lyd*lzd*lelt)
+
+      common /scrns/ wk(lx1,ly1,lz1,lelt)
+      common /convect/ c1v(ltd),c2v(ltd),c3v(ltd),
+     $                 u1v(ltd),u2v(ltd),u3v(ltd)
+
+      real f(lt,mdim),uu(lt,ldim),tt(lt,mdim),gnn(lx1,ly1,lz1,lelt)
+      logical ifcnvc
+
+      if (ifcnvc) call setcnv_c(uu(1,1),uu(1,2),uu(1,ldim))
+
+      if (mdim.eq.ldim) then
+         n=lx1*ly1*lz1*nelv
+         call setcnv_u(tt(1,1),tt(1,2),tt(1,ldim))
+         call cc(f(1,idim),mdim)
+
+         do idim=1,mdim
+            call axhelm(wk,tt(1,idim),vdiff(1,1,1,1,1),zeros,1,1)
+            call add2(f(1,idim),wk,n)
+            call chsign(f(1,idim),n)
+         enddo
+
+         call incomprn(f(1,1),f(1,2),f(1,ldim),plag)
+      else
+         n=lx1*ly1*lz1*nelt
+         call rzero(f,n)
+
+         call setcnv_u1(tt)
+         call cc(f,1)
+
+         call axhelm(wk,tt,vdiff(1,1,1,1,2),zeros,2,1)
+         call add2(f,wk,n)
+         call chsign(f,n)
+
+         call rzero(wk,n)
+         do ie=1,nelt
+         do ifc=1,2*ldim
+            if (cbc(ifc,ie,2).eq.'f  ') then
+               call facind(kx1,kx2,ky1,ky2,kz1,kz2,lx1,ly1,lz1,ifc)
+               l=1
+               do iz=kz1,kz2
+               do iy=ky1,ky2
+               do ix=kx1,kx2
+                  wk(ix,iy,iz,ie)=wk(ix,iy,iz,ie)
+     $               +gnn(ix,iy,iz,ie)*area(l,1,ifc,ie)
+                  l=l+1
+               enddo
+               enddo
+               enddo
+            endif
+         enddo
+         enddo
+         call add2(f,wk,n)
+      endif
 
       return
       end
