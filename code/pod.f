@@ -9,6 +9,14 @@ c-----------------------------------------------------------------------
       include 'MASS'
       include 'TSTEP'
 
+      ! iaug = 1: Pi'Pi_incomprn {u' \cdot\nabla u'}
+      ! iaug = 2: H10 modes, orthonormalized
+      ! iaug = 3: Pi'Pi_incomprn {\tilde{u}\cdot\nabla u'}
+      ! iaug = 4: C-inner product on u'
+      ! iaug = 4: C-inner product on {\tilde{u}\cdot\nabla u'}
+      ! iaug = 5: f(\tilde{u})-augmentation
+      ! iaug = 5: f(u)-augmentation
+
       if (nio.eq.0) write (6,*) 'inside setbases'
 
       call nekgsync
