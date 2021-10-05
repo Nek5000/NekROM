@@ -2335,7 +2335,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine evalf(f,uu,tt,gnn,mdim,ifcnvc)
+      subroutine evalf(f,uu,tt,mdim,ifweak)
 
       ! evaluate f, the time-derivative based on the current solution
 
@@ -2344,81 +2344,76 @@ c-----------------------------------------------------------------------
       ! tt     := solution field
       ! gnn    := inhomogeneous Neumann value field
       ! mdim   := dimension of tt
-      ! ifcnvc := flag to evaluate the dealiased convection field
+      ! ifweak := flag to evaluate the terms in a weak sense
 
       include 'SIZE'  ! dep: SOLN,MOR,INPUT,lt,ltd,ldim
-      include 'SOLN'  ! dep: vdiff,plag
-      include 'MOR'   ! dep: zeros
-      include 'INPUT' ! dep: cbc
-      include 'GEOM'  ! dep: area
+
+      include 'TSTEP' ! dep: ifield
+      include 'MASS'  ! dep: bintm1
+      include 'SOLN'  ! dep: plag
 
       parameter (lt=lx1*ly1*lz1*lelt,ltd=lxd*lyd*lzd*lelt)
 
-      common /scrns/ wk(lx1,ly1,lz1,lelt)
+      common /scrns/ wk(lt,ldim)
       common /convect/ c1v(ltd),c2v(ltd),c3v(ltd),
      $                 u1v(ltd),u2v(ltd),u3v(ltd)
 
-      real f(lt,mdim),uu(lt,ldim),tt(lt,mdim),gnn(lx1,ly1,lz1,lelt)
-      logical ifcnvc
+      real f(lt,mdim),uu(lt,ldim),tt(lt,mdim)
+      logical ifweak
 
-      if (ifcnvc) call setcnv_c(uu(1,1),uu(1,2),uu(1,ldim))
+      nv=lx1*ly1*lz1*nelv
+      nt=lx1*ly1*lz1*nelt
 
-      if (mdim.eq.ldim) then
-         n=lx1*ly1*lz1*nelv
-         call setcnv_u(tt(1,1),tt(1,2),tt(1,ldim))
-         call cc(f(1,idim),mdim)
+      jfield=ifield
 
-         do idim=1,mdim
-            call axhelm(wk,tt(1,idim),vdiff(1,1,1,1,1),zeros,1,1)
-            call add2(f(1,idim),wk,n)
-            call chsign(f(1,idim),n)
-         enddo
+      ifield=1
+      n=nv
 
-         call incomprn(f(1,1),f(1,2),f(1,ldim),plag)
+      if (mdim.ne.ldim) ifield=2
+      if (mdim.ne.ldim) n=nt
+
+      call rzero(f,nt)
+
+      call evalcflds(f,uu,tt,mdim,1,ifweak)
+      call evalaflds(wk,tt,mdim,1,ifweak)
+
+      do idim=1,mdim
+         call chsign(f(1,idim),n)
+         call add2(f(1,idim),wk(1,idim),n)
+      enddo
+
+      if (ifweak) then
+         if (ifield.eq.1) then
+            call opbinv1(f(1,1),f(1,2),f(1,ldim),
+     $         f(1,1),f(1,2),f(1,ldim),1.)
+         else
+            call col2(f,tmask,n)
+            call dssum(f,lx1,ly1,lz1)
+            call col2(f,bintm1,n)
+         endif
       else
-         n=lx1*ly1*lz1*nelt
-         call rzero(f,n)
-
-         call setcnv_u1(tt)
-         call cc(f,1)
-
-         call axhelm(wk,tt,vdiff(1,1,1,1,2),zeros,2,1)
-         call add2(f,wk,n)
-         call chsign(f,n)
-
-         call rzero(wk,n)
-         do ie=1,nelt
-         do ifc=1,2*ldim
-            if (cbc(ifc,ie,2).eq.'f  ') then
-               call facind(kx1,kx2,ky1,ky2,kz1,kz2,lx1,ly1,lz1,ifc)
-               l=1
-               do iz=kz1,kz2
-               do iy=ky1,ky2
-               do ix=kx1,kx2
-                  wk(ix,iy,iz,ie)=wk(ix,iy,iz,ie)
-     $               +gnn(ix,iy,iz,ie)*area(l,1,ifc,ie)
-                  l=l+1
-               enddo
-               enddo
-               enddo
-            endif
+         do idim=1,mdim
+            call dsavg(f(1,idim))
          enddo
-         enddo
-         call add2(f,wk,n)
       endif
+
+      if (ifield.eq.1) call incomprn(f(1,1),f(1,2),f(1,ldim),plag)
+
+      ifield=jfield
 
       return
       end
 c-----------------------------------------------------------------------
-      subroutine evalcflds(cfld,us0,ts0,mdim,ns)
+      subroutine evalcflds(cfld,us0,ts0,mdim,ns,ifweak)
 
       ! evaluate convection field in the strong form
 
-      ! cfld := result of convection application
-      ! us0  := velocity fields
-      ! ts0  := scalar/vector advectee fields
-      ! mdim := dimension of ts0 at each point
-      ! ns   := number of convection fields to evaluate
+      ! cfld   := result of convection application
+      ! us0    := velocity fields
+      ! ts0    := scalar/vector advectee fields
+      ! mdim   := dimension of ts0 at each point
+      ! ns     := number of convection fields to evaluate
+      ! ifweak := weak form of the convection term
 
       include 'SIZE'
 
@@ -2428,17 +2423,121 @@ c-----------------------------------------------------------------------
       real us0(lt,ldim,ns),ts0(lt,mdim,ns)
       real cfld(lt,mdim,ns)
 
+      logical ifweak
+
       nv=lx1*ly1*lz1*nelv
 
-      do is=1,ns
+      if (ifweak) then
+         do is=1,ns
+            call setcnv_c(us0(1,1,is),us0(1,2,is),us0(1,ldim,is))
+
+            if (mdim.eq.ldim) then
+               call setcnv_u(ts0(1,1,is),ts0(1,2,is),ts0(1,ldim,is))
+            else
+               call setcnv_u1(tt)
+            endif
+
+            call cc(cfld(1,1,is),mdim)
+         enddo
+      else
+         do is=1,ns
+            do idim=1,mdim
+               call gradm1(wk(1,1),wk(1,2),wk(1,3),ts0(1,idim,is))
+               call col3(cfld(1,idim,is),us0(1,1,is),wk(1,1),nv)
+               call add2col2(cfld(1,idim,is),us0(1,2,is),wk(1,2),nv)
+               if (ldim.eq.3)
+     $            call add2col2(cfld(1,idim,is),us0(1,3,is),wk(1,3),nv)
+            enddo
+         enddo
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine evalaflds(afld,ts0,mdim,ns,ifweak)
+
+      ! evaluate convection field in the strong form
+
+      ! afld   := result of Laplacian application
+      ! ts0    := scalar/vector fields
+      ! mdim   := dimension of ts0 at each point
+      ! ns     := number of diffusion fields to evaluate
+      ! ifweak := weak form of the convection term
+
+      include 'SIZE'  ! dep: lt, etc.
+      include 'LMOR'  ! dep: lelm
+      include 'GEOM'  ! dep: area
+      include 'INPUT' ! dep: cbc
+      include 'SOLN'  ! dep: vdiff
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /scrkk3/ wk(lt,2),wk3(lx1,ly1,lz1,lelt)
+      common /morid/ ones(lx1*ly1*lz1*lelm),zeros(lx1*ly1*lz1*lelm)
+      common /morbc/ gn(lx1,ly1,lz1,lelt)
+
+      real ts0(lt,mdim,ns),afld(lt,mdim,ns)
+
+      logical ifweak
+
+      nv=lx1*ly1*lz1*nelv
+      nt=lx1*ly1*lz1*nelt
+
+      jfield=ifield
+      ifield=1
+      n=nv
+
+      if (mdim.ne.ldim) ifield=2
+      if (mdim.ne.ldim) n=nt
+
+      if (ifweak) then
+         do is=1,ns
+         do idim=1,mdim
+            call axhelm(afld(1,idim,is),ts0(1,idim,is),
+     $         vdiff(1,1,1,1,ifield),zeros,ifield,1)
+            call chsign(afld(1,idim,is),n)
+         enddo
+         enddo
+
+         if (ifield.eq.2) then
+            do is=1,ns
+               call rzero(wk3,n)
+               do ie=1,nelt
+               do ifc=1,2*ldim
+                  if (cbc(ifc,ie,2).eq.'f  ') then
+                     call facind(
+     $                  kx1,kx2,ky1,ky2,kz1,kz2,lx1,ly1,lz1,ifc)
+                     l=1
+                     do iz=kz1,kz2
+                     do iy=ky1,ky2
+                     do ix=kx1,kx2
+                        wk3(ix,iy,iz,ie)=wk3(ix,iy,iz,ie)
+     $                     +gn(ix,iy,iz,ie)*area(l,1,ifc,ie)
+                        l=l+1
+                     enddo
+                     enddo
+                     enddo
+                  endif
+               enddo
+               enddo
+               call add2(afld(1,1,is),wk3,n)
+            enddo
+         endif
+      else
+         do is=1,ns
          do idim=1,mdim
             call gradm1(wk(1,1),wk(1,2),wk(1,3),ts0(1,idim,is))
-            call col3(cfld(1,idim,is),us0(1,1,is),wk(1,1),nv)
-            call add2col2(cfld(1,idim,is),us0(1,2,is),wk(1,2),nv)
-            if (ldim.eq.3)
-     $         call add2col2(cfld(1,idim,is),us0(1,3,is),wk(1,3),nv)
+            call col2(wk(1,1),vdiff(1,1,1,1,ifield),n)
+            call col2(wk(1,2),vdiff(1,1,1,1,ifield),n)
+            if (ldim.eq.3) call col2(
+     $         wk(1,3),vdiff(1,1,1,1,ifield),n)
+
+            call divm1(afld(1,idim,is),wk(1,1),wk(1,2),wk(1,3))
          enddo
-      enddo
+         enddo
+      endif
+
+      ifield=jfield
 
       return
       end
