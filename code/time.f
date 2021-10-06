@@ -84,6 +84,7 @@ c     if (icount.le.2) then
             call mxm(wt(1,2),nb,rhs(1,2),nb,rhstmp(1),1)
             call mxm(hinv(1,2),nb,rhstmp(1),nb,rhs(1,2),1)
             if (ifdecpl) then
+            eps=1.e-3
             do i=1,nb
                if (rhs(i,2).gt.tpmax(i)) rhs(i,2)=tpmax(i)-tpdis(i)*eps
                if (rhs(i,2).lt.tpmin(i)) rhs(i,2)=tpmin(i)+tpdis(i)*eps
@@ -155,6 +156,7 @@ c     if (icount.le.2) then
             call mxm(wt,nb,rhs(1,1),nb,rhstmp(1),1)
             call mxm(hinv,nb,rhstmp(1),nb,rhs(1,1),1)
             if (ifdecpl) then
+            eps=1.e-3
             do i=1,nb
                if (rhs(i,1).gt.upmax(i)) rhs(i,1)=upmax(i)-updis(i)*eps
                if (rhs(i,1).lt.upmin(i)) rhs(i,1)=upmin(i)+updis(i)*eps
