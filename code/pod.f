@@ -228,11 +228,10 @@ c-----------------------------------------------------------------------
                call sub3(upup(1,2,1),vb,n)
                if (ldim.eq.3) call sub3(upup(1,3,1),wb,n)
 
-               call evalcflds(vxlag,flucv,upup(1,1,1),1,1)
-               call evalcflds(vylag,flucv,upup(1,2,1),1,1)
+               call evalcflds(vxlag,flucv,upup(1,1,1),1,1,ifweak)
+               call evalcflds(vylag,flucv,upup(1,2,1),1,1,ifweak)
                if (ldim.eq.3) call evalcflds(
-     $            vzlag,flucv,upup(1,3,1),1,1)
-
+     $            vzlag,flucv,upup(1,3,1),1,1,ifweak)
 
                if (ifweak) then
                   call opbinv1(vxlag,vylag,vzlag,
