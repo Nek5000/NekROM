@@ -223,6 +223,8 @@ c-----------------------------------------------------------------------
                if (ldim.eq.3) call evalcflds(
      $            vzlag,flucv,upup(1,3,1),1,1)
 
+               call opmask(vxlag,vylag,vzlag)
+
                call dsavg(vxlag)
                call dsavg(vylag)
                if (ldim.eq.3) call dsavg(vzlag)
