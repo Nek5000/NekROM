@@ -2434,7 +2434,7 @@ c-----------------------------------------------------------------------
             if (mdim.eq.ldim) then
                call setcnv_u(ts0(1,1,is),ts0(1,2,is),ts0(1,ldim,is))
             else
-               call setcnv_u1(tt)
+               call setcnv_u1(ts0)
             endif
 
             call cc(cfld(1,1,is),mdim)
