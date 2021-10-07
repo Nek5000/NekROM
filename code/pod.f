@@ -17,6 +17,10 @@ c-----------------------------------------------------------------------
       ! iaug = 5: f(\tilde{u})-augmentation
       ! iaug = 5: f(u)-augmentation
 
+      logical ifweak
+
+      ifweak=.true.
+
       if (nio.eq.0) write (6,*) 'inside setbases'
 
       call nekgsync
@@ -75,14 +79,20 @@ c-----------------------------------------------------------------------
                call copy(flucv(1,2,1),upup(1,2,1),n)
                if (ldim.eq.3) call copy(flucv(1,3,1),upup(1,3,1),n)
 
-               call evalcflds(vxlag,flucv,upup(1,1,1),1,1)
-               call evalcflds(vylag,flucv,upup(1,2,1),1,1)
+               call evalcflds(vxlag,flucv,upup(1,1,1),1,1,ifweak)
+               call evalcflds(vylag,flucv,upup(1,2,1),1,1,ifweak)
                if (ldim.eq.3) call evalcflds(
-     $            vzlag,flucv,upup(1,3,1),1,1)
+     $            vzlag,flucv,upup(1,3,1),1,1,ifweak)
 
-               call dsavg(vxlag)
-               call dsavg(vylag)
-               if (ldim.eq.3) call dsavg(vzlag)
+               if (ifweak) then
+                  call opbinv1(vxlag,vylag,vzlag,
+     $               vxlag,vylag,vzlag,1.)
+               else
+                  call dsavg(vxlag)
+                  call dsavg(vylag)
+                  if (ldim.eq.3) call dsavg(vzlag)
+                  call opmask(vxlag,vylag,vzlag)
+               endif
 
                call incomprn(vxlag,vylag,vzlag,prlag)
 
@@ -223,11 +233,16 @@ c-----------------------------------------------------------------------
                if (ldim.eq.3) call evalcflds(
      $            vzlag,flucv,upup(1,3,1),1,1)
 
-               call opmask(vxlag,vylag,vzlag)
 
-               call dsavg(vxlag)
-               call dsavg(vylag)
-               if (ldim.eq.3) call dsavg(vzlag)
+               if (ifweak) then
+                  call opbinv1(vxlag,vylag,vzlag,
+     $               vxlag,vylag,vzlag,1.)
+               else
+                  call dsavg(vxlag)
+                  call dsavg(vylag)
+                  if (ldim.eq.3) call dsavg(vzlag)
+                  call opmask(vxlag,vylag,vzlag)
+               endif
 
                call incomprn(vxlag,vylag,vzlag,prlag)
 
