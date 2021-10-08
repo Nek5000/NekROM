@@ -71,9 +71,9 @@ c-----------------------------------------------------------------------
                if (ldim.eq.3)
      $            call sub3(upup(1,3,1),flucv(1,3,1),us0(1,3,i),n)
 
-               call sub3(upup(1,1,1),ub,n)
-               call sub3(upup(1,2,1),vb,n)
-               if (ldim.eq.3) call sub3(upup(1,3,1),wb,n)
+               call sub2(upup(1,1,1),ub,n)
+               call sub2(upup(1,2,1),vb,n)
+               if (ldim.eq.3) call sub2(upup(1,3,1),wb,n)
 
                call copy(flucv(1,1,1),upup(1,1,1),n)
                call copy(flucv(1,2,1),upup(1,2,1),n)
