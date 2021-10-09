@@ -16,6 +16,7 @@ c-----------------------------------------------------------------------
       ! iaug = 5: C-inner product on {\tilde{u}\cdot\nabla u'}
       ! iaug = 6: f(\tilde{u})-augmentation
       ! iaug = 7: f(u)-augmentation
+      ! iaug = 8: c(zeta)zeta -augmentation
 
       logical ifweak,ifbug
 
@@ -493,6 +494,44 @@ c    $            snapt(1,ldim,i),ub,vb,wb)
 
          nb=nb*2
       endif
+
+      if (iaug.eq.8) then
+         jfield=ifield
+         ifield=1
+         if (ifrom(1)) then
+            n=lx1*ly1*lz1*nelv
+
+            do i=1,nb
+               call evalf(uvwb(1,1,i+nb),uvwb(1,1,i),uvwb(1,1,i),
+     $            ldim,.true.)
+            enddo
+
+            do ib=nb+1,nb*2
+            do jb=1,ib-1
+               prod=-op_glsc2_wt(
+     $            uvwb(1,1,ib),uvwb(1,2,ib),uvwb(1,ldim,ib),
+     $            uvwb(1,1,jb),uvwb(1,2,jb),uvwb(1,3,jb),bm1)
+
+               call add2s2(uvwb(1,1,ib),uvwb(1,1,jb),prod,n)
+               call add2s2(uvwb(1,2,ib),uvwb(1,2,jb),prod,n)
+               if (ldim.eq.3)
+     $            call add2s2(uvwb(1,3,ib),uvwb(1,3,jb),prod,n)
+            enddo
+            enddo
+
+            call vnorm_(uvwb(1,1,nb))
+
+            do ib=nb+1,nb*2
+               call opcopy(ub(1,ib),vb(1,ib),wb(1,ib),
+     $            uvwb(1,1,ib),uvwb(1,2,ib),uv2b(1,ldim,ib))
+            enddo
+         endif
+
+         ifield=jfield
+
+         nb=nb*2
+      endif
+
 
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
          call dump_bas
