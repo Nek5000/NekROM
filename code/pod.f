@@ -56,7 +56,7 @@ c-----------------------------------------------------------------------
          if (ifcomb.and.ifpb) call cnorm(ub,vb,wb,tb)
       endif
 
-      if (iaug.eq.1.and.not.ifbug) then
+      if (iaug.eq.1.and..not.ifbug) then
          jfield=ifield
          ifield=1
          if (ifrom(1)) then
@@ -176,7 +176,7 @@ c-----------------------------------------------------------------------
             do i=1,ns
 c              call pv2b(rtmp1,
 c    $            us0(1,1,i),us0(1,2,i),us0(1,ldim,i),ub,vb,wb)
-               call copy(rtmp1,uk(1+(lub+1)*(i-1),nb+1)
+               call copy(rtmp1,uk(1+(lub+1)*(i-1)),nb+1)
                call reconv(flucv(1,1,1),flucv(1,2,1),flucv(1,3,1),rtmp1)
 
                call sub3(upup(1,1,1),flucv(1,1,1),us0(1,1,i),n)
