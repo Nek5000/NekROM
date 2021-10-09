@@ -13,9 +13,9 @@ c-----------------------------------------------------------------------
       ! iaug = 2: H10 modes, orthonormalized
       ! iaug = 3: Pi'Pi_incomprn {\tilde{u}\cdot\nabla u'}
       ! iaug = 4: C-inner product on u'
-      ! iaug = 4: C-inner product on {\tilde{u}\cdot\nabla u'}
-      ! iaug = 5: f(\tilde{u})-augmentation
-      ! iaug = 5: f(u)-augmentation
+      ! iaug = 5: C-inner product on {\tilde{u}\cdot\nabla u'}
+      ! iaug = 6: f(\tilde{u})-augmentation
+      ! iaug = 7: f(u)-augmentation
 
       logical ifweak,ifbug
 
@@ -415,6 +415,72 @@ c    $            snapt(1,ldim,i),ub,vb,wb)
                rtmp1(1,1)=0.
                call recont(vxlag,rtmp1)
                call sub2(snapt(1,i,1),vxlag,n)
+            enddo
+
+            call pod(tb(1,nb+1),
+     $         eval,ug,snapt,1,ips,nb,ns,ifpb,'ops/gt2 ')
+
+            call snorm(tb(1,nb))
+         endif
+
+         ifield=jfield
+
+         nb=nb*2
+      endif
+
+      if (iaug.eq.7) then
+         jfield=ifield
+         ifield=1
+         if (ifrom(1)) then
+            n=lx1*ly1*lz1*nelv
+
+            do i=1,ns
+               call pv2b(rtmp1,
+     $            us0(1,1,i),us0(1,2,i),us0(1,ldim,i),ub,vb,wb)
+               call reconv(
+     $            snapt(1,1,i),snapt(1,2,i),snapt(1,ldim,i),rtmp1)
+               call evalf(flucv,snapt(1,1,i),snapt(1,1,i),ldim,.true.)
+
+               call pv2b(rtmp1,flucv,ub,vb,wb)
+               rtmp1(1,1)=0.
+               call reconv(vxlag,vylag,vzlag,rtmp1)
+               call sub3(snapt(1,1,i),flucv(1,1,1),vxlag,n)
+               call sub3(snapt(1,2,i),flucv(1,2,1),vylag,n)
+               if (ldim.eq.3)
+     $            call sub3(snapt(1,3,i),flucv(1,3,1),vzlag,n)
+            enddo
+
+            call pod(uvwb(1,1,nb+1),
+     $         eval,ug,snapt,ldim,ips,nb,ns,ifpb,'ops/gu2 ')
+
+            do ib=nb+1,nb*2
+               call opcopy(ub(1,ib),vb(1,ib),wb(1,ib),
+     $            uvwb(1,1,ib),uvwb(1,2,ib),uvwb(1,ldim,ib))
+            enddo
+
+            call vnorm(ub(1,nb),vb(1,nb),wb(1,nb))
+            call vnorm_(uvwb(1,1,nb))
+         endif
+
+         if (ifrom(2)) then
+            ifield=2
+            nv=lx1*ly1*lz1*nelv
+            nt=lx1*ly1*lz1*nelt
+
+            do i=1,ns
+               call ps2b(rtmp1,ts0(1,i),tb)
+               call recont(tlag,rtmp1)
+
+               call pv2b(rtmp1,
+     $            us0(1,1,i),us0(1,2,i),us0(1,3,i),ub,vb,wb)
+               call reconv(
+     $            flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1),rtmp1)
+               call evalf(fluct,flucv,tlag,1,.true.)
+
+               call ps2b(rtmp1,fluct,tb)
+               rtmp1(1,1)=0.
+               call recont(vxlag,rtmp1)
+               call sub3(snapt(1,i,1),fluct,vxlag,n)
             enddo
 
             call pod(tb(1,nb+1),
