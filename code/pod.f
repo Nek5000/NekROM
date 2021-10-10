@@ -502,20 +502,28 @@ c    $            snapt(1,ldim,i),ub,vb,wb)
             n=lx1*ly1*lz1*nelv
 
             do i=1,nb
-               call evalf(uvwb(1,1,i+nb),uvwb(1,1,i),uvwb(1,1,i),
-     $            ldim,.true.)
+c              call evalf(uvwb(1,1,i+nb),uvwb(1,1,i),uvwb(1,1,i),
+c    $            ldim,.true.)
+               call evalcflds(
+     $            uvwb(1,1,i+nb),uvwb(1,1,i),uvwb(1,1,i),ldim,1,.true.)
+
+               call opbinv1(uvwb(1,1,i),uvwb(1,2,i),uvwb(1,ldim,i),
+     $            uvwb(1,1,i),uvwb(1,2,i),uvwb(1,ldim,i),1.)
+
+               call incomprn(
+     $            uvwb(1,1,i),uvwb(1,2,i),uvwb(1,ldim,i),plag)
             enddo
 
             do ib=nb+1,nb*2
             do jb=1,ib-1
-               prod=-op_glsc2_wt(
+               scale=-op_glsc2_wt(
      $            uvwb(1,1,ib),uvwb(1,2,ib),uvwb(1,ldim,ib),
      $            uvwb(1,1,jb),uvwb(1,2,jb),uvwb(1,3,jb),bm1)
 
-               call add2s2(uvwb(1,1,ib),uvwb(1,1,jb),prod,n)
-               call add2s2(uvwb(1,2,ib),uvwb(1,2,jb),prod,n)
+               call add2s2(uvwb(1,1,ib),uvwb(1,1,jb),scale,n)
+               call add2s2(uvwb(1,2,ib),uvwb(1,2,jb),scale,n)
                if (ldim.eq.3)
-     $            call add2s2(uvwb(1,3,ib),uvwb(1,3,jb),prod,n)
+     $            call add2s2(uvwb(1,3,ib),uvwb(1,3,jb),scale,n)
             enddo
             enddo
 
