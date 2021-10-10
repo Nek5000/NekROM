@@ -2350,7 +2350,7 @@ c-----------------------------------------------------------------------
 
       include 'TSTEP' ! dep: ifield
       include 'MASS'  ! dep: bintm1
-      include 'SOLN'  ! dep: plag
+      include 'SOLN'  ! dep: prlag
 
       parameter (lt=lx1*ly1*lz1*lelt,ltd=lxd*lyd*lzd*lelt)
 
@@ -2397,7 +2397,7 @@ c-----------------------------------------------------------------------
          enddo
       endif
 
-      if (ifield.eq.1) call incomprn(f(1,1),f(1,2),f(1,ldim),plag)
+      if (ifield.eq.1) call incomprn(f(1,1),f(1,2),f(1,ldim),prlag)
 
       ifield=jfield
 

@@ -511,7 +511,7 @@ c    $            ldim,.true.)
      $            uvwb(1,1,i),uvwb(1,2,i),uvwb(1,ldim,i),1.)
 
                call incomprn(
-     $            uvwb(1,1,i),uvwb(1,2,i),uvwb(1,ldim,i),plag)
+     $            uvwb(1,1,i),uvwb(1,2,i),uvwb(1,ldim,i),prlag)
             enddo
 
             do ib=nb+1,nb*2
