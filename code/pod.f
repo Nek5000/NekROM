@@ -502,8 +502,6 @@ c    $            snapt(1,ldim,i),ub,vb,wb)
             n=lx1*ly1*lz1*nelv
 
             do i=1,nb
-c              call evalf(uvwb(1,1,i+nb),uvwb(1,1,i),uvwb(1,1,i),
-c    $            ldim,.true.)
                call evalcflds(
      $            uvwb(1,1,i+nb),uvwb(1,1,i),uvwb(1,1,i),ldim,1,.true.)
 
@@ -517,9 +515,16 @@ c    $            ldim,.true.)
 
             do ib=nb+1,nb*2
                do jb=1,ib-1
-                  sc=-op_glsc2_wt(
+                  sc1=-op_glsc2_wt(
      $               uvwb(1,1,ib),uvwb(1,2,ib),uvwb(1,ldim,ib),
      $               uvwb(1,1,jb),uvwb(1,2,jb),uvwb(1,ldim,jb),bm1)
+
+c                 sc2=op_glsc2_wt(
+c    $               uvwb(1,1,jb),uvwb(1,2,jb),uvwb(1,ldim,jb),
+c    $               uvwb(1,1,jb),uvwb(1,2,jb),uvwb(1,ldim,jb),bm1)
+
+                  sc=sc1
+c                 if (nio.eq.0) write (6,*) ib,jb,sc2,'sc2'
 
                   call add2s2(uvwb(1,1,ib),uvwb(1,1,jb),sc,n)
                   call add2s2(uvwb(1,2,ib),uvwb(1,2,jb),sc,n)
