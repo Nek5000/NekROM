@@ -531,7 +531,7 @@ c    $            ldim,.true.)
 
             do ib=nb+1,nb*2
                call opcopy(ub(1,ib),vb(1,ib),wb(1,ib),
-     $            uvwb(1,1,ib),uvwb(1,2,ib),uv2b(1,ldim,ib))
+     $            uvwb(1,1,ib),uvwb(1,2,ib),uvwb(1,ldim,ib))
             enddo
          endif
 
