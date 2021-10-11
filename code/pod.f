@@ -515,6 +515,8 @@ c    $            snapt(1,ldim,i),ub,vb,wb)
      $            uvwb(1,ldim,i+nb),prlag)
             enddo
 
+            if (ifcflow) call set0flow(uvwb(1,1,nb+1),nb)
+
             call vnorm_(uvwb(1,1,nb))
 
             do ib=nb+1,nb*2
@@ -536,6 +538,8 @@ c    $            snapt(1,ldim,i),ub,vb,wb)
                call evalf(
      $            uvwb(1,1,i+nb),uvwb(1,1,i),uvwb(1,1,i),ldim,.true.)
             enddo
+
+            if (ifcflow) call set0flow(uvwb(1,1,nb+1),nb)
 
             call vnorm_(uvwb(1,1,nb))
 
