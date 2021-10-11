@@ -134,6 +134,9 @@ c-----------------------------------------------------------------------
       call finiparser_getbool(i_out,'general:decoupled',ifnd)
       if (ifnd.eq.1) ifdecpl=i_out.eq.1
 
+      call finiparser_getbool(i_out,'general:cflow',ifnd)
+      if (ifnd.eq.1) ifcflow=i_out.eq.1
+
       ibuoy=0
 
       call finiparser_getdbl(d_out,'buoyancy:magnitude',ifnd)
@@ -548,6 +551,8 @@ c-----------------------------------------------------------------------
 
       call bcast(ifpb,lsize)
       call bcast(ifdecpl,lsize)
+
+      call bcast(ifcflow,lsize)
 
       call bcast(ifcp,lsize)
       call bcast(ifcore,lsize)

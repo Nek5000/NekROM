@@ -665,6 +665,7 @@ c-----------------------------------------------------------------------
 
       ifpart=.false.
       ifcintp=.false.
+      ifcflow=.false.
 
       ips='L2 '
       isolve=0
