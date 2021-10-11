@@ -2443,3 +2443,41 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine set0flow(uvwb,nb)
+
+      include 'SIZE'
+      include 'MASS'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real uvwb(lt,ldim,nb)
+
+      parameter (kx1=lx1,ky1=ly1,kz1=lz1,kx2=lx2,ky2=ly2,kz2=lz2)
+
+      common /cvflow_a/ vxc(kx1,ky1,kz1,lelv)
+     $                , vyc(kx1,ky1,kz1,lelv)
+     $                , vzc(kx1,ky1,kz1,lelv)
+     $                , prc(kx2,ky2,kz2,lelv)
+     $                , vdc(kx1*ky1*kz1*lelv,2)
+
+      common /cvflow_r/ flow_rate,base_flow,domain_length,xsec
+     $                , scale_vf(3)
+
+      nv=lx1*ly1*lz1*nelv
+
+      do ib=1,nb
+         current_flow=glsc2(uvwb(1,idirf,ib),bm1,nv)/domain_length
+         delta_flow = 0.-current_flow
+         scale = delta_flow/base_flow
+
+         call add2s2(uvwb(1,1,ib),vxc,scale,nv)
+         call add2s2(uvwb(1,2,ib),vyc,scale,nv)
+         if (ldim.eq.3) call add2s2(uvwb(1,3,ib),vzc,scale,nv)
+         if (nio.eq.0) write (6,1) ib,idirf,current_flow,base_flow
+      enddo
+
+    1 format (i8,i8,1p2e13.4,' set0flow')
+
+      return
+      end
+c-----------------------------------------------------------------------
