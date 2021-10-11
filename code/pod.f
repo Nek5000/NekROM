@@ -514,6 +514,8 @@ c    $            snapt(1,ldim,i),ub,vb,wb)
      $            uvwb(1,ldim,i+nb),prlag)
             enddo
 
+            call vnorm_(uvwb(1,1,nb))
+
             do ib=nb+1,nb*2
                call opcopy(ub(1,ib),vb(1,ib),wb(1,ib),
      $            uvwb(1,1,ib),uvwb(1,2,ib),uvwb(1,ldim,ib))
@@ -555,7 +557,7 @@ c    $            snapt(1,ldim,i),ub,vb,wb)
                call opcmult(uvwb(1,1,ib),uvwb(1,2,ib),uvwb(1,3,ib),sc)
             enddo
 
-c           call vnorm_(uvwb(1,1,nb))
+            call vnorm_(uvwb(1,1,nb))
 
             do ib=nb+1,nb*2
                call opcopy(ub(1,ib),vb(1,ib),wb(1,ib),
