@@ -535,8 +535,13 @@ c    $            snapt(1,ldim,i),ub,vb,wb)
          ifield=1
          if (ifrom(1)) then
             do i=1,nb
-               call evalf(
-     $            uvwb(1,1,i+nb),uvwb(1,1,i),uvwb(1,1,i),ldim,.true.)
+               call opcopy(flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1),
+     $            uvwb(1,1,i),uvwb(1,2,i),uvwb(1,ldim,i))
+               sc=sqrt(abs(eval(i)))
+               call opcmult(
+     $            flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1),sc)
+
+               call evalf(uvwb(1,1,i+nb),flucv,flucv,ldim,.true.)
             enddo
 
             if (ifcflow) call set0flow(uvwb(1,1,nb+1),nb,idirf)
