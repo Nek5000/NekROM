@@ -37,7 +37,7 @@ c-----------------------------------------------------------------------
          if (ifrom(1)) then
             call pod(
      $         uvwb(1,1,1),eval,ug,us0,ldim,ips,nb,ns,ifpb,'ops/gu  ')
-            if (ifcflow) call set0flow(uvwb(1,1,1),nb)
+            if (ifcflow) call set0flow(uvwb(1,1,1),nb,idirf)
             do ib=1,nb
                call opcopy(ub(1,ib),vb(1,ib),wb(1,ib),
      $            uvwb(1,1,ib),uvwb(1,2,ib),uvwb(1,ldim,ib))
@@ -515,7 +515,7 @@ c    $            snapt(1,ldim,i),ub,vb,wb)
      $            uvwb(1,ldim,i+nb),prlag)
             enddo
 
-            if (ifcflow) call set0flow(uvwb(1,1,nb+1),nb)
+            if (ifcflow) call set0flow(uvwb(1,1,nb+1),nb,idirf)
 
             call vnorm_(uvwb(1,1,nb))
 
@@ -539,7 +539,7 @@ c    $            snapt(1,ldim,i),ub,vb,wb)
      $            uvwb(1,1,i+nb),uvwb(1,1,i),uvwb(1,1,i),ldim,.true.)
             enddo
 
-            if (ifcflow) call set0flow(uvwb(1,1,nb+1),nb)
+            if (ifcflow) call set0flow(uvwb(1,1,nb+1),nb,idirf)
 
             call vnorm_(uvwb(1,1,nb))
 
