@@ -925,6 +925,8 @@ c-----------------------------------------------------------------------
       if (abs(uy).gt.max(abs(ux),abs(uz))) idirf=2
       if (abs(uz).gt.max(abs(ux),abs(uy))) idirf=3
 
+      if (nio.eq.0) write (6,*) idirf,ux,uy,uz,' idirf'
+
       return
       end
 c-----------------------------------------------------------------------
