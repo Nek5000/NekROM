@@ -2544,6 +2544,12 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine set0flow(uvwb,nb,idirf)
 
+      ! set the flow rate of velocity fields to be 0 in the idirf direction
+
+      ! uvwb  := velocity fields
+      ! nb    := total number of velocity fields
+      ! idirf := direction of flow (must be consistent with param(54))
+
       include 'SIZE'
       include 'MASS'
 
