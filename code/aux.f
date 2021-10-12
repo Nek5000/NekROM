@@ -2443,7 +2443,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine set0flow(uvwb,nb)
+      subroutine set0flow(uvwb,nb,idirf)
 
       include 'SIZE'
       include 'MASS'
