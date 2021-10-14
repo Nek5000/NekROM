@@ -4,7 +4,7 @@ c     Note: Keys have to be in capital letters
 c
       integer MORDICT_NKEYS
 
-      parameter (MORDICT_NKEYS = 57)
+      parameter (MORDICT_NKEYS = 58)
 
       character*132 mordictkey(MORDICT_NKEYS)
       data
@@ -19,49 +19,50 @@ c
      &  mordictkey(9) / 'GENERAL:TNEUBC' /
      &  mordictkey(10) / 'GENERAL:NPLAY' /
      &  mordictkey(11) / 'GENERAL:DECOUPLED' /
-     &  mordictkey(12) / 'POD' /
-     &  mordictkey(13) / 'POD:TYPE' /
-     &  mordictkey(14) / 'POD:MODE0' /
-     &  mordictkey(15) / 'POD:COMBINED' /
-     &  mordictkey(16) / 'POD:RATIO' /
-     &  mordictkey(17) / 'QOI' /
-     &  mordictkey(18) / 'QOI:FREQ' /
-     &  mordictkey(19) / 'QOI:TKE' /
-     &  mordictkey(20) / 'QOI:DRAG' /
-     &  mordictkey(21) / 'QOI:NU' /
-     &  mordictkey(22) / 'QOI:NINTP' /
-     &  mordictkey(23) / 'COPT' /
-     &  mordictkey(24) / 'COPT:MODE' /
-     &  mordictkey(25) / 'COPT:FIELD' /
-     &  mordictkey(26) / 'COPT:BARRIER' /
-     &  mordictkey(27) / 'COPT:BOXTOL' /
-     &  mordictkey(28) / 'COPT:VPAR0' /
-     &  mordictkey(29) / 'COPT:VNLOOP' /
-     &  mordictkey(30) / 'COPT:TPAR0' /
-     &  mordictkey(31) / 'COPT:TNLOOP' /
-     &  mordictkey(32) / 'FAST' /
-     &  mordictkey(33) / 'FAST:CEVAL' /
-     &  mordictkey(34) / 'FAST:HEVAL' /
-     &  mordictkey(35) / 'FORCING' /
-     &  mordictkey(36) / 'FORCING:BODY' /
-     &  mordictkey(37) / 'FORCING:SOURCE' /
-     &  mordictkey(38) / 'FORCING:BUOYANCY' /
-     &  mordictkey(39) / 'FILTER' /
-     &  mordictkey(40) / 'FILTER:LOCATION' /
-     &  mordictkey(41) / 'FILTER:TYPE' /
-     &  mordictkey(42) / 'FILTER:MODES' /
-     &  mordictkey(43) / 'FILTER:RADIUS' /
-     &  mordictkey(44) / 'BUOYANCY' /
-     &  mordictkey(45) / 'BUOYANCY:MAGNITUDE' /
-     &  mordictkey(46) / 'BUOYANCY:ANGLE' /
-     &  mordictkey(47) / 'BUOYANCY:GX' /
-     &  mordictkey(48) / 'BUOYANCY:GY' /
-     &  mordictkey(49) / 'BUOYANCY:GZ' /
-     &  mordictkey(50) / 'EI' /
-     &  mordictkey(51) / 'EI:MODE' /
-     &  mordictkey(52) / 'EI:EQN' /
-     &  mordictkey(53) / 'TENDEC' /
-     &  mordictkey(54) / 'TENDEC:MODE' /
-     &  mordictkey(55) / 'TENDEC:RANK' /
-     &  mordictkey(56) / 'TENDEC:CORE' /
-     &  mordictkey(57) / 'TENDEC:SKEW' /
+     &  mordictkey(12) / 'GENERAL:CFLOW' /
+     &  mordictkey(13) / 'POD' /
+     &  mordictkey(14) / 'POD:TYPE' /
+     &  mordictkey(15) / 'POD:MODE0' /
+     &  mordictkey(16) / 'POD:COMBINED' /
+     &  mordictkey(17) / 'POD:RATIO' /
+     &  mordictkey(18) / 'QOI' /
+     &  mordictkey(19) / 'QOI:FREQ' /
+     &  mordictkey(20) / 'QOI:TKE' /
+     &  mordictkey(21) / 'QOI:DRAG' /
+     &  mordictkey(22) / 'QOI:NU' /
+     &  mordictkey(23) / 'QOI:NINTP' /
+     &  mordictkey(24) / 'COPT' /
+     &  mordictkey(25) / 'COPT:MODE' /
+     &  mordictkey(26) / 'COPT:FIELD' /
+     &  mordictkey(27) / 'COPT:BARRIER' /
+     &  mordictkey(28) / 'COPT:BOXTOL' /
+     &  mordictkey(29) / 'COPT:VPAR0' /
+     &  mordictkey(30) / 'COPT:VNLOOP' /
+     &  mordictkey(31) / 'COPT:TPAR0' /
+     &  mordictkey(32) / 'COPT:TNLOOP' /
+     &  mordictkey(33) / 'FAST' /
+     &  mordictkey(34) / 'FAST:CEVAL' /
+     &  mordictkey(35) / 'FAST:HEVAL' /
+     &  mordictkey(36) / 'FORCING' /
+     &  mordictkey(37) / 'FORCING:BODY' /
+     &  mordictkey(38) / 'FORCING:SOURCE' /
+     &  mordictkey(39) / 'FORCING:BUOYANCY' /
+     &  mordictkey(40) / 'FILTER' /
+     &  mordictkey(41) / 'FILTER:LOCATION' /
+     &  mordictkey(42) / 'FILTER:TYPE' /
+     &  mordictkey(43) / 'FILTER:MODES' /
+     &  mordictkey(44) / 'FILTER:RADIUS' /
+     &  mordictkey(45) / 'BUOYANCY' /
+     &  mordictkey(46) / 'BUOYANCY:MAGNITUDE' /
+     &  mordictkey(47) / 'BUOYANCY:ANGLE' /
+     &  mordictkey(48) / 'BUOYANCY:GX' /
+     &  mordictkey(49) / 'BUOYANCY:GY' /
+     &  mordictkey(50) / 'BUOYANCY:GZ' /
+     &  mordictkey(51) / 'EI' /
+     &  mordictkey(52) / 'EI:MODE' /
+     &  mordictkey(53) / 'EI:EQN' /
+     &  mordictkey(54) / 'TENDEC' /
+     &  mordictkey(55) / 'TENDEC:MODE' /
+     &  mordictkey(56) / 'TENDEC:RANK' /
+     &  mordictkey(57) / 'TENDEC:CORE' /
+     &  mordictkey(58) / 'TENDEC:SKEW' /
