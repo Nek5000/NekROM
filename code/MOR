@@ -118,8 +118,8 @@ c     parameters and common blocks for MOR
       common /moripar/ ad_nsteps,ad_iostep,ad_step,ad_qstep,inus,
      $                 navg_step,mb,nb,nplay,nintp
 
-      common /morivars/ i0,j0,k0,i1,j1,k1,ns,nskip,navg,ncloc,npr,npart,
-     $                  isolve,ic1,ic2,jc1,jc2,kc1,kc2,idirf
+      common /morivars/ i0,j0,k0,i1,j1,k1,nns,ns,nskip,navg,ncloc,npr,
+     $                  npart,isolve,ic1,ic2,jc1,jc2,kc1,kc2,idirf
 
       common /morlu/ fluv(lub**2),flut(lub**2)
       common /morilu/ irv(lub),icv(lub),irt(lub),ict(lub),ipiv(lub)

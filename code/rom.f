@@ -586,11 +586,11 @@ c-----------------------------------------------------------------------
       else if (rmode.eq.'ON '.or.rmode.eq.'ONB'.or.rmode.eq.'CP') then
          inquire (file='ops/uk',exist=ifexist)
          if (ifexist)
-     $      call read_mat_serial(uk,nb+1,ns,'ops/uk ',mb+1,ns,stmp,nid)
+     $      call read_mat_serial(uk,nb+1,ns,'ops/uk ',mb+1,nns,stmp,nid)
 
          inquire (file='ops/tk',exist=ifexist)
          if (ifexist)
-     $      call read_mat_serial(tk,nb+1,ns,'ops/tk ',mb+1,ns,stmp,nid)
+     $      call read_mat_serial(tk,nb+1,ns,'ops/tk ',mb+1,nns,stmp,nid)
       endif
 
       if (ifpod(1)) call copy(ukp,uk,(nb+1)*ns)
@@ -1050,6 +1050,8 @@ c-----------------------------------------------------------------------
 
          call read_fields(
      $      us0,prs,ts0,ns,nskip,ifreads,timek,fname1,.true.)
+         rtmp1(1,1)=1.0*ns
+         call dump_serial(rtmp1(1,1),1,'ops/ns ',nid)
 
          fname1='avg.list'
          inquire (file=fname1,exist=alist)
