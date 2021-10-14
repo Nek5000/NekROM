@@ -56,7 +56,8 @@ c-----------------------------------------------------------------------
             n=lx1*ly1*lz1*nelv
 
             do i=1,ns
-               call pv2b(rtmp1,us0(1,1,i),us0(1,2,i),us0(1,ldim,i))
+               call pv2b(rtmp1,us0(1,1,i),us0(1,2,i),us0(1,ldim,i),
+     $            ub,vb,wb)
                call reconv(
      $            uvwb(1,1,nb+1),uvwb(1,2,nb+1),uvwb(1,ldim,nb+1),rtmp1)
 
@@ -102,7 +103,8 @@ c-----------------------------------------------------------------------
             n=lx1*ly1*lz1*nelv
 
             do i=1,ns
-               call pv2b(rtmp1,us0(1,1,i),us0(1,2,i),us0(1,ldim,i))
+               call pv2b(rtmp1,us0(1,1,i),us0(1,2,i),us0(1,ldim,i),
+     $            ub,vb,wb)
                call reconv(
      $            uvwb(1,1,nb+1),uvwb(1,2,nb+1),uvwb(1,ldim,nb+1),rtmp1)
 
@@ -143,7 +145,8 @@ c-----------------------------------------------------------------------
                call opcopy(flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1),
      $            us0(1,1,i),us0(1,2,i),us0(1,ldim,i))
                call pv2b(
-     $            rtmp1,flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1))
+     $            rtmp1,flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1),
+     $            ub,vb,wb)
                call reconv(
      $            flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1),rtmp1)
                call evalf(snapt(1,1,i),flucv,flucv,ldim,.true.)
