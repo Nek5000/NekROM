@@ -358,6 +358,9 @@ c-----------------------------------------------------------------------
       ifpo=iftmp2
       ifto=iftmp3
 
+      rtmp1(1,1)=nb*1.
+      call dump_serial(rtmp1(1,1),1,'ops/nb ',nid)
+
       call nekgsync
       if (nio.eq.0) write (6,*) 'dbas_time:',dnekclock()-dbas_time
 
