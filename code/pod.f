@@ -76,6 +76,14 @@ c-----------------------------------------------------------------------
 
                call incomprn(snapt(1,1,1),snapt(1,2,i),
      $            snapt(1,ldim,i),prlag)
+               call pv2b(
+     $            rtmp1,snapt(1,1,i),snapt(1,2,i),snapt(1,ldim,i),
+     $            ub,vb,wb)
+               rtmp1(1,1)=0.
+               call reconv(
+     $            flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1),rtmp1)
+               call opsub2(snapt(1,1,i),snapt(1,2,i),snapt(1,ldim,i),
+     $            flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1))
             enddo
 
             call pod(uvwb(1,1,nb+1),
@@ -117,6 +125,14 @@ c-----------------------------------------------------------------------
 
                call incomprn(snapt(1,1,1),snapt(1,2,i),
      $            snapt(1,ldim,i),prlag)
+               call pv2b(
+     $            rtmp1,snapt(1,1,i),snapt(1,2,i),snapt(1,ldim,i),
+     $            ub,vb,wb)
+               rtmp1(1,1)=0.
+               call reconv(
+     $            flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1),rtmp1)
+               call opsub2(snapt(1,1,i),snapt(1,2,i),snapt(1,ldim,i),
+     $            flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1))
             enddo
 
             call pod(uvwb(1,1,nb+1),
@@ -150,6 +166,14 @@ c-----------------------------------------------------------------------
                call reconv(
      $            flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1),rtmp1)
                call evalf(snapt(1,1,i),flucv,flucv,ldim,.true.)
+               call pv2b(
+     $            rtmp1,snapt(1,1,i),snapt(1,2,i),snapt(1,ldim,i),
+     $            ub,vb,wb)
+               rtmp1(1,1)=0.
+               call reconv(
+     $            flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1),rtmp1)
+               call opsub2(snapt(1,1,i),snapt(1,2,i),snapt(1,ldim,i),
+     $            flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1))
             enddo
             call pod(uvwb(1,1,nb+1),
      $         eval,ug,snapt,ldim,ips,nb,ns,ifpb,'ops/gu2 ')
