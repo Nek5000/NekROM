@@ -72,7 +72,7 @@ c-----------------------------------------------------------------------
 
                call opbinv1(
      $            snapt(1,1,i),snapt(1,2,i),snapt(1,ldim,i),
-     $            flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1))
+     $            flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1),1.)
 
                call incomprn(snapt(1,1,1),snapt(1,2,i),
      $            snapt(1,ldim,i),prlag)
@@ -113,7 +113,7 @@ c-----------------------------------------------------------------------
 
                call opbinv1(
      $            snapt(1,1,i),snapt(1,2,i),snapt(1,ldim,i),
-     $            flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1))
+     $            flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1),1.)
 
                call incomprn(snapt(1,1,1),snapt(1,2,i),
      $            snapt(1,ldim,i),prlag)
