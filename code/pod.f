@@ -109,6 +109,7 @@ c-----------------------------------------------------------------------
          ifield=1
          n=lx1*ly1*lz1*nelv
          if (ifrom(1)) then
+            call opzero(upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1))
             do i=1,ns
                call opcopy(flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1),
      $            us0(1,1,i),us0(1,2,i),us0(1,ldim,i))
@@ -122,7 +123,7 @@ c-----------------------------------------------------------------------
                call reconv(
      $            flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1),rtmp1)
 
-               call evalf(snapt(1,1,i),upup,flucv,ldim,.true.)
+               call evalf(snapt(1,1,i),upup,flucv,upvp,ldim,.true.)
                call pv2b(
      $            rtmp1,snapt(1,1,i),snapt(1,2,i),snapt(1,ldim,i),
      $            ub,vb,wb)
@@ -203,6 +204,7 @@ c-----------------------------------------------------------------------
          jfield=ifield
          ifield=1
          if (ifrom(1)) then
+            call opzero(upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1))
             do i=1,ns
                call opcopy(flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1),
      $            us0(1,1,i),us0(1,2,i),us0(1,ldim,i))
@@ -211,7 +213,7 @@ c-----------------------------------------------------------------------
      $            ub,vb,wb)
                call reconv(
      $            flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1),rtmp1)
-               call evalf(snapt(1,1,i),flucv,flucv,ldim,.true.)
+               call evalf(snapt(1,1,i),flucv,flucv,upvp,ldim,.true.)
                call pv2b(
      $            rtmp1,snapt(1,1,i),snapt(1,2,i),snapt(1,ldim,i),
      $            ub,vb,wb)
@@ -243,6 +245,7 @@ c-----------------------------------------------------------------------
          jfield=ifield
          ifield=1
          if (ifrom(1)) then
+            call opzero(upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1))
             do i=1,nb
                call opcopy(flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1),
      $            uvwb(1,1,i),uvwb(1,2,i),uvwb(1,ldim,i))
@@ -250,7 +253,7 @@ c-----------------------------------------------------------------------
                call opcmult(
      $            flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1),sc)
 
-               call evalf(uvwb(1,1,i+nb),flucv,flucv,ldim,.true.)
+               call evalf(uvwb(1,1,i+nb),flucv,flucv,upvp,ldim,.true.)
             enddo
 
             if (ifcflow) call set0flow(uvwb(1,1,nb+1),nb,idirf)
