@@ -2335,13 +2335,14 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine evalf(f,uu,tt,mdim,ifweak)
+      subroutine evalf(f,uu,tt,g,mdim,ifweak)
 
       ! evaluate f, the time-derivative based on the current solution
 
       ! f      := time-derivative of the solution tt
       ! uu     := advection field
       ! tt     := solution field
+      ! g      := forcing field
       ! gnn    := inhomogeneous Neumann value field
       ! mdim   := dimension of tt
       ! ifweak := flag to evaluate the terms in a weak sense
@@ -2358,7 +2359,7 @@ c-----------------------------------------------------------------------
       common /convect/ c1v(ltd),c2v(ltd),c3v(ltd),
      $                 u1v(ltd),u2v(ltd),u3v(ltd)
 
-      real f(lt,mdim),uu(lt,ldim),tt(lt,mdim)
+      real f(lt,mdim),uu(lt,ldim),tt(lt,mdim),g(lt,mdim)
       logical ifweak
 
       nv=lx1*ly1*lz1*nelv
@@ -2380,6 +2381,7 @@ c-----------------------------------------------------------------------
       do idim=1,mdim
          call chsign(f(1,idim),n)
          call add2(f(1,idim),wk(1,idim),n)
+         call add2(f(1,idim),g(1,idim),n)
       enddo
 
       if (ifweak) then
