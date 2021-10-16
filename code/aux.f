@@ -2406,7 +2406,7 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine evalcflds(cfld,us0,ts0,mdim,ns,ifweak)
 
-      ! evaluate convection field in the strong form
+      ! evaluate convection field
 
       ! cfld   := result of convection application
       ! us0    := velocity fields
@@ -2456,13 +2456,13 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine evalaflds(afld,ts0,mdim,ns,ifweak)
 
-      ! evaluate convection field in the strong form
+      ! evaluate diffusion field
 
       ! afld   := result of Laplacian application
       ! ts0    := scalar/vector fields
       ! mdim   := dimension of ts0 at each point
       ! ns     := number of diffusion fields to evaluate
-      ! ifweak := weak form of the convection term
+      ! ifweak := weak form of the diffusion term
 
       include 'SIZE'  ! dep: lt, etc.
       include 'LMOR'  ! dep: lelm
