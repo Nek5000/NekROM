@@ -2500,26 +2500,27 @@ c-----------------------------------------------------------------------
          enddo
 
          if (ifield.eq.2) then
+            call rzero(wk3,n)
+            do ie=1,nelt
+            do ifc=1,2*ldim
+               if (cbc(ifc,ie,2).eq.'f  ') then
+                  call facind(
+     $               kx1,kx2,ky1,ky2,kz1,kz2,lx1,ly1,lz1,ifc)
+                  l=1
+                  do iz=kz1,kz2
+                  do iy=ky1,ky2
+                  do ix=kx1,kx2
+                     wk3(ix,iy,iz,ie)=wk3(ix,iy,iz,ie)
+     $                  +gn(ix,iy,iz,ie)*area(l,1,ifc,ie)
+                     l=l+1
+                  enddo
+                  enddo
+                  enddo
+               endif
+            enddo
+            enddo
+
             do is=1,ns
-               call rzero(wk3,n)
-               do ie=1,nelt
-               do ifc=1,2*ldim
-                  if (cbc(ifc,ie,2).eq.'f  ') then
-                     call facind(
-     $                  kx1,kx2,ky1,ky2,kz1,kz2,lx1,ly1,lz1,ifc)
-                     l=1
-                     do iz=kz1,kz2
-                     do iy=ky1,ky2
-                     do ix=kx1,kx2
-                        wk3(ix,iy,iz,ie)=wk3(ix,iy,iz,ie)
-     $                     +gn(ix,iy,iz,ie)*area(l,1,ifc,ie)
-                        l=l+1
-                     enddo
-                     enddo
-                     enddo
-                  endif
-               enddo
-               enddo
                call add2(afld(1,1,is),wk3,n)
             enddo
          endif
