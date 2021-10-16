@@ -2406,7 +2406,7 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine evalcflds(cfld,us0,ts0,mdim,ns,ifweak)
 
-      ! evaluate convection field in the strong form
+      ! evaluate convection field
 
       ! cfld   := result of convection application
       ! us0    := velocity fields
@@ -2434,7 +2434,7 @@ c-----------------------------------------------------------------------
             if (mdim.eq.ldim) then
                call setcnv_u(ts0(1,1,is),ts0(1,2,is),ts0(1,ldim,is))
             else
-               call setcnv_u1(ts0)
+               call setcnv_u1(ts0(1,1,is))
             endif
 
             call cc(cfld(1,1,is),mdim)
@@ -2456,13 +2456,13 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine evalaflds(afld,ts0,mdim,ns,ifweak)
 
-      ! evaluate convection field in the strong form
+      ! evaluate diffusion field
 
       ! afld   := result of Laplacian application
       ! ts0    := scalar/vector fields
       ! mdim   := dimension of ts0 at each point
       ! ns     := number of diffusion fields to evaluate
-      ! ifweak := weak form of the convection term
+      ! ifweak := weak form of the diffusion term
 
       include 'SIZE'  ! dep: lt, etc.
       include 'LMOR'  ! dep: lelm
@@ -2500,26 +2500,27 @@ c-----------------------------------------------------------------------
          enddo
 
          if (ifield.eq.2) then
+            call rzero(wk3,n)
+            do ie=1,nelt
+            do ifc=1,2*ldim
+               if (cbc(ifc,ie,2).eq.'f  ') then
+                  call facind(
+     $               kx1,kx2,ky1,ky2,kz1,kz2,lx1,ly1,lz1,ifc)
+                  l=1
+                  do iz=kz1,kz2
+                  do iy=ky1,ky2
+                  do ix=kx1,kx2
+                     wk3(ix,iy,iz,ie)=wk3(ix,iy,iz,ie)
+     $                  +gn(ix,iy,iz,ie)*area(l,1,ifc,ie)
+                     l=l+1
+                  enddo
+                  enddo
+                  enddo
+               endif
+            enddo
+            enddo
+
             do is=1,ns
-               call rzero(wk3,n)
-               do ie=1,nelt
-               do ifc=1,2*ldim
-                  if (cbc(ifc,ie,2).eq.'f  ') then
-                     call facind(
-     $                  kx1,kx2,ky1,ky2,kz1,kz2,lx1,ly1,lz1,ifc)
-                     l=1
-                     do iz=kz1,kz2
-                     do iy=ky1,ky2
-                     do ix=kx1,kx2
-                        wk3(ix,iy,iz,ie)=wk3(ix,iy,iz,ie)
-     $                     +gn(ix,iy,iz,ie)*area(l,1,ifc,ie)
-                        l=l+1
-                     enddo
-                     enddo
-                     enddo
-                  endif
-               enddo
-               enddo
                call add2(afld(1,1,is),wk3,n)
             enddo
          endif
