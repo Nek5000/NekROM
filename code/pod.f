@@ -104,6 +104,52 @@ c-----------------------------------------------------------------------
          nb=nb*2
       endif
 
+      if (iaug.eq.-1) then
+         jfield=ifield
+         ifield=1
+         n=lx1*ly1*lz1*nelv
+         if (ifrom(1)) then
+            do i=1,ns
+               call opcopy(flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1),
+     $            us0(1,1,i),us0(1,2,i),us0(1,ldim,i))
+               call opcopy(upup(1,1,1),upup(1,2,1),upup(1,ldim,1),
+     $            flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1))
+               call opadd2(upup(1,1,1),upup(1,2,1),upup(1,ldim,1),
+     $            ub,vb,wb)
+               call pv2b(
+     $            rtmp1,flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1),
+     $            ub,vb,wb)
+               call reconv(
+     $            flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1),rtmp1)
+
+               call evalf(snapt(1,1,i),upup,flucv,ldim,.true.)
+               call pv2b(
+     $            rtmp1,snapt(1,1,i),snapt(1,2,i),snapt(1,ldim,i),
+     $            ub,vb,wb)
+               rtmp1(1,1)=0.
+               call reconv(
+     $            flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1),rtmp1)
+               call opsub2(snapt(1,1,i),snapt(1,2,i),snapt(1,ldim,i),
+     $            flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1))
+            enddo
+            call pod(uvwb(1,1,nb+1),
+     $         eval,ug,snapt,ldim,ips,nb,ns,ifpb,'ops/gu2 ')
+
+            if (ifcflow) call set0flow(uvwb(1,1,nb+1),nb,idirf)
+
+            call vnorm_(uvwb(1,1,nb))
+
+            do ib=nb+1,nb*2
+               call opcopy(ub(1,ib),vb(1,ib),wb(1,ib),
+     $            uvwb(1,1,ib),uvwb(1,2,ib),uvwb(1,ldim,ib))
+            enddo
+         endif
+
+         ifield=jfield
+
+         nb=nb*2
+      endif
+
       if (iaug.eq.2) then
          jfield=ifield
          ifield=1
