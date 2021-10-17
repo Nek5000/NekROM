@@ -56,34 +56,28 @@ c-----------------------------------------------------------------------
             n=lx1*ly1*lz1*nelv
 
             do i=1,ns
-               call pv2b(rtmp1,us0(1,1,i),us0(1,2,i),us0(1,ldim,i),
-     $            ub,vb,wb)
-               call reconv(
-     $            uvwb(1,1,nb+1),uvwb(1,2,nb+1),uvwb(1,ldim,nb+1),rtmp1)
-
-               call opcopy(snapt(1,1,i),snapt(1,2,i),snapt(1,ldim,i),
+               call opcopy(flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1),
+     $            us0(1,1,i),us0(1,2,i),us0(1,ldim,i))
+               call opcopy(upup(1,1,1),upup(1,2,1),upup(1,ldim,1),
      $            us0(1,1,i),us0(1,2,i),us0(1,ldim,i))
 
-               call opadd2(snapt(1,1,i),snapt(1,2,i),snapt(1,ldim,i),
+               call p2b(flucv,uvwb(1,1,1),ldim,nb,.false.,rtmp1)
+
+               call opadd2(flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1),
      $            uvwb(1,1,0),uvwb(1,2,0),uvwb(1,ldim,0))
 
-               call evalcflds(flucv,snapt(1,1,i),uvwb(1,1,nb+1),
-     $            ldim,1,.true.)
+               call opadd2(upup(1,1,1),upup(1,2,1),upup(1,ldim,1),
+     $            uvwb(1,1,0),uvwb(1,2,0),uvwb(1,ldim,0))
+
+               call evalcflds(upvp,upup,flucv,ldim,1,.true.)
 
                call opbinv1(
      $            snapt(1,1,i),snapt(1,2,i),snapt(1,ldim,i),
-     $            flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1),1.)
+     $            upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1),1.)
 
-               call incomprn(snapt(1,1,1),snapt(1,2,i),
+               call incomprn(snapt(1,1,i),snapt(1,2,i),
      $            snapt(1,ldim,i),prlag)
-               call pv2b(
-     $            rtmp1,snapt(1,1,i),snapt(1,2,i),snapt(1,ldim,i),
-     $            ub,vb,wb)
-               rtmp1(1,1)=0.
-               call reconv(
-     $            flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1),rtmp1)
-               call opsub2(snapt(1,1,i),snapt(1,2,i),snapt(1,ldim,i),
-     $            flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1))
+               call p2b(snapt(1,1,i),uvwb(1,1,1),ldim,nb,.true.,rtmp1)
             enddo
 
             call pod(uvwb(1,1,nb+1),
@@ -117,21 +111,13 @@ c-----------------------------------------------------------------------
      $            flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1))
                call opadd2(upup(1,1,1),upup(1,2,1),upup(1,ldim,1),
      $            ub,vb,wb)
-               call pv2b(
-     $            rtmp1,flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1),
+               call p2b(flucv,uvwb(1,1,1),ldim,nb,.false.,rtmp1)
+               call opadd2(flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1),
      $            ub,vb,wb)
-               call reconv(
-     $            flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1),rtmp1)
 
                call evalf(snapt(1,1,i),upup,flucv,upvp,ldim,.true.)
-               call pv2b(
-     $            rtmp1,snapt(1,1,i),snapt(1,2,i),snapt(1,ldim,i),
-     $            ub,vb,wb)
-               rtmp1(1,1)=0.
-               call reconv(
-     $            flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1),rtmp1)
-               call opsub2(snapt(1,1,i),snapt(1,2,i),snapt(1,ldim,i),
-     $            flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1))
+
+               call p2b(snapt(1,1,i),uvwb(1,1,1),ldim,nb,.true.,rtmp1)
             enddo
             call pod(uvwb(1,1,nb+1),
      $         eval,ug,snapt,ldim,ips,nb,ns,ifpb,'ops/gu2 ')
@@ -208,20 +194,12 @@ c-----------------------------------------------------------------------
             do i=1,ns
                call opcopy(flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1),
      $            us0(1,1,i),us0(1,2,i),us0(1,ldim,i))
-               call pv2b(
-     $            rtmp1,flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1),
+               call p2b(flucv,uvwb(1,1,1),ldim,nb,.false.,rtmp1)
+               call opadd2(flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1),
      $            ub,vb,wb)
-               call reconv(
-     $            flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1),rtmp1)
+
                call evalf(snapt(1,1,i),flucv,flucv,upvp,ldim,.true.)
-               call pv2b(
-     $            rtmp1,snapt(1,1,i),snapt(1,2,i),snapt(1,ldim,i),
-     $            ub,vb,wb)
-               rtmp1(1,1)=0.
-               call reconv(
-     $            flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1),rtmp1)
-               call opsub2(snapt(1,1,i),snapt(1,2,i),snapt(1,ldim,i),
-     $            flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1))
+               call p2b(snapt(1,1,i),uvwb(1,1,1),ldim,nb,.true.,rtmp1)
             enddo
             call pod(uvwb(1,1,nb+1),
      $         eval,ug,snapt,ldim,ips,nb,ns,ifpb,'ops/gu2 ')
