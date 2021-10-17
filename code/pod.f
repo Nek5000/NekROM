@@ -213,6 +213,30 @@ c-----------------------------------------------------------------------
      $            uvwb(1,1,ib),uvwb(1,2,ib),uvwb(1,ldim,ib))
             enddo
          endif
+         ifield=2
+
+         if (ifrom(2)) then
+            n=lx1*ly1*lz1*nelt
+            call rzero(upvp,n)
+            do i=1,ns
+               call opcopy(flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1),
+     $            us0(1,1,i),us0(1,2,i),us0(1,ldim,i))
+               call p2b(flucv,uvwb(1,1,1),ldim,nb*2,.false.,rtmp1)
+               call opadd2(flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1),
+     $            ub,vb,wb)
+
+               call copy(fluct,ts0(1,i),n)
+               call p2b(fluct,tb(1,1),1,nb,.false.,rtmp1)
+               call add2(fluct,tb,n)
+
+               call evalf(snapt(1,i,1),flucv,fluct,upvp,1,.true.)
+               call p2b(snapt(1,i,1),tb(1,1),1,nb,.true.,rtmp1)
+            enddo
+            call pod(tb(1,nb+1),
+     $         eval,ug,snapt,1,ips,nb,ns,ifpb,'ops/gt2 ')
+
+            call snorm(tb(1,nb))
+         endif
 
          ifield=jfield
 
