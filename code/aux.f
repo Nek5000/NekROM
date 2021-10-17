@@ -2589,3 +2589,70 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine p2b(uvw,uvwb,mdim,nb,iforth,sc)
+
+      include 'SIZE'
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real uvw(lt,mdim),uvwb(lt,mdim,nb),sc(nb)
+      logical iforth
+
+      nv=lx1*ly1*lz1*nelv
+      nt=lx1*ly1*lz1*nelt
+
+      n=nt
+      if (mdim.eq.ldim) n=nv
+
+      call p2b_helper(sc,uvw,uvwb,mdim,nb)
+
+      if (.not.iforth) then
+         do i=1,mdim
+            call rzero(uvw(1,i),n)
+         enddo
+      endif
+
+      do ib=1,nb
+         if (iforth) then
+            const=-sc(ib)
+         else
+            const=sc(ib)
+         endif
+         do idim=1,mdim
+            call add2s2(uvw(1,idim),uvwb(1,idim,ib),const,n)
+         enddo
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine p2b_helper(sc,uvw,uvwb,mdim,nb)
+
+      include 'SIZE'
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real uvw(lt,mdim,nb),sc(nb)
+
+      do i=1,nb
+         sc(i)=fip(uvw(1,1,1),uvwb(1,1,i),mdim)
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      function fip(uvw,xyz,mdim)
+
+      include 'SIZE'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      real uvw(lt,mdim),xyz(lt,mdim)
+
+      if (mdim.eq.ldim) then
+         fip=vip(uvw(1,1),uvw(1,2),uvw(1,ldim),
+     $            xyz(1,1),xyz(1,2),xyz(1,ldim))
+      else
+         fip=sip(uvw,xyz)
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
