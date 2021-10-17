@@ -2630,10 +2630,10 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      real uvw(lt,mdim,nb),sc(nb)
+      real uvw(lt,mdim),uvwb(lt,mdim,nb),sc(nb)
 
       do i=1,nb
-         sc(i)=fip(uvw(1,1,1),uvwb(1,1,i),mdim)
+         sc(i)=fip(uvw(1,1),uvwb(1,1,i),mdim)
       enddo
 
       return
