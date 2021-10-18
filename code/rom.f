@@ -1093,16 +1093,16 @@ c           if (idc_t.gt.0) call rzero(tb,n)
 
          if (nio.eq.0) write (6,*) 'pre 0 mean'
 
-         if (ifrom(2).and.iftflux) then
-            call set0mean(tb)
-            do i=1,ns
-               call set0mean(ts0(1,i))
-            enddo
-            call set1dudn(tb)
-            do i=1,ns
-               call set1dudn(ts0(1,i))
-            enddo
-         endif
+c        if (ifrom(2).and.iftflux) then
+c           call set0mean(tb)
+c           do i=1,ns
+c              call set0mean(ts0(1,i))
+c           enddo
+c           call set1dudn(tb)
+c           do i=1,ns
+c              call set1dudn(ts0(1,i))
+c           enddo
+c        endif
 
          if (nio.eq.0) write (6,*) 'post 0 mean'
 
