@@ -37,8 +37,15 @@ c-----------------------------------------------------------------------
      $         uvwb(1,1,0),uvwb(1,2,0),uvwb(1,ldim,0),uic,vic,wic)
          endif
          if (ifrom(2)) then
-            call pod(tb(1,1),eval,ug,ts0,1,ips,nb,ns,ifpb,'ops/gt  ')
-            if (.not.ifcomb.and.ifpb) call snorm(tb)
+            if (iaug.eq.4) then
+               call pod(
+     $            tb(1,1),eval,ug,ts0,1,ips,nb*2,ns,ifpb,'ops/gt  ')
+               if (.not.ifcomb.and.ifpb) call snorm(tb)
+               if (.not.ifcomb.and.ifpb) call snorm(tb(1,nb))
+            else
+               call pod(tb(1,1),eval,ug,ts0,1,ips,nb,ns,ifpb,'ops/gt  ')
+               if (.not.ifcomb.and.ifpb) call snorm(tb)
+            endif
          endif
 
          if (ifcomb.and.ifpb) call cnorm(ub,vb,wb,tb)
