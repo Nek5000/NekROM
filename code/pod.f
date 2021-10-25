@@ -8,6 +8,7 @@ c-----------------------------------------------------------------------
       include 'SOLN'
       include 'MASS'
       include 'TSTEP'
+      include 'INPUT'
 
       if (nio.eq.0) write (6,*) 'inside setbases'
 
@@ -39,11 +40,12 @@ c-----------------------------------------------------------------------
          if (ifrom(2)) then
             if (iaug.eq.4) then
                call pod(
-     $            tb(1,1),eval,ug,ts0,1,ips,nb*2,ns,ifpb,'ops/gt  ')
+     $            tb(1,1),eval2,ug,ts0,1,ips,nb*2,ns,ifpb,'ops/gt  ')
                if (.not.ifcomb.and.ifpb) call snorm(tb)
                if (.not.ifcomb.and.ifpb) call snorm(tb(1,nb))
             else
-               call pod(tb(1,1),eval,ug,ts0,1,ips,nb,ns,ifpb,'ops/gt  ')
+               call pod(
+     $            tb(1,1),eval2,ug,ts0,1,ips,nb,ns,ifpb,'ops/gt  ')
                if (.not.ifcomb.and.ifpb) call snorm(tb)
             endif
          endif
@@ -236,11 +238,16 @@ c-----------------------------------------------------------------------
                call p2b(fluct,tb(1,1),1,nb,.false.,rtmp1)
                call add2(fluct,tb,n)
 
+               call copy(upvp,flucv(1,3,1),n)
+               call col2(upvp,bm1,n)
+               call chsign(upvp,n)
+               call cmult(upvp,4.0,n)
+
                call evalf(snapt(1,i,1),flucv,fluct,upvp,1,.true.)
                call p2b(snapt(1,i,1),tb(1,1),1,nb,.true.,rtmp1)
             enddo
             call pod(tb(1,nb+1),
-     $         eval,ug,snapt,1,ips,nb,ns,ifpb,'ops/gt2 ')
+     $         eval2,ug,snapt,1,ips,nb,ns,ifpb,'ops/gt2 ')
 
             call snorm(tb(1,nb))
          endif
@@ -279,6 +286,70 @@ c-----------------------------------------------------------------------
 
          nb=nb*2
       endif
+
+      if (iaug.eq.-4) then
+         jfield=ifield
+         ifield=1
+         if (ifrom(1)) then
+            call opzero(upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1))
+            do i=1,nb
+               call opcopy(flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1),
+     $            uvwb(1,1,i),uvwb(1,2,i),uvwb(1,ldim,i))
+               sc=sqrt(abs(eval(i)))
+               call opcmult(
+     $            flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1),sc)
+
+               call evalf(uvwb(1,1,i+nb),flucv,flucv,upvp,ldim,.true.)
+            enddo
+
+            if (ifcflow) call set0flow(uvwb(1,1,nb+1),nb,idirf)
+
+            call vnorm_(uvwb(1,1,nb))
+
+            do ib=nb+1,nb*2
+               call opcopy(ub(1,ib),vb(1,ib),wb(1,ib),
+     $            uvwb(1,1,ib),uvwb(1,2,ib),uvwb(1,ldim,ib))
+            enddo
+         endif
+
+         if (ifrom(2)) then
+            n=lx1*ly1*lz1*nelv
+            do i=1,nb
+               ifield=1
+               call opcopy(flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1),
+     $            uvwb(1,1,i),uvwb(1,2,i),uvwb(1,ldim,i))
+               sc=sqrt(abs(eval(i)))
+               if (nio.eq.0) write (6,*) i,sc,' scf'
+               call opcmult(
+     $            flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1),sc)
+
+               call copy(fluct(1,1),tb(1,i),n)
+               sc=sqrt(abs(eval2(i)))
+               if (nio.eq.0) write (6,*) i,sc,' sct'
+               call cmult(fluct,sc,n)
+
+
+               ifxyo=.true.
+               call outpost(flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1),
+     $            pr,fluct(1,1),'ttt')
+
+               call copy(upvp,flucv(1,3,1),n)
+               call col2(upvp,bm1,n)
+               call chsign(upvp,n)
+               call cmult(upvp,4.0,n)
+
+               ifield=2
+               call evalf(tb(1,i+nb),flucv,fluct,upvp,1,.true.)
+            enddo
+
+            call snorm(tb(1,nb))
+         endif
+
+         ifield=jfield
+
+         nb=nb*2
+      endif
+
 
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
          call dump_bas
