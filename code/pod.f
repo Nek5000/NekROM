@@ -370,27 +370,33 @@ c-----------------------------------------------------------------------
 
                call opadd2(upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1),
      $                     upup(1,1,1),upup(1,2,1),upup(1,ldim,1))
-               call incomprn(
-     $            upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1),prlag)
 
-               if (ifcflow) call set0flow(upvp,1,idirf)
+               call opbinv1(upup(1,1,1),upup(1,2,1),upup(1,ldim,1),
+     $                      upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1),1.)
+
+               call incomprn(
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1),prlag)
+
+               if (ifcflow) call set0flow(upup,1,idirf)
 
                sc=1./sqrt(op_glsc2_wt(
-     $            upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1),
-     $            upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1),bm1))
-               call opcmult(upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1),sc)
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1),
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1),bm1))
+
+               call opcmult(upup(1,1,1),upup(1,2,1),upup(1,ldim,1),sc)
 
                call opcopy(
      $            uvwb(1,1,i+nb+1),uvwb(1,2,i+nb+1),uvwb(1,ldim,i+nb+1),
-     $            upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1))
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1))
 
                call opcopy(
      $            ub(1,i+nb+1),vb(1,i+nb+1),wb(1,i+nb+1),
-     $            upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1))
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1))
             enddo
          endif
 
          if (ifrom(2)) then
+            ifield=2
             nv=lx1*ly1*lz1*nelv
             nt=lx1*ly1*lz1*nelt
             do i=0,nb
@@ -399,6 +405,10 @@ c-----------------------------------------------------------------------
 
                call evalcflds(
                   upup,uvwb(1,1,0),tb(1,i),1,1,.true.)
+
+               call col2(upup,tmask,nt)
+               call dssum(upup,lx1,ly1,lz1)
+               call col2(upup,bintm1,nt)
 
                sc=1./sqrt(glsc3(upup,upup,bm1,nv))
 
