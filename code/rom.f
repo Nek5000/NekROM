@@ -1084,7 +1084,7 @@ c-----------------------------------------------------------------------
             idc_u=iglsum(idc_u,1)
             idc_t=iglsum(idc_t,1)
             call copy_sol(ub,vb,wb,pb,tb,uavg,vavg,wavg,pavg,tavg)
-            call opcopy(uvwb(1,1,1),uvwb(1,2,1),uvwb(1,ldim,1),
+            call opcopy(uvwb(1,1,0),uvwb(1,2,0),uvwb(1,ldim,0),
      $         ub,vb,wb)
 c           if (idc_u.gt.0) call opzero(ub,vb,wb)
 c           if (idc_t.gt.0) call rzero(tb,n)
