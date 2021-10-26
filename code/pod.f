@@ -53,10 +53,12 @@ c-----------------------------------------------------------------------
          if (ifcomb.and.ifpb) call cnorm(ub,vb,wb,tb)
       endif
 
+      ! z = \zeta
       ! iaug = 1: Pi'Pi_incomprn {\tilde{u} \cdot \nabla u}
       ! iaug = 2: Pi'Pi_incomprn {u \cdot \nabla u}
       ! iaug = 3: f(u)-augmentation
-      ! iaug = 4: f(sqrt(lambda) zeta)-augmentation
+      ! iaug = 4: f(sqrt(lambda) z)-augmentation
+      ! iaug = 5: Pi_incomprn {z_0 \cdot \nabla z + z \cdot \nabla z_0}
 
       if (iaug.eq.1) then
          jfield=ifield
@@ -350,6 +352,65 @@ c-----------------------------------------------------------------------
          nb=nb*2
       endif
 
+      if (iaug.eq.5) then
+         jfield=ifield
+         ifield=1
+         if (ifrom(1)) then
+            do i=0,nb
+               call opzero(upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1))
+
+               call evalcflds(
+                  upup,uvwb(1,1,0),uvwb(1,1,i),ldim,1,.true.)
+
+               call opadd2(upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1),
+     $                     upup(1,1,1),upup(1,2,1),upup(1,ldim,1))
+
+               call evalcflds(
+                  upup,uvwb(1,1,i),uvwb(1,1,0),ldim,1,.true.)
+
+               call opadd2(upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1),
+     $                     upup(1,1,1),upup(1,2,1),upup(1,ldim,1))
+               call incomprn(
+     $            upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1),prlag)
+
+               if (ifcflow) call set0flow(upvp,1,idirf)
+
+               sc=1./sqrt(op_glsc2_wt(
+     $            upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1),
+     $            upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1),bm1))
+               call opcmult(upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1),sc)
+
+               call opcopy(
+     $            uvwb(1,1,i+nb+1),uvwb(1,2,i+nb+1),uvwb(1,ldim,i+nb+1),
+     $            upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1))
+
+               call opcopy(
+     $            ub(1,i+nb+1),vb(1,i+nb+1),wb(1,i+nb+1),
+     $            upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1))
+            enddo
+         endif
+
+         if (ifrom(2)) then
+            nv=lx1*ly1*lz1*nelv
+            nt=lx1*ly1*lz1*nelt
+            do i=0,nb
+               call rzero(upup,nv)
+               call rzero(tb(1,i+nb+1),nt)
+
+               call evalcflds(
+                  upup,uvwb(1,1,0),tb(1,i),1,1,.true.)
+
+               sc=1./sqrt(glsc3(upup,upup,bm1,nv))
+
+               call cmult(upup,sc,nv)
+               call copy(tb(1,i+nb+1),upup,nv)
+            enddo
+         endif
+
+         ifield=jfield
+
+         nb=nb*2+1
+      endif
 
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
          call dump_bas
