@@ -360,13 +360,13 @@ c-----------------------------------------------------------------------
                call opzero(upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1))
 
                call evalcflds(
-                  upup,uvwb(1,1,0),uvwb(1,1,i),ldim,1,.true.)
+     $            upup,uvwb(1,1,0),uvwb(1,1,i),ldim,1,.true.)
 
                call opadd2(upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1),
      $                     upup(1,1,1),upup(1,2,1),upup(1,ldim,1))
 
                call evalcflds(
-                  upup,uvwb(1,1,i),uvwb(1,1,0),ldim,1,.true.)
+     $            upup,uvwb(1,1,i),uvwb(1,1,0),ldim,1,.true.)
 
                call opadd2(upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1),
      $                     upup(1,1,1),upup(1,2,1),upup(1,ldim,1))
@@ -404,7 +404,7 @@ c-----------------------------------------------------------------------
                call rzero(tb(1,i+nb+1),nt)
 
                call evalcflds(
-                  upup,uvwb(1,1,0),tb(1,i),1,1,.true.)
+     $            upup,uvwb(1,1,0),tb(1,i),1,1,.true.)
 
                call col2(upup,tmask,nt)
                call dssum(upup,lx1,ly1,lz1)
