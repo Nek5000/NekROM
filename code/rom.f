@@ -1231,6 +1231,9 @@ c-----------------------------------------------------------------------
       real cux(lt),cuy(lt),cuz(lt)
 
       common /scrcwk/ wk(lcloc),wk2(0:lub),cu(lt,ldim),wku(lt,ldim)
+      common /convect_all/ u1va(ltd,0:lb),u2va(ltd,0:lb),u3va(ltd,0:lb)
+      common /convect/ c1v(ltd),c2v(ltd),c3v(ltd),
+     $                 u1v(ltd),u2v(ltd),u3v(ltd)
 
       real cl(lcloc)
 
@@ -1253,6 +1256,8 @@ c     call cpart(ic1,ic2,jc1,jc2,kc1,kc2,ncloc,nb,np,nid+1) ! new indexing
       if (nid.eq.0) open (unit=100,file=fnlint)
       if (nio.eq.0) write (6,*) 'setc file:',fnlint
 
+      nd=lxd*lyd*lzd*nelv
+
       if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
          do k=0,nb
          do j=0,mb
@@ -1265,6 +1270,17 @@ c     call cpart(ic1,ic2,jc1,jc2,kc1,kc2,ncloc,nb,np,nid+1) ! new indexing
          enddo
          enddo
       else
+         do i=0,nb
+            if (ifield.eq.1) then
+               call setcnv_u(ub(1,i),vb(1,i),wb(1,i))
+               call copy(u1va(1,i),u1v,nd)
+               call copy(u2va(1,i),u2v,nd)
+               if (ldim.eq.3) call copy(u3va(1,i),u3v,nd)
+            else
+               call setcnv_u1(tb(1,i))
+               call copy(u1va(1,i),u1v,nd)
+            endif
+         enddo
          do k=0,nb
             if (nio.eq.0) write (6,*) 'setc: ',k,'/',nb
             call setcnv_c(ub(1,k),vb(1,k),wb(1,k))
@@ -1279,10 +1295,14 @@ c     call cpart(ic1,ic2,jc1,jc2,kc1,kc2,ncloc,nb,np,nid+1) ! new indexing
                   endif
                else
                   if (ifield.eq.1) then
-                     call setcnv_u(ub(1,j),vb(1,j),wb(1,j))
+c                    call setcnv_u(ub(1,j),vb(1,j),wb(1,j))
+                     call copy(u1v,u1va(1,j),nd)
+                     call copy(u2v,u2va(1,j),nd)
+                     if (ldim.eq.3) call copy(u3v,u3va(1,j),nd)
                      call cc(cu,ldim)
                   else
-                     call setcnv_u(tb(1,j),vb(1,j),wb(1,j))
+c                    call setcnv_u1(tb(1,j))
+                     call copy(u1v,u1va(1,j),nd)
                      call cc(cu,1)
                   endif
                endif
