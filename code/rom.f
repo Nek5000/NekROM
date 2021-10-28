@@ -1227,6 +1227,7 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
+      parameter (ltd=lxd*lyd*lzd*lelt)
 
       real cux(lt),cuy(lt),cuz(lt)
 
