@@ -576,7 +576,7 @@ c-----------------------------------------------------------------------
                      s1=-op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),
      $                               ub(1,j),vb(1,j),wb(1,j),bm1)
                      call opadds(ub(1,i),vb(1,i),wb(1,i),
-                                 ub(1,j),vb(1,j),wb(1,j),s1,n,2)
+     $                           ub(1,j),vb(1,j),wb(1,j),s1,n,2)
                   enddo
                   s1=1./sqrt(op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),
      $                                   ub(1,i),vb(1,i),wb(1,i),bm1))
