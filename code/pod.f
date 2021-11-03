@@ -569,6 +569,20 @@ c-----------------------------------------------------------------------
      $            ub(1,i+nb+1),vb(1,i+nb+1),wb(1,i+nb+1),
      $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1))
             enddo
+            if (rmode.eq.'ALL') then
+               n=lx1*ly1*lz1*nelt
+               do i=nb+1,nb*2+1
+                  do j=1,i-1
+                     s1=-op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),
+     $                               ub(1,j),vb(1,j),wb(1,j),bm1)
+                     call opadds(ub(1,i),vb(1,i),wb(1,i),
+                                 ub(1,j),vb(1,j),wb(1,j),s1,n,2)
+                  enddo
+                  s1=1./sqrt(op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),
+     $                                   ub(1,i),vb(1,i),wb(1,i),bm1))
+                  call opcmult(ub(1,i),vb(1,i),wb(1,i),s1)
+               enddo
+            endif
          endif
 
          if (ifrom(2)) then
