@@ -66,6 +66,7 @@ c-----------------------------------------------------------------------
       ! iaug = 7: Pi_incomprn {z \cdot \nabla z}
       ! iaug = 8: Pi_incomprn {T \hat{z}}
       ! iaug = 9: iaug = 7 + iaug = 8
+      ! iaug = 10: f(u)-POD augmentation
 
       if (iaug.eq.1) then
          jfield=ifield
@@ -782,6 +783,62 @@ c-----------------------------------------------------------------------
          ifield=jfield
 
          nb=nb*3+1
+      endif
+
+      if (iaug.eq.10) then
+         jfield=ifield
+         ifield=1
+         if (ifrom(1)) then
+            call opzero(upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1))
+            do i=1,ns
+               call opcopy(flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1),
+     $            us0(1,1,i),us0(1,2,i),us0(1,ldim,i))
+               call opadd2(flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1),
+     $            ub,vb,wb)
+               call evalf(snapt(1,1,i),flucv,flucv,upvp,ldim,.true.)
+            enddo
+            call pod(uvwb(1,1,nb+1),
+     $         eval,ug,snapt,ldim,ips,nb,ns,ifpb,'ops/gu2 ')
+
+            if (ifcflow) call set0flow(uvwb(1,1,nb+1),nb,idirf)
+
+            call vnorm_(uvwb(1,1,nb))
+
+            do ib=nb+1,nb*2
+               call opcopy(ub(1,ib),vb(1,ib),wb(1,ib),
+     $            uvwb(1,1,ib),uvwb(1,2,ib),uvwb(1,ldim,ib))
+            enddo
+         endif
+         ifield=2
+
+         if (ifrom(2)) then
+            n=lx1*ly1*lz1*nelt
+            call rzero(upvp,n)
+            do i=1,ns
+               call opcopy(flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1),
+     $            us0(1,1,i),us0(1,2,i),us0(1,ldim,i))
+               call opadd2(flucv(1,1,1),flucv(1,2,1),flucv(1,ldim,1),
+     $            ub,vb,wb)
+
+               call copy(fluct,ts0(1,i),n)
+               call add2(fluct,tb,n)
+
+               call copy(upvp,flucv(1,3,1),n)
+               call col2(upvp,bm1,n)
+               call chsign(upvp,n)
+               call cmult(upvp,4.0,n)
+
+               call evalf(snapt(1,i,1),flucv,fluct,upvp,1,.true.)
+            enddo
+            call pod(tb(1,nb+1),
+     $         eval2,ug,snapt,1,ips,nb,ns,ifpb,'ops/gt2 ')
+
+            call snorm(tb(1,nb))
+         endif
+
+         ifield=jfield
+
+         nb=nb*2
       endif
 
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
