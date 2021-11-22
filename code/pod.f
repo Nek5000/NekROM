@@ -69,7 +69,7 @@ c-----------------------------------------------------------------------
      $            us0(1,1,is),us0(1,2,is),us0(1,ldim,is))
             enddo
             do i=1,mdim
-               call dgemm('N','N',n,nb,ns2,1.,
+               call dgemm('N','N',nv,nb,ns2,1.,
      $            us0(1,i,1+ns2),lt*mdim,ug,ns2,0.,uvwb(1,i,1+nb),
      $            lt*mdim)
             enddo
@@ -87,7 +87,7 @@ c-----------------------------------------------------------------------
             do is=1,ns2
                call sub2(ts0(1,is+ns2),ts0(1,is),nt)
             enddo
-            call dgemm('N','N',n,nb,ns2,1.,
+            call dgemm('N','N',nt,nb,ns2,1.,
      $         ts0(1,1+ns2),lt,ug,ns2,0.,tb(1,1+nb),
      $         lt)
             call pod(
