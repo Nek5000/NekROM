@@ -10,6 +10,7 @@ c-----------------------------------------------------------------------
       include 'TSTEP'
       include 'INPUT'
 
+      parameter (lt=lx1*ly1*lz1*lelt)
       if (nio.eq.0) write (6,*) 'inside setbases'
 
       nv=lx1*ly1*lz1*nelv
@@ -68,6 +69,14 @@ c-----------------------------------------------------------------------
      $            us0(1,1,is+ns2),us0(1,2,is+ns2),us0(1,ldim,is+ns2),
      $            us0(1,1,is),us0(1,2,is),us0(1,ldim,is))
             enddo
+c           ifxyo=.true.
+c           do i=1,ns2
+c              call outpost(us0(1,1,i),us0(1,2,i),us0(1,3,i)
+c    $                     ,pr,ts0(1,i),'sss')
+c              call outpost(us0(1,1,ns2+i),us0(1,2,ns2+i),us0(1,3,ns2+i)
+c    $                     ,pr,ts0(1,ns2+i),'sss')
+c           enddo
+            mdim=3
             do i=1,mdim
                call dgemm('N','N',nv,nb,ns2,1.,
      $            us0(1,i,1+ns2),lt*mdim,ug,ns2,0.,uvwb(1,i,1+nb),
@@ -90,9 +99,6 @@ c-----------------------------------------------------------------------
             call dgemm('N','N',nt,nb,ns2,1.,
      $         ts0(1,1+ns2),lt,ug,ns2,0.,tb(1,1+nb),
      $         lt)
-            call pod(
-     $         tb(1,1+nb),eval2,ug,ts0(1,1+ns2),
-     $         1,ips,nb,ns2,ifpb,'ops/gt  ')
             call snorm(tb(1,1))
             call snorm(tb(1,1+nb))
          endif
