@@ -37,6 +37,17 @@ c-----------------------------------------------------------------------
             enddo
             call pod(uvwb(1,1,1+nb),eval,ug,us0(1,1,1+ns2),
      $         ldim,ips,nb,ns2,ifpb,'ops/gu2 ')
+            nnp=iglmax(nid,1)
+            if (nnp.lt.10) then
+            do i=1,ns
+               ifxyo=.true.
+               call outpost(
+     $            us0(1,1,i),us0(1,2,i),us0(1,ldim,i),pr,t,'sn1')
+               call outpost(
+     $            us0(1,1,ns2+i),us0(1,2,ns2+i),us0(1,ldim,ns2+i),
+     $            pr,t'sn2')
+            enddo
+            endif
             if (ifcflow) call set0flow(uvwb(1,1,1),nb2,idirf)
             call vnorm_(uvwb(1,1,1))
             call vnorm_(uvwb(1,1,1+nb))
