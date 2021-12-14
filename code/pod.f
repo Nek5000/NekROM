@@ -45,7 +45,7 @@ c-----------------------------------------------------------------------
      $            us0(1,1,i),us0(1,2,i),us0(1,ldim,i),pr,t,'sn1')
                call outpost(
      $            us0(1,1,ns2+i),us0(1,2,ns2+i),us0(1,ldim,ns2+i),
-     $            pr,t'sn2')
+     $            pr,t,'sn2')
             enddo
             endif
             if (ifcflow) call set0flow(uvwb(1,1,1),nb2,idirf)
