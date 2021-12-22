@@ -2656,7 +2656,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine find_cerr(cerr,ub,vb,wb)
+      subroutine find_cerr
 
       include 'SIZE'
       include 'TOTAL'
