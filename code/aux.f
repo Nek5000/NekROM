@@ -2666,7 +2666,7 @@ c-----------------------------------------------------------------------
 
       paramter (lt=lx1*ly1*lz1*lelt)
       common /scrns/ ux(lt),uy(lt),uz(lt),wx(lt),wy(lt),wz(lt)
-      common /scruz/ sx(lt),sy(lt),sz(lt),uwx(lt),uwy(lt),uwz(lt)
+      common /scruz/ sx(lt),sy(lt),sz(lt),uwx(lt),uwy(lt),uwz(lt),
      $               tx(lt),ty(lt),tz(lt)
 
       real cex(nb),crom(nb)
