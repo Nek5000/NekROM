@@ -2656,3 +2656,94 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine find_cerr(cerr,ub,vb,wb)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      real cerr(n)
+
+      paramter (lt=lx1*ly1*lz1*lelt)
+      common /scrns/ ux(lt),uy(lt),uz(lt),wx(lt),wy(lt),wz(lt)
+      common /scruz/ sx(lt),sy(lt),sz(lt),uwx(lt),uwy(lt),uwz(lt)
+     $               tx(lt),ty(lt),tz(lt)
+
+      real cex(nb),crom(nb)
+
+      cex=0.
+      call rzero(crom,nb)
+
+      nv=lx1*ly1*lz1*nelv
+
+      mint=25
+
+      nnb=(nb/2)/mint
+
+      do is=1,ns
+         ! create tilde u
+         call copy(ux,us0(1,1,is),nv)
+         call add2(ux,ub,nv)
+
+         call copy(uy,us0(1,2,is),nv)
+         call add2(uy,vb,nv)
+
+         if (ldim.eq.3) then
+            call copy(uz,us0(1,3,is),nv)
+            call add2(uz,wb,nv)
+         endif
+
+         do iib=1,mint
+            call opzero(wx,wy,wz)
+
+            ! create u
+            call opcopy(wx,wy,wz,ub,vb,wb)
+            do ib=1,iib*nnb
+               cf=op_glsc2_wt(us0(1,1,is),us0(1,2,is),us0(1,ldim,is),
+        $                 uvwb(1,1,ib),uvwb(1,2,ib),uvwb(1,ldim,ib),bm1)
+
+               call add2s2(wx,uvwb(1,1,ib),cf,nv)
+               call add2s2(wy,uvwb(1,2,ib),cf,nv)
+               if (ldim.eq.3) call add2s2(wz,uvwb(1,3,ib),cf,nv)
+            enddo
+
+            ! create u'
+            call opsub3(sx,sy,sz,ux,uy,uz,wx,wy,wz)
+
+            call convect_new(uwx,wx,.false.,ux,uy,uz,.false.)
+            call convect_new(uwy,wy,.false.,ux,uy,uz,.false.)
+            if (ldim.eq.3)
+        $      call convect_new(uwz,wz,.false.,ux,uy,uz,.false.)
+
+            ctmp=glsc2(sx,uwx,nv)+glsc2(sy,uwy,nv)
+            if (ldim.eq.3) ctmp=ctmp+glsc2(sz,uwz,nv)
+            cex(iib)=cex(iib)+ctmp*ctmp
+
+            ! project u' onto basis
+
+            call opzero(tx,ty,tz)
+            ctmp2=0.
+            do ib=nnb*iib+1,nnb*iib*2
+               cf=op_glsc2_wt(sx,sy,sz,ub(1,ib),vb(1,ib),wb(1,ib),bm1)
+               call add2s2(tx,ub(1,ib),cf,nv)
+               call add2s2(ty,vb(1,ib),cf,nv)
+               if (ldim.eq.3) call add2s2(tz,b(1,ib),cf,nv)
+
+               ctmp2=glsc2(tx,uwx,nv)+glsc2(ty,uwy,nv)
+               if (ldim.eq.3) ctmp2=ctmp2+glsc2(sz,uwz,nv)
+               crom(iib)=crom(iib)+(ctmp-ctmp2)*(ctmp-ctmp2)
+            enddo
+         enddo
+      enddo
+
+      open (unit=10,file='c.dat')
+
+      do i=1,mint
+         write (6,10) cex(i),crom(i)
+      enddo
+
+      close (unit=10)
+
+      return
+      end
+c-----------------------------------------------------------------------
