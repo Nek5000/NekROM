@@ -2700,7 +2700,7 @@ c-----------------------------------------------------------------------
             call opcopy(wx,wy,wz,ub,vb,wb)
             do ib=1,iib*nnb
                cf=op_glsc2_wt(us0(1,1,is),us0(1,2,is),us0(1,ldim,is),
-        $                 uvwb(1,1,ib),uvwb(1,2,ib),uvwb(1,ldim,ib),bm1)
+     $                    uvwb(1,1,ib),uvwb(1,2,ib),uvwb(1,ldim,ib),bm1)
 
                call add2s2(wx,uvwb(1,1,ib),cf,nv)
                call add2s2(wy,uvwb(1,2,ib),cf,nv)
@@ -2713,7 +2713,7 @@ c-----------------------------------------------------------------------
             call convect_new(uwx,wx,.false.,ux,uy,uz,.false.)
             call convect_new(uwy,wy,.false.,ux,uy,uz,.false.)
             if (ldim.eq.3)
-        $      call convect_new(uwz,wz,.false.,ux,uy,uz,.false.)
+     $         call convect_new(uwz,wz,.false.,ux,uy,uz,.false.)
 
             ctmp=glsc2(sx,uwx,nv)+glsc2(sy,uwy,nv)
             if (ldim.eq.3) ctmp=ctmp+glsc2(sz,uwz,nv)
