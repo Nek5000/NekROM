@@ -2662,17 +2662,17 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
-      real cerr(n)
-
-      paramter (lt=lx1*ly1*lz1*lelt)
-      common /scrns/ ux(lt),uy(lt),uz(lt),wx(lt),wy(lt),wz(lt)
+      parameter (lt=lx1*ly1*lz1*lelt)
+      common /scrns/ ux(lt),uy(lt),uz(lt),dx(lt),dy(lt),dz(lt)
       common /scruz/ sx(lt),sy(lt),sz(lt),uwx(lt),uwy(lt),uwz(lt),
      $               tx(lt),ty(lt),tz(lt)
 
       real cex(nb),crom(nb)
 
-      cex=0.
+      call rzero(cex,nb)
       call rzero(crom,nb)
+
+      if (nio.eq.0) write (6,*) 'starting find_cerr ...'
 
       nv=lx1*ly1*lz1*nelv
 
@@ -2681,12 +2681,14 @@ c-----------------------------------------------------------------------
       nnb=(nb/2)/mint
 
       do is=1,ns
+         if (nio.eq.0) write (6,*) 'find_cerr loop ',is
          ! create tilde u
          call copy(ux,us0(1,1,is),nv)
          call add2(ux,ub,nv)
 
          call copy(uy,us0(1,2,is),nv)
          call add2(uy,vb,nv)
+c        if (nio.eq.0) write (6,*) 'wp 2',is
 
          if (ldim.eq.3) then
             call copy(uz,us0(1,3,is),nv)
@@ -2694,36 +2696,44 @@ c-----------------------------------------------------------------------
          endif
 
          do iib=1,mint
-            call opzero(wx,wy,wz)
+c           if (nio.eq.0) write (6,*) 'wp 3',iib,mint
+            call opzero(dx,dy,dz)
 
             ! create u
-            call opcopy(wx,wy,wz,ub,vb,wb)
+            call opcopy(dx,dy,dz,ub,vb,wb)
             do ib=1,iib*nnb
                cf=op_glsc2_wt(us0(1,1,is),us0(1,2,is),us0(1,ldim,is),
      $                    uvwb(1,1,ib),uvwb(1,2,ib),uvwb(1,ldim,ib),bm1)
 
-               call add2s2(wx,uvwb(1,1,ib),cf,nv)
-               call add2s2(wy,uvwb(1,2,ib),cf,nv)
-               if (ldim.eq.3) call add2s2(wz,uvwb(1,3,ib),cf,nv)
+               call add2s2(dx,uvwb(1,1,ib),cf,nv)
+               call add2s2(dy,uvwb(1,2,ib),cf,nv)
+               if (ldim.eq.3) call add2s2(dz,uvwb(1,3,ib),cf,nv)
             enddo
+c           if (nio.eq.0) write (6,*) 'wp 4',iib,mint
 
             ! create u'
-            call opsub3(sx,sy,sz,ux,uy,uz,wx,wy,wz)
+            call opsub3(sx,sy,sz,ux,uy,uz,dx,dy,dz)
+c           if (nio.eq.0) write (6,*) 'wp 4.1',iib,mint
 
-            call convect_new(uwx,wx,.false.,ux,uy,uz,.false.)
-            call convect_new(uwy,wy,.false.,ux,uy,uz,.false.)
+            call convect_new(uwx,dx,.false.,ux,uy,uz,.false.)
+            call convect_new(uwy,dy,.false.,ux,uy,uz,.false.)
             if (ldim.eq.3)
-     $         call convect_new(uwz,wz,.false.,ux,uy,uz,.false.)
+     $         call convect_new(uwz,dz,.false.,ux,uy,uz,.false.)
+c           if (nio.eq.0) write (6,*) 'wp 4.2',iib,mint
 
-            ctmp=glsc2(sx,uwx,nv)+glsc2(sy,uwy,nv)
-            if (ldim.eq.3) ctmp=ctmp+glsc2(sz,uwz,nv)
-            cex(iib)=cex(iib)+ctmp*ctmp
+            ctmp1=glsc2(sx,uwx,nv)+glsc2(sy,uwy,nv)
+c           if (nio.eq.0) write (6,*) 'wp 4.3',iib,mint
+            if (ldim.eq.3) ctmp1=ctmp1+glsc2(sz,uwz,nv)
+c           if (nio.eq.0) write (6,*) 'wp 4.4',iib,mint
+            cex(iib)=cex(iib)+ctmp1*ctmp1
+c           if (nio.eq.0) write (6,*) 'wp 5',iib,mint
 
             ! project u' onto basis
 
             call opzero(tx,ty,tz)
             ctmp2=0.
             do ib=nnb*iib+1,nnb*iib*2
+c              if (nio.eq.0) write (6,*) 'wp 5',ib,nnb
                cf=op_glsc2_wt(sx,sy,sz,ub(1,ib),vb(1,ib),wb(1,ib),bm1)
                call add2s2(tx,ub(1,ib),cf,nv)
                call add2s2(ty,vb(1,ib),cf,nv)
@@ -2731,7 +2741,7 @@ c-----------------------------------------------------------------------
 
                ctmp2=glsc2(tx,uwx,nv)+glsc2(ty,uwy,nv)
                if (ldim.eq.3) ctmp2=ctmp2+glsc2(sz,uwz,nv)
-               crom(iib)=crom(iib)+(ctmp-ctmp2)*(ctmp-ctmp2)
+               crom(iib)=crom(iib)+(ctmp1-ctmp2)*(ctmp1-ctmp2)
             enddo
          enddo
       enddo
@@ -2739,7 +2749,7 @@ c-----------------------------------------------------------------------
       open (unit=10,file='c.dat')
 
       do i=1,mint
-         write (6,10) cex(i),crom(i)
+         write (10,*) cex(i),crom(i)
       enddo
 
       close (unit=10)
