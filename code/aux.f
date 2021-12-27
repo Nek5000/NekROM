@@ -2743,8 +2743,8 @@ c           if (nio.eq.0) write (6,*) 'wp 5',iib,mint
 
                if (nio.eq.0) write (6,*) 'ctmp ',is,iib,ib,ctmp1,ctmp2
 
-               crom(iib)=crom(iib)+(ctmp1-ctmp2)*(ctmp1-ctmp2)
             enddo
+            crom(iib)=crom(iib)+(ctmp1-ctmp2)*(ctmp1-ctmp2)
          enddo
       enddo
 
