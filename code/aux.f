@@ -2733,7 +2733,6 @@ c           if (nio.eq.0) write (6,*) 'wp 5',iib,mint
             call opzero(tx,ty,tz)
             ctmp2=0.
             do ib=nnb*iib+1,nnb*iib*2
-c              if (nio.eq.0) write (6,*) 'wp 5',ib,nnb
                cf=op_glsc2_wt(sx,sy,sz,ub(1,ib),vb(1,ib),wb(1,ib),bm1)
                call add2s2(tx,ub(1,ib),cf,nv)
                call add2s2(ty,vb(1,ib),cf,nv)
@@ -2741,6 +2740,9 @@ c              if (nio.eq.0) write (6,*) 'wp 5',ib,nnb
 
                ctmp2=glsc2(tx,uwx,nv)+glsc2(ty,uwy,nv)
                if (ldim.eq.3) ctmp2=ctmp2+glsc2(sz,uwz,nv)
+
+               if (nio.eq.0) write (6,*) 'ctmp ',is,iib,ib,ctmp1,ctmp2
+
                crom(iib)=crom(iib)+(ctmp1-ctmp2)*(ctmp1-ctmp2)
             enddo
          enddo
