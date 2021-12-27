@@ -2741,7 +2741,7 @@ c           if (nio.eq.0) write (6,*) 'wp 5',iib,mint
                ctmp2=glsc2(tx,uwx,nv)+glsc2(ty,uwy,nv)
                if (ldim.eq.3) ctmp2=ctmp2+glsc2(sz,uwz,nv)
 
-               if (nio.eq.0) write (6,*) 'ctmp ',is,iib,ib,ctmp1,ctmp2
+c              if (nio.eq.0) write (6,*) 'ctmp ',is,iib,ib,ctmp1,ctmp2
 
             enddo
             crom(iib)=crom(iib)+(ctmp1-ctmp2)*(ctmp1-ctmp2)
