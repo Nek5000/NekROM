@@ -2736,7 +2736,7 @@ c           if (nio.eq.0) write (6,*) 'wp 5',iib,mint
                cf=op_glsc2_wt(sx,sy,sz,ub(1,ib),vb(1,ib),wb(1,ib),bm1)
                call add2s2(tx,ub(1,ib),cf,nv)
                call add2s2(ty,vb(1,ib),cf,nv)
-               if (ldim.eq.3) call add2s2(tz,b(1,ib),cf,nv)
+               if (ldim.eq.3) call add2s2(tz,wb(1,ib),cf,nv)
 
                ctmp2=glsc2(tx,uwx,nv)+glsc2(ty,uwy,nv)
                if (ldim.eq.3) ctmp2=ctmp2+glsc2(sz,uwz,nv)
