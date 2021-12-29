@@ -2751,7 +2751,142 @@ c              if (nio.eq.0) write (6,*) 'ctmp ',is,iib,ib,ctmp1,ctmp2
       open (unit=10,file='c.dat')
 
       do i=1,mint
-         write (10,*) cex(i),crom(i)
+         write (10,*) cex(i),crom(i),sqrt(crom(i)/cex(i))
+      enddo
+
+      close (unit=10)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine find_cerr2
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      common /scrns/ ux(lt),uy(lt),uz(lt),dx(lt),dy(lt),dz(lt)
+      common /scruz/ sx(lt),sy(lt),sz(lt),uwx(lt),uwy(lt),uwz(lt),
+     $               tx(lt),ty(lt),tz(lt),
+     $               ex(lt),ey(lt),ez(lt)
+
+      real cex(nb),crom(nb)
+
+      call rzero(cex,nb)
+      call rzero(crom,nb)
+
+      if (nio.eq.0) write (6,*) 'starting find_cerr ...'
+
+      nv=lx1*ly1*lz1*nelv
+
+      mint=25
+
+      nnb=((nb-1)/2)/mint
+
+      ! orthogonalize AB                 
+      do ib=nnb*mint+2,2*nnb*mint+1
+         call opcopy(ex,ey,ez,ub(1,ib),vb(1,ib),wb(1,ib))
+         do jb=nnb*mint+1,ib-1
+            cf=-op_glsc2_wt(ub(1,jb),vb(1,jb),wb(1,jb),
+     $         ex,ey,ez,bm1)
+            call add2s2(ex,ub(1,jb),cf,nv)
+            call add2s2(ey,vb(1,jb),cf,nv)
+            if (ldim.eq.3) call add2s2(ez,wb(1,jb),cf,nv)
+         enddo
+
+         cf=1./sqrt(op_glsc2_wt(ex,ey,ez,
+     $       ex,ey,ez,bm1))
+         call opcmult(ex,ey,ez,cf)
+         call opcopy(ub(1,ib),vb(1,ib),wb(1,ib),ex,ey,ez,cf)
+      enddo
+
+      do is=1,ns
+         if (nio.eq.0) write (6,*) 'find_cerr loop ',is
+         ! create tilde u
+         call copy(ux,us0(1,1,is),nv)
+         call add2(ux,ub,nv)
+
+         call copy(uy,us0(1,2,is),nv)
+         call add2(uy,vb,nv)
+c        if (nio.eq.0) write (6,*) 'wp 2',is
+
+         if (ldim.eq.3) then
+            call copy(uz,us0(1,3,is),nv)
+            call add2(uz,wb,nv)
+         endif
+
+         do iib=1,mint
+c           if (nio.eq.0) write (6,*) 'wp 3',iib,mint
+            call opzero(dx,dy,dz)
+
+            ! create u
+            call opcopy(dx,dy,dz,ub,vb,wb)
+            do ib=1,iib*nnb
+               cf=op_glsc2_wt(us0(1,1,is),us0(1,2,is),us0(1,ldim,is),
+     $                    uvwb(1,1,ib),uvwb(1,2,ib),uvwb(1,ldim,ib),bm1)
+
+               call add2s2(dx,uvwb(1,1,ib),cf,nv)
+               call add2s2(dy,uvwb(1,2,ib),cf,nv)
+               if (ldim.eq.3) call add2s2(dz,uvwb(1,3,ib),cf,nv)
+            enddo
+c           if (nio.eq.0) write (6,*) 'wp 4',iib,mint
+
+            ! create u'
+            call opsub3(sx,sy,sz,ux,uy,uz,dx,dy,dz)
+c           if (nio.eq.0) write (6,*) 'wp 4.1',iib,mint
+
+            call convect_new(uwx,dx,.false.,ux,uy,uz,.false.)
+            call convect_new(uwy,dy,.false.,ux,uy,uz,.false.)
+            if (ldim.eq.3)
+     $         call convect_new(uwz,dz,.false.,ux,uy,uz,.false.)
+c           if (nio.eq.0) write (6,*) 'wp 4.2',iib,mint
+
+            ctmp1=glsc2(sx,uwx,nv)+glsc2(sy,uwy,nv)
+c           if (nio.eq.0) write (6,*) 'wp 4.3',iib,mint
+            if (ldim.eq.3) ctmp1=ctmp1+glsc2(sz,uwz,nv)
+c           if (nio.eq.0) write (6,*) 'wp 4.4',iib,mint
+            cex(iib)=cex(iib)+ctmp1*ctmp1
+c           if (nio.eq.0) write (6,*) 'wp 5',iib,mint
+
+            ! project u' onto basis
+
+            call opzero(tx,ty,tz)
+            ctmp2=0.
+            do ib=nnb*iib+1,nnb*iib*2+1
+               ! orthogonalize basis
+               call opcopy(ex,ey,ez,ub(1,ib),vb(1,ib),wb(1,ib))
+               do jb=1,nnb*iib
+                  cf=-op_glsc2_wt(ub(1,jb),vb(1,jb),wb(1,jb),
+     $               ex,ey,ez,bm1)
+                  call add2s2(ex,ub(1,jb),cf,nv)
+                  call add2s2(ey,vb(1,jb),cf,nv)
+                  if (ldim.eq.3) call add2s2(ez,wb(1,jb),cf,nv)
+               enddo
+               cf=1./sqrt(op_glsc2_wt(ex,ey,ez,
+     $                ex,ey,ez,bm1))
+               call opcmult(ex,ey,ez,cf)
+
+               ! find component
+               cf=op_glsc2_wt(sx,sy,sz,ex,ey,ez,bm1)
+               call add2s2(tx,ex,cf,nv)
+               call add2s2(ty,ey,cf,nv)
+               if (ldim.eq.3) call add2s2(tz,ez,cf,nv)
+
+               ctmp2=glsc2(tx,uwx,nv)+glsc2(ty,uwy,nv)
+               if (ldim.eq.3) ctmp2=ctmp2+glsc2(sz,uwz,nv)
+
+c              if (nio.eq.0) write (6,*) 'ctmp ',is,iib,ib,ctmp1,ctmp2
+
+            enddo
+            crom(iib)=crom(iib)+(ctmp1-ctmp2)*(ctmp1-ctmp2)
+         enddo
+      enddo
+
+      open (unit=10,file='c.dat')
+
+      do i=1,mint
+         write (10,*) cex(i),crom(i),sqrt(crom(i)/cex(i))
       enddo
 
       close (unit=10)
