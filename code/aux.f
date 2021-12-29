@@ -2748,13 +2748,15 @@ c              if (nio.eq.0) write (6,*) 'ctmp ',is,iib,ib,ctmp1,ctmp2
          enddo
       enddo
 
-      open (unit=10,file='c.dat')
+      if (nio.eq.0) then
+         open (unit=10,file='c.dat')
 
-      do i=1,mint
-         write (10,*) cex(i),crom(i),sqrt(crom(i)/cex(i))
-      enddo
+         do i=1,mint
+            write (10,*) cex(i),crom(i),sqrt(crom(i)/cex(i))
+         enddo
 
-      close (unit=10)
+         close (unit=10)
+      endif
 
       return
       end
@@ -2883,13 +2885,16 @@ c              if (nio.eq.0) write (6,*) 'ctmp ',is,iib,ib,ctmp1,ctmp2
          enddo
       enddo
 
-      open (unit=10,file='c.dat')
+      if (nio.eq.0) then
+         open (unit=10,file='c.dat')
 
-      do i=1,mint
-         write (10,*) cex(i),crom(i),sqrt(crom(i)/cex(i))
-      enddo
+         do i=1,mint
+            write (10,*) cex(i),crom(i),sqrt(crom(i)/cex(i))
+         enddo
 
-      close (unit=10)
+         close (unit=10)
+      endif
+
 
       return
       end
