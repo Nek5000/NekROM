@@ -161,6 +161,7 @@ c           enddo
       ! iaug = 8: Pi_incomprn {T \hat{z}}
       ! iaug = 9: iaug = 7 + iaug = 8
       ! iaug = 10: f(u)-POD augmentation
+      ! iaug = 13: iaug = 7 + buoyancy
 
       if (iaug.eq.1) then
          jfield=ifield
@@ -934,6 +935,118 @@ c           enddo
 
          nb=nb*2
       endif
+
+      if (iaug.eq.13) then
+         jfield=ifield
+         ifield=1
+         if (ifrom(1)) then
+            do i=0,nb
+               call evalcflds(
+     $            upvp,uvwb(1,1,i),uvwb(1,1,i),ldim,1,.true.)
+
+               call opbinv1(upup(1,1,1),upup(1,2,1),upup(1,ldim,1),
+     $                      upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1),1.)
+
+               call incomprn(
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1),prlag)
+
+               if (ifcflow) call set0flow(upup,1,idirf)
+
+               sc=1./sqrt(op_glsc2_wt(
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1),
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1),bm1))
+
+               call opcmult(upup(1,1,1),upup(1,2,1),upup(1,ldim,1),sc)
+
+               call opcopy(
+     $            uvwb(1,1,i+nb+1),uvwb(1,2,i+nb+1),
+     $            uvwb(1,ldim,i+nb+1),
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1))
+
+               call opcopy(
+     $            ub(1,i+nb+1),vb(1,i+nb+1),wb(1,i+nb+1),
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1))
+            enddo
+
+            do i=0,nb
+c              call evalcflds(
+c    $            upvp,uvwb(1,1,i),uvwb(1,1,i),ldim,1,.true.)
+
+               call opcopy(upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1),
+     $                     zeros,tb(1,i),zeros)
+
+               call opcol2(upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1),
+     $                     bm1,bm1,bm1)
+
+               call opbinv1(upup(1,1,1),upup(1,2,1),upup(1,ldim,1),
+     $                      upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1),1.)
+
+               call incomprn(
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1),prlag)
+
+               if (ifcflow) call set0flow(upup,1,idirf)
+
+               sc=1./sqrt(op_glsc2_wt(
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1),
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1),bm1))
+
+               call opcmult(upup(1,1,1),upup(1,2,1),upup(1,ldim,1),sc)
+
+               call opcopy(
+     $            uvwb(1,1,i+2*(nb+1)),uvwb(1,2,i+2*(nb+1)),
+     $            uvwb(1,ldim,i+2*(nb+1)),
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1))
+
+               call opcopy(
+     $            ub(1,i+2*(nb+1)),vb(1,i+2*(nb+1)),wb(1,i+2*(nb+1)),
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1))
+            enddo
+         endif
+
+         if (ifrom(2)) then
+            ifield=2
+            nv=lx1*ly1*lz1*nelv
+            nt=lx1*ly1*lz1*nelt
+            do i=0,nb
+               call rzero(upup,nv)
+               call rzero(tb(1,i+nb+1),nt)
+
+               call evalcflds(
+     $            upup,uvwb(1,1,i),tb(1,i),1,1,.true.)
+
+               call col2(upup,tmask,nt)
+               call dssum(upup,lx1,ly1,lz1)
+               call col2(upup,bintm1,nt)
+
+               sc=1./sqrt(glsc3(upup,upup,bm1,nv))
+
+               call cmult(upup,sc,nv)
+               call copy(tb(1,i+nb+1),upup,nv)
+            enddo
+            do i=0,nb
+
+               call rzero(upup,nv)
+c              call rzero(tb(1,i+2*nb+1),nt)
+
+               call evalcflds(
+     $            upup,uvwb(1,1,0),tb(1,i),1,1,.true.)
+
+               call col2(upup,tmask,nt)
+               call dssum(upup,lx1,ly1,lz1)
+               call col2(upup,bintm1,nt)
+
+               sc=1./sqrt(glsc3(upup,upup,bm1,nv))
+
+               call cmult(upup,sc,nv)
+               call copy(tb(1,i+2*(nb+1)),upup,nv)
+            enddo
+         endif
+
+         ifield=jfield
+
+         nb=nb*3+2
+      endif
+
 
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
          call dump_bas
