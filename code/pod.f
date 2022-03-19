@@ -640,6 +640,239 @@ c           enddo
          nb=nb*3+1
       endif
 
+      if (iaug.eq.20) then
+         jfield=ifield
+         ifield=1
+         if (ifrom(1)) then
+            do i=0,nb
+               call opzero(upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1))
+
+               call evalcflds(
+     $            upup,uvwb(1,1,0),uvwb(1,1,i),ldim,1,.true.)
+
+               call opadd2(upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1),
+     $                     upup(1,1,1),upup(1,2,1),upup(1,ldim,1))
+
+               call evalcflds(
+     $            upup,uvwb(1,1,i),uvwb(1,1,0),ldim,1,.true.)
+
+               call opadd2(upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1),
+     $                     upup(1,1,1),upup(1,2,1),upup(1,ldim,1))
+
+               call opbinv1(upup(1,1,1),upup(1,2,1),upup(1,ldim,1),
+     $                      upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1),1.)
+
+               call incomprn(
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1),prlag)
+
+               if (ifcflow) call set0flow(upup,1,idirf)
+
+               sc=1./sqrt(op_glsc2_wt(
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1),
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1),bm1))
+
+               call opcmult(upup(1,1,1),upup(1,2,1),upup(1,ldim,1),sc)
+
+               call opcopy(
+     $            uvwb(1,1,i+nb+1),uvwb(1,2,i+nb+1),uvwb(1,ldim,i+nb+1),
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1))
+
+               call opcopy(
+     $            ub(1,i+nb+1),vb(1,i+nb+1),wb(1,i+nb+1),
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1))
+            enddo
+
+            do i=1,nb
+               call evalcflds(
+     $            upvp,uvwb(1,1,i),uvwb(1,1,i),ldim,1,.true.)
+
+               call opbinv1(upup(1,1,1),upup(1,2,1),upup(1,ldim,1),
+     $                      upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1),1.)
+
+               call incomprn(
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1),prlag)
+
+               if (ifcflow) call set0flow(upup,1,idirf)
+
+               sc=1./sqrt(op_glsc2_wt(
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1),
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1),bm1))
+
+               call opcmult(upup(1,1,1),upup(1,2,1),upup(1,ldim,1),sc)
+
+               call opcopy(
+     $            uvwb(1,1,i+2*nb+1),uvwb(1,2,i+2*nb+1),
+     $            uvwb(1,ldim,i+2*nb+1),
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1))
+
+               call opcopy(
+     $            ub(1,i+2*nb+1),vb(1,i+2*nb+1),wb(1,i+2*nb+1),
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1))
+            enddo
+         endif
+
+         if (ifrom(2)) then
+            ifield=2
+            nv=lx1*ly1*lz1*nelv
+            nt=lx1*ly1*lz1*nelt
+            do i=0,nb
+c              call rzero(upup,nt)
+c              call rzero(tb(1,i+nb+1),nt)
+
+c              call evalcflds(
+c    $            upup,uvwb(1,1,0),tb(1,i),1,1,.true.)
+
+c              call col2(upup,tmask,nt)
+c              call dssum(upup,lx1,ly1,lz1)
+c              call col2(upup,bintm1,nt)
+
+c              sc=1./sqrt(glsc3(upup,upup,bm1,nt))
+
+c              call cmult(upup,sc,nt)
+               call cfill(upup,(i+nb+1)*1.0,nt)
+               call copy(tb(1,i+nb+1),upup,nt)
+            enddo
+            do i=1,nb
+
+c              call rzero(upup,nt)
+c              call rzero(tb(1,i+2*nb+1),nt)
+
+c              call evalcflds(
+c    $            upup,uvwb(1,1,i),tb(1,i),1,1,.true.)
+
+c              call col2(upup,tmask,nt)
+c              call dssum(upup,lx1,ly1,lz1)
+c              call col2(upup,bintm1,nt)
+
+c              sc=1./sqrt(glsc3(upup,upup,bm1,nt))
+
+c              call cmult(upup,sc,nv)
+               call cfill(upup,(i+2*nb+1)*1.0,nt)
+               call copy(tb(1,i+2*nb+1),upup,nt)
+            enddo
+         endif
+
+         ifield=jfield
+
+         nb=nb*3+1
+      endif
+
+      if (iaug.eq.21) then
+         jfield=ifield
+         ifield=1
+         if (ifrom(1)) then
+            do i=0,nb
+               call opzero(upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1))
+
+               call evalcflds(
+     $            upup,uvwb(1,1,0),uvwb(1,1,i),ldim,1,.true.)
+
+               call opadd2(upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1),
+     $                     upup(1,1,1),upup(1,2,1),upup(1,ldim,1))
+
+               call evalcflds(
+     $            upup,uvwb(1,1,i),uvwb(1,1,0),ldim,1,.true.)
+
+               call opadd2(upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1),
+     $                     upup(1,1,1),upup(1,2,1),upup(1,ldim,1))
+
+               call opbinv1(upup(1,1,1),upup(1,2,1),upup(1,ldim,1),
+     $                      upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1),1.)
+
+               call incomprn(
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1),prlag)
+
+               if (ifcflow) call set0flow(upup,1,idirf)
+
+               sc=1./sqrt(op_glsc2_wt(
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1),
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1),bm1))
+
+               call opcmult(upup(1,1,1),upup(1,2,1),upup(1,ldim,1),sc)
+
+               call opcopy(
+     $            uvwb(1,1,i+nb+1),uvwb(1,2,i+nb+1),uvwb(1,ldim,i+nb+1),
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1))
+
+               call opcopy(
+     $            ub(1,i+nb+1),vb(1,i+nb+1),wb(1,i+nb+1),
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1))
+            enddo
+
+            do i=1,nb
+               call evalcflds(
+     $            upvp,uvwb(1,1,i),uvwb(1,1,i),ldim,1,.true.)
+
+               call opbinv1(upup(1,1,1),upup(1,2,1),upup(1,ldim,1),
+     $                      upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1),1.)
+
+               call incomprn(
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1),prlag)
+
+               if (ifcflow) call set0flow(upup,1,idirf)
+
+               sc=1./sqrt(op_glsc2_wt(
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1),
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1),bm1))
+
+               call opcmult(upup(1,1,1),upup(1,2,1),upup(1,ldim,1),sc)
+
+               call opcopy(
+     $            uvwb(1,1,i+2*nb+1),uvwb(1,2,i+2*nb+1),
+     $            uvwb(1,ldim,i+2*nb+1),
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1))
+
+               call opcopy(
+     $            ub(1,i+2*nb+1),vb(1,i+2*nb+1),wb(1,i+2*nb+1),
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1))
+            enddo
+         endif
+
+         if (ifrom(2)) then
+            ifield=2
+            nv=lx1*ly1*lz1*nelv
+            nt=lx1*ly1*lz1*nelt
+            do i=0,nb
+               call rzero(upup,nt)
+               call rzero(tb(1,i+nb+1),nt)
+
+c              call evalcflds(
+c    $            upup,uvwb(1,1,0),tb(1,i),1,1,.true.)
+
+c              call col2(upup,tmask,nt)
+c              call dssum(upup,lx1,ly1,lz1)
+c              call col2(upup,bintm1,nt)
+
+c              sc=1./sqrt(glsc3(upup,upup,bm1,nt))
+
+c              call cmult(upup,sc,nt)
+               call cfill(upup,(i+nb+1)*1.0,nt)
+               call copy(tb(1,i+nb+1),upup,nt)
+            enddo
+            do i=1,nb
+               call rzero(upup,nt)
+               call rzero(tb(1,i+2*nb+1),nt)
+
+c              call evalcflds(
+c    $            upup,uvwb(1,1,i),tb(1,i),1,1,.true.)
+
+c              call col2(upup,tmask,nt)
+c              call dssum(upup,lx1,ly1,lz1)
+c              call col2(upup,bintm1,nt)
+
+c              sc=1./sqrt(glsc3(upup,upup,bm1,nt))
+
+c              call cmult(upup,sc,nv)
+               call cfill(upup,(i+2*nb+1)*1.0,nt)
+               call copy(tb(1,i+2*nb+1),upup,nt)
+            enddo
+         endif
+
+         ifield=jfield
+
+         nb=nb*3+1
+      endif
+
       if (iaug.eq.7) then
          jfield=ifield
          ifield=1
