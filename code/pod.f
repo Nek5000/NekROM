@@ -1780,7 +1780,7 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelt
 
-      wl2sip = glsc3(t1,t2,rho,n)
+      wl2sip_vd = glsc3(t1,t2,rho,n)
 
       return
       end

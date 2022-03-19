@@ -1343,7 +1343,6 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
-      include 'SOLN'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
@@ -1374,7 +1373,7 @@ c-----------------------------------------------------------------------
      $                           ub(1,j),vb(1,j),wb(1,j))
                else
                   if (nelgt.ne.nelvt) then
-                     a0(i,j)=h10sip_vp(tb(1,i),tb(1,j),vdm1)
+                     a0(i,j)=h10sip_vd(tb(1,i),tb(1,j),vdm1)
                   else
                      a0(i,j)=h10sip(tb(1,i),tb(1,j))
                   endif
