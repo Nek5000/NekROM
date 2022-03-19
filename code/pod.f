@@ -1764,6 +1764,27 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      function wl2sip_vd(t1,t2,rho)
+
+      ! return inner-product of scalar fields using the L^2
+      ! inner-product
+
+      ! t1,t2 := scalar fields
+
+      include 'SIZE'
+      include 'MASS'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real t1(lt),t2(lt),rho(lt)
+
+      n=lx1*ly1*lz1*nelt
+
+      wl2sip = glsc3(t1,t2,rho,n)
+
+      return
+      end
+c-----------------------------------------------------------------------
       function wl2sip(t1,t2)
 
       ! return inner-product of scalar fields using the L^2

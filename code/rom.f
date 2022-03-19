@@ -1343,6 +1343,7 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
+      include 'SOLN'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
@@ -1359,6 +1360,11 @@ c-----------------------------------------------------------------------
          call read_mat_serial(a0,nb+1,nb+1,fname,mb+1,nb+1,wk1,nid)
       else
          if (nio.eq.0) write (6,*) 'forming a...'
+         if (ifield.eq.2.and.(nelgt.ne.nelvt)) then
+            call copy(vdm1,vdiff(1,1,1,1,2),n)
+            sc=1./param(8)
+            call cmult(vdm1,sc,n)
+         endif
          do j=0,nb
             if (nio.eq.0) write (6,*) 'seta: ',j,'/',nb
             nio=-1
@@ -1367,7 +1373,11 @@ c-----------------------------------------------------------------------
                   a0(i,j)=h10vip(ub(1,i),vb(1,i),wb(1,i),
      $                           ub(1,j),vb(1,j),wb(1,j))
                else
-                  a0(i,j)=h10sip(tb(1,i),tb(1,j))
+                  if (nelgt.ne.nelvt) then
+                     a0(i,j)=h10sip_vp(tb(1,i),tb(1,j),vdm1)
+                  else
+                     a0(i,j)=h10sip(tb(1,i),tb(1,j))
+                  endif
                endif
             enddo
             nio=nid
@@ -1451,6 +1461,7 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'TSTEP'
       include 'MOR'
+      include 'SOLN'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
@@ -1466,6 +1477,11 @@ c-----------------------------------------------------------------------
          if (nio.eq.0) write (6,*) 'reading b...'
          call read_mat_serial(b0,nb+1,nb+1,fname,mb+1,nb+1,tab,nid)
       else
+         if (ifield.eq.2.and.(nelgt.ne.nelvt)) then
+            call copy(brhom1,vtrans(1,1,1,1,2),n)
+c           sc=1./param(8)
+c           call cmult(vdm1,sc,n)
+         endif
          if (nio.eq.0) write (6,*) 'forming b...'
          do j=0,nb
             if (nio.eq.0) write (6,*) 'setb: ',j,'/',nb
@@ -1475,7 +1491,11 @@ c-----------------------------------------------------------------------
                   b0(i,j)=wl2vip(ub(1,i),vb(1,i),wb(1,i),
      $                           ub(1,j),vb(1,j),wb(1,j))
                else
-                  b0(i,j)=wl2sip(tb(1,i),tb(1,j))
+                  if (nelgt.eq.nelvt) then
+                     b0(i,j)=wl2sip(tb(1,i),tb(1,j))
+                  else
+                     b0(i,j)=wl2sip_vd(tb(1,i),tb(1,j),brhom1)
+                  endif
                endif
             enddo
             nio=nid

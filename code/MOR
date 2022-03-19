@@ -46,6 +46,8 @@ c     parameters and common blocks for MOR
 
       common /mormsk/ dmask(lx1,ly1,lz1,lelm,lmsk+1)
 
+      common /morprop/ brhom1(lx1,ly1,lz1,lelm),vdm1(lx1,ly1,lz1,lelm)
+
       parameter (lcglo=2*lub*(lub+1)*(lub+1))
       parameter (lcloc=lcglo/lpmin+1)
 
