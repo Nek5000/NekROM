@@ -601,7 +601,7 @@ c           enddo
             nv=lx1*ly1*lz1*nelv
             nt=lx1*ly1*lz1*nelt
             do i=0,nb
-               call rzero(upup,nv)
+               call rzero(upup,nt)
                call rzero(tb(1,i+nb+1),nt)
 
                call evalcflds(
@@ -611,14 +611,14 @@ c           enddo
                call dssum(upup,lx1,ly1,lz1)
                call col2(upup,bintm1,nt)
 
-               sc=1./sqrt(glsc3(upup,upup,bm1,nv))
+               sc=1./sqrt(glsc3(upup,upup,bm1,nt))
 
-               call cmult(upup,sc,nv)
-               call copy(tb(1,i+nb+1),upup,nv)
+               call cmult(upup,sc,nt)
+               call copy(tb(1,i+nb+1),upup,nt)
             enddo
             do i=1,nb
 
-               call rzero(upup,nv)
+               call rzero(upup,nt)
                call rzero(tb(1,i+2*nb+1),nt)
 
                call evalcflds(
@@ -628,10 +628,10 @@ c           enddo
                call dssum(upup,lx1,ly1,lz1)
                call col2(upup,bintm1,nt)
 
-               sc=1./sqrt(glsc3(upup,upup,bm1,nv))
+               sc=1./sqrt(glsc3(upup,upup,bm1,nt))
 
                call cmult(upup,sc,nv)
-               call copy(tb(1,i+2*nb+1),upup,nv)
+               call copy(tb(1,i+2*nb+1),upup,nt)
             enddo
          endif
 
