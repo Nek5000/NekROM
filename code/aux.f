@@ -2899,3 +2899,48 @@ c              if (nio.eq.0) write (6,*) 'ctmp ',is,iib,ib,ctmp1,ctmp2
       return
       end
 c-----------------------------------------------------------------------
+      subroutine genrij()
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'AVG'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /myblocka/ wk(lt,ldim,ldim)
+
+      character*127 fname 
+
+      call blank(fname,127)
+      fname='avg.list'
+      fname='rms.list'
+      fname='rm2.list'
+
+      nv=lx1*ly1*lz1*nelv
+
+      call col3(wk(1,1,1),uavg,uavg,nv)
+      call col3(wk(1,1,2),vavg,uavg,nv)
+      call col3(wk(1,2,2),vavg,vavg,nv)
+
+      if (ldim.eq.3) then
+         call col3(wk(1,1,3),uavg,wavg,nv)
+         call col3(wk(1,2,3),vavg,wavg,nv)
+         call col3(wk(1,3,3),wavg,wavg,nv)
+      endif
+
+      call sub2(wk(1,1,1),urms,nv)
+      call sub2(wk(1,1,2),uvms,nv)
+      call sub2(wk(1,2,2),vrms,nv)
+
+      if (ldim.eq.3) then
+         call sub2(wk(1,1,3),wums,nv)
+         call sub2(wk(1,2,3),vwms,nv)
+         call sub2(wk(1,3,3),wrms,nv)
+      endif
+
+      call divm1(wk(1,2,1),wk(1,1,1),wk(1,1,2),wk(1,1,3))
+      call divm1(wk(1,2,1),wk(1,1,1),wk(1,1,2),wk(1,1,3))
+
+      return
+      end
+c-----------------------------------------------------------------------
