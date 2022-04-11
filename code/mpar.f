@@ -88,6 +88,7 @@ c-----------------------------------------------------------------------
       call finiparser_getdbl(d_out,'general:nb',ifnd)
       if (ifnd.eq.1) nb=min(nint(d_out),lb)
       if (nb.eq.0) nb=lb
+      nbo=nb
 
       if (ifavg0.and.(nb.eq.ls)) then
          write (6,*) 'nb == ls results in linear dependent bases',nb
@@ -498,6 +499,7 @@ c-----------------------------------------------------------------------
 
       call bcast(ntr,isize)
       call bcast(nb,isize)
+      call bcast(nbo,isize)
       call bcast(mb,isize)
       call bcast(ns,isize)
       call bcast(nns,isize)
