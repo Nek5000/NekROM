@@ -17,6 +17,6 @@ gnuplot
 set logscale y
 plot 't.e' u 1:8 w l
 
-# ROM: TS waves in plane Poiseuille flow.
+## ROM: TS waves in plane Poiseuille flow.
 
 The usr file for the ROM, u3\_t020\_n13\_rom.usr, mimics the FOM user file. In particular the rom_userchk subroutine is only a slight modification of the FOM userchk subroutine to accomodate variable name conflicts and to evaluate the inner-products using the ROM coefficients.
