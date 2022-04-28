@@ -64,6 +64,7 @@ c        cts='rkck  '
          time=0
          ad_step=0
          call rom_userchk
+         ad_step=1
          do i=1,ad_nsteps
             if (cts.eq.'bdfext') then
                call bdfext_step
