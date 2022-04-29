@@ -69,7 +69,7 @@
    1.00000     p065 #iofiles (eg, 0 or 64); <0 --> sep. dirs
    6.00000     p066 output : <0=ascii, else binary
    6.00000     p067 restart: <0=ascii, else binary
-   250.000     p068 iastep: freq for avg_all (0=iostep)
+   25000.0     p068 iastep: freq for avg_all (0=iostep)
    0.00000     p069 
    0.00000     p070 
    0.00000     p071 

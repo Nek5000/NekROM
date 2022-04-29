@@ -8,7 +8,7 @@ type     = h10 # pod-inner product (l2,h10,hlm)
 mode0    = avg # 0th mode of the POD basis (avg=mean(snaps),state=vx,vy,vz,t)
 
 [QOI]
-freq = 0  # frequency of qoi dump (<1 -> iostep)
+freq = 10 # frequency of qoi dump (<1 -> iostep)
 tke  = no # turbulence kinetic energy
 drag = yes # drag based on OBJ data
 nu   = 0  # nusselt number based on problem type (1-3)
