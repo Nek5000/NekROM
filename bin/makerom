@@ -1,0 +1,4 @@
+#!/bin/bash
+
+$MOR_DIR/bin/linkm
+USR="$USR ana.o aux.o conv.o dump.o ei.o filter.o lapack.o pod.o qoi.o rom.o read.o time.o const.o rk.o legacy.o tensor.o mpar.o riesz.o" makenek $1
