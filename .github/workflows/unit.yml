@@ -10,13 +10,13 @@ jobs:
         test: [GRAMIAN, IC, A0, B0, C0, CP, EVALC, CP_SKEW]
         ips: [L2, H10]
     env:
-      MOR_DIR: /home/runner/work/NekMOR/NekMOR
+      MOR_DIR: /home/runner/work/NekROM/NekROM
       USR: "ana.o aux.o conv.o dump.o ei.o filter.o lapack.o pod.o qoi.o rom.o read.o time.o const.o unit.o rk.o legacy.o mpar.o tensor.o riesz.o"
 
     steps:
       - uses: actions/checkout@v2
 
-      - name: Setup NekMOR
+      - name: Setup NekROM
         run: |
           echo "$MOR_DIR/bin" >> $GITHUB_PATH
 
