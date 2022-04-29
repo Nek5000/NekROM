@@ -4,11 +4,11 @@ This package include tools to help apply model-order reduction (MOR) to data pro
 
 # Setup & Procedure
 
-Set shell variables:
+Set shell variables (in .bashrc for BASH users):
 
 ```
-MOR_DIR='/path/to/NekROM'
-PATH="$MOR_DIR/bin:$PATH"
+export MOR_DIR='/path/to/NekROM'
+export PATH="$MOR_DIR/bin:$PATH"
 ```
 
 Required files in NekROM case directory:
