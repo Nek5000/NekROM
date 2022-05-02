@@ -16,7 +16,6 @@ rm pdrive           &> /dev/null
 ln -s {$MOR_DIR/code,${cwd}}/MOR
 ln -s {$MOR_DIR/code,${cwd}}/MORDICT
 ln -s {$MOR_DIR/tests,$cwd}/test.usr
-ln -s {$MOR_DIR/bin,$cwd}/pdrive
 
 echo "MOR_DIR=${MOR_DIR}" > makefile_usr.inc
 cat $MOR_DIR/code/makefile_usr.inc >> $cwd/makefile_usr.inc
@@ -25,7 +24,6 @@ cat $MOR_DIR/code/makefile_usr.inc >> $cwd/makefile_usr.inc
 
 cp -n $MOR_DIR/templates/LMOR.template LMOR
 cp -n $MOR_DIR/templates/SIZE.template SIZE
-cp -n $MOR_DIR/templates/config.json.template config.json
 
 # create directories for dumping
 
