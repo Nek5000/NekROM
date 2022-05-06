@@ -1,3 +1,4 @@
+println("""
 #####################################
 
 # Julia Driver for NekROM
@@ -7,11 +8,10 @@
 # 2022-05-06
 
 #####################################
+""");
 
 include("functions.jl");
 
-println(" ");
-println("v0.2.0");
 println(" ");
 
 print("now: ");
