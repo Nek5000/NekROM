@@ -1,0 +1,8 @@
+[general]
+mode = all
+field = v
+nb=2
+
+[POD]
+type = l2
+mode0 = state

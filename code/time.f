@@ -251,6 +251,8 @@ c-----------------------------------------------------------------------
 
       real vort(lt)
 
+      call rom_userchk
+
       if (icalld.eq.0) then
          post_time=0.
          icalld=1

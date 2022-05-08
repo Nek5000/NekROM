@@ -1,0 +1,14 @@
+[GENERAL]
+mode    = all # (off=offline,on=online,all=both,onb=online with bases,cp)
+field   = v  # fields to perform the pod-rom (v=vel.,t=temp.,vt=both)
+nb      = 20  # number of modes for the pod-rom
+
+[POD]
+type     = h10 # pod-inner product (l2,h10,hlm)
+mode0    = avg # 0th mode of the POD basis (avg=mean(snaps),state=vx,vy,vz,t)
+
+[QOI]
+freq = 10 # frequency of qoi dump (<1 -> iostep)
+tke  = no # turbulence kinetic energy
+drag = yes # drag based on OBJ data
+nu   = 0  # nusselt number based on problem type (1-3)
