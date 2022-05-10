@@ -5,8 +5,16 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'
       include 'MOR'
+      include 'SOLN'
+      include 'MASS'
+      include 'TSTEP'
+      include 'INPUT'
 
+      parameter (lt=lx1*ly1*lz1*lelt)
       if (nio.eq.0) write (6,*) 'inside setbases'
+
+      nv=lx1*ly1*lz1*nelv
+      nt=lx1*ly1*lz1*nelt
 
       call nekgsync
       bas_time=dnekclock()
@@ -16,6 +24,66 @@ c-----------------------------------------------------------------------
       if (rmode.eq.'ONB'.or.rmode.eq.'CP ') then
          call loadbases
       else if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
+         if (ifrom(2)) then
+            call pod(
+     $         tb(1,1),eval2,ug,ts0,1,ips,nb,ns2,ifpb,'ops/gt  ')
+            do is=1,ns2
+               call sub2(ts0(1,is+ns2),ts0(1,is),nt)
+            enddo
+            call pod(
+     $         tb(1,1+nb),eval2,ug,ts0(1,1+ns2),
+     $         1,ips,nb,ns2,ifpb,'ops/gt  ')
+            call snorm(tb(1,1))
+            call snorm(tb(1,1+nb))
+         endif
+         nb=nb2
+         else if (iaug.eq.12) then
+         ns2=ns/2
+         nb2=nb*2
+         if (ifrom(1)) then
+            call pod(
+     $         uvwb(1,1,1),eval,ug,us0,ldim,ips,nb,ns2,ifpb,'ops/gu  ')
+            do is=1,ns2
+               call opsub2(
+     $            us0(1,1,is+ns2),us0(1,2,is+ns2),us0(1,ldim,is+ns2),
+     $            us0(1,1,is),us0(1,2,is),us0(1,ldim,is))
+            enddo
+c           ifxyo=.true.
+c           do i=1,ns2
+c              call outpost(us0(1,1,i),us0(1,2,i),us0(1,3,i)
+c    $                     ,pr,ts0(1,i),'sss')
+c              call outpost(us0(1,1,ns2+i),us0(1,2,ns2+i),us0(1,3,ns2+i)
+c    $                     ,pr,ts0(1,ns2+i),'sss')
+c           enddo
+            mdim=3
+            do i=1,mdim
+               call dgemm('N','N',nv,nb,ns2,1.,
+     $            us0(1,i,1+ns2),lt*mdim,ug,ns2,0.,uvwb(1,i,1+nb),
+     $            lt*mdim)
+            enddo
+            if (ifcflow) call set0flow(uvwb(1,1,1),nb2,idirf)
+            call vnorm_(uvwb(1,1,1))
+            call vnorm_(uvwb(1,1,1+nb))
+            do ib=1,nb2
+               call opcopy(ub(1,ib),vb(1,ib),wb(1,ib),
+     $            uvwb(1,1,ib),uvwb(1,2,ib),uvwb(1,ldim,ib))
+            enddo
+         endif
+         if (ifrom(2)) then
+            call pod(
+     $         tb(1,1),eval2,ug,ts0,1,ips,nb,ns2,ifpb,'ops/gt  ')
+            do is=1,ns2
+               call sub2(ts0(1,is+ns2),ts0(1,is),nt)
+            enddo
+            call dgemm('N','N',nt,nb,ns2,1.,
+     $         ts0(1,1+ns2),lt,ug,ns2,0.,tb(1,1+nb),
+     $         lt)
+            call snorm(tb(1,1))
+            call snorm(tb(1,1+nb))
+         endif
+         nb=nb2
+         else
+
          if (ifrom(1)) then
             call pod(
      $         uvwb(1,1,1),eval,ug,us0,ldim,ips,nb,ns,ifpb,'ops/gu  ')
@@ -24,16 +92,294 @@ c-----------------------------------------------------------------------
                call opcopy(ub(1,ib),vb(1,ib),wb(1,ib),
      $            uvwb(1,1,ib),uvwb(1,2,ib),uvwb(1,ldim,ib))
             enddo
-            if (.not.ifcomb.and.ifpb) call vnorm(ub,vb,wb)
+            if (.not.ifcomb.and.ifpb) then
+               call vnorm(ub,vb,wb)
+               call vnorm_(uvwb)
+            endif
          else
             call opcopy(ub,vb,wb,uic,vic,wic)
+            call opcopy(
+     $         uvwb(1,1,0),uvwb(1,2,0),uvwb(1,ldim,0),uic,vic,wic)
          endif
          if (ifrom(2)) then
-            call pod(tb(1,1),eval,ug,ts0,1,ips,nb,ns,ifpb,'ops/gt  ')
-            if (.not.ifcomb.and.ifpb) call snorm(tb)
+            if (iaug.eq.4) then
+               call pod(
+     $            tb(1,1),eval2,ug,ts0,1,ips,nb*2,ns,ifpb,'ops/gt  ')
+               if (.not.ifcomb.and.ifpb) call snorm(tb)
+               if (.not.ifcomb.and.ifpb) call snorm(tb(1,nb))
+            else
+               call pod(
+     $            tb(1,1),eval2,ug,ts0,1,ips,nb,ns,ifpb,'ops/gt  ')
+               if (.not.ifcomb.and.ifpb) call snorm(tb)
+            endif
          endif
 
          if (ifcomb.and.ifpb) call cnorm(ub,vb,wb,tb)
+         endif
+      endif
+
+      ! z = \zeta
+      ! iaug = 1: Pi_incomprn {z_0 \cdot \nabla z + z \cdot \nabla z_0}
+      ! iaug = 2: Pi_incomprn {z \cdot \nabla z}
+      ! iaug = 3: iaug = 1 + iaug = 2
+
+      if (iaug.eq.1) then
+         jfield=ifield
+         ifield=1
+         if (ifrom(1)) then
+            do i=0,nb
+               call opzero(upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1))
+
+               call evalcflds(
+     $            upup,uvwb(1,1,0),uvwb(1,1,i),ldim,1,.true.)
+
+               call opadd2(upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1),
+     $                     upup(1,1,1),upup(1,2,1),upup(1,ldim,1))
+
+               call evalcflds(
+     $            upup,uvwb(1,1,i),uvwb(1,1,0),ldim,1,.true.)
+
+               call opadd2(upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1),
+     $                     upup(1,1,1),upup(1,2,1),upup(1,ldim,1))
+
+               call opbinv1(upup(1,1,1),upup(1,2,1),upup(1,ldim,1),
+     $                      upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1),1.)
+
+               call incomprn(
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1),prlag)
+
+               if (ifcflow) call set0flow(upup,1,idirf)
+
+               sc=1./sqrt(op_glsc2_wt(
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1),
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1),bm1))
+
+               call opcmult(upup(1,1,1),upup(1,2,1),upup(1,ldim,1),sc)
+
+               call opcopy(
+     $            uvwb(1,1,i+nb+1),uvwb(1,2,i+nb+1),uvwb(1,ldim,i+nb+1),
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1))
+
+               call opcopy(
+     $            ub(1,i+nb+1),vb(1,i+nb+1),wb(1,i+nb+1),
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1))
+            enddo
+         endif
+
+         if (ifrom(2)) then
+            ifield=2
+            nv=lx1*ly1*lz1*nelv
+            nt=lx1*ly1*lz1*nelt
+            do i=0,nb
+               call rzero(upup,nv)
+               call rzero(tb(1,i+nb+1),nt)
+
+               call evalcflds(
+     $            upup,uvwb(1,1,0),tb(1,i),1,1,.true.)
+
+               call col2(upup,tmask,nt)
+               call dssum(upup,lx1,ly1,lz1)
+               call col2(upup,bintm1,nt)
+
+               sc=1./sqrt(glsc3(upup,upup,bm1,nv))
+
+               call cmult(upup,sc,nv)
+               call copy(tb(1,i+nb+1),upup,nv)
+            enddo
+         endif
+
+         ifield=jfield
+
+         nb=nb*2+1
+      endif
+
+      if (iaug.eq.2) then
+         jfield=ifield
+         ifield=1
+         if (ifrom(1)) then
+            do i=0,nb
+               call evalcflds(
+     $            upvp,uvwb(1,1,i),uvwb(1,1,i),ldim,1,.true.)
+
+               call opbinv1(upup(1,1,1),upup(1,2,1),upup(1,ldim,1),
+     $                      upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1),1.)
+
+               call incomprn(
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1),prlag)
+
+               if (ifcflow) call set0flow(upup,1,idirf)
+
+               sc=1./sqrt(op_glsc2_wt(
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1),
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1),bm1))
+
+               call opcmult(upup(1,1,1),upup(1,2,1),upup(1,ldim,1),sc)
+
+               call opcopy(
+     $            uvwb(1,1,i+nb+1),uvwb(1,2,i+nb+1),uvwb(1,ldim,i+nb+1),
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1))
+
+               call opcopy(
+     $            ub(1,i+nb+1),vb(1,i+nb+1),wb(1,i+nb+1),
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1))
+            enddo
+            if (rmode.eq.'ALL') then
+               n=lx1*ly1*lz1*nelt
+               do i=nb+1,nb*2+1
+                  do j=1,i-1
+                     s1=-op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),
+     $                               ub(1,j),vb(1,j),wb(1,j),bm1)
+                     call opadds(ub(1,i),vb(1,i),wb(1,i),
+     $                           ub(1,j),vb(1,j),wb(1,j),s1,n,2)
+                  enddo
+                  s1=1./sqrt(op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),
+     $                                   ub(1,i),vb(1,i),wb(1,i),bm1))
+                  call opcmult(ub(1,i),vb(1,i),wb(1,i),s1)
+               enddo
+            endif
+         endif
+
+         if (ifrom(2)) then
+            ifield=2
+            nv=lx1*ly1*lz1*nelv
+            nt=lx1*ly1*lz1*nelt
+            do i=0,nb
+
+               call rzero(upup,nv)
+               call rzero(tb(1,i+nb+1),nt)
+
+               call evalcflds(
+     $            upup,uvwb(1,1,i),tb(1,i),1,1,.true.)
+
+               call col2(upup,tmask,nt)
+               call dssum(upup,lx1,ly1,lz1)
+               call col2(upup,bintm1,nt)
+
+               sc=1./sqrt(glsc3(upup,upup,bm1,nv))
+
+               call cmult(upup,sc,nv)
+               call copy(tb(1,i+nb+1),upup,nv)
+            enddo
+         endif
+
+         ifield=jfield
+
+         nb=nb*2+1
+      endif
+
+      if (iaug.eq.3) then
+         jfield=ifield
+         ifield=1
+         if (ifrom(1)) then
+            do i=0,nb
+               call opzero(upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1))
+
+               call evalcflds(
+     $            upup,uvwb(1,1,0),uvwb(1,1,i),ldim,1,.true.)
+
+               call opadd2(upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1),
+     $                     upup(1,1,1),upup(1,2,1),upup(1,ldim,1))
+
+               call evalcflds(
+     $            upup,uvwb(1,1,i),uvwb(1,1,0),ldim,1,.true.)
+
+               call opadd2(upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1),
+     $                     upup(1,1,1),upup(1,2,1),upup(1,ldim,1))
+
+               call opbinv1(upup(1,1,1),upup(1,2,1),upup(1,ldim,1),
+     $                      upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1),1.)
+
+               call incomprn(
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1),prlag)
+
+               if (ifcflow) call set0flow(upup,1,idirf)
+
+               sc=1./sqrt(op_glsc2_wt(
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1),
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1),bm1))
+
+               call opcmult(upup(1,1,1),upup(1,2,1),upup(1,ldim,1),sc)
+
+               call opcopy(
+     $            uvwb(1,1,i+nb+1),uvwb(1,2,i+nb+1),uvwb(1,ldim,i+nb+1),
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1))
+
+               call opcopy(
+     $            ub(1,i+nb+1),vb(1,i+nb+1),wb(1,i+nb+1),
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1))
+            enddo
+
+            do i=1,nb
+               call evalcflds(
+     $            upvp,uvwb(1,1,i),uvwb(1,1,i),ldim,1,.true.)
+
+               call opbinv1(upup(1,1,1),upup(1,2,1),upup(1,ldim,1),
+     $                      upvp(1,1,1),upvp(1,2,1),upvp(1,ldim,1),1.)
+
+               call incomprn(
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1),prlag)
+
+               if (ifcflow) call set0flow(upup,1,idirf)
+
+               sc=1./sqrt(op_glsc2_wt(
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1),
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1),bm1))
+
+               call opcmult(upup(1,1,1),upup(1,2,1),upup(1,ldim,1),sc)
+
+               call opcopy(
+     $            uvwb(1,1,i+2*nb+1),uvwb(1,2,i+2*nb+1),
+     $            uvwb(1,ldim,i+2*nb+1),
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1))
+
+               call opcopy(
+     $            ub(1,i+2*nb+1),vb(1,i+2*nb+1),wb(1,i+2*nb+1),
+     $            upup(1,1,1),upup(1,2,1),upup(1,ldim,1))
+            enddo
+         endif
+
+         if (ifrom(2)) then
+            ifield=2
+            nv=lx1*ly1*lz1*nelv
+            nt=lx1*ly1*lz1*nelt
+            do i=0,nb
+               call rzero(upup,nt)
+               call rzero(tb(1,i+nb+1),nt)
+
+               call evalcflds(
+     $            upup,uvwb(1,1,0),tb(1,i),1,1,.true.)
+
+               call col2(upup,tmask,nt)
+               call dssum(upup,lx1,ly1,lz1)
+               call col2(upup,bintm1,nt)
+
+               sc=1./sqrt(glsc3(upup,upup,bm1,nt))
+
+               call cmult(upup,sc,nt)
+               call copy(tb(1,i+nb+1),upup,nt)
+            enddo
+            do i=1,nb
+
+               call rzero(upup,nt)
+               call rzero(tb(1,i+2*nb+1),nt)
+
+               call evalcflds(
+     $            upup,uvwb(1,1,i),tb(1,i),1,1,.true.)
+
+               call col2(upup,tmask,nt)
+               call dssum(upup,lx1,ly1,lz1)
+               call col2(upup,bintm1,nt)
+
+               sc=1./sqrt(glsc3(upup,upup,bm1,nt))
+
+               call cmult(upup,sc,nv)
+               call copy(tb(1,i+2*nb+1),upup,nt)
+            enddo
+         endif
+
+         ifield=jfield
+
+         nb=nb*3+1
       endif
 
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
@@ -157,6 +503,39 @@ c-----------------------------------------------------------------------
       enddo
 
       if (nio.eq.0) write (6,*) 'exiting ps2b'
+
+    1 format(' coef',1p3e16.8,1x,a3)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine ps2b1(coef,tt,sb,nb2)
+
+      ! get coordinates of a scalar field for a given basis w/o 0th mode
+
+      ! ck  := coordinates of <ux> in <uub>
+      ! ux  := FOM scalar field
+      ! uub := basis functions
+
+      include 'SIZE'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real coef(nb),tt(lt),sb(lt,nb)
+
+      if (nio.eq.0) write (6,*) 'inside ps2b1'
+
+      n=lx1*ly1*lz1*nelt
+
+      do i=1,nb2
+         ww=sip(sb(1,i),sb(1,i))
+         vv=sip(sb(1,i),tt)
+         coef(i) = vv/ww
+         if (nio.eq.0) write (6,1) coef(i),vv,ww,ips
+      enddo
+
+      if (nio.eq.0) write (6,*) 'exiting ps2b1'
 
     1 format(' coef',1p3e16.8,1x,a3)
 
@@ -486,6 +865,27 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      function wl2sip_vd(t1,t2,rho)
+
+      ! return inner-product of scalar fields using the L^2
+      ! inner-product
+
+      ! t1,t2 := scalar fields
+
+      include 'SIZE'
+      include 'MASS'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real t1(lt),t2(lt),rho(lt)
+
+      n=lx1*ly1*lz1*nelt
+
+      wl2sip_vd = glsc3(t1,t2,rho,n)
+
+      return
+      end
+c-----------------------------------------------------------------------
       function wl2sip(t1,t2)
 
       ! return inner-product of scalar fields using the L^2
@@ -795,6 +1195,35 @@ c-----------------------------------------------------------------------
       if (nio.eq.0) write (6,*) 'evec_time:',evec_time-eval_time
 
       if (nio.eq.0) write (6,*) 'exiting genevec'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine vnorm_(uvwbb)
+
+      ! normalizes vector field
+
+      ! uub,vvb,wwb := x,y,z components of vector field
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real uvwbb(lt,ldim,0:nb)
+
+      jfield=ifield
+      ifield=1
+      nio=-1
+      do i=1,nb
+         p=vip(uvwbb(1,1,i),uvwbb(1,2,i),uvwbb(1,ldim,i),
+     $         uvwbb(1,1,i),uvwbb(1,2,i),uvwbb(1,ldim,i))
+         s=1./sqrt(p)
+         call opcmult(uvwbb(1,1,i),uvwbb(1,2,i),uvwbb(1,3,i),s)
+      enddo
+      nio=nid
+      ifield=jfield
 
       return
       end

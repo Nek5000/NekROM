@@ -88,6 +88,7 @@ c-----------------------------------------------------------------------
       call finiparser_getdbl(d_out,'general:nb',ifnd)
       if (ifnd.eq.1) nb=min(nint(d_out),lb)
       if (nb.eq.0) nb=lb
+      nbo=nb
 
       if (ifavg0.and.(nb.eq.ls)) then
          write (6,*) 'nb == ls results in linear dependent bases',nb
@@ -227,6 +228,9 @@ c-----------------------------------------------------------------------
 
       call finiparser_getdbl(d_out,'pod:ratio',ifnd)
       if (ifnd.eq.1) podrat=d_out
+
+      call finiparser_getdbl(d_out,'pod:augment',ifnd)
+      if (ifnd.eq.1) iaug=nint(d_out)
 
       ! QOI
 
@@ -444,14 +448,18 @@ c-----------------------------------------------------------------------
       call finiparser_getbool(i_out,'tendec:skew',ifnd)
       if (ifnd.eq.1) ifquad=i_out.eq.1
 
-      if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
-         rtmp1(1,1)=nb*1.
-         call dump_serial(rtmp1(1,1),1,'ops/nb ',nid)
-      else
+      if (rmode.eq.'ON'.or.rmode.eq.'ONB') then
          call read_serial(rtmp1(1,1),1,'ops/nb ',rtmp2,-1)
-         mb=rtmp1(1,1)
+         mb=nint(rtmp1(1,1))
          if (mb.lt.nb) then
             write (6,*) 'mb less than nb... ',mb
+            ierr=ierr+1
+         endif
+
+         call read_serial(rtmp1(1,1),1,'ops/ns ',rtmp2,-1)
+         nns=nint(rtmp1(1,1))
+         if (nns.lt.ns) then
+            write (6,*) 'ms less than ns... ',nns
             ierr=ierr+1
          endif
       endif
@@ -465,7 +473,6 @@ c-----------------------------------------------------------------------
             ierr=ierr+1
          endif
       endif
-
 
       if (ierr.eq.0) call finiparser_dump()
 
@@ -492,8 +499,10 @@ c-----------------------------------------------------------------------
 
       call bcast(ntr,isize)
       call bcast(nb,isize)
+      call bcast(nbo,isize)
       call bcast(mb,isize)
       call bcast(ns,isize)
+      call bcast(nns,isize)
       call bcast(nskip,isize)
       call bcast(navg_step,isize)
       call bcast(nplay,isize)
@@ -505,6 +514,7 @@ c-----------------------------------------------------------------------
       call bcast(ubarrseq,isize)
       call bcast(tbarrseq,isize)
       call bcast(nintp,isize)
+      call bcast(iaug,isize)
 
       ! reals
 

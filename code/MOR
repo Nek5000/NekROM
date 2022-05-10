@@ -2,7 +2,7 @@ c     parameters and common blocks for MOR
 
       include 'LMOR'
 
-      common /morgram/ ug(ls,ls),eval(ls)
+      common /morgram/ ug(ls,ls),eval(ls),eval2(ls)
 
       common /morvisc/ unu(lx1*ly1*lz1*lelm,0:lub),
      $                 tnu(lx1*ly1*lz1*lelm,0:ltb)
@@ -27,6 +27,8 @@ c     parameters and common blocks for MOR
       common /morpsnap/ prs(lx2*ly2*lz2*lelm,lsp)
       common /mortsnap/ ts0(lx1*ly1*lz1*lelm,lst)
 
+      common /morsnaptmp/ snapt(lx1*ly1*lz1*lelm,ldim,lsu)
+
       common /morforce/ fx(lx1*ly1*lz1*lelm),
      $                  fy(lx1*ly1*lz1*lelm),
      $                  fz(lx1*ly1*lz1*lelm),
@@ -43,6 +45,8 @@ c     parameters and common blocks for MOR
      $                 utua_ext((ltb+1)**2),uta_ext(0:ltb)
 
       common /mormsk/ dmask(lx1,ly1,lz1,lelm,lmsk+1)
+
+      common /morprop/ brhom1(lx1,ly1,lz1,lelm),vdm1(lx1,ly1,lz1,lelm)
 
       parameter (lcglo=2*lub*(lub+1)*(lub+1))
       parameter (lcloc=lcglo/lpmin+1)
@@ -116,10 +120,10 @@ c     parameters and common blocks for MOR
 
       integer ad_nsteps,ad_iostep,ad_step,ad_qstep
       common /moripar/ ad_nsteps,ad_iostep,ad_step,ad_qstep,inus,
-     $                 navg_step,mb,nb,nplay,nintp
+     $                 navg_step,mb,nb,nbo,nplay,nintp,iaug
 
-      common /morivars/ i0,j0,k0,i1,j1,k1,ns,nskip,navg,ncloc,npr,npart,
-     $                  isolve,ic1,ic2,jc1,jc2,kc1,kc2,idirf
+      common /morivars/ i0,j0,k0,i1,j1,k1,nns,ns,nskip,navg,ncloc,npr,
+     $                  npart,isolve,ic1,ic2,jc1,jc2,kc1,kc2,idirf
 
       common /morlu/ fluv(lub**2),flut(lub**2)
       common /morilu/ irv(lub),icv(lub),irt(lub),ict(lub),ipiv(lub)
