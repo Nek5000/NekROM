@@ -8,7 +8,7 @@
 
 #####################################
 
-using Printf, Dates, YAML
+using Printf, Dates, YAML, DelimitedFiles, LinearAlgebra
 BLAS.set_num_threads(2)
 
 function readconf(fname)
