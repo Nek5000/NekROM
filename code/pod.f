@@ -24,66 +24,6 @@ c-----------------------------------------------------------------------
       if (rmode.eq.'ONB'.or.rmode.eq.'CP ') then
          call loadbases
       else if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
-         if (ifrom(2)) then
-            call pod(
-     $         tb(1,1),eval2,ug,ts0,1,ips,nb,ns2,ifpb,'ops/gt  ')
-            do is=1,ns2
-               call sub2(ts0(1,is+ns2),ts0(1,is),nt)
-            enddo
-            call pod(
-     $         tb(1,1+nb),eval2,ug,ts0(1,1+ns2),
-     $         1,ips,nb,ns2,ifpb,'ops/gt  ')
-            call snorm(tb(1,1))
-            call snorm(tb(1,1+nb))
-         endif
-         nb=nb2
-         else if (iaug.eq.12) then
-         ns2=ns/2
-         nb2=nb*2
-         if (ifrom(1)) then
-            call pod(
-     $         uvwb(1,1,1),eval,ug,us0,ldim,ips,nb,ns2,ifpb,'ops/gu  ')
-            do is=1,ns2
-               call opsub2(
-     $            us0(1,1,is+ns2),us0(1,2,is+ns2),us0(1,ldim,is+ns2),
-     $            us0(1,1,is),us0(1,2,is),us0(1,ldim,is))
-            enddo
-c           ifxyo=.true.
-c           do i=1,ns2
-c              call outpost(us0(1,1,i),us0(1,2,i),us0(1,3,i)
-c    $                     ,pr,ts0(1,i),'sss')
-c              call outpost(us0(1,1,ns2+i),us0(1,2,ns2+i),us0(1,3,ns2+i)
-c    $                     ,pr,ts0(1,ns2+i),'sss')
-c           enddo
-            mdim=3
-            do i=1,mdim
-               call dgemm('N','N',nv,nb,ns2,1.,
-     $            us0(1,i,1+ns2),lt*mdim,ug,ns2,0.,uvwb(1,i,1+nb),
-     $            lt*mdim)
-            enddo
-            if (ifcflow) call set0flow(uvwb(1,1,1),nb2,idirf)
-            call vnorm_(uvwb(1,1,1))
-            call vnorm_(uvwb(1,1,1+nb))
-            do ib=1,nb2
-               call opcopy(ub(1,ib),vb(1,ib),wb(1,ib),
-     $            uvwb(1,1,ib),uvwb(1,2,ib),uvwb(1,ldim,ib))
-            enddo
-         endif
-         if (ifrom(2)) then
-            call pod(
-     $         tb(1,1),eval2,ug,ts0,1,ips,nb,ns2,ifpb,'ops/gt  ')
-            do is=1,ns2
-               call sub2(ts0(1,is+ns2),ts0(1,is),nt)
-            enddo
-            call dgemm('N','N',nt,nb,ns2,1.,
-     $         ts0(1,1+ns2),lt,ug,ns2,0.,tb(1,1+nb),
-     $         lt)
-            call snorm(tb(1,1))
-            call snorm(tb(1,1+nb))
-         endif
-         nb=nb2
-         else
-
          if (ifrom(1)) then
             call pod(
      $         uvwb(1,1,1),eval,ug,us0,ldim,ips,nb,ns,ifpb,'ops/gu  ')
@@ -92,30 +32,16 @@ c           enddo
                call opcopy(ub(1,ib),vb(1,ib),wb(1,ib),
      $            uvwb(1,1,ib),uvwb(1,2,ib),uvwb(1,ldim,ib))
             enddo
-            if (.not.ifcomb.and.ifpb) then
-               call vnorm(ub,vb,wb)
-               call vnorm_(uvwb)
-            endif
+            if (.not.ifcomb.and.ifpb) call vnorm(ub,vb,wb)
          else
             call opcopy(ub,vb,wb,uic,vic,wic)
-            call opcopy(
-     $         uvwb(1,1,0),uvwb(1,2,0),uvwb(1,ldim,0),uic,vic,wic)
          endif
          if (ifrom(2)) then
-            if (iaug.eq.4) then
-               call pod(
-     $            tb(1,1),eval2,ug,ts0,1,ips,nb*2,ns,ifpb,'ops/gt  ')
-               if (.not.ifcomb.and.ifpb) call snorm(tb)
-               if (.not.ifcomb.and.ifpb) call snorm(tb(1,nb))
-            else
-               call pod(
-     $            tb(1,1),eval2,ug,ts0,1,ips,nb,ns,ifpb,'ops/gt  ')
-               if (.not.ifcomb.and.ifpb) call snorm(tb)
-            endif
+            call pod(tb(1,1),eval,ug,ts0,1,ips,nb,ns,ifpb,'ops/gt  ')
+            if (.not.ifcomb.and.ifpb) call snorm(tb)
          endif
 
          if (ifcomb.and.ifpb) call cnorm(ub,vb,wb,tb)
-         endif
       endif
 
       ! z = \zeta
