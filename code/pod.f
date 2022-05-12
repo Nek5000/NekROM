@@ -115,7 +115,6 @@ c           enddo
          endif
 
          if (ifcomb.and.ifpb) call cnorm(ub,vb,wb,tb)
-         endif
       endif
 
       ! z = \zeta
