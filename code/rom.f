@@ -589,11 +589,11 @@ c-----------------------------------------------------------------------
       else if (rmode.eq.'ON '.or.rmode.eq.'ONB'.or.rmode.eq.'CP') then
          inquire (file='ops/uk',exist=ifexist)
          if (ifexist)
-     $      call read_mat_serial(uk,nb+1,ns,'ops/uk ',mb+1,ns,stmp,nid)
+     $      call read_mat_serial(uk,nb+1,ns,'ops/uk ',mb+1,nns,stmp,nid)
 
          inquire (file='ops/tk',exist=ifexist)
          if (ifexist)
-     $      call read_mat_serial(tk,nb+1,ns,'ops/tk ',mb+1,ns,stmp,nid)
+     $      call read_mat_serial(tk,nb+1,ns,'ops/tk ',mb+1,nns,stmp,nid)
       endif
 
       if (ifpod(1)) call copy(ukp,uk,(nb+1)*ns)
@@ -683,6 +683,7 @@ c-----------------------------------------------------------------------
       ad_qstep=ad_iostep
       iftneu=.false.
       inus=0
+      iaug=0
       ifsub0=.true.
 
       ifforce=.false.
@@ -927,6 +928,8 @@ c-----------------------------------------------------------------------
       if (abs(uy).gt.max(abs(ux),abs(uz))) idirf=2
       if (abs(uz).gt.max(abs(ux),abs(uy))) idirf=3
 
+      if (nio.eq.0) write (6,*) idirf,ux,uy,uz,' idirf'
+
       return
       end
 c-----------------------------------------------------------------------
@@ -968,6 +971,7 @@ c-----------------------------------------------------------------------
          write (6,*) 'mp_nplay      ',nplay
          write (6,*) 'mp_ifplay     ',ifplay
          write (6,*) 'mp_ifei       ',ifei
+         write (6,*) 'mp_iaug       ',iaug
          write (6,*) ' '
          write (6,*) 'mp_ifforce    ',ifforce
          write (6,*) 'mp_ifsource   ',ifsource
@@ -1054,6 +1058,8 @@ c-----------------------------------------------------------------------
 
          call read_fields(
      $      us0,prs,ts0,ns,nskip,ifreads,timek,fname1,.true.)
+         rtmp1(1,1)=1.0*ns
+         call dump_serial(rtmp1(1,1),1,'ops/ns ',nid)
 
          fname1='avg.list'
          inquire (file=fname1,exist=alist)
@@ -1081,6 +1087,8 @@ c-----------------------------------------------------------------------
             idc_u=iglsum(idc_u,1)
             idc_t=iglsum(idc_t,1)
             call copy_sol(ub,vb,wb,pb,tb,uavg,vavg,wavg,pavg,tavg)
+            call opcopy(uvwb(1,1,0),uvwb(1,2,0),uvwb(1,ldim,0),
+     $         ub,vb,wb)
 c           if (idc_u.gt.0) call opzero(ub,vb,wb)
 c           if (idc_t.gt.0) call rzero(tb,n)
          endif
@@ -1096,16 +1104,16 @@ c           if (idc_t.gt.0) call rzero(tb,n)
 
          if (nio.eq.0) write (6,*) 'pre 0 mean'
 
-         if (ifrom(2).and.iftflux) then
-            call set0mean(tb)
-            do i=1,ns
-               call set0mean(ts0(1,i))
-            enddo
-            call set1dudn(tb)
-            do i=1,ns
-               call set1dudn(ts0(1,i))
-            enddo
-         endif
+c        if (ifrom(2).and.iftflux) then
+c           call set0mean(tb)
+c           do i=1,ns
+c              call set0mean(ts0(1,i))
+c           enddo
+c           call set1dudn(tb)
+c           do i=1,ns
+c              call set1dudn(ts0(1,i))
+c           enddo
+c        endif
 
          if (nio.eq.0) write (6,*) 'post 0 mean'
 
@@ -1222,10 +1230,14 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
+      parameter (ltd=lxd*lyd*lzd*lelt)
 
       real cux(lt),cuy(lt),cuz(lt)
 
       common /scrcwk/ wk(lcloc),wk2(0:lub),cu(lt,ldim),wku(lt,ldim)
+      common /convect_all/ u1va(ltd,0:lb),u2va(ltd,0:lb),u3va(ltd,0:lb)
+      common /convect/ c1v(ltd),c2v(ltd),c3v(ltd),
+     $                 u1v(ltd),u2v(ltd),u3v(ltd)
 
       real cl(lcloc)
 
@@ -1248,6 +1260,8 @@ c     call cpart(ic1,ic2,jc1,jc2,kc1,kc2,ncloc,nb,np,nid+1) ! new indexing
       if (nid.eq.0) open (unit=100,file=fnlint)
       if (nio.eq.0) write (6,*) 'setc file:',fnlint
 
+      nd=lxd*lyd*lzd*nelv
+
       if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
          do k=0,nb
          do j=0,mb
@@ -1260,6 +1274,17 @@ c     call cpart(ic1,ic2,jc1,jc2,kc1,kc2,ncloc,nb,np,nid+1) ! new indexing
          enddo
          enddo
       else
+         do i=0,nb
+            if (ifield.eq.1) then
+               call setcnv_u(ub(1,i),vb(1,i),wb(1,i))
+               call copy(u1va(1,i),u1v,nd)
+               call copy(u2va(1,i),u2v,nd)
+               if (ldim.eq.3) call copy(u3va(1,i),u3v,nd)
+            else
+               call setcnv_u1(tb(1,i))
+               call copy(u1va(1,i),u1v,nd)
+            endif
+         enddo
          do k=0,nb
             if (nio.eq.0) write (6,*) 'setc: ',k,'/',nb
             call setcnv_c(ub(1,k),vb(1,k),wb(1,k))
@@ -1274,10 +1299,14 @@ c     call cpart(ic1,ic2,jc1,jc2,kc1,kc2,ncloc,nb,np,nid+1) ! new indexing
                   endif
                else
                   if (ifield.eq.1) then
-                     call setcnv_u(ub(1,j),vb(1,j),wb(1,j))
+c                    call setcnv_u(ub(1,j),vb(1,j),wb(1,j))
+                     call copy(u1v,u1va(1,j),nd)
+                     call copy(u2v,u2va(1,j),nd)
+                     if (ldim.eq.3) call copy(u3v,u3va(1,j),nd)
                      call cc(cu,ldim)
                   else
-                     call setcnv_u(tb(1,j),vb(1,j),wb(1,j))
+c                    call setcnv_u1(tb(1,j))
+                     call copy(u1v,u1va(1,j),nd)
                      call cc(cu,1)
                   endif
                endif
@@ -1333,6 +1362,11 @@ c-----------------------------------------------------------------------
          call read_mat_serial(a0,nb+1,nb+1,fname,mb+1,nb+1,wk1,nid)
       else
          if (nio.eq.0) write (6,*) 'forming a...'
+         if (ifield.eq.2.and.(nelgt.ne.nelvt)) then
+            call copy(vdm1,vdiff(1,1,1,1,2),n)
+            sc=1./param(8)
+            call cmult(vdm1,sc,n)
+         endif
          do j=0,nb
             if (nio.eq.0) write (6,*) 'seta: ',j,'/',nb
             nio=-1
@@ -1341,7 +1375,11 @@ c-----------------------------------------------------------------------
                   a0(i,j)=h10vip(ub(1,i),vb(1,i),wb(1,i),
      $                           ub(1,j),vb(1,j),wb(1,j))
                else
-                  a0(i,j)=h10sip(tb(1,i),tb(1,j))
+                  if (nelgt.ne.nelvt) then
+                     a0(i,j)=h10sip_vd(tb(1,i),tb(1,j),vdm1)
+                  else
+                     a0(i,j)=h10sip(tb(1,i),tb(1,j))
+                  endif
                endif
             enddo
             nio=nid
@@ -1425,6 +1463,7 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'TSTEP'
       include 'MOR'
+      include 'SOLN'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
@@ -1440,6 +1479,11 @@ c-----------------------------------------------------------------------
          if (nio.eq.0) write (6,*) 'reading b...'
          call read_mat_serial(b0,nb+1,nb+1,fname,mb+1,nb+1,tab,nid)
       else
+         if (ifield.eq.2.and.(nelgt.ne.nelvt)) then
+            call copy(brhom1,vtrans(1,1,1,1,2),n)
+c           sc=1./param(8)
+c           call cmult(vdm1,sc,n)
+         endif
          if (nio.eq.0) write (6,*) 'forming b...'
          do j=0,nb
             if (nio.eq.0) write (6,*) 'setb: ',j,'/',nb
@@ -1449,7 +1493,11 @@ c-----------------------------------------------------------------------
                   b0(i,j)=wl2vip(ub(1,i),vb(1,i),wb(1,i),
      $                           ub(1,j),vb(1,j),wb(1,j))
                else
-                  b0(i,j)=wl2sip(tb(1,i),tb(1,j))
+                  if (nelgt.eq.nelvt) then
+                     b0(i,j)=wl2sip(tb(1,i),tb(1,j))
+                  else
+                     b0(i,j)=wl2sip_vd(tb(1,i),tb(1,j),brhom1)
+                  endif
                endif
             enddo
             nio=nid

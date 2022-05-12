@@ -2335,13 +2335,14 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine evalf(f,uu,tt,mdim,ifweak)
+      subroutine evalf(f,uu,tt,g,mdim,ifweak)
 
       ! evaluate f, the time-derivative based on the current solution
 
       ! f      := time-derivative of the solution tt
       ! uu     := advection field
       ! tt     := solution field
+      ! g      := forcing field
       ! gnn    := inhomogeneous Neumann value field
       ! mdim   := dimension of tt
       ! ifweak := flag to evaluate the terms in a weak sense
@@ -2350,7 +2351,7 @@ c-----------------------------------------------------------------------
 
       include 'TSTEP' ! dep: ifield
       include 'MASS'  ! dep: bintm1
-      include 'SOLN'  ! dep: plag
+      include 'SOLN'  ! dep: prlag
 
       parameter (lt=lx1*ly1*lz1*lelt,ltd=lxd*lyd*lzd*lelt)
 
@@ -2358,7 +2359,7 @@ c-----------------------------------------------------------------------
       common /convect/ c1v(ltd),c2v(ltd),c3v(ltd),
      $                 u1v(ltd),u2v(ltd),u3v(ltd)
 
-      real f(lt,mdim),uu(lt,ldim),tt(lt,mdim)
+      real f(lt,mdim),uu(lt,ldim),tt(lt,mdim),g(lt,mdim)
       logical ifweak
 
       nv=lx1*ly1*lz1*nelv
@@ -2380,6 +2381,7 @@ c-----------------------------------------------------------------------
       do idim=1,mdim
          call chsign(f(1,idim),n)
          call add2(f(1,idim),wk(1,idim),n)
+         call add2(f(1,idim),g(1,idim),n)
       enddo
 
       if (ifweak) then
@@ -2397,7 +2399,7 @@ c-----------------------------------------------------------------------
          enddo
       endif
 
-      if (ifield.eq.1) call incomprn(f(1,1),f(1,2),f(1,ldim),plag)
+      if (ifield.eq.1) call incomprn(f(1,1),f(1,2),f(1,ldim),prlag)
 
       ifield=jfield
 
@@ -2406,7 +2408,7 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine evalcflds(cfld,us0,ts0,mdim,ns,ifweak)
 
-      ! evaluate convection field in the strong form
+      ! evaluate convection field
 
       ! cfld   := result of convection application
       ! us0    := velocity fields
@@ -2434,7 +2436,7 @@ c-----------------------------------------------------------------------
             if (mdim.eq.ldim) then
                call setcnv_u(ts0(1,1,is),ts0(1,2,is),ts0(1,ldim,is))
             else
-               call setcnv_u1(tt)
+               call setcnv_u1(ts0(1,1,is))
             endif
 
             call cc(cfld(1,1,is),mdim)
@@ -2456,13 +2458,13 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine evalaflds(afld,ts0,mdim,ns,ifweak)
 
-      ! evaluate convection field in the strong form
+      ! evaluate diffusion field
 
       ! afld   := result of Laplacian application
       ! ts0    := scalar/vector fields
       ! mdim   := dimension of ts0 at each point
       ! ns     := number of diffusion fields to evaluate
-      ! ifweak := weak form of the convection term
+      ! ifweak := weak form of the diffusion term
 
       include 'SIZE'  ! dep: lt, etc.
       include 'LMOR'  ! dep: lelm
@@ -2500,26 +2502,27 @@ c-----------------------------------------------------------------------
          enddo
 
          if (ifield.eq.2) then
+            call rzero(wk3,n)
+            do ie=1,nelt
+            do ifc=1,2*ldim
+               if (cbc(ifc,ie,2).eq.'f  ') then
+                  call facind(
+     $               kx1,kx2,ky1,ky2,kz1,kz2,lx1,ly1,lz1,ifc)
+                  l=1
+                  do iz=kz1,kz2
+                  do iy=ky1,ky2
+                  do ix=kx1,kx2
+                     wk3(ix,iy,iz,ie)=wk3(ix,iy,iz,ie)
+     $                  +gn(ix,iy,iz,ie)*area(l,1,ifc,ie)
+                     l=l+1
+                  enddo
+                  enddo
+                  enddo
+               endif
+            enddo
+            enddo
+
             do is=1,ns
-               call rzero(wk3,n)
-               do ie=1,nelt
-               do ifc=1,2*ldim
-                  if (cbc(ifc,ie,2).eq.'f  ') then
-                     call facind(
-     $                  kx1,kx2,ky1,ky2,kz1,kz2,lx1,ly1,lz1,ifc)
-                     l=1
-                     do iz=kz1,kz2
-                     do iy=ky1,ky2
-                     do ix=kx1,kx2
-                        wk3(ix,iy,iz,ie)=wk3(ix,iy,iz,ie)
-     $                     +gn(ix,iy,iz,ie)*area(l,1,ifc,ie)
-                        l=l+1
-                     enddo
-                     enddo
-                     enddo
-                  endif
-               enddo
-               enddo
                call add2(afld(1,1,is),wk3,n)
             enddo
          endif
@@ -2582,6 +2585,361 @@ c-----------------------------------------------------------------------
       enddo
 
     1 format (i8,i8,1p2e13.4,' set0flow')
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine p2b(uvw,uvwb,mdim,nb,iforth,sc)
+
+      include 'SIZE'
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real uvw(lt,mdim),uvwb(lt,mdim,nb),sc(nb)
+      logical iforth
+
+      nv=lx1*ly1*lz1*nelv
+      nt=lx1*ly1*lz1*nelt
+
+      n=nt
+      if (mdim.eq.ldim) n=nv
+
+      call p2b_helper(sc,uvw,uvwb,mdim,nb)
+
+      if (.not.iforth) then
+         do i=1,mdim
+            call rzero(uvw(1,i),n)
+         enddo
+      endif
+
+      do ib=1,nb
+         if (iforth) then
+            const=-sc(ib)
+         else
+            const=sc(ib)
+         endif
+         do idim=1,mdim
+            call add2s2(uvw(1,idim),uvwb(1,idim,ib),const,n)
+         enddo
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine p2b_helper(sc,uvw,uvwb,mdim,nb)
+
+      include 'SIZE'
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real uvw(lt,mdim),uvwb(lt,mdim,nb),sc(nb)
+
+      do i=1,nb
+         sc(i)=fip(uvw(1,1),uvwb(1,1,i),mdim)
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      function fip(uvw,xyz,mdim)
+
+      include 'SIZE'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      real uvw(lt,mdim),xyz(lt,mdim)
+
+      if (mdim.eq.ldim) then
+         fip=vip(uvw(1,1),uvw(1,2),uvw(1,ldim),
+     $            xyz(1,1),xyz(1,2),xyz(1,ldim))
+      else
+         fip=sip(uvw,xyz)
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine find_cerr
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      common /scrns/ ux(lt),uy(lt),uz(lt),dx(lt),dy(lt),dz(lt)
+      common /scruz/ sx(lt),sy(lt),sz(lt),uwx(lt),uwy(lt),uwz(lt),
+     $               tx(lt),ty(lt),tz(lt)
+
+      real cex(nb),crom(nb)
+
+      call rzero(cex,nb)
+      call rzero(crom,nb)
+
+      if (nio.eq.0) write (6,*) 'starting find_cerr ...'
+
+      nv=lx1*ly1*lz1*nelv
+
+      mint=25
+
+      nnb=(nb/2)/mint
+
+      do is=1,ns
+         if (nio.eq.0) write (6,*) 'find_cerr loop ',is
+         ! create tilde u
+         call copy(ux,us0(1,1,is),nv)
+         call add2(ux,ub,nv)
+
+         call copy(uy,us0(1,2,is),nv)
+         call add2(uy,vb,nv)
+c        if (nio.eq.0) write (6,*) 'wp 2',is
+
+         if (ldim.eq.3) then
+            call copy(uz,us0(1,3,is),nv)
+            call add2(uz,wb,nv)
+         endif
+
+         do iib=1,mint
+c           if (nio.eq.0) write (6,*) 'wp 3',iib,mint
+            call opzero(dx,dy,dz)
+
+            ! create u
+            call opcopy(dx,dy,dz,ub,vb,wb)
+            do ib=1,iib*nnb
+               cf=op_glsc2_wt(us0(1,1,is),us0(1,2,is),us0(1,ldim,is),
+     $                    uvwb(1,1,ib),uvwb(1,2,ib),uvwb(1,ldim,ib),bm1)
+
+               call add2s2(dx,uvwb(1,1,ib),cf,nv)
+               call add2s2(dy,uvwb(1,2,ib),cf,nv)
+               if (ldim.eq.3) call add2s2(dz,uvwb(1,3,ib),cf,nv)
+            enddo
+c           if (nio.eq.0) write (6,*) 'wp 4',iib,mint
+
+            ! create u'
+            call opsub3(sx,sy,sz,ux,uy,uz,dx,dy,dz)
+c           if (nio.eq.0) write (6,*) 'wp 4.1',iib,mint
+
+            call convect_new(uwx,dx,.false.,ux,uy,uz,.false.)
+            call convect_new(uwy,dy,.false.,ux,uy,uz,.false.)
+            if (ldim.eq.3)
+     $         call convect_new(uwz,dz,.false.,ux,uy,uz,.false.)
+c           if (nio.eq.0) write (6,*) 'wp 4.2',iib,mint
+
+            ctmp1=glsc2(sx,uwx,nv)+glsc2(sy,uwy,nv)
+c           if (nio.eq.0) write (6,*) 'wp 4.3',iib,mint
+            if (ldim.eq.3) ctmp1=ctmp1+glsc2(sz,uwz,nv)
+c           if (nio.eq.0) write (6,*) 'wp 4.4',iib,mint
+            cex(iib)=cex(iib)+ctmp1*ctmp1
+c           if (nio.eq.0) write (6,*) 'wp 5',iib,mint
+
+            ! project u' onto basis
+
+            call opzero(tx,ty,tz)
+            ctmp2=0.
+            do ib=nnb*iib+1,nnb*iib*2
+               cf=op_glsc2_wt(sx,sy,sz,ub(1,ib),vb(1,ib),wb(1,ib),bm1)
+               call add2s2(tx,ub(1,ib),cf,nv)
+               call add2s2(ty,vb(1,ib),cf,nv)
+               if (ldim.eq.3) call add2s2(tz,wb(1,ib),cf,nv)
+
+               ctmp2=glsc2(tx,uwx,nv)+glsc2(ty,uwy,nv)
+               if (ldim.eq.3) ctmp2=ctmp2+glsc2(sz,uwz,nv)
+
+c              if (nio.eq.0) write (6,*) 'ctmp ',is,iib,ib,ctmp1,ctmp2
+
+            enddo
+            crom(iib)=crom(iib)+(ctmp1-ctmp2)*(ctmp1-ctmp2)
+         enddo
+      enddo
+
+      if (nio.eq.0) then
+         open (unit=10,file='c.dat')
+
+         do i=1,mint
+            write (10,*) cex(i),crom(i),sqrt(crom(i)/cex(i))
+         enddo
+
+         close (unit=10)
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine find_cerr2
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      common /scrns/ ux(lt),uy(lt),uz(lt),dx(lt),dy(lt),dz(lt)
+      common /scruz/ sx(lt),sy(lt),sz(lt),uwx(lt),uwy(lt),uwz(lt),
+     $               tx(lt),ty(lt),tz(lt),
+     $               ex(lt),ey(lt),ez(lt)
+
+      real cex(nb),crom(nb)
+
+      call rzero(cex,nb)
+      call rzero(crom,nb)
+
+      if (nio.eq.0) write (6,*) 'starting find_cerr ...'
+
+      nv=lx1*ly1*lz1*nelv
+
+      mint=25
+
+      nnb=((nb-1)/2)/mint
+
+      ! orthogonalize AB                 
+      do ib=nnb*mint+2,2*nnb*mint+1
+         call opcopy(ex,ey,ez,ub(1,ib),vb(1,ib),wb(1,ib))
+         do jb=nnb*mint+1,ib-1
+            cf=-op_glsc2_wt(ub(1,jb),vb(1,jb),wb(1,jb),
+     $         ex,ey,ez,bm1)
+            call add2s2(ex,ub(1,jb),cf,nv)
+            call add2s2(ey,vb(1,jb),cf,nv)
+            if (ldim.eq.3) call add2s2(ez,wb(1,jb),cf,nv)
+         enddo
+
+         cf=1./sqrt(op_glsc2_wt(ex,ey,ez,
+     $       ex,ey,ez,bm1))
+         call opcmult(ex,ey,ez,cf)
+         call opcopy(ub(1,ib),vb(1,ib),wb(1,ib),ex,ey,ez,cf)
+      enddo
+
+      do is=1,ns
+         if (nio.eq.0) write (6,*) 'find_cerr loop ',is
+         ! create tilde u
+         call copy(ux,us0(1,1,is),nv)
+         call add2(ux,ub,nv)
+
+         call copy(uy,us0(1,2,is),nv)
+         call add2(uy,vb,nv)
+c        if (nio.eq.0) write (6,*) 'wp 2',is
+
+         if (ldim.eq.3) then
+            call copy(uz,us0(1,3,is),nv)
+            call add2(uz,wb,nv)
+         endif
+
+         do iib=1,mint
+c           if (nio.eq.0) write (6,*) 'wp 3',iib,mint
+            call opzero(dx,dy,dz)
+
+            ! create u
+            call opcopy(dx,dy,dz,ub,vb,wb)
+            do ib=1,iib*nnb
+               cf=op_glsc2_wt(us0(1,1,is),us0(1,2,is),us0(1,ldim,is),
+     $                    uvwb(1,1,ib),uvwb(1,2,ib),uvwb(1,ldim,ib),bm1)
+
+               call add2s2(dx,uvwb(1,1,ib),cf,nv)
+               call add2s2(dy,uvwb(1,2,ib),cf,nv)
+               if (ldim.eq.3) call add2s2(dz,uvwb(1,3,ib),cf,nv)
+            enddo
+c           if (nio.eq.0) write (6,*) 'wp 4',iib,mint
+
+            ! create u'
+            call opsub3(sx,sy,sz,ux,uy,uz,dx,dy,dz)
+c           if (nio.eq.0) write (6,*) 'wp 4.1',iib,mint
+
+            call convect_new(uwx,dx,.false.,ux,uy,uz,.false.)
+            call convect_new(uwy,dy,.false.,ux,uy,uz,.false.)
+            if (ldim.eq.3)
+     $         call convect_new(uwz,dz,.false.,ux,uy,uz,.false.)
+c           if (nio.eq.0) write (6,*) 'wp 4.2',iib,mint
+
+            ctmp1=glsc2(sx,uwx,nv)+glsc2(sy,uwy,nv)
+c           if (nio.eq.0) write (6,*) 'wp 4.3',iib,mint
+            if (ldim.eq.3) ctmp1=ctmp1+glsc2(sz,uwz,nv)
+c           if (nio.eq.0) write (6,*) 'wp 4.4',iib,mint
+            cex(iib)=cex(iib)+ctmp1*ctmp1
+c           if (nio.eq.0) write (6,*) 'wp 5',iib,mint
+
+            ! project u' onto basis
+
+            call opzero(tx,ty,tz)
+            ctmp2=0.
+            do ib=nnb*iib+1,nnb*iib*2+1
+               ! orthogonalize basis
+               call opcopy(ex,ey,ez,ub(1,ib),vb(1,ib),wb(1,ib))
+               do jb=1,nnb*iib
+                  cf=-op_glsc2_wt(ub(1,jb),vb(1,jb),wb(1,jb),
+     $               ex,ey,ez,bm1)
+                  call add2s2(ex,ub(1,jb),cf,nv)
+                  call add2s2(ey,vb(1,jb),cf,nv)
+                  if (ldim.eq.3) call add2s2(ez,wb(1,jb),cf,nv)
+               enddo
+               cf=1./sqrt(op_glsc2_wt(ex,ey,ez,
+     $                ex,ey,ez,bm1))
+               call opcmult(ex,ey,ez,cf)
+
+               ! find component
+               cf=op_glsc2_wt(sx,sy,sz,ex,ey,ez,bm1)
+               call add2s2(tx,ex,cf,nv)
+               call add2s2(ty,ey,cf,nv)
+               if (ldim.eq.3) call add2s2(tz,ez,cf,nv)
+
+               ctmp2=glsc2(tx,uwx,nv)+glsc2(ty,uwy,nv)
+               if (ldim.eq.3) ctmp2=ctmp2+glsc2(sz,uwz,nv)
+
+c              if (nio.eq.0) write (6,*) 'ctmp ',is,iib,ib,ctmp1,ctmp2
+
+            enddo
+            crom(iib)=crom(iib)+(ctmp1-ctmp2)*(ctmp1-ctmp2)
+         enddo
+      enddo
+
+      if (nio.eq.0) then
+         open (unit=10,file='c.dat')
+
+         do i=1,mint
+            write (10,*) cex(i),crom(i),sqrt(crom(i)/cex(i))
+         enddo
+
+         close (unit=10)
+      endif
+
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine genrij()
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'AVG'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /myblocka/ wk(lt,ldim,ldim)
+
+      character*127 fname 
+
+      call blank(fname,127)
+      fname='avg.list'
+      fname='rms.list'
+      fname='rm2.list'
+
+      nv=lx1*ly1*lz1*nelv
+
+      call col3(wk(1,1,1),uavg,uavg,nv)
+      call col3(wk(1,1,2),vavg,uavg,nv)
+      call col3(wk(1,2,2),vavg,vavg,nv)
+
+      if (ldim.eq.3) then
+         call col3(wk(1,1,3),uavg,wavg,nv)
+         call col3(wk(1,2,3),vavg,wavg,nv)
+         call col3(wk(1,3,3),wavg,wavg,nv)
+      endif
+
+      call sub2(wk(1,1,1),urms,nv)
+      call sub2(wk(1,1,2),uvms,nv)
+      call sub2(wk(1,2,2),vrms,nv)
+
+      if (ldim.eq.3) then
+         call sub2(wk(1,1,3),wums,nv)
+         call sub2(wk(1,2,3),vwms,nv)
+         call sub2(wk(1,3,3),wrms,nv)
+      endif
+
+      call divm1(wk(1,2,1),wk(1,1,1),wk(1,1,2),wk(1,1,3))
+      call divm1(wk(1,2,1),wk(1,1,1),wk(1,1,2),wk(1,1,3))
 
       return
       end

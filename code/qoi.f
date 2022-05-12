@@ -489,7 +489,7 @@ c-----------------------------------------------------------------------
 
       common /nusselt/ fpmask(lx1,ly1,lz1,lelt),ffmask(2*ldim,lelt)
 
-      call savg(tsurf,a_surf,tt,1,'W  ')  ! tbar on wall
+      call savg(tsurf,a_surf,tt,2,'f  ')  ! tbar on wall
 
       return
       end
