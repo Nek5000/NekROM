@@ -29,19 +29,19 @@ After ensuring the required files are in the case directory, run `makerom $caser
 
 Compile-time parameters (for setting memory allocation size) can be found in `LMOR`.
 
-- ls, maximum number of snapshots
-- lb, maximum number of total modes
+- `ls`, maximum number of snapshots
+- `lb`, maximum number of total modes
 
 run-time parameters can be found in `$case.mor`.
 
 - [general], header for general parameters
-    - mode, off = offline, on = online, all = offline + online
-    - field, v = velocity, t = temperature, vt = velocity + temperature
-    - nb, number of POD modes (must be less than lb, default == lb)
+    - `mode`, off = offline, on = online, all = offline + online
+    - `field`, v = velocity, t = temperature, vt = velocity + temperature
+    - `nb`, number of POD modes (must be less than lb, default == lb)
 - [pod], header for pod parameters
-    - type, l2 = L^2 POD modes, h10, H^1_0 POD modes
-    - mode0, avg = average 0th mode, state = user-defined in ub,vb,wb,tb
-    - augment, 0 = no ABM, 1 = 0th interactions, 2 = diagonals, 3 = 1 + 2
+    - `type`, l2 = L^2 POD modes, h10, H^1_0 POD modes
+    - `mode0`, avg = average 0th mode, state = user-defined in ub,vb,wb,tb
+    - `augment`, 0 = no ABM, 1 = 0th interactions, 2 = diagonals, 3 = 1 + 2
 
 # Contribution
 
