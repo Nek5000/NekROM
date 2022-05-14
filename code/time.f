@@ -251,8 +251,6 @@ c-----------------------------------------------------------------------
 
       real vort(lt)
 
-      call rom_userchk
-
       if (icalld.eq.0) then
          post_time=0.
          icalld=1
@@ -330,6 +328,7 @@ c        call cubar
          endif
       endif
 
+      call rom_userchk
 
       call nekgsync
       postu_time=postu_time+dnekclock()-tttime
