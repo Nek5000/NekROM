@@ -298,7 +298,7 @@ c        call cubar
             call opcopy(t1,t2,t3,vx,vy,vz)
 
             if (ifrom(2)) then
-               call recont(vort,ut)
+               call recont(t,ut)
             else
                call comp_vort3(vort,work1,work2,t1,t2,t3)
             endif
@@ -306,7 +306,7 @@ c        call cubar
             istep=ad_step
 
             ifto = .true. ! turn on temp in fld file
-            call outpost(vx,vy,vz,pavg,vort,'rom')
+            call outpost(vx,vy,vz,pavg,t,'rom')
             istep=jstep
          endif
       endif
