@@ -38,10 +38,15 @@ run-time parameters can be found in `$case.mor`.
     - `mode`, off = offline, on = online, all = offline + online
     - `field`, v = velocity, t = temperature, vt = velocity + temperature
     - `nb`, number of POD modes (must be less than lb, default == lb)
+    - `ns`, number of snapshots used for POD
+    - `nskip`, skipping interval in snapshots
 - [pod], header for pod parameters
     - `type`, l2 = L^2 POD modes, h10, H^1_0 POD modes
     - `mode0`, avg = average 0th mode, state = user-defined in ub,vb,wb,tb
     - `augment`, 0 = no ABM, 1 = 0th interactions, 2 = diagonals, 3 = 1 + 2
+- [qoi], header for qoi parameters
+    - `freq`, frequency of QOI dump, if <1 freq=iostep
+    - `drag`, drag based on OBJ data
 
 # Contribution
 
