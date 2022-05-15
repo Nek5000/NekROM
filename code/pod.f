@@ -37,7 +37,7 @@ c-----------------------------------------------------------------------
             call opcopy(ub,vb,wb,uic,vic,wic)
          endif
          if (ifrom(2)) then
-            call pod(tb(1,1),eval,ug,ts0,1,ips,nb,ns,ifpb,'ops/gt  ')
+            call pod(tb(1,1,1),eval,ug,ts0,1,ips,nb,ns,ifpb,'ops/gt  ')
             if (.not.ifcomb.and.ifpb) call snorm(tb)
          endif
 
@@ -98,10 +98,10 @@ c-----------------------------------------------------------------------
             nt=lx1*ly1*lz1*nelt
             do i=0,nb
                call rzero(upup,nv)
-               call rzero(tb(1,i+nb+1),nt)
+               call rzero(tb(1,i+nb+1,1),nt)
 
                call evalcflds(
-     $            upup,uvwb(1,1,0),tb(1,i),1,1,.true.)
+     $            upup,uvwb(1,1,0),tb(1,i,1),1,1,.true.)
 
                call col2(upup,tmask,nt)
                call dssum(upup,lx1,ly1,lz1)
@@ -110,7 +110,7 @@ c-----------------------------------------------------------------------
                sc=1./sqrt(glsc3(upup,upup,bm1,nv))
 
                call cmult(upup,sc,nv)
-               call copy(tb(1,i+nb+1),upup,nv)
+               call copy(tb(1,i+nb+1,1),upup,nv)
             enddo
          endif
 
@@ -172,10 +172,10 @@ c-----------------------------------------------------------------------
             do i=0,nb
 
                call rzero(upup,nv)
-               call rzero(tb(1,i+nb+1),nt)
+               call rzero(tb(1,i+nb+1,1),nt)
 
                call evalcflds(
-     $            upup,uvwb(1,1,i),tb(1,i),1,1,.true.)
+     $            upup,uvwb(1,1,i),tb(1,i,1),1,1,.true.)
 
                call col2(upup,tmask,nt)
                call dssum(upup,lx1,ly1,lz1)
@@ -184,7 +184,7 @@ c-----------------------------------------------------------------------
                sc=1./sqrt(glsc3(upup,upup,bm1,nv))
 
                call cmult(upup,sc,nv)
-               call copy(tb(1,i+nb+1),upup,nv)
+               call copy(tb(1,i+nb+1,1),upup,nv)
             enddo
          endif
 
@@ -270,10 +270,10 @@ c-----------------------------------------------------------------------
             nt=lx1*ly1*lz1*nelt
             do i=0,nb
                call rzero(upup,nt)
-               call rzero(tb(1,i+nb+1),nt)
+               call rzero(tb(1,i+nb+1,1),nt)
 
                call evalcflds(
-     $            upup,uvwb(1,1,0),tb(1,i),1,1,.true.)
+     $            upup,uvwb(1,1,0),tb(1,i,1),1,1,.true.)
 
                call col2(upup,tmask,nt)
                call dssum(upup,lx1,ly1,lz1)
@@ -282,15 +282,15 @@ c-----------------------------------------------------------------------
                sc=1./sqrt(glsc3(upup,upup,bm1,nt))
 
                call cmult(upup,sc,nt)
-               call copy(tb(1,i+nb+1),upup,nt)
+               call copy(tb(1,i+nb+1,1),upup,nt)
             enddo
             do i=1,nb
 
                call rzero(upup,nt)
-               call rzero(tb(1,i+2*nb+1),nt)
+               call rzero(tb(1,i+2*nb+1,1),nt)
 
                call evalcflds(
-     $            upup,uvwb(1,1,i),tb(1,i),1,1,.true.)
+     $            upup,uvwb(1,1,i),tb(1,i,1),1,1,.true.)
 
                call col2(upup,tmask,nt)
                call dssum(upup,lx1,ly1,lz1)
@@ -299,7 +299,7 @@ c-----------------------------------------------------------------------
                sc=1./sqrt(glsc3(upup,upup,bm1,nt))
 
                call cmult(upup,sc,nv)
-               call copy(tb(1,i+2*nb+1),upup,nt)
+               call copy(tb(1,i+2*nb+1,1),upup,nt)
             enddo
          endif
 

@@ -425,7 +425,8 @@ c-----------------------------------------------------------------------
          m=0
          if (nid.eq.0) m=nintp
          do i=0,nb
-            call gfldi(tbintp(1+nintp*i),tb(1,i),xintp,yintp,zintp,m,1)
+            call gfldi(tbintp(1+nintp*i),tb(1,i,1),
+     $                 xintp,yintp,zintp,m,1)
          enddo
          call dump_serial(xintp,nintp*(nb+1),'qoi/xintp',nid)
          call dump_serial(yintp,nintp*(nb+1),'qoi/yintp',nid)
@@ -1281,7 +1282,7 @@ c     call cpart(ic1,ic2,jc1,jc2,kc1,kc2,ncloc,nb,np,nid+1) ! new indexing
                call copy(u2va(1,i),u2v,nd)
                if (ldim.eq.3) call copy(u3va(1,i),u3v,nd)
             else
-               call setcnv_u1(tb(1,i))
+               call setcnv_u1(tb(1,i,1))
                call copy(u1va(1,i),u1v,nd)
             endif
          enddo
@@ -1295,7 +1296,7 @@ c     call cpart(ic1,ic2,jc1,jc2,kc1,kc2,ncloc,nb,np,nid+1) ! new indexing
      $                  ub(1,j),vb(1,j),wb(1,j))
                      call convect_axis(cu,ldim,ux,uy,uz,wku)
                   else
-                     call convect_axis(cu,1,ux,uy,uz,tb(1,j))
+                     call convect_axis(cu,1,ux,uy,uz,tb(1,j,1))
                   endif
                else
                   if (ifield.eq.1) then
@@ -1315,7 +1316,7 @@ c                    call setcnv_u1(tb(1,j))
                      cel=op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),
      $                  cu(1,1),cu(1,2),cu(1,ldim),ones)
                   else
-                     cel=glsc2(tb(1,i),cu,n)
+                     cel=glsc2(tb(1,i,1),cu,n)
                   endif
                   call setc_local(cl,cel,ic1,ic2,jc1,jc2,kc1,kc2,i,j,k)
                   if (nid.eq.0) write (100,*) cel
@@ -1376,9 +1377,9 @@ c-----------------------------------------------------------------------
      $                           ub(1,j),vb(1,j),wb(1,j))
                else
                   if (nelgt.ne.nelvt) then
-                     a0(i,j)=h10sip_vd(tb(1,i),tb(1,j),vdm1)
+                     a0(i,j)=h10sip_vd(tb(1,i,1),tb(1,j,1),vdm1)
                   else
-                     a0(i,j)=h10sip(tb(1,i),tb(1,j))
+                     a0(i,j)=h10sip(tb(1,i,1),tb(1,j,1))
                   endif
                endif
             enddo
@@ -1494,9 +1495,9 @@ c           call cmult(vdm1,sc,n)
      $                           ub(1,j),vb(1,j),wb(1,j))
                else
                   if (nelgt.eq.nelvt) then
-                     b0(i,j)=wl2sip(tb(1,i),tb(1,j))
+                     b0(i,j)=wl2sip(tb(1,i,1),tb(1,j,1))
                   else
-                     b0(i,j)=wl2sip_vd(tb(1,i),tb(1,j),brhom1)
+                     b0(i,j)=wl2sip_vd(tb(1,i,1),tb(1,j,1),brhom1)
                   endif
                endif
             enddo
@@ -1548,7 +1549,7 @@ c-----------------------------------------------------------------------
                   a(i,j,k)=h10vip_vd(ub(1,i),vb(1,i),wb(1,i),
      $                             ub(1,j),vb(1,j),wb(1,j),udfld(1,1,k))
                else
-                  a(i,j,k)=h10sip_vd(tb(1,i),tb(1,j),tdfld(1,k))
+                  a(i,j,k)=h10sip_vd(tb(1,i,1),tb(1,j,1),tdfld(1,k))
                endif
             enddo
             nio=nid
@@ -1703,7 +1704,7 @@ c-----------------------------------------------------------------------
 
       if (ifsource.and.ifrom(2)) then ! assume qq has mass
          do i=1,nb
-            rq(i)=glsc2(qq,tb(1,i),n)
+            rq(i)=glsc2(qq,tb(1,i,1),n)
             if (nio.eq.0) write (6,*) rq(i),i,'rq'
          enddo
          call copy(wk1,qq,n)
@@ -1711,7 +1712,7 @@ c-----------------------------------------------------------------------
          call outpost(vx,vy,vz,pavg,wk1,'qqq')
          if (ifsrct) then
             do i=1,nb
-               rqt(i)=glsc2(qqxyz,tb(1,i),n)
+               rqt(i)=glsc2(qqxyz,tb(1,i,1),n)
                if (nio.eq.0) write (6,*) rqt(i),i,'rqt'
             enddo
             call copy(wk1,qqxyz,n)
@@ -1774,7 +1775,7 @@ c-----------------------------------------------------------------------
       do i=1,nbavg
          fv(i,j)=wl2vip(ub(1,i),vb(1,i),wb(1,i),
      $                  flucv(1,1,j),flucv(1,2,j),flucv(1,ldim,j))
-         ftt(i,j)=wl2sip(tb(1,i),fluct(1,j))
+         ftt(i,j)=wl2sip(tb(1,i,1),fluct(1,j))
       enddo
       enddo
 
@@ -1871,9 +1872,9 @@ c-----------------------------------------------------------------------
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
          do j=0,nb
          do i=0,nb
-            bx(i,j)=glsc3(ub(1,i),tb(1,j),bm1,n)
-            by(i,j)=glsc3(vb(1,i),tb(1,j),bm1,n)
-            if (ldim.eq.3) bz(i,j)=glsc3(wb(1,i),tb(1,j),bm1,n)
+            bx(i,j)=glsc3(ub(1,i),tb(1,j,1),bm1,n)
+            by(i,j)=glsc3(vb(1,i),tb(1,j,1),bm1,n)
+            if (ldim.eq.3) bz(i,j)=glsc3(wb(1,i),tb(1,j,1),bm1,n)
          enddo
          enddo
          call dump_serial(bx,(nb+1)**2,'ops/buxt ',nid)

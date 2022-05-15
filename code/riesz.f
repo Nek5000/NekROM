@@ -16,12 +16,12 @@ c-----------------------------------------------------------------------
         call exitti('(set_xi_poisson) ifield.eq.1 not supported...$',nb)
       else
          if (ips.eq.'L2 ') then
-            call set_xi_a(xi(1,l),tb(1,1),ones,1,nb,2)
+            call set_xi_a(xi(1,l),tb(1,1,1),ones,1,nb,2)
             l=l+nb
             call set_xi_b(xi(1,l),qq,1,1,2)
             l=l+1
             do i=1,nb
-               call set_gradn(wk,tb(1,i))
+               call set_gradn(wk,tb(1,i,1))
                call set_surf(xi(1,l),wk)
                call binv1_nom(xi(1,l))
                l=l+1
@@ -90,7 +90,7 @@ c-----------------------------------------------------------------------
                   do j=0,nb
                      call opcopy(vx,vy,vz,ub(1,j),vb(1,j),wb(1,j))
                      do i=0,nb
-                        call conv1d(xi(1,l),tb(1,i))
+                        call conv1d(xi(1,l),tb(1,i,1))
                         l=l+1
                      enddo
                   enddo
@@ -178,7 +178,7 @@ c              call outpost(xi_u(1,1,l),wk1,wk2,pr,t,'xia')
                call exitti('Buoyancy in EI disabled for now...l',1)
                do i=0,nb
                   call opcopy(wk1,wk2,wk3,gx,gy,gz)
-                  call opcolv(wk1,wk2,wk3,tb(1,i))
+                  call opcolv(wk1,wk2,wk3,tb(1,i,1))
                   call invcol2(wk1,bm1,n)
                   call invcol2(wk2,bm1,n)
                   if (ldim.eq.3) call invcol2(wk3,bm1,n)

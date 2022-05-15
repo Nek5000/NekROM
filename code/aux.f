@@ -28,7 +28,7 @@ c-----------------------------------------------------------------------
       call rzero(tt,n)
 
       do i=0,nb
-         call add2s2(tt,tb(1,i),coef(i),n)
+         call add2s2(tt,tb(1,i,1),coef(i),n)
       enddo
 
       return
@@ -51,7 +51,7 @@ c-----------------------------------------------------------------------
 
       do j=0,nb
       do i=0,nb
-         call col3(tbt,tb(1,i),tb(1,j),n)
+         call col3(tbt,tb(1,i,1),tb(1,j,1),n)
          call add2s2(tt,tbt,ut2a(1+i+(nb+1)*j),n)
       enddo
       enddo
@@ -874,10 +874,10 @@ c-----------------------------------------------------------------------
          call opzero(ux1,uy1,uz1)
          do j=0,nb
          do i=0,nb
-            call admcol3(ux1,ub(1,i),tb(1,j),uuta(1+i+(nb+1)*j),n)
-            call admcol3(uy1,vb(1,i),tb(1,j),uuta(1+i+(nb+1)*j),n)
+            call admcol3(ux1,ub(1,i),tb(1,j,1),uuta(1+i+(nb+1)*j),n)
+            call admcol3(uy1,vb(1,i),tb(1,j,1),uuta(1+i+(nb+1)*j),n)
             if (ldim.eq.3)
-     $         call admcol3(uz1,wb(1,i),tb(1,j),uuta(1+i+(nb+1)*j),n)
+     $         call admcol3(uz1,wb(1,i),tb(1,j,1),uuta(1+i+(nb+1)*j),n)
          enddo
          enddo
          call outpost(ux1,uy1,uz1,pr,tt,'tmn')
@@ -1581,8 +1581,8 @@ c-----------------------------------------------------------------------
       do j=1,ns
       ttk(0,j) = 1.
       do i=1,nocp
-         ww=sip(tb(1,i),tb(1,i))
-         vv=sip(tb(1,i),ts0(1,j))
+         ww=sip(tb(1,i,1),tb(1,i,1))
+         vv=sip(tb(1,i,1),ts0(1,j))
          ttk(i,j) = vv/ww
       enddo
       enddo
@@ -1755,7 +1755,7 @@ c-----------------------------------------------------------------------
       call rzero(tt,n)
 
       do i=1,nocp
-         call add2s2(tt,tb(1,i),coef(i),n)
+         call add2s2(tt,tb(1,i,1),coef(i),n)
       enddo
 
       return

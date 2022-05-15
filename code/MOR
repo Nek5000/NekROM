@@ -12,7 +12,7 @@ c     parameters and common blocks for MOR
      $                  wb(lx1*ly1*lz1*lelm,0:lub),
      $                  uvwb(lx1*ly1*lz1*lelm,ldim,0:lub),
      $                  pb(lx2*ly2*lz2*lelm,0:lpb),
-     $                  tb(lx1*ly1*lz1*lelm,0:ltb)
+     $                  tb(lx1*ly1*lz1*lelm,0:ltb,ldimt)
 
       common /moric/ uic(lx1*ly1*lz1*lelm),
      $               vic(lx1*ly1*lz1*lelm),
