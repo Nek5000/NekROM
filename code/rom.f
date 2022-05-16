@@ -1053,9 +1053,9 @@ c-----------------------------------------------------------------------
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
          fname1='file.list '
 
-         ifreads(1)=ifrom(1)
-         ifreads(2)=ifrom(0)
-         ifreads(3)=ifrom(2)
+         do i=0,ldimt1
+            ifreads(i)=ifrom(i)
+         enddo
 
          call read_fields(
      $      us0,prs,ts0,ns,nskip,ifreads,timek,fname1,.true.)
@@ -1125,7 +1125,7 @@ c        endif
                   call sub2(us0(1,2,i),vb,n)
                   if (ldim.eq.3) call sub2(us0(1,ldim,i),wb,n)
                endif
-               if (ifrom(2)) call sub2(ts0(1,i),tb,n)
+               if (ifrom(2)) call sub2(ts0(1,i,1),tb,n)
             enddo
             call sub2(uavg,ub,n)
             call sub2(vavg,vb,n)

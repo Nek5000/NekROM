@@ -37,7 +37,8 @@ c-----------------------------------------------------------------------
             call opcopy(ub,vb,wb,uic,vic,wic)
          endif
          if (ifrom(2)) then
-            call pod(tb(1,1,1),eval,ug,ts0,1,ips,nb,ns,ifpb,'ops/gt  ')
+            call pod(tb(1,1,1),eval,ug,ts0(1,1,1),1,ips,
+     $               nb,ns,ifpb,'ops/gt  ')
             if (.not.ifcomb.and.ifpb) call snorm(tb)
          endif
 
