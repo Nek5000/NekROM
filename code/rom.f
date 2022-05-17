@@ -1128,12 +1128,14 @@ c        endif
                   call sub2(us0(1,2,i),vb,n)
                   if (ldim.eq.3) call sub2(us0(1,ldim,i),wb,n)
                endif
-               if (ifrom(2)) call sub2(ts0(1,i,1),tb,n)
+               if (ifrom(2)) call sub2(ts0(1,i,1),tb(1,0,1),n)
+               if (ifedvs) call sub2(ts0(1,i,4),tb(1,0,4),n)
             enddo
             call sub2(uavg,ub,n)
             call sub2(vavg,vb,n)
             if (ldim.eq.3) call sub2(wavg,wb,n)
-            if (ifpod(2)) call sub2(tavg,tb,n)
+            if (ifpod(2)) call sub2(tavg,tb(1,0,1),n)
+            if (ifedvs) call sub2(tavg(1,1,1,1,4),tb(1,0,4),n)
          endif
       endif
 
