@@ -265,3 +265,5 @@ c     parameters and common blocks for MOR
       logical ifedvs
 
       common /moredflags/ ifedvs
+
+      common /moredops/ cedd((lcloc-1)*lmu+1)
