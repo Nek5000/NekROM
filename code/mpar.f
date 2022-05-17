@@ -138,18 +138,6 @@ c-----------------------------------------------------------------------
       call finiparser_getbool(i_out,'general:cflow',ifnd)
       if (ifnd.eq.1) ifcflow=i_out.eq.1
 
-      call finiparser_getbool(i_out,'general:eddy_vis',ifnd)
-      if (ifnd.eq.1) then
-         ifedvs=i_out.eq.1
-         if (ldimt.lt.4) then
-            write(6,*) 'recompile with ldimt=4!'
-            ierr=ierr+1
-         else
-            ifrom(5)=ifedvs
-            ifpod(5)=ifrom(5)
-         endif
-      endif
-
       ibuoy=0
 
       call finiparser_getdbl(d_out,'buoyancy:magnitude',ifnd)
@@ -575,7 +563,6 @@ c-----------------------------------------------------------------------
       call bcast(ifcp,lsize)
       call bcast(ifcore,lsize)
       call bcast(ifquad,lsize)
-      call bcast(ifedvs,lsize)
 
       return
       END
