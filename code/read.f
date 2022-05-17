@@ -268,10 +268,10 @@ c-----------------------------------------------------------------------
      $         call opcopy(usave(1,1,ip),usave(1,2,ip),usave(1,ldim,ip),
      $                    vx,vy,vz)
 
-            if (ifread(2)) call copy(tsave(1,ip,1),t,n)
-            if (ifread(3)) call copy(tsave(1,ip,2),t(1,1,1,1,2),n)
-            if (ifread(4)) call copy(tsave(1,ip,3),t(1,1,1,1,3),n)
-            if (ifread(5)) call copy(tsave(1,ip,4),t(1,1,1,1,4),n)
+            do j=1,ldimt
+               idx=j+1
+               if (ifread(idx)) call copy(tsave(1,ip,j),t(1,1,1,1,j),n)
+            enddo
          else
             goto 999
          endif
