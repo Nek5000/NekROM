@@ -326,11 +326,13 @@ c-----------------------------------------------------------------------
 
       common /dumpglobal/ wk1(lcloc),wk2(lcloc)
 
+      real tmp(lt,ldimt)
       logical iftmp1,iftmp2,iftmp3
 
       call nekgsync
       dbas_time=dnekclock()
 
+      n=lx1*ly1*lz1*lelt
       ttmp=time
       itmp=istep
 
@@ -348,7 +350,10 @@ c-----------------------------------------------------------------------
          time=i
          itmp=i
          ifxyo=(i.eq.0)
-         call outpost(ub(1,i),vb(1,i),wb(1,i),pb(1,i),tb(1,i,1),'bas')
+         do j=1,ldimt
+            call copy(tmp(1,j),tb(1,i,j),n)
+         enddo
+         call outpost2(ub(1,i),vb(1,i),wb(1,i),pb(1,i),tmp,ldimt,'bas')
       enddo
 
       istep=itmp
