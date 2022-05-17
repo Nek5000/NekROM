@@ -368,6 +368,9 @@ c-----------------------------------------------------------------------
          call setc(ctl,'ops/ct ')
          call sets(st0,tb,'ops/ct ')
       endif
+      if (ifedvs) then
+         call seteddy(cedd,'ops/cedd ')
+      endif
 
       if (rmode.eq.'AEQ') call setfluc(fv_op,ft_op,'fluc')
 
@@ -2006,3 +2009,77 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine seteddy(cl,fname)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real cux(lt),cuy(lt),cuz(lt)
+
+      common /scrcwk/ wk(lcloc),wk2(0:lub)
+
+      real cl(lcloc)
+
+      character*128 fname
+      character*128 fnlint
+
+      if (nio.eq.0) write (6,*) 'inside seteddy'
+
+      call nekgsync
+      conv_time=dnekclock()
+
+      call cpart(kc1,kc2,jc1,jc2,ic1,ic2,ncloc,nb,np,nid+1) ! old indexing
+c     call cpart(ic1,ic2,jc1,jc2,kc1,kc2,ncloc,nb,np,nid+1) ! new indexing
+
+      n=lx1*ly1*lz1*nelv
+
+      call lints(fnlint,fname,128)
+      if (nid.eq.0) open (unit=100,file=fnlint)
+      if (nio.eq.0) write (6,*) 'seteddy file:',fnlint
+
+      if (rmode.eq.'ON '.or.rmode.eq.'ONB') then
+         do k=0,nb
+         do j=0,mb
+         do i=1,mb
+            cel=0.
+            if (nid.eq.0) read(100,*) cel
+            cel=glsum(cel,1)
+            call setc_local(cl,cel,ic1,ic2,jc1,jc2,kc1,kc2,i,j,k)
+         enddo
+         enddo
+         enddo
+      else
+         ifstrs=.true.
+         iftmp=ifxyo
+         ifxyo=.true.
+         do k=0,nb
+            if (nio.eq.0) write (6,*) 'seteddy: ',k,'/',nb
+            do j=0,nb
+               call ophx(cux,cuy,cuz,ub(1,j),vb(1,j),
+     $                  wb(1,j),tb(1,k,4),zeros)
+               call outpost(cux,cuy,cuz,pr,tb(1,k,4),'stt')
+               do i=1,nb
+                  cel=op_glsc2_wt(
+     $                  ub(1,i),vb(1,i),wb(1,i),cux,cuy,cuz,ones)
+                  call setc_local(cl,cel,ic1,ic2,jc1,jc2,kc1,kc2,i,j,k)
+                  if (nid.eq.0) write (100,*) cel
+               enddo
+            enddo
+         enddo
+      endif
+         ifxyo=iftmp
+         ifstrs=.false.
+
+      if (nid.eq.0) close (unit=100)
+
+      call nekgsync
+      if (nio.eq.0) write (6,*) 'conv_time: ',dnekclock()-conv_time
+      if (nio.eq.0) write (6,*) 'ncloc=',ncloc
+
+      if (nio.eq.0) write (6,*) 'exiting seteddy'
+
+      return
+      end
