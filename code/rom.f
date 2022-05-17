@@ -1618,8 +1618,8 @@ c-----------------------------------------------------------------------
 
          if (ifrom(2)) then
             ifield=2
-            call sub2(tic,tb,n)
-            call ps2b(ut,tic,tb)
+            call sub2(tic,tb(1,0,1),n)
+            call ps2b(ut,tic,tb(1,0,1))
             do i=0,nb
                if (nio.eq.0) write (6,*) 'ut',ut(i)
             enddo
