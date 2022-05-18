@@ -159,7 +159,7 @@ c     parameters and common blocks for MOR
      $                eh_t(lx1*ly1*lz1*lelm),
      $                eh_p(lx1*ly1*lz1*lelm,ldim),
      $                res_u(lx1*ly1*lz1*lelm,ldim),
-     $                res_t(lx1*ly1*lz1*lelm)
+     $                res_t(lx1*ly1*lz1*lelm,ldimt)
       common /eirhs/ riesz_ru(lx1*ly1*lz1*lelm,ldim,lres_u),
      $               riesz_rt(lx1*ly1*lz1*lelm,lres_t)
 
