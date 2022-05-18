@@ -325,8 +325,8 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       common /dumpglobal/ wk1(lcloc),wk2(lcloc)
+      common /romdbas/ tmp(lt,ldimt)
 
-      real tmp(lt,ldimt)
       logical iftmp1,iftmp2,iftmp3
 
       call nekgsync
