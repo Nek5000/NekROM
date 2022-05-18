@@ -1435,15 +1435,19 @@ C
       if (iftran) intype = -1
       call sethlm  (h1,h2,intype)
       call rone(h1,ntot1)
+      call rone(h2,ntot1)
       if (iftran)  call invers2 (h2inv,h2,ntot1)
       call opcopy(bfx,bfy,bfz,rhs1,rhs2,rhs3)
       call makeg   (   g1,g2,g3,h1,h2,intype)
+      intype=-1
       call crespuz (wp,g1,g2,g3,h1,h2,h2inv,intype)
       call uzawa   (wp,h1,h2,h2inv,intype,icg)
       if (icg.gt.0) call add2 (pr,wp,ntot2)
 
 C     .... then, compute velocity:
       call cresvuz (tmp1,tmp2,tmp3)
+      call rone(h1,ntot1)
+      call rone(h2,ntot1)
       call ophinv  (dv1,dv2,dv3,tmp1,tmp2,tmp3,h1,h2,tolhv,nmxv)
 
       call opcopy(ehu,ehv,ehw,dv1,dv2,dv3)
