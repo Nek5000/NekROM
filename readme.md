@@ -42,6 +42,9 @@ run-time parameters can be found in `$case.mor`.
     - `type`, l2 = L^2 POD modes, h10, H^1_0 POD modes
     - `mode0`, avg = average 0th mode, state = user-defined in ub,vb,wb,tb
     - `augment`, 0 = no ABM, 1 = 0th interactions, 2 = diagonals, 3 = 1 + 2
+- [qoi], header for qoi parameters
+    - `freq`, frequency of QOI dump, if <1 freq=iostep
+    - `drag`, drag based on OBJ data
 
 # Contribution
 
