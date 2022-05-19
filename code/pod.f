@@ -41,6 +41,11 @@ c-----------------------------------------------------------------------
      $               nb,ns,ifpb,'ops/gt  ')
             if (.not.ifcomb.and.ifpb) call snorm(tb)
          endif
+         if (ifedvs) then
+            call pod(tb(1,1,4),eval,ug,ts0(1,1,4),1,ips,nb
+     $              ,ns,ifpb,'ops/ged ')
+c           if (.not.ifcomb.and.ifpb) call snorm(edb)
+         endif
 
          if (ifcomb.and.ifpb) call cnorm(ub,vb,wb,tb)
       endif
