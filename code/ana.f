@@ -420,8 +420,8 @@ c-----------------------------------------------------------------------
 
 
          if (ifpod(2)) then
-            call ps2b(ut,ts0(1,j),tb) 
-            call add2(ts0(1,j),tb,n)
+            call ps2b(ut,ts0(1,j,1),tb)
+            call add2(ts0(1,j,1),tb,n)
          endif
 
          nio = nid
@@ -432,7 +432,7 @@ c-----------------------------------------------------------------------
          call opcopy(t1,t2,t3,us0(1,1,j),us0(1,2,j),us0(1,ldim,j))
          energy=op_glsc2_wt(t1,t2,t3,t1,t2,t3,bm1)
 
-         if (ifpod(2)) call copy(t4,ts0(1,j),n)
+         if (ifpod(2)) call copy(t4,ts0(1,j,1),n)
 
          ttmp = time
          itmp = istep
@@ -457,7 +457,7 @@ c           err(i)=op_glsc2_wt(t1,t2,t3,t1,t2,t3,bm1)
             s=-ut(i)
             ss = 0
             if (ifpod(2)) then
-               call add2s2(t4,tb(1,i),s,n)
+               call add2s2(t4,tb(1,i,1),s,n)
                do ii=1,n
                   ss=ss+bm1(ii,1,1,1)*(t4(ii)*t4(ii))
                enddo
@@ -503,7 +503,7 @@ c-----------------------------------------------------------------------
       npts=128
 
       do i=0,nb
-         call sol_intp_xline_qoi(ub(1,i),vb(1,i),wb(1,i),tb(1,i),
+         call sol_intp_xline_qoi(ub(1,i),vb(1,i),wb(1,i),tb(1,i,1),
      $                           2.5,0.,128,i)
       enddo
 

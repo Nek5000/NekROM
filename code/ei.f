@@ -502,7 +502,7 @@ c-----------------------------------------------------------------------
 
       do i=1,nb
 c        rhs(i)=wl2sip(qq,tb(1,i))
-         rhs(i)=glsc2(qq,tb(1,i),n)
+         rhs(i)=glsc2(qq,tb(1,i,1),n)
       enddo
 
       return
@@ -610,7 +610,7 @@ c     Compute ROM residual for steady NS with Boussinesq
       do i=0,nb
          ! setup rhs for temperature representator
          ifield=2
-         call copy(wk4,tb(1,i),n)
+         call copy(wk4,tb(1,i,1),n)
          call axhelm(riesz_rt(1,l2),wk4,ones,zeros,1,1)
          call cmult(riesz_rt(1,l2),param(8),n)
          call chsign(riesz_rt(1,l2),n) 
@@ -622,7 +622,7 @@ c     Compute ROM residual for steady NS with Boussinesq
          ifield=1
          call opcopy(riesz_ru(1,1,l1),riesz_ru(1,2,l1)
      $               ,riesz_ru(1,ldim,l1)
-     $               ,tb(1,i),zeros,zeros)
+     $               ,tb(1,i,1),zeros,zeros)
          call opcolv(riesz_ru(1,1,l1),riesz_ru(1,2,l1),
      $               riesz_ru(1,ldim,l1),bm1)
          call opchsgn(riesz_ru(1,1,l1),riesz_ru(1,2,l1),
@@ -635,7 +635,7 @@ c     Compute ROM residual for steady NS with Boussinesq
          ifield=1
          call opcopy(riesz_ru(1,1,l1),riesz_ru(1,2,l1)
      $               ,riesz_ru(1,ldim,l1)
-     $               ,zeros,tb(1,i),zeros)
+     $               ,zeros,tb(1,i,1),zeros)
          call opcolv(riesz_ru(1,1,l1),riesz_ru(1,2,l1),
      $               riesz_ru(1,ldim,l1),bm1)
          call opchsgn(riesz_ru(1,1,l1),riesz_ru(1,2,l1),
@@ -659,7 +659,7 @@ c     Compute ROM residual for steady NS with Boussinesq
      $                   riesz_ru(1,ldim,l1))
 
          ifield=2
-            call convect_new(riesz_rt(1,l2),tb(1,i),.false.,
+            call convect_new(riesz_rt(1,l2),tb(1,i,1),.false.,
      $                       ub(1,j),vb(1,j),wb(1,j),.false.)
             call chsign(riesz_rt(1,l2),n) 
             l1=l1+1
@@ -1610,7 +1610,7 @@ c     Compute ROM residual for unsteady NS with Boussinesq
          ifield=1
          call opcopy(riesz_ru(1,1,l1),riesz_ru(1,2,l1)
      $               ,riesz_ru(1,ldim,l1)
-     $               ,tb(1,i),zeros,zeros)
+     $               ,tb(1,i,1),zeros,zeros)
          call opcolv(riesz_ru(1,1,l1),riesz_ru(1,2,l1),
      $               riesz_ru(1,ldim,l1),bm1)
          call opchsgn(riesz_ru(1,1,l1),riesz_ru(1,2,l1),
@@ -1623,7 +1623,7 @@ c     Compute ROM residual for unsteady NS with Boussinesq
          ifield=1
          call opcopy(riesz_ru(1,1,l1),riesz_ru(1,2,l1)
      $               ,riesz_ru(1,ldim,l1)
-     $               ,zeros,tb(1,i),zeros)
+     $               ,zeros,tb(1,i,1),zeros)
          call opcolv(riesz_ru(1,1,l1),riesz_ru(1,2,l1),
      $               riesz_ru(1,ldim,l1),bm1)
          call opchsgn(riesz_ru(1,1,l1),riesz_ru(1,2,l1),
@@ -1654,7 +1654,7 @@ c     Compute ROM residual for unsteady NS with Boussinesq
       l2=1
       do i=0,nb
          ifield=2
-         call copy(riesz_rt(1,l2),tb(1,i),n)
+         call copy(riesz_rt(1,l2),tb(1,i,1),n)
          call col2(riesz_rt(1,l2),bm1,n)
          call chsign(riesz_rt(1,l2),n)
          l2=l2+1
@@ -1662,7 +1662,7 @@ c     Compute ROM residual for unsteady NS with Boussinesq
       if (nid.eq.0) write(6,*)l2,'lres_t_1'
       do i=0,nb
          ifield=2
-         call copy(wk4,tb(1,i),n)
+         call copy(wk4,tb(1,i,1),n)
          call axhelm(riesz_rt(1,l2),wk4,ones,zeros,1,1)
          call cmult(riesz_rt(1,l2),param(8),n)
          call chsign(riesz_rt(1,l2),n) 
@@ -1672,7 +1672,7 @@ c     Compute ROM residual for unsteady NS with Boussinesq
       do j=0,nb
          do i=0,nb
          ifield=2
-            call convect_new(riesz_rt(1,l2),tb(1,i),.false.,
+            call convect_new(riesz_rt(1,l2),tb(1,i,1),.false.,
      $                       ub(1,j),vb(1,j),wb(1,j),.false.)
             call chsign(riesz_rt(1,l2),n) 
             l2=l2+1
@@ -1917,7 +1917,7 @@ c     call set_theta_uns
       call mxm(utj,(nb+1),alphaj,6,coef,1)
       do i=0,nb
          ifield=1
-         call opcopy(wk1,wk2,wk3,tb(1,i),zeros,zeros)
+         call opcopy(wk1,wk2,wk3,tb(1,i,1),zeros,zeros)
          call opcolv(wk1,wk2,wk3,bm1)
          call opchsgn(wk1,wk2,wk3)
 
@@ -1936,7 +1936,7 @@ c     call set_theta_uns
       call mxm(utj,(nb+1),alphaj,6,coef,1)
       do i=0,nb
          ifield=1
-         call opcopy(wk1,wk2,wk3,zeros,tb(1,i),zeros)
+         call opcopy(wk1,wk2,wk3,zeros,tb(1,i,1),zeros)
          call opcolv(wk1,wk2,wk3,bm1)
          call opchsgn(wk1,wk2,wk3)
 
@@ -1985,7 +1985,7 @@ c     call set_theta_uns
       call mxm(utj,nb+1,betaj,6,coef,1)
       do i=0,nb
          ifield=2
-         call copy(wk1,tb(1,i),n)
+         call copy(wk1,tb(1,i,1),n)
          call col2(wk1,bm1,n)
          call chsign(wk1,n)
 
@@ -1996,7 +1996,7 @@ c     call set_theta_uns
       if (nid.eq.0) write(6,*)l2,'lres_t_1'
       do i=0,nb
          ifield=2
-         call copy(wk2,tb(1,i),n)
+         call copy(wk2,tb(1,i,1),n)
          call axhelm(wk1,wk2,ones,zeros,1,1)
          call cmult(wk1,param(8),n)
          call chsign(wk1,n) 
@@ -2012,7 +2012,7 @@ c     call set_theta_uns
       do j=0,nb
          do i=0,nb
             ifield=2
-            call convect_new(wk1,tb(1,i),.false.,
+            call convect_new(wk1,tb(1,i,1),.false.,
      $                       ub(1,j),vb(1,j),wb(1,j),.false.)
             call chsign(wk1,n) 
 
@@ -2312,7 +2312,7 @@ c-----------------------------------------------------------------------
          call mxm(utj,nb+1,betaj,8,coef,1)
          do i=0,nb
             ifield=2
-            call copy(wk1,tb(1,i),n)
+            call copy(wk1,tb(1,i,1),n)
             call col2(wk1,bm1,n)
             call chsign(wk1,n)
 
@@ -2369,7 +2369,7 @@ c-----------------------------------------------------------------------
       elseif (msg.eq.'tmp') then
          do i=0,nb
             ifield=2
-            call copy(wk2,tb(1,i),n)
+            call copy(wk2,tb(1,i,1),n)
             call axhelm(wk1,wk2,ones,zeros,1,1)
             call cmult(wk1,param(8),n)
             call chsign(wk1,n)
@@ -2383,7 +2383,7 @@ c-----------------------------------------------------------------------
             if(nid.eq.0) write(6,*)'helm is on'
             do i=0,nb
                ifield=2
-               call copy(wk1,tb(1,i),n)
+               call copy(wk1,tb(1,i,1),n)
                call col2(wk1,bm1,n)
                call chsign(wk1,n)
 
@@ -2449,7 +2449,7 @@ c-----------------------------------------------------------------------
          do j=0,nb
             do i=0,nb
                ifield=2
-               call convect_new(wk1,tb(1,i),.false.,
+               call convect_new(wk1,tb(1,i,1),.false.,
      $                          ub(1,j),vb(1,j),wb(1,j),.false.)
                call chsign(wk1,n)
 
@@ -2489,7 +2489,7 @@ c-----------------------------------------------------------------------
       call mxm(utj,(nb+1),alphaj,8,coef,1)
       do i=0,nb
          ifield=1
-         call opcopy(wk1,wk2,wk3,tb(1,i),zeros,zeros)
+         call opcopy(wk1,wk2,wk3,tb(1,i,1),zeros,zeros)
          call opcolv(wk1,wk2,wk3,bm1)
          call opchsgn(wk1,wk2,wk3)
 
@@ -2506,7 +2506,7 @@ c-----------------------------------------------------------------------
       call mxm(utj,(nb+1),alphaj,8,coef,1)
       do i=0,nb
          ifield=1
-         call opcopy(wk1,wk2,wk3,zeros,tb(1,i),zeros)
+         call opcopy(wk1,wk2,wk3,zeros,tb(1,i,1),zeros)
          call opcolv(wk1,wk2,wk3,bm1)
          call opchsgn(wk1,wk2,wk3)
 

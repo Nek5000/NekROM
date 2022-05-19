@@ -135,9 +135,9 @@ c-----------------------------------------------------------------------
 
       if (ifexist) then
          nn=nb+1
-         ifreads(1)=ifrom(1)
-         ifreads(2)=ifrom(0)
-         ifreads(3)=ifrom(2)
+         do i=0,ldimt1
+            ifreads(i)=ifrom(i)
+         enddo
 
          call read_fields(
      $      us0,prs,ts0,nn,0,ifreads,tk,'bas.list ',.false.)
@@ -146,7 +146,7 @@ c-----------------------------------------------------------------------
             if (ifrom(0)) call copy(pb(1,i),prs(1,i+1),n2)
             if (ifrom(1)) call opcopy(ub(1,i),vb(1,i),wb(1,i),
      $                        us0(1,1,i+1),us0(1,2,i+1),us0(1,ldim,i+1))
-            if (ifrom(2)) call copy(tb(1,i),ts0(1,i+1),n)
+            if (ifrom(2)) call copy(tb(1,i,1),ts0(1,i+1,1),n)
          enddo
          if (nn.lt.nb) call exitti(
      $   'number of files in bas.list fewer than nb$',nb-nn)
@@ -166,7 +166,7 @@ c-----------------------------------------------------------------------
             call restart_filen(fname,11+len)
             if (ifrom(0)) call copy(pb(1,i),pr,n2)
             if (ifrom(1)) call opcopy(ub(1,i),vb(1,i),wb(1,i),vx,vy,vz)
-            if (ifrom(2)) call copy(tb(1,i),t,n)
+            if (ifrom(2)) call copy(tb(1,i,1),t,n)
          enddo
       endif
 
@@ -199,13 +199,13 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
       parameter (lt2=lx2*ly2*lz2*lelt)
 
-      real usave(lt,ldim,1),psave(lt2,1),tsave(lt,1)
+      real usave(lt,ldim,1),psave(lt2,1),tsave(lt,1,ldimt)
       real tk(1)
 
       character*128 fn
       character*128 fnlint
 
-      logical ifa,ifread(3)
+      logical ifa,ifread(0:ldimt1)
 
       common /scrk2/ t4(lt),t5(lt),t6(lt)
 
@@ -263,12 +263,15 @@ c-----------------------------------------------------------------------
                if (ldim.eq.3) call add2col2(uvms,vz,t,n)
             endif
 
+            if (ifread(0)) call copy(psave(1,ip),pr,n2)
             if (ifread(1))
      $         call opcopy(usave(1,1,ip),usave(1,2,ip),usave(1,ldim,ip),
      $                    vx,vy,vz)
 
-            if (ifread(2)) call copy(psave(1,ip),pr,n2)
-            if (ifread(3)) call copy(tsave(1,ip),t,n)
+            do j=1,ldimt
+               idx=j+1
+               if (ifread(idx)) call copy(tsave(1,ip,j),t(1,1,1,1,j),n)
+            enddo
          else
             goto 999
          endif
@@ -870,7 +873,7 @@ c-----------------------------------------------------------------------
             call restart_filen(fname,11+len)
             if (ifrom(0)) call copy(pb(1,i),pr,n2)
             if (ifrom(1)) call opcopy(ub(1,i),vb(1,i),wb(1,i),vx,vy,vz)
-            if (ifrom(2)) call copy(tb(1,i),t,n)
+            if (ifrom(2)) call copy(tb(1,i,1),t,n)
          enddo
       endif
 
@@ -946,7 +949,7 @@ c     This routine reads files specificed in fname
      $                    vx,vy,vz)
 
             if (icount.le.nsp) call copy(pb(1,ip),pr,n2)
-            if (icount.le.nst) call copy(tb(1,ip),t,n)
+            if (icount.le.nst) call copy(tb(1,ip,1),t,n)
          else
             goto 999
          endif

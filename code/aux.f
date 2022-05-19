@@ -28,7 +28,7 @@ c-----------------------------------------------------------------------
       call rzero(tt,n)
 
       do i=0,nb
-         call add2s2(tt,tb(1,i),coef(i),n)
+         call add2s2(tt,tb(1,i,1),coef(i),n)
       enddo
 
       return
@@ -51,7 +51,7 @@ c-----------------------------------------------------------------------
 
       do j=0,nb
       do i=0,nb
-         call col3(tbt,tb(1,i),tb(1,j),n)
+         call col3(tbt,tb(1,i,1),tb(1,j,1),n)
          call add2s2(tt,tbt,ut2a(1+i+(nb+1)*j),n)
       enddo
       enddo
@@ -371,7 +371,7 @@ c-----------------------------------------------------------------------
       call opadd2(vx,vy,vz,ux,uy,uz)
       call add2(pr,pp,lx2*ly2*lz2*nelv)
 
-      do idim=1,1
+      do idim=1,ldimt
          call add2(t(1,idim),tt(1,idim),lx1*ly1*lz1*nelt)
       enddo
 
@@ -874,10 +874,10 @@ c-----------------------------------------------------------------------
          call opzero(ux1,uy1,uz1)
          do j=0,nb
          do i=0,nb
-            call admcol3(ux1,ub(1,i),tb(1,j),uuta(1+i+(nb+1)*j),n)
-            call admcol3(uy1,vb(1,i),tb(1,j),uuta(1+i+(nb+1)*j),n)
+            call admcol3(ux1,ub(1,i),tb(1,j,1),uuta(1+i+(nb+1)*j),n)
+            call admcol3(uy1,vb(1,i),tb(1,j,1),uuta(1+i+(nb+1)*j),n)
             if (ldim.eq.3)
-     $         call admcol3(uz1,wb(1,i),tb(1,j),uuta(1+i+(nb+1)*j),n)
+     $         call admcol3(uz1,wb(1,i),tb(1,j,1),uuta(1+i+(nb+1)*j),n)
          enddo
          enddo
          call outpost(ux1,uy1,uz1,pr,tt,'tmn')
@@ -1418,7 +1418,7 @@ c        write(6,*)sample(ipass)
                label(i) = j
             endif
          enddo
-         call copy(cent_fld(1,i),ts0(1,label(i)),n)
+         call copy(cent_fld(1,i),ts0(1,label(i),1),n)
       enddo
 
       ! minimize distortion measure
@@ -1428,7 +1428,7 @@ c        write(6,*)sample(ipass)
          call rzero(rnk,ls*k)
          do i=1,ls
             do j=1,k
-              call sub3(tmp(1,j),ts0(1,i),cent_fld(1,j),n)
+              call sub3(tmp(1,j),ts0(1,i,1),cent_fld(1,j),n)
               dist(j) = glsc2(tmp(1,j),tmp(1,j),n)
             enddo
             write(6,*)ls,minloc(dist),sample(i)
@@ -1459,7 +1459,7 @@ c        enddo
          do i=1,k
             call rzero(cent_fld,n*k)
             do j=1,ls
-               call add2s2(cent_fld(1,i),ts0(1,j),rnk(j,i),n)
+               call add2s2(cent_fld(1,i),ts0(1,j,1),rnk(j,i),n)
             enddo
             call cmult(cent_fld(1,i),1./num_sc(i),n)
             centroid(i) = glsc2(sample,rnk(1,i),ls)/num_sc(i)
@@ -1476,7 +1476,7 @@ c                 write(6,*)i,centroid(i),sample(j)
                   label(i) = j
                endif
             enddo
-            call copy(cent_fld(1,i),ts0(1,label(i)),n)
+            call copy(cent_fld(1,i),ts0(1,label(i),1),n)
          enddo
          call c_distortion_measure(obj_f,cent_fld,rnk,k)
          write(6,*)kk,obj_f,'distortion measure M'
@@ -1534,7 +1534,7 @@ c-----------------------------------------------------------------------
       do i=1,ls
          do j=1,k
             if (abs(rnk(i,j)-1).le.1e-8) then
-               call sub3(tmp(1,j),ts0(1,i),cent_fld(1,j),n)
+               call sub3(tmp(1,j),ts0(1,i,1),cent_fld(1,j),n)
                dist(j) = glsc2(tmp(1,j),tmp(1,j),n)
                obj_f = obj_f + dist(j)
             endif
@@ -1581,8 +1581,8 @@ c-----------------------------------------------------------------------
       do j=1,ns
       ttk(0,j) = 1.
       do i=1,nocp
-         ww=sip(tb(1,i),tb(1,i))
-         vv=sip(tb(1,i),ts0(1,j))
+         ww=sip(tb(1,i,1),tb(1,i,1))
+         vv=sip(tb(1,i,1),ts0(1,j,1))
          ttk(i,j) = vv/ww
       enddo
       enddo
@@ -1597,7 +1597,7 @@ c-----------------------------------------------------------------------
             call sub2(us0(1,2,i),vy,n)
             if (ldim.eq.3) call sub2(us0(1,ldim,i),vz,n)
          endif
-         if (ifrom(2)) call sub2(ts0(1,i),t,n)
+         if (ifrom(2)) call sub2(ts0(1,i,1),t,n)
       enddo
 
       if (nio.eq.0) write (6,*) 'exiting projtoprerb'
@@ -1755,7 +1755,7 @@ c-----------------------------------------------------------------------
       call rzero(tt,n)
 
       do i=1,nocp
-         call add2s2(tt,tb(1,i),coef(i),n)
+         call add2s2(tt,tb(1,i,1),coef(i),n)
       enddo
 
       return

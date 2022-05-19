@@ -12,7 +12,7 @@ c     parameters and common blocks for MOR
      $                  wb(lx1*ly1*lz1*lelm,0:lub),
      $                  uvwb(lx1*ly1*lz1*lelm,ldim,0:lub),
      $                  pb(lx2*ly2*lz2*lelm,0:lpb),
-     $                  tb(lx1*ly1*lz1*lelm,0:ltb)
+     $                  tb(lx1*ly1*lz1*lelm,0:ltb,ldimt)
 
       common /moric/ uic(lx1*ly1*lz1*lelm),
      $               vic(lx1*ly1*lz1*lelm),
@@ -25,7 +25,7 @@ c     parameters and common blocks for MOR
 
       common /morusnap/ us0(lx1*ly1*lz1*lelm,ldim,lsu)
       common /morpsnap/ prs(lx2*ly2*lz2*lelm,lsp)
-      common /mortsnap/ ts0(lx1*ly1*lz1*lelm,lst)
+      common /mortsnap/ ts0(lx1*ly1*lz1*lelm,lst,ldimt)
 
       common /morsnaptmp/ snapt(lx1*ly1*lz1*lelm,ldim,lsu)
 
@@ -166,8 +166,9 @@ c     parameters and common blocks for MOR
       ! Flags
 
       logical ifl2,ifvort,ifstep,ifpart,ifavg0,ifplay,
-     $        ifcdrag,ifrms,ifread,ifreads(3),ifforce,ifpod(0:ldimt1),
-     $        ifbuoy,ifrom(0:ldimt1),ifcintp,iffastc,ifcnuss,ifctke,
+     $        ifcdrag,ifrms,ifread,ifreads(0:ldimt1),ifforce,
+     $        ifpod(0:ldimt1),ifbuoy,ifrom(0:ldimt1),
+     $        ifcintp,iffastc,ifcnuss,ifctke,
      $        iffasth,ifavisc,ifsource,ifei,ifsub0,ifrecon,iftneu,
      $        ifdecpl,ifcore,ifquad,ifhelm,ifsrct,iftflux,ifcomb,ifpb,
      $        ifcp,ifcflow
