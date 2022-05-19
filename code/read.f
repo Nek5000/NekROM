@@ -199,7 +199,7 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
       parameter (lt2=lx2*ly2*lz2*lelt)
 
-      real usave(lt,ldim,1),psave(lt2,1),tsave(lt,1,ldimt)
+      real usave(lt,ldim,1),psave(lt2,1),tsave(lt,ls,ldimt)
       real tk(1)
 
       character*128 fn
