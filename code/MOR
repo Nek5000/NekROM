@@ -259,3 +259,11 @@ c     parameters and common blocks for MOR
       common /mordiff2/ psit(lx1*ly1*lz1*lelm,ldim*ldim,ldim,lbavg)
 
       common /morflucop/ fv_op(lbavg*lbavg),ft_op(lbavg*lbavg)
+
+      ! Eddy Viscosity
+
+      logical ifedvs
+
+      common /moredflags/ ifedvs
+
+      common /moredops/ cedd((lcloc-1)*lmu+1)
