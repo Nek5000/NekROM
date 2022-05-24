@@ -8,6 +8,8 @@ c-----------------------------------------------------------------------
       common /scrbdfext/ rhs(0:lb,2),rhstmp(0:lb),
      $                   utmp1(0:lb),utmp2(0:lb)
 
+      common /eddyma/ cedma(1:lb,0:lb)
+
       logical ifdebug
       integer chekbc
 
@@ -124,6 +126,11 @@ c     if (icount.le.2) then
          if (ad_step.le.3) then
             ttime=dnekclock()
             call seth(hlm,au,bu,1./ad_re)
+            if (ifedvs) then
+               edv(0) = 1
+               edv(1) = 1
+               call addeddy(cedd,cedma,edv,hlm)
+            endif
             if (ad_step.eq.3) call dump_serial(hlm,nb*nb,'ops/hu ',nid)
             do j=1,nb-nplay
             do i=1,nb-nplay
@@ -617,6 +624,7 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       common /scrrhs/ tmp1(0:lb),tmp2(0:lb)
+      common /eddyma/ cedma(1:lb,0:lb)
 
       real rhs(nb)
 
@@ -630,6 +638,11 @@ c-----------------------------------------------------------------------
       do i=1,nb
          rhs(i)=rhs(i)+s*au0(1+i)
       enddo
+      if (ifedvs) then
+         do i=1,nb
+            rhs(i)=rhs(i)-cedma(i,0)
+         enddo
+      endif
 
       if (ifcp) then
          if (ifcore) then 
@@ -1482,3 +1495,25 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine addeddy(cl,cm,uu,flu)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      real uu(0:nb)
+      real flu(nb,nb)
+      real cl(ic1:ic2,jc1:jc2,kc1:kc2)
+      real cm(ic1:ic2,jc1:jc2)
+
+      call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),uu(kc1),(kc2-kc1+1),cm,1)
+
+      do i=1,ic2
+      do j=1,jc2
+      flu(i,j) = flu(i,j)+cm(i,j)
+      enddo
+      enddo
+c     call add2(flu,cm,nb*nb)
+
+      return
+      end

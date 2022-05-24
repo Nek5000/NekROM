@@ -586,7 +586,8 @@ c-----------------------------------------------------------------------
          proj_time=dnekclock()
 
          if (ifpod(1)) call pv2k(uk,us0,ub,vb,wb)
-         if (ifpod(2)) call ps2k(tk,ts0,tb)
+         if (ifpod(2)) call ps2k(tk,ts0(1,1,1),tb(1,0,1))
+         if (ifedvs) call ps2k(edk,ts0(1,1,4),tb(1,0,4))
 
          call nekgsync
          if (nio.eq.0) write (6,*) 'proj_time:',dnekclock()-proj_time
@@ -976,6 +977,7 @@ c-----------------------------------------------------------------------
          write (6,*) 'mp_ifplay     ',ifplay
          write (6,*) 'mp_ifei       ',ifei
          write (6,*) 'mp_iaug       ',iaug
+         write (6,*) 'mp_ifedvs     ',ifedvs
          write (6,*) ' '
          write (6,*) 'mp_ifforce    ',ifforce
          write (6,*) 'mp_ifsource   ',ifsource
