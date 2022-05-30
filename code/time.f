@@ -8,7 +8,7 @@ c-----------------------------------------------------------------------
       common /scrbdfext/ rhs(0:lb,2),rhstmp(0:lb),
      $                   utmp1(0:lb),utmp2(0:lb)
 
-      common /eddyma/ cedma(1:lb,0:lb)
+      common /eddyma/ cedm(lb**2),cedvec(lb)
 
       logical ifdebug
       integer chekbc
@@ -129,7 +129,7 @@ c     if (icount.le.2) then
             if (ifedvs) then
                edv(0) = 1
                edv(1) = 1
-               call addeddy(cedd,cedma,edv,hlm)
+               call addeddy(hlm,cedm,cedvec,cedd,edv)
             endif
             if (ad_step.eq.3) call dump_serial(hlm,nb*nb,'ops/hu ',nid)
             do j=1,nb-nplay
@@ -624,7 +624,7 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       common /scrrhs/ tmp1(0:lb),tmp2(0:lb)
-      common /eddyma/ cedma(1:lb,0:lb)
+      common /eddyma/ cedm(lb**2),cedvec(lb)
 
       real rhs(nb)
 
@@ -640,7 +640,7 @@ c-----------------------------------------------------------------------
       enddo
       if (ifedvs) then
          do i=1,nb
-            rhs(i)=rhs(i)-cedma(i,0)
+            rhs(i)=rhs(i)-cedvec(i)
          enddo
       endif
 
@@ -1495,25 +1495,35 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine addeddy(cl,cm,uu,flu)
+      subroutine addeddy(flu,cedm,cedvec,cl,uu)
 
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
 
-      real uu(0:nb)
-      real flu(nb,nb)
+      common /eddytmp/ work(lb*(lb+1))
+
+      real uu(0:nb), flu(nb,nb)
+      real cedm(nb,nb),cedvec(nb)
+
+      real tmp(nb,0:nb)
       real cl(ic1:ic2,jc1:jc2,kc1:kc2)
       real cm(ic1:ic2,jc1:jc2)
 
+      call rzero(tmp,nb*(nb+1))
+
       call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),uu(kc1),(kc2-kc1+1),cm,1)
 
-      do i=1,ic2
-      do j=1,jc2
-      flu(i,j) = flu(i,j)+cm(i,j)
+      do j=jc1,jc2
+      do i=ic1,ic2
+      tmp(i,j) = tmp(i,j)+cm(i,j)
       enddo
       enddo
-c     call add2(flu,cm,nb*nb)
+      call gop(tmp,work,'+  ',nb*(nb+1))
+      call copy(cedm,tmp(1,1),nb*nb)
+      call copy(cedvec,tmp(1,0),nb)
+
+      call add2(flu,cedm,nb*nb)
 
       return
       end
