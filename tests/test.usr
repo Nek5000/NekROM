@@ -189,9 +189,9 @@ c-----------------------------------------------------------------------
       real urhs(nb)
 
       if (ifield.eq.1) then
-c        call rzero(urhs,nb)
+c        call cadd(urhs,1.0,nb)
       else if (ifield.eq.2) then
-c        call rone(urhs,nb)
+c        call cadd(urhs,1.0,nb)
       endif
 
       return
