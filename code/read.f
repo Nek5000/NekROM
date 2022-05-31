@@ -140,7 +140,7 @@ c-----------------------------------------------------------------------
          enddo
 
          call read_fields(
-     $      us0,prs,ts0,nn,0,ifreads,tk,'bas.list ',.false.)
+     $      us0,prs,ts0,nn,ls,0,ifreads,tk,'bas.list ',.false.)
 
          do i=0,nb
             if (ifrom(0)) call copy(pb(1,i),prs(1,i+1),n2)
@@ -179,12 +179,14 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine read_fields(usave,psave,tsave,ns,nskp,ifread,tk,fn,ifa)
+      subroutine read_fields(usave,psave,tsave,ns,ls,nskp,ifread,
+     $                       tk,fn,ifa)
 
       ! Reads and stores field files in given arrays
 
       ! usave,psave,tsave := velocity, pressure, temperature storage
       ! ns                := number of fields to save
+      ! ls                := number of fields in (u,p,t)save
       ! nskp              := skipping interval
       ! ifread            := flags for reading each field
       ! tk                := time at each snapshot
