@@ -8,7 +8,7 @@ c-----------------------------------------------------------------------
       common /scrbdfext/ rhs(0:lb,2),rhstmp(0:lb),
      $                   utmp1(0:lb),utmp2(0:lb)
 
-      common /eddyma/ cedm(lb**2),cedvec(lb)
+      common /eddyma/ cedm((lb**2-1)*ledvis+1),cedvec((lb-1)*ledvis+1)
 
       logical ifdebug
       integer chekbc
@@ -624,7 +624,7 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       common /scrrhs/ tmp1(0:lb),tmp2(0:lb)
-      common /eddyma/ cedm(lb**2),cedvec(lb)
+      common /eddyma/ cedm((lb**2-1)*ledvis+1),cedvec((lb-1)*ledvis+1)
 
       real rhs(nb)
 
@@ -1501,8 +1501,6 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
-      common /eddytmp/ work(lb*(lb+1))
-
       real uu(0:nb), flu(nb,nb)
       real cedm(nb,nb),cedvec(nb)
 
@@ -1519,7 +1517,7 @@ c-----------------------------------------------------------------------
       tmp(i,j) = tmp(i,j)+cm(i,j)
       enddo
       enddo
-      call gop(tmp,work,'+  ',nb*(nb+1))
+      call gop(tmp,stmp,'+  ',nb*(nb+1))
       call copy(cedm,tmp(1,1),nb*nb)
       call copy(cedvec,tmp(1,0),nb)
 

@@ -11,6 +11,7 @@
       parameter (lb=20)       ! max number of basis
       parameter (lelm=lelt)   ! number of local elements
       parameter (ltr=1+0*399) ! max number of tensor rank
+      parameter (ledvis=0)   ! 0 -> disable eddy viscosity allocation
 
       parameter (lk=1)   ! largest wave number for pdrag calculation
       parameter (lmsk=1) ! number of partitions
