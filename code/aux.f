@@ -2962,7 +2962,7 @@ c-----------------------------------------------------------------------
                sc=-vip(b(1,1,i),b(1,2,i),b(1,ldim,i),
      $                 b(1,1,j),b(1,2,j),b(1,ldim,j))
 
-               call opaddds(b(1,1,i),b(1,2,i),b(1,ldim,i),
+               call opadds(b(1,1,i),b(1,2,i),b(1,ldim,i),
      $                      b(1,1,j),b(1,2,j),b(1,ldim,j),sc,nv,2)
             else if (mdim.eq.1) then
                sc=-sip(b(1,1,i),b(1,1,j))
