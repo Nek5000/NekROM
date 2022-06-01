@@ -17,6 +17,7 @@ c-----------------------------------------------------------------------
 
       ifdebug=.true.
       ifdebug=.false.
+      jfield=ifield
 
       ulast_time = dnekclock()
 
@@ -50,6 +51,7 @@ c     if (icount.le.2) then
          return
       endif
 
+      ifield=2
       if (ifrom(2)) then
          if (ad_step.le.3) then
             ttime=dnekclock()
@@ -78,7 +80,10 @@ c     if (icount.le.2) then
             call update_k(uk,ukp,tk,tkp)
          endif
 
+         call rom_userfop
+
          call setr_t(rhs(1,2),icount)
+         call rom_userrhs(rhs(1,2))
 
          ttime=dnekclock()
          if (.not.ifcomb) then
@@ -122,6 +127,7 @@ c     if (icount.le.2) then
          endif
       endif
 
+      ifield=1
       if (ifrom(1)) then
          if (ad_step.le.3) then
             ttime=dnekclock()
@@ -155,7 +161,10 @@ c     if (icount.le.2) then
             call update_k(uk,ukp,tk,tkp)
          endif
 
+         call rom_userfop
+
          call setr_v(rhs(1,1),icount)
+         call rom_userrhs(rhs(1,1))
 
          ttime=dnekclock()
          if (.not.ifcomb) then
@@ -234,6 +243,8 @@ c     if (icount.le.2) then
 
       if (ifrom(2)) call shift(ut,rhs(0,2),nb+1,5)
       if (ifrom(1)) call shift(u,rhs,nb+1,5)
+
+      ifield=jfield
 
       ustep_time=ustep_time+dnekclock()-ulast_time
 

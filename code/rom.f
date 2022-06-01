@@ -237,6 +237,7 @@ c-----------------------------------------------------------------------
       call mor_set_params_uni_post
 
       call setbases
+      call rom_userbases
 
 c     call average_in_xy
 c     call average_in_y

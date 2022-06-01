@@ -164,3 +164,55 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine rom_userbases ! set user-defined ROM basis
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+c     do i=1,nb
+c        call call incomprn(uvwb(1,1,i),uvwb(1,2,i),uvwb(1,ldim,i),pb)
+c     enddo
+
+c     call orthonormb(uvwb,ldim,nb)
+c     call orthonormb(tb,1,nb)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine rom_userrhs(urhs) ! set right hand size for ROM evolution
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      real urhs(nb)
+
+      if (ifield.eq.1) then
+c        call cadd(urhs,1.0,nb)
+      else if (ifield.eq.2) then
+c        call cadd(urhs,1.0,nb)
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine rom_userfop ! set forward operator for ROM evolution
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      if (ifield.eq.1) then
+c        call seth(hlm(1,1),au,bu,1./ad_re)
+c        call invmat(hinv,hlu,hlm,ihlu,ihlu2,nb)
+      else if (ifield.eq.2) then
+c        call seth(hlm(1,2),at,bt,1./ad_pe)
+c        call invmat(hinv,hlu(1,2),hlm(1,2),ihlu(1,2),ihlu2(1,2),nb)
+      endif
+
+c     call update_k(uk,ukp,tk,tkp)
+
+      return
+      end
+c-----------------------------------------------------------------------
