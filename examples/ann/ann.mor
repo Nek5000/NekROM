@@ -1,0 +1,33 @@
+[GENERAL]
+mode    = all # (off=offline,on=online,all=both,onb=online with bases,cp)
+field   = vt  # fields to perform the pod-rom (v=vel.,t=temp.,vt=both)
+nb=1
+avginit = 5.0001E+04   # starting time-step of rom averaging
+rktol   = 0   # adaptive Runge-Kutta error tolerance
+tneubc  = no  # inhomogeneous Neumann BC for temperature
+nplay   = 0   # number of replay modes
+decoupled = no
+
+[POD]
+type     = h10 # pod-inner product (l2,h10,hlm)
+mode0    = state # 0th mode of the POD basis (avg=mean(snaps),state=vx,vy,vz,t)
+combined = no  # POD based on combined velocity and thermal Gramian
+ratio    = 0.5 # Gramian ratio (1 -> pure velocity, 0 -> pure thermal)
+
+[QOI]
+freq = 0  # frequency of qoi dump (<1 -> iostep)
+tke  = no # turbulence kinetic energy
+drag = no # drag based on OBJ data
+nu   = 0  # nusselt number based on problem type (1-3)
+
+[Buoyancy] # cannot choose mag+angle and vector components in same .mor
+magnitude = 1.   # magnitude of gravity vector
+angle     = -90.   # angle of gravity vector (degrees displacement from x-axis)
+# gx      = 0.   # x-component of gravity vector
+# gy      = 0.   # y-component of gravity vector
+# gz      = 0.   # z-component of gravity vector
+
+[FORCING]
+body     = no # body force on the velocity field, set fx,fy,fz in user file
+source   = no # source term on the thermal field, set qq in user file 
+buoyancy = yes # buoyancy term the velocity field, set gx,gy,gz, in userfile
