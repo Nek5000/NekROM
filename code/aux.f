@@ -2982,3 +2982,27 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine genab(uxyz,uvwb,uvwb0)
+
+      ! generate augmented basis from ABM
+
+      ! uxyz  := ABM mode
+      ! uvwb  := original basis mode
+      ! uvwb0 := original basis mode or 0th mode
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      real uxyz(lt,ldim),uvwb(lt,ldim),uvwb0(lt,ldim)
+
+      call evalcflds(uxyz,uwb,uvwb0,ldim,1,.true.)
+
+      call opbinv1(uxyz(1,1),uxyz(1,2),uxyz(1,ldim),
+     $             uxyz(1,1),uxyz(1,2),uxyz(1,ldim),1.)
+
+      call incomprn(uxyz(1,1),uxyz(1,2),uxyz(1,ldim),prlag)
+
+      return
+      end
+c-----------------------------------------------------------------------
