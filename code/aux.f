@@ -2996,7 +2996,7 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
       real uxyz(lt,ldim),uvwb(lt,ldim),uvwb0(lt,ldim)
 
-      call evalcflds(uxyz,uwb,uvwb0,ldim,1,.true.)
+      call evalcflds(uxyz,uvwb,uvwb0,ldim,1,.true.)
 
       call opbinv1(uxyz(1,1),uxyz(1,2),uxyz(1,ldim),
      $             uxyz(1,1),uxyz(1,2),uxyz(1,ldim),1.)
