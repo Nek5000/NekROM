@@ -2996,7 +2996,6 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
       common /scrns/ txyz(lt,ldim)
 
-      parameter (lt=lx1*ly1*lz1*lelt)
       real uxyz(lt,ldim),uvwb(lt,ldim),uvwb0(lt,ldim)
 
       call evalcflds(uxyz,uvwb,uvwb0,ldim,1,.true.)
