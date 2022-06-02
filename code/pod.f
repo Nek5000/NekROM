@@ -314,10 +314,6 @@ c           if (.not.ifcomb.and.ifpb) call snorm(edb)
          nb=nb*3+1
       endif
 
-      if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
-         call dump_bas
-      endif
-
       call nekgsync
       if (nio.eq.0) write (6,*) 'bas_time:',dnekclock()-bas_time
       if (nio.eq.0) write (6,*) 'exiting setbases'
