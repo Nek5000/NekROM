@@ -1,0 +1,18 @@
+#!/bin/bash
+
+# assume NekROM and Nek5000 are set up
+
+makerom &> /dev/null
+sed 's/(ls=.*)/(ls=200)/g' LMOR | sed 's/(lb=.*)/(lb=21)/g' > LMOR.tmp
+mv LMOR.tmp LMOR
+makerom cylrom
+
+genmap << Z
+cyl
+0.1
+Z
+
+ls -r snaps/cyl0.f* > file.list
+ls -r snaps/avgcyl0.f0000{3,4} > avg.list
+
+neklmpi cyl 1
