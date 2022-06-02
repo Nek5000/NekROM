@@ -239,6 +239,10 @@ c-----------------------------------------------------------------------
       call setbases
       call rom_userbases
 
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
+         call dump_bas
+      endif
+
 c     call average_in_xy
 c     call average_in_y
       call setops
