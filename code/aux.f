@@ -2982,7 +2982,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine genab(uxyz,uvwb,uvwb0)
+      subroutine setab(uxyz,uvwb,uvwb0)
 
       ! generate augmented basis from ABM
 
@@ -2994,9 +2994,15 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
 
       parameter (lt=lx1*ly1*lz1*lelt)
+      common /scrns/ txyz(lt,ldim)
+
       real uxyz(lt,ldim),uvwb(lt,ldim),uvwb0(lt,ldim)
 
       call evalcflds(uxyz,uvwb,uvwb0,ldim,1,.true.)
+      call evalcflds(txyz,uvwb0,uvwb,ldim,1,.true.)
+      call opadd2(uxyz(1,1),uxyz(1,2),uxyz(1,ldim),
+     $            txyz(1,1),txyz(1,2),txyz(1,ldim))
+
 
       call opbinv1(uxyz(1,1),uxyz(1,2),uxyz(1,ldim),
      $             uxyz(1,1),uxyz(1,2),uxyz(1,ldim),1.)
