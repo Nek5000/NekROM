@@ -2486,7 +2486,6 @@ c-----------------------------------------------------------------------
       character*3 msg
 
       if (nio.eq.0) write (6,*) 'inside resid_buoy'
-c     if (ifbuoy) call exitti('ifbuoy temporarily disabled in EI',1)
 
       n=lx1*ly1*lz1*nelv
 
@@ -2497,10 +2496,8 @@ c     if (ifbuoy) call exitti('ifbuoy temporarily disabled in EI',1)
          call opcolv(wk1,wk2,wk3,bm1)
          call opchsgn(wk1,wk2,wk3)
 
-c        coef(i)=-sin(bu_angle)*ad_ra*(coef(i)+uta(i))
          coef(i)=gx*(coef(i)+uta(i))
          call cfill(wk4,coef(i),n)
-c        if (nid.eq.0) write(6,*)coef(i),'theta_u'
          if (nid.eq.0) write(6,*)coef(i),'theta_u',gx,ad_ra
          call add2col2(res_u(1,1),wk1,wk4,n)
          call add2col2(res_u(1,2),wk2,wk4,n)
@@ -2516,10 +2513,8 @@ c        if (nid.eq.0) write(6,*)coef(i),'theta_u'
          call opcolv(wk1,wk2,wk3,bm1)
          call opchsgn(wk1,wk2,wk3)
 
-c        coef(i)=-cos(bu_angle)*ad_ra*(coef(i)+uta(i))
          coef(i)=gy*(coef(i)+uta(i))
          call cfill(wk4,coef(i),n)
-         if (nid.eq.0) write(6,*)coef(i),'theta_u'
          if (nid.eq.0) write(6,*)coef(i),'theta_u',gy,ad_ra
          call add2col2(res_u(1,1),wk1,wk4,n)
          call add2col2(res_u(1,2),wk2,wk4,n)
