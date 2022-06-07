@@ -545,7 +545,7 @@ c-----------------------------------------------------------------------
 
       call bcast(ifrecon,lsize)
 
-      do i=1,2
+      do i=0,ldimt1
          call bcast(ifpod(i),lsize)
          call bcast(ifrom(i),lsize)
       enddo

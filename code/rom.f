@@ -237,6 +237,11 @@ c-----------------------------------------------------------------------
       call mor_set_params_uni_post
 
       call setbases
+      call rom_userbases
+
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
+         call dump_bas
+      endif
 
 c     call average_in_xy
 c     call average_in_y
@@ -586,7 +591,8 @@ c-----------------------------------------------------------------------
          proj_time=dnekclock()
 
          if (ifpod(1)) call pv2k(uk,us0,ub,vb,wb)
-         if (ifpod(2)) call ps2k(tk,ts0,tb)
+         if (ifpod(2)) call ps2k(tk,ts0(1,1,1),tb(1,0,1))
+         if (ifedvs) call ps2k(edk,ts0(1,1,4),tb(1,0,4))
 
          call nekgsync
          if (nio.eq.0) write (6,*) 'proj_time:',dnekclock()-proj_time
@@ -976,6 +982,7 @@ c-----------------------------------------------------------------------
          write (6,*) 'mp_ifplay     ',ifplay
          write (6,*) 'mp_ifei       ',ifei
          write (6,*) 'mp_iaug       ',iaug
+         write (6,*) 'mp_ifedvs     ',ifedvs
          write (6,*) ' '
          write (6,*) 'mp_ifforce    ',ifforce
          write (6,*) 'mp_ifsource   ',ifsource
@@ -1061,7 +1068,7 @@ c-----------------------------------------------------------------------
          enddo
 
          call read_fields(
-     $      us0,prs,ts0,ns,nskip,ifreads,timek,fname1,.true.)
+     $      us0,prs,ts0,ns,ls,nskip,ifreads,timek,fname1,.true.)
          rtmp1(1,1)=1.0*ns
          call dump_serial(rtmp1(1,1),1,'ops/ns ',nid)
 
@@ -1147,16 +1154,16 @@ c        endif
             ifreads(2)=.true.
             ifreads(3)=.false.
             call read_fields(uafld,pafld,fldtmp,
-     $         nbavg,0,ifreads,1,tk,fname1,iftmp)
+     $         nbavg,lbavg,0,ifreads,1,tk,fname1,iftmp)
 
             fname1='urms.list'
             ifreads(2)=.false.
             call read_fields(uufld,fldtmp,fldtmp,
-     $         nbavg,0,ifreads,tk,fname1,iftmp)
+     $         nbavg,lbavg,0,ifreads,tk,fname1,iftmp)
 
             fname1='urm2.list'
             call read_fields(uvfld,fldtmp,fldtmp,
-     $         nbavg,0,ifreads,tk,fname1,iftmp)
+     $         nbavg,lbavg,0,ifreads,tk,fname1,iftmp)
 
             ifxyo=.true.
 
@@ -1190,13 +1197,13 @@ c        endif
             ifreads(2)=.false.
             ifreads(3)=.true.
             call read_fields(fldtmp,fldtmp,tafld,
-     $         nbavg,0,ifreads,tk,fname1,iftmp)
+     $         nbavg,lbavg,0,ifreads,tk,fname1,iftmp)
 
             ifreads(1)=.true.
             ifreads(3)=.false.
             fname1='utms.list'
             call read_fields(utfld,fldtmp,fldtmp,
-     $         nbavg,0,ifreads,tk,fname1,iftmp)
+     $         nbavg,lbavg,0,ifreads,tk,fname1,iftmp)
 
             do i=1,nbavg
                call setupvp(uptp(1,1,i),

@@ -2944,3 +2944,71 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine orthonormb(b,mdim,nb)
+
+      ! orthonormalize fields with modified Gram-Schmidt
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      real b(lx1*ly1*lz1*lelt,mdim,nb)
+
+      nv=lx1*ly1*lz1*nelv
+      nt=lx1*ly1*lz1*nelt
+
+      do i=1,nb
+         do j=1,i-1
+            if (mdim.eq.ldim) then
+               sc=-vip(b(1,1,i),b(1,2,i),b(1,ldim,i),
+     $                 b(1,1,j),b(1,2,j),b(1,ldim,j))
+
+               call opadds(b(1,1,i),b(1,2,i),b(1,ldim,i),
+     $                      b(1,1,j),b(1,2,j),b(1,ldim,j),sc,nv,2)
+            else if (mdim.eq.1) then
+               sc=-sip(b(1,1,i),b(1,1,j))
+               call add2s2(b(1,1,i),b(1,1,j),sc,nt)
+            endif
+         enddo
+         if (mdim.eq.ldim) then
+            sc=1./sqrt(vip(b(1,1,i),b(1,2,i),b(1,ldim,i),
+     $                     b(1,1,i),b(1,2,i),b(1,ldim,i)))
+            call opcmult(b(1,1,i),b(1,2,i),b(1,ldim,i),sc)
+         else if (mdim.eq.1) then
+            sc=1./sqrt(sip(b(1,1,i),b(1,1,i)))
+            call cmult(b(1,1,i),sc,nt)
+         endif
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine setab(uxyz,uvwb,uvwb0)
+
+      ! generate augmented basis from ABM
+
+      ! uxyz  := ABM mode
+      ! uvwb  := original basis mode
+      ! uvwb0 := original basis mode or 0th mode
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      common /scrns/ txyz(lt,ldim)
+
+      real uxyz(lt,ldim),uvwb(lt,ldim),uvwb0(lt,ldim)
+
+      call evalcflds(uxyz,uvwb,uvwb0,ldim,1,.true.)
+      call evalcflds(txyz,uvwb0,uvwb,ldim,1,.true.)
+      call opadd2(uxyz(1,1),uxyz(1,2),uxyz(1,ldim),
+     $            txyz(1,1),txyz(1,2),txyz(1,ldim))
+
+
+      call opbinv1(uxyz(1,1),uxyz(1,2),uxyz(1,ldim),
+     $             uxyz(1,1),uxyz(1,2),uxyz(1,ldim),1.)
+
+      call incomprn(uxyz(1,1),uxyz(1,2),uxyz(1,ldim),prlag)
+
+      return
+      end
+c-----------------------------------------------------------------------
