@@ -1212,3 +1212,163 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine mhinv(fldi,h1,h2,ifld)
+
+      ! compute fldi = H^-1 * fldi
+
+      ! fldi: input field, can be a vector if ifld==1
+      ! ifld: field number associated with fldi
+
+      include 'SIZE'
+      include 'MASS'   ! dep: binvm1, bintm1
+      include 'SOLN'   ! dep: v1mask, v2mask, v3mask, tmask
+      include 'TSTEP'  ! dep: ifield, nelfld
+      include 'INPUT'  ! dep: ifaxis, ifaziv
+      include 'ORTHOT' ! dep: napproxt, name4t
+      include 'VPROJ'  ! dep: vproj
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real fldi(lt,1)
+      real h1(lt),h2(lt),o1(lt)
+      real rie_tol
+
+      integer ifld1
+      integer rie_it
+
+      jfield=ifield
+      ifield=ifld
+
+      ifld1 = ifield-1
+
+      nel=nelfld(ifield)
+      n=lx1*ly1*lz1*nel
+
+      if1=ifield-1
+      write(name4t,1) if1-1
+    1 format('PS',i2)
+      if(ifield.eq.2) write(name4t,'(A4)') 'TEMP'
+
+      isd = 1
+      if (ifaxis.and.ifaziv.and.ifield.eq.2) isd = 2
+
+      ! set the tolerance = 1e-10 for all fields
+      rie_tol = 1e-10
+      ! set the max iter = 500
+      rie_it = 500
+
+      ! initial guess = 0
+      if (ifield.eq.1) then
+         imesh = 1
+         call rzero(o1,n)
+         call hsolve ('VELX',o1,fldi(1,1),h1,h2,v1mask,vmult
+     $                      ,imesh,rie_tol,rie_it,1
+     $                      ,vproj(1,1),0,binvm1)
+         call copy(fldi(1,1),o1,n)
+
+         call rzero(o1,n)
+         call hsolve ('VELY',o1,fldi(1,2),h1,h2,v2mask,vmult
+     $                      ,imesh,rie_tol,rie_it,2
+     $                      ,vproj(1,2),0,binvm1)
+         call copy(fldi(1,2),o1,n)
+
+         if (if3d) then 
+            call rzero(o1,n)
+            call hsolve ('VELZ',o1,fldi(1,3),h1,h2,v3mask,vmult
+     $                         ,imesh,rie_tol,rie_it,3
+     $                         ,vproj(1,3),0,binvm1)
+            call copy(fldi(1,3),o1,n)
+         endif
+      else
+         call rzero(o1,n)
+         if(nel.eq.nelv) then
+            imesh = 1
+            call hsolve  (name4t,o1,fldi,h1,h2
+     $                    ,tmask(1,1,1,1,ifield-1)
+     $                    ,tmult(1,1,1,1,ifield-1)
+     $                    ,imesh,rie_tol,rie_it,1
+     $                    ,approxt(1,0,ifld1),0,binvm1)
+         else
+            imesh = 2
+            call hsolve  (name4t,o1,fldi,h1,h2
+     $                    ,tmask(1,1,1,1,ifield-1)
+     $                    ,tmult(1,1,1,1,ifield-1)
+     $                    ,imesh,rie_tol,rie_it,1
+     $                    ,approxt(1,0,ifld1),0,bintm1)
+         endif
+         call copy(fldi,o1,n)
+      endif
+
+      ifield=jfield
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine mdivhinv(riesz,rhs,h1,h2)
+
+      ! Given the residual associated with the velocity (ehu,ehv,ehw)
+      ! which lives in the dual space X*, this
+      ! subroutine find its corresponding riesz representator
+      ! (ehu,ehv,ehw)  in the X space and project onto
+      ! the divergence free space.
+
+      ! The process is done through solving a Stokes problem with the
+      ! rhs being the residual
+
+      ! ------------
+      ! |  H  -D^T | | eh  |    | rhs |
+      ! |          | |     |  = |     |
+      ! | -D       | | ehp |    |     |
+      ! ------------
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'ORTHOT'
+      include 'CTIMER'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      parameter (ltt=lx2*ly2*lz2*lelt)
+      common /sssp/ ehp(ltt)
+      common /mdhrom/ resv1(lt),resv2(lt),resv3(lt)
+
+      real riesz(lt,ldim),rhs(lt,ldim)
+      real h1(lt),h2(lt),h2inv(lt)
+      real g1(lt),g2(lt),g3(lt)
+      real wp(ltt),tmp(lt)
+      real rie_tol
+      integer rie_it
+
+      ifield=1 ! hard set ifield=1
+
+      ntot1  = lx1*ly1*lz1*nelv
+      ntot2  = lx2*ly2*lz2*nelv
+
+      iftran= .FALSE.
+      ifadvc(ifield) = .FALSE.
+
+      call rzero(vx,ntot1)
+      call rzero(vy,ntot1)
+      call rzero(vz,ntot1)
+      call rzero(pr,ntot2)
+
+c     Uzawa decoupling: First, compute pressure.....
+      call rone(h1,ntot1)
+      call rone(h2,ntot1)
+      call opcopy(bfx,bfy,bfz,rhs(1,1),rhs(1,2),rhs(1,ldim))
+      call makeg   (   g1,g2,g3,h1,h2,intype) ! makeg check intype
+      intype=-1
+      call crespuz (wp,g1,g2,g3,h1,h2,h2inv,intype)
+      call uzawa   (wp,h1,h2,h2inv,intype,icg)
+      if (icg.gt.0) call add2 (pr,wp,ntot2)
+      call copy(ehp,pr,ntot2)
+c     .... then, compute velocity:
+c     Set the tolerance = 1e-10 for all fields
+      rie_tol = 1e-10
+c     Set the max iter = 500
+      rie_it = 500
+      call cresvuz (resv1,resv2,resv3) ! cresvuz call sethlm again
+      call ophinv  (riesz(1,1),riesz(1,2),riesz(1,ldim),
+     $              resv1,resv2,resv3,h1,h2,rie_tol,rie_it)
+
+      return
+      end
