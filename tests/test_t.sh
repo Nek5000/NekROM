@@ -31,7 +31,7 @@ sed -i.bu "s/lxd=.*)/lxd=18)/g" SIZE
 
 $SOURCE_ROOT/bin/makenek test1
 $SOURCE_ROOT/bin/genmap << Z
-test
+test1
 .01
 Z
 

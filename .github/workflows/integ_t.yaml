@@ -7,7 +7,7 @@ jobs:
     runs-on: ubuntu-20.04
     strategy:
       matrix:
-        test: [ CYL ]
+        test: [ ANN ]
     env:
       MOR_DIR: /home/runner/work/NekROM/NekROM
       USR: "ana.o aux.o conv.o dump.o ei.o filter.o lapack.o pod.o qoi.o rom.o read.o time.o const.o unit.o rk.o legacy.o mpar.o tensor.o riesz.o"
@@ -51,4 +51,4 @@ jobs:
 
       - name: Integration Test
         run: |
-          TYPE=INTEG TEST=${{ matrix.test }} IPS=L2 NP=1 NB=20 LB=20 SCR=tdragx $MOR_DIR/tests/test.sh
+          TYPE=INTEG TEST=ANN IPS=H10 NP=1 NB=2 LB=2 $MOR_DIR/tests/test_t.sh
