@@ -2,7 +2,7 @@
 mode    = all # (off=offline,on=online,all=both,onb=online with bases,cp)
 field   = vt  # fields to perform the pod-rom (v=vel.,t=temp.,vt=both)
 nb=2
-avginit = 5.0001E+04   # starting time-step of rom averaging
+avginit = 2.5001E+04   # starting time-step of rom averaging
 rktol   = 0   # adaptive Runge-Kutta error tolerance
 tneubc  = no  # inhomogeneous Neumann BC for temperature
 nplay   = 0   # number of replay modes

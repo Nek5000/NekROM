@@ -122,16 +122,61 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
+      real u_ref(2),ut_ref(2)
+
+      u_ref(1)=6.7911616104859842
+      u_ref(2)=0.76785585020936731
+      ut_ref(1)=5.1399988037167335
+      ut_ref(2)=0.44007668397847510
+
       n = lx1*ly1*lz1*nelt
 
       call opcopy(ub(1,0),vb(1,0),wb(1,0),vx,vy,vz) ! set zeroth mode
       call copy(tb(1,0,1),t,n) ! set zeroth mode
       call readic(1,1,1,ttk,'ic.list ')
-
       call test
 
-      call exitt0
+      do i=1,nb
+      write(6,*)i,u(i),ut(i),'u and ut coefficient'
+      enddo
 
+      iexit=0
+
+      s1=0.
+      s2=0.
+
+      if (nio.eq.0) write (6,*) 'live | data'
+
+      do i=1,nb
+         s1=s1+(u(i)-u_ref(i))**2
+         s2=s2+u(i)**2
+         if (nio.eq.0) write (6,*) 'u',
+     $                 i,j,u,u_ref
+      enddo
+
+      edif=sqrt(s1/s2)
+
+      if (nio.eq.0) write (6,*) 'edif',edif,s1,s2
+
+      if (edif.gt.2.e-11) iexit=iexit+1
+
+      s1=0.
+      s2=0.
+
+      do i=1,nb
+         s1=s1+(ut(i)-ut_ref(i))**2
+         s2=s2+ut(i)**2
+         if (nio.eq.0) write (6,*) 'ut',
+     $                 i,j,ut,ut_ref
+      enddo
+
+      edif=sqrt(s1/s2)
+
+      if (nio.eq.0) write (6,*) 'edif',edif,s1,s2
+
+      if (edif.gt.2.e-11) iexit=iexit+2
+
+      call exitm(iexit)
 
       return
       end
