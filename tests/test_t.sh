@@ -21,7 +21,7 @@ mkdir ops &> /dev/null
 $MOR_DIR/tests/test_template.sh rom_update
 
 ls ../../data/ann/ann0.f* > file.list
-ls ../../data/ann/ann0.f00001 > ic.list
+ls ../../data/ann/ann0.f00002 > ic.list
 cp ../../data/ann/bas0.f00001 .
 
 sed -i.bu "s/lb=.*)/lb=2)/g" LMOR
@@ -35,7 +35,7 @@ test1
 .01
 Z
 
-echo '300000' > Grashof
+echo '700000' > Grashof
 
 mpiexec -np 1 ./nek5000 | tee test.log 
 cp test.log logfile
@@ -50,7 +50,7 @@ grep 'tmax' test.log > nu.log
 head nu.log
 tail nu.log
 
-#../$SCR
+../$SCR
 iexit=$(cat ./ecode)
 if [ "$iexit" != "0" ]; then cp logfile fail.log; fi
 
