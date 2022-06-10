@@ -388,30 +388,6 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
-      ! uncomment for ABM basis
-
-      m=(nb-1)/2 ! number of POD modes for 1 set  of ABM modes
-c     m=(nb-1)/3 ! number of POD modes for 2 sets of ABM modes
-
-      ic=m+1
-
-      do i=0,m
-         call setab(uvwb(1,1,ic),uvwb(1,1,i),uvwb(1,1,i))
-         ic=ic+1
-      enddo
-
-c     do i=1,m
-c        call setab(uvwb(1,1,ic),uvwb(1,1,i),uvwb(1,1,0))
-c        ic=ic+1
-c     enddo
-
-      call orthonormb(uvwb(1,1,1),ldim,nb) ! orthonormalize velocity basis
-
-      do i=1,nb
-         call opcopy(ub(1,i),vb(1,i),wb(1,i),
-     $               uvwb(1,1,i),uvwb(1,2,i),uvwb(1,ldim,i))
-      enddo
-
       return
       end
 c-----------------------------------------------------------------------
