@@ -355,7 +355,7 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine restart_file(fname127)
 
-      ! restart by specifying the number of file name characters
+      ! restart w/o specifying the number of file name characters
 
       include 'SIZE'
       include 'TOTAL'
@@ -370,7 +370,7 @@ c-----------------------------------------------------------------------
 
       call blank(initc,127)
       nch=ltruncr(fname127,127)
-      write (6,*) 'nch=',nch
+      if (nio.eq.0) write (6,*) 'nch=',nch
 
       call chcopy(initc,fname127,nch)
 
