@@ -47,4 +47,4 @@ jobs:
       - name: Unit Test
         if: always()
         run: |
-          TYPE=UNIT TEST=${{ matrix.test }} $MOR_DIR/tests/unit_$TEST.sh
+          $MOR_DIR/tests/unit_rf.sh
