@@ -209,25 +209,12 @@ c-----------------------------------------------------------------------
       character*128 fname1
 
       fname1='file.list '
-c     call test
-      n=lx1*ly1*lz1*nelv
+
       nt=lx1*ly1*lz1*nelt
 
-c     call rom_setup
-      call mor_init_params
-
-      if (param(170).lt.0) then
-         call mor_set_params_par
-      else
-         call mor_set_params_rea
-      endif
-
-      if (nid.eq.0) write (6,*) 'post par rea'
-      call mor_show_params
-      if (nid.eq.0) write (6,*) 'post show params'
-
-      call mor_set_params_uni_pre
-      call mor_init_fields
+      nb = lb
+      ns = ls
+      nskip = 0
 
       do i=0,ldimt1
          ifreads(i)=.true.
@@ -235,31 +222,21 @@ c     call rom_setup
 
       call read_fields(us0,prs,ts0,ns,ls,nskip,ifreads,
      $     timek,fname1,.true.)
+
       iftmp=ifxyo
       ifxyo=.true.
-      do j=1,ldimt
-         call copy(tmp(1,j),ts0(1,1,j),nt)
-      enddo
-      call outpost2(us0(1,1,1),us0(1,2,1),us0(1,ldim,1),prs(1,1),
-     $     tmp,ldimt,'us0')
-
-      do j=1,ldimt
-         call copy(tmp(1,j),ts0(1,1,j),nt)
-      enddo
-      call outpost2(us0(1,1,1),us0(1,2,1),us0(1,ldim,1),prs(1,1),
-     $     tmp,ldimt,'us0')
-
       do i=1,ns
+         time=i
+         itmp=i
          do j=1,ldimt
             call copy(tmp(1,j),ts0(1,i,j),nt)
          enddo
-         call outpost2(us0(1,1,1),us0(1,2,1),us0(1,ldim,1),prs(1,1),
-     $        ts0,ldimt,'us0')
-      enddo
-      do i=1,ns
-         do j=1,ldimt
-            call copy(tmp(1,j),ts0(1,i,j),nt)
-         enddo
+c        call opcopy(vx,vy,vz,us0(1,1,i),us0(1,2,i),us0(1,ldim,i))
+c        call copy(pr,prs(1,i),n2)
+c        call set_outfld
+         param(66)=-1
+c        call prepost (.true.,'his') 
+c        call outpost2(vx,vy,vz,pr,t,ldimt,'us0')
          call outpost2(us0(1,1,i),us0(1,2,i),us0(1,ldim,i),prs(1,i),
      $        tmp,ldimt,'us0')
       enddo

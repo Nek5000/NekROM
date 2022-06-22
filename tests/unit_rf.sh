@@ -15,8 +15,7 @@ echo 'rf_unit'     > SESSION.NAME
 echo `pwd`'/' >> SESSION.NAME
 
 $MOR_DIR/bin/gsnaps rft
-ls ../../data/rft/chan0.f00001 > file.list
-ls ../../data/rft/chan0.f00001 >> file.list
+ls ../../data/rft/chan0.f0000* > file.list
 
 sed -i.bu "s/lb=.*)/lb=2)/g" LMOR
 sed -i.bu "s/ls=.*)/ls=2)/g" LMOR
@@ -35,7 +34,7 @@ Z
 fold_end genmap
 
 ./nek5000 | tee logfile
-$MOR_DIR/bin/diff_binary
+$MOR_DIR/bin/diff_ascii
 iexit=$(cat ./ecode)
 
 if [ "$iexit" != "0" ]; then cp logfile fail.log; fi

@@ -67,7 +67,7 @@
    8.00000     p063 =8 --> force 8-byte output
    0.00000     p064 =1 --> perturbation restart
    1.00000     p065 #iofiles (eg, 0 or 64); <0 --> sep. dirs
-   6.00000     p066  output : <0=ascii, else binary
+   0.00000     p066  output : <0=ascii, else binary
    6.00000     p067
    25000.0     p068 iastep: freq for avg_all (0=iostep)
    0.00000     p069
@@ -1166,7 +1166,7 @@ C
            0    POINTS.  Hcode, I,J,H,IEL
   ***** OUTPUT FIELD SPECIFICATION *****
            6  SPECIFICATIONS FOLLOW
- F       COORDINATES
+ T       COORDINATES
  T       VELOCITY
  T       PRESSURE
  T       TEMPERATURE
