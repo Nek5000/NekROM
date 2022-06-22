@@ -386,3 +386,30 @@ c     if (nid.eq.0) write(6,*) et,eto,e0,' es'
        return
        end
 c-----------------------------------------------------------------------
+      subroutine rom_userbases
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine rom_userfop
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine rom_userrhs
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      return
+      end
+c-----------------------------------------------------------------------
