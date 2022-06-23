@@ -1,3 +1,4 @@
+      include 't.f'
 c-----------------------------------------------------------------------
       subroutine userf(i,j,k,eg) ! set acceleration term
 c
@@ -121,7 +122,7 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
-      call read_field_test
+      call test
       call exitt0
 
       return
