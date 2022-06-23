@@ -3068,3 +3068,19 @@ c-----------------------------------------------------------------------
 
       return
       end
+c-----------------------------------------------------------------------
+      subroutine rbf_interp(edv,test_p,rbfwt,rbf_sigma,anch,ns,nb)
+
+      real test_p, dist_p(ns)
+      real edv(nb),rbfwt(ns,nb),rbf_sigma(nb)
+      real anch(ns)
+
+      do k=1,nb
+         do j=1,ns
+            dist_p(j)=exp(-1.*(test_p-anch(j))**2/(2*(rbf_sigma(k)**2)))
+         enddo
+         edv(k) = vlsc2(rbfwt(1,k),dist_p,ns)
+      enddo
+
+      return
+      end
