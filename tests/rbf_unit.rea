@@ -1144,8 +1144,7 @@
  P   48  2   46.0000       4.00000       0.00000       0.00000       0.00000    
  t   48  3   0.00000       0.00000       0.00000       0.00000       0.00000    
  E   48  4   47.0000       2.00000       0.00000       0.00000       0.00000    
-           1  PRESOLVE/RESTART OPTIONS  *****
-para0.f00001
+           0  PRESOLVE/RESTART OPTIONS  *****
            7          INITIAL CONDITIONS *****
 C Default
 C Default
