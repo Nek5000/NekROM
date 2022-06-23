@@ -73,11 +73,6 @@ c-----------------------------------------------------------------------
 
       real tmp
 
-      open(unit=11,file='Re', status='old')
-      read(11,*) tmp
-      close(11)
-
-      param(2) = 1./tmp
       call chebyvert_y
 
       return
