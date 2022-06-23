@@ -17,6 +17,8 @@ echo `pwd`'/' >> SESSION.NAME
 $MOR_DIR/bin/gsnaps rft
 ls ../../data/rft/chan0.f0000* > file.list
 
+$MOR_DIR/tests/test_template.sh "${TEST}_${TYPE}"
+
 sed -i.bu "s/lb=.*)/lb=2)/g" LMOR
 sed -i.bu "s/ls=.*)/ls=2)/g" LMOR
 sed -i.bu "s/lx2=.*)/lx2=lx1)/g" SIZE
