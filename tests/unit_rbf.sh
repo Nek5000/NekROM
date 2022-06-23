@@ -8,6 +8,7 @@ sed 's/(ltr=.*)/(ltr=80)/g' LMOR > LMOR.tmp
 mv LMOR.tmp LMOR
 sed -i.bu "s/lb=.*)/lb=3)/g" LMOR
 sed -i.bu "s/ls=.*)/ls=3)/g" LMOR
+sed -i.bu "s/ledvis=.*)/ledvis=1)/g" LMOR
 sed -i.bu "s/leleg=.*)/leleg=48)/g" SIZE
 sed -i.bu "s/ldimt=.*)/ldimt=4)/g" SIZE
 

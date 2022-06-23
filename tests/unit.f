@@ -787,7 +787,6 @@ c-----------------------------------------------------------------------
       rbf_sigma(2) = 650000
       rbf_sigma(3) = 650000
 
-      write(6,*)'ls,lb',ls,lb
       call read_serial(edk,ls*(lb+1),'tops/edk ',wk,nid)
       call read_serial(vv,ls*lb,'tops/rbfwt ',wk,nid)
       call c_rbfwt(rbfwt,rbf_sigma,edk,anch,ls,lb)
