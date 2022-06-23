@@ -1,0 +1,50 @@
+name: Unit
+
+on: [push]
+
+jobs:
+  build:
+    runs-on: ubuntu-20.04
+    strategy:
+      matrix:
+        test: [RBF_WT]
+    env:
+      MOR_DIR: /home/runner/work/NekROM/NekROM
+      USR: "ana.o aux.o conv.o dump.o ei.o filter.o lapack.o pod.o qoi.o rom.o read.o time.o const.o unit.o rk.o legacy.o mpar.o tensor.o riesz.o"
+
+    steps:
+      - uses: actions/checkout@v2
+
+      - name: Setup NekROM
+        run: |
+          echo "$MOR_DIR/bin" >> $GITHUB_PATH
+
+      - name: Install MPICH
+        run: |
+          sudo apt-get update -qq
+          sudo apt-get install -y libmpich-dev mpich
+
+      - name: Check MPICH
+        run: |
+          type mpif77
+          type mpicc
+
+      - name: Set Flags
+        run: |
+          echo "FC=mpif77" >> $GITHUB_ENV
+          echo "CC=mpicc" >> $GITHUB_ENV
+          echo "FFLAGS=-w -mcmodel=medium -fprofile-arcs -ftest-coverage" >> $GITHUB_ENV
+          echo "USR_LFLAGS=-mcmodel=medium" >> $GITHUB_ENV
+
+      - name: Setup Nek5000
+        run: |
+          git clone --single-branch -b prod https://github.com/kent0/Nek5000
+          echo "NEK_SOURCE_ROOT=$MOR_DIR/Nek5000" >> $GITHUB_ENV
+          echo "SOURCE_ROOT=$MOR_DIR/Nek5000" >> $GITHUB_ENV
+          echo "$MOR_DIR/Nek5000/bin" >> $GITHUB_PATH
+          (cd Nek5000/tools; ./maketools genmap)
+
+      - name: Unit Test
+        if: always()
+        run: |
+          TYPE=UNIT TEST=${{ matrix.test }} $MOR_DIR/tests/unit_rbf.sh
