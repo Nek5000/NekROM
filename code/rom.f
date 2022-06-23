@@ -257,7 +257,7 @@ c     call average_in_y
          call set_sigma
       endif
 
-      if (nio.eq.0) write (6,*) 'end range setup'
+      if (nio.eq.0) write (6,*) 'end rom setup'
 
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ')
      $   call dump_misc
