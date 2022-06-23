@@ -270,3 +270,8 @@ c     parameters and common blocks for MOR
       common /moredops/ cedd((lcloc-1)*lmu+1)
 
       common /moresol/ edv(0:(lub+1)*5-1),edvua((lub+1)**2)
+
+      ! RBF
+      common /morrbf/ rbfmat((ls**2-1)*ledvis+1),
+     $                rbfwt((ls*lb-1)*ledvis+1),
+     $                rbf_sigma((lb-1)*ledvis+1),anch((ls-1)*ledvis+1)
