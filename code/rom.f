@@ -2075,7 +2075,7 @@ c     call cpart(ic1,ic2,jc1,jc2,kc1,kc2,ncloc,nb,np,nid+1) ! new indexing
             do j=0,nb
                call ophx(cux,cuy,cuz,ub(1,j),vb(1,j),
      $                  wb(1,j),tb(1,k,4),zeros)
-               call outpost(cux,cuy,cuz,pr,tb(1,k,4),'stt')
+c              call outpost(cux,cuy,cuz,pr,tb(1,k,4),'stt')
                do i=1,nb
                   cel=op_glsc2_wt(
      $                  ub(1,i),vb(1,i),wb(1,i),cux,cuy,cuz,ones)
