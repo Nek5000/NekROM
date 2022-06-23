@@ -3012,14 +3012,81 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine rbf_setup(rbfmat,rbfwt,rbf_sigma,edk,anch,ns,nb)
+      subroutine rbf_setup(rbfwt,rbf_sigma,edk,anch,ns,nb)
+
+      ! Setup RBF Method, compute sigma and weight based 
+      ! on edk and anch arrays
+
+      ! Output : rbfwt, rbf_sigma
+      ! Input  : edk, anch, ns, nb
+
+      ! rbfwt := rbf weight
+      ! rbf_sigma:= variance used in rbf
+      ! (anch, edk) := sample points
+      ! ns := number of sample points
+      ! nb := number of modes
+
+      real rbfwt(ns,nb)   ! rbf matrix and weight
+      real rbf_sigma(nb)  ! rbf parameter
+      real edk(0:nb,ns)   ! rbf data value
+      real anch(ns)       ! rbf data point
+      integer ns,nb
+
+      call set_rbf_sig(rbf_sigma,edk,anch,ns,nb)
+      call c_rbfwt(rbfwt,rbf_sigma,edk,anch,ns,nb)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine set_rbf_sig(rbf_sigma,edk,anch,ns,nb)
+
+      ! Compute RBF sigma based on edk and anch arrays
+
+      ! Output : rbf_sigma
+      ! Input  : edk, anch, ns, nb
+
+      ! rbf_sigma:= variance used in rbf
+      ! (anch, edk) := sample points
+      ! ns := number of sample points
+      ! nb := number of modes
+
+      real rbf_sigma(nb)                 ! rbf parameter
+      real edk(0:nb,ns),edkk(ns,0:nb)    ! rbf data value
+      real anch(ns)                      ! rbf data point
+      real rbftmp1(ns**2)                ! array used in invmat
+      integer ns,nb
+
+      real rbf_mean
+
+      open(unit=11,file='anch')
+      do i=1,ns
+         read(11,*) anch(i)
+      enddo
+      close(11)
+
+      ! transpose
+      call transpose(edkk,ns,edk,nb+1)
+
+      do k=1,nb
+         call copy(rbftmp1,edkk(1,k),ns)
+         rbf_mean = vlsum(rbftmp1,ns)/ns
+         call cadd(rbftmp1,-1.0*rbf_mean,ns)
+         call vsq(rbftmp1,ns)
+         rbf_sigma(k) = sqrt(vlsum(rbftmp1,ns)/ns)
+
+         write(6,*) 'rbf_sigma k:',k,rbf_sigma(k)
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine c_rbfwt(rbfwt,rbf_sigma,edk,anch,ns,nb)
 
       ! Compute RBF weight based on edk and anch arrays
 
-      ! Output : rbfmat, rbfwt, rbf_sigma
-      ! Input  : edk, anch, ns, nb
+      ! Output : rbfwt
+      ! Input  : rbf_sigma, edk, anch, ns, nb
 
-      ! rbfmat := rbf matrix
       ! rbfwt := rbf weight
       ! rbf_sigma:= variance used in rbf
       ! (anch, edk) := sample points
@@ -3034,24 +3101,10 @@ c-----------------------------------------------------------------------
       integer itmp3(ns),itmp4(ns)
       integer ns,nb
 
-      real rbf_mean
-
-      open(unit=11,file='anch')
-      do i=1,ns
-         read(11,*) anch(i)
-      enddo
-      close(11)
-
       ! transpose
       call transpose(edkk,ns,edk,nb+1)
-      do k=1,nb
-         call copy(rbftmp1,edkk(1,k),ns)
-         rbf_mean = vlsum(rbftmp1,ns)/ns
-         call cadd(rbftmp1,-1.0*rbf_mean,ns)
-         call vsq(rbftmp1,ns)
-         rbf_sigma(k) = sqrt(vlsum(rbftmp1,ns)/ns)
-         rbf_sigma(k) = 1
 
+      do k=1,nb
          write(6,*) 'mode k:',k,rbf_sigma(k),'Construct RBF matrix...'
 
          ! setup rbf matrix
