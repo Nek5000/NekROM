@@ -1,0 +1,24 @@
+#! /bin/bash
+
+cp us0rf_unit.fld01 test1; sed -i '1d' test1
+cp us0rf_unit.fld02 test2; sed -i '1d' test2
+cp $MOR_DIR/data/rft/chan.fld02 test3; sed -i '1d' test3
+cp $MOR_DIR/data/rft/chan.fld03 test4; sed -i '1d' test4
+
+if cmp --silent -- test1 test3; then
+  echo "files contents are identical"
+  echo 0 > ecode
+else
+  echo "files differ"
+  echo 99 > ecode
+fi
+
+if cmp --silent -- test2 test4; then
+  echo "files contents are identical"
+  echo 0 > ecode
+else
+  echo "files differ"
+  echo 99 > ecode
+fi
+iexit=$(cat ./ecode)
+echo $iexit

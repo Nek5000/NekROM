@@ -767,3 +767,47 @@ c-----------------------------------------------------------------------
 
       return
       end
+c-----------------------------------------------------------------------
+      subroutine rf_unit
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /romdbas/ tmp(lt,ldimt)
+
+      character*128 fname1
+
+      fname1='file.list '
+
+      nt=lx1*ly1*lz1*nelt
+
+      nb = lb
+      ns = ls
+      nskip = 0
+
+      do i=0,ldimt1
+         ifreads(i)=.true.
+      enddo
+
+      call read_fields(us0,prs,ts0,ns,ls,nskip,ifreads,
+     $     timek,fname1,.true.)
+
+      iftmp=ifxyo
+      ifxyo=.true.
+      do i=1,ns
+         time=i
+         itmp=i
+         do j=1,ldimt
+            call copy(tmp(1,j),ts0(1,i,j),nt)
+         enddo
+         param(66)=-1
+         call outpost2(us0(1,1,i),us0(1,2,i),us0(1,ldim,i),prs(1,i),
+     $        tmp,ldimt,'us0')
+      enddo
+      ifxyo=.false.
+
+      return
+      end
