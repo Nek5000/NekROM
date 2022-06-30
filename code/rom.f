@@ -1038,8 +1038,6 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /romdbas/ tmp(lt,ldimt)
-
       logical alist,iftmp
 
       character*128 fname1
@@ -1100,10 +1098,15 @@ c-----------------------------------------------------------------------
             enddo
             idc_u=iglsum(idc_u,1)
             idc_t=iglsum(idc_t,1)
-            call copy_sol(ub,vb,wb,pb,tmp,uavg,vavg,wavg,pavg,tavg)
+
+            call opcopy(ub,vb,wb,uavg,vavg,wavg)
+
+            n2=lx2*ly2*lz2*nelv
+            call copy(pb,pavg,n2)
             do j=1,npscal+1
-               call copy(tb(1,0,j),tmp(1,j),n)
+               call copy(tb(1,0,j),tavg(1,1,1,1,j),n)
             enddo
+
             call opcopy(uvwb(1,1,0),uvwb(1,2,0),uvwb(1,ldim,0),
      $         ub,vb,wb)
 c           if (idc_u.gt.0) call opzero(ub,vb,wb)
