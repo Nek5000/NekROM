@@ -1101,7 +1101,7 @@ c-----------------------------------------------------------------------
             idc_u=iglsum(idc_u,1)
             idc_t=iglsum(idc_t,1)
             call copy_sol(ub,vb,wb,pb,tmp,uavg,vavg,wavg,pavg,tavg)
-            do j=1,ldimt
+            do j=1,npscal+1
                call copy(tb(1,0,j),tmp(1,j),n)
             enddo
             call opcopy(uvwb(1,1,0),uvwb(1,2,0),uvwb(1,ldim,0),
