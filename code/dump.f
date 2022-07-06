@@ -350,7 +350,7 @@ c-----------------------------------------------------------------------
          time=i
          itmp=i
          ifxyo=(i.eq.0)
-         do j=1,ldimt
+         do j=1,npscal+1
             call copy(tmp(1,j),tb(1,i,j),n)
          enddo
          call outpost2(ub(1,i),vb(1,i),wb(1,i),pb(1,i),tmp,ldimt,'bas')
