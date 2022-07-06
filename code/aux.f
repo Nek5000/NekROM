@@ -400,6 +400,7 @@ c-----------------------------------------------------------------------
       subroutine copy_sol(vx,vy,vz,pr,t,ux,uy,uz,pp,tt)
 
       include 'SIZE'
+      include 'INPUT'
 
       parameter (lt1=lx1*ly1*lz1*lelt)
       parameter (lt2=lx2*ly2*lz2*lelt)
@@ -409,11 +410,10 @@ c-----------------------------------------------------------------------
 
       call opcopy(vx,vy,vz,ux,uy,uz)
       call copy(pr,pp,lx2*ly2*lz2*nelv)
-      call copy(t,tt,lx1*ly1*lz1*nelv)
 
-c     do idim=1,ldimt
-c        call copy(t(1,idim),tt(1,idim),lx1*ly1*lz1*nelt)
-c     enddo
+      do idim=1,min(1+npscal,ldimt)
+         call copy(t(1,idim),tt(1,idim),lx1*ly1*lz1*nelt)
+      enddo
 
       return
       end
