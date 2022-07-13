@@ -257,7 +257,7 @@ c     call average_in_y
          call set_sigma
       endif
 
-      if (nio.eq.0) write (6,*) 'end range setup'
+      if (nio.eq.0) write (6,*) 'end rom setup'
 
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ')
      $   call dump_misc
@@ -1065,6 +1065,7 @@ c-----------------------------------------------------------------------
 
          do i=0,ldimt1
             ifreads(i)=ifrom(i)
+            write(6,*)'ifreads',ifreads(i)
          enddo
 
          call read_fields(
@@ -1097,7 +1098,15 @@ c-----------------------------------------------------------------------
             enddo
             idc_u=iglsum(idc_u,1)
             idc_t=iglsum(idc_t,1)
-            call copy_sol(ub,vb,wb,pb,tb,uavg,vavg,wavg,pavg,tavg)
+
+            call opcopy(ub,vb,wb,uavg,vavg,wavg)
+
+            n2=lx2*ly2*lz2*nelv
+            call copy(pb,pavg,n2)
+            do j=1,npscal+1
+               call copy(tb(1,0,j),tavg(1,1,1,1,j),n)
+            enddo
+
             call opcopy(uvwb(1,1,0),uvwb(1,2,0),uvwb(1,ldim,0),
      $         ub,vb,wb)
 c           if (idc_u.gt.0) call opzero(ub,vb,wb)
@@ -2069,7 +2078,7 @@ c     call cpart(ic1,ic2,jc1,jc2,kc1,kc2,ncloc,nb,np,nid+1) ! new indexing
             do j=0,nb
                call ophx(cux,cuy,cuz,ub(1,j),vb(1,j),
      $                  wb(1,j),tb(1,k,4),zeros)
-               call outpost(cux,cuy,cuz,pr,tb(1,k,4),'stt')
+c              call outpost(cux,cuy,cuz,pr,tb(1,k,4),'stt')
                do i=1,nb
                   cel=op_glsc2_wt(
      $                  ub(1,i),vb(1,i),wb(1,i),cux,cuy,cuz,ones)

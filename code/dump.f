@@ -350,7 +350,7 @@ c-----------------------------------------------------------------------
          time=i
          itmp=i
          ifxyo=(i.eq.0)
-         do j=1,ldimt
+         do j=1,npscal+1
             call copy(tmp(1,j),tb(1,i,j),n)
          enddo
          call outpost2(ub(1,i),vb(1,i),wb(1,i),pb(1,i),tmp,ldimt,'bas')
@@ -420,6 +420,7 @@ c-----------------------------------------------------------------------
       if (ifforce)  call dump_serial(rf,nb,'ops/rf ',nid)
       if (ifsource) call dump_serial(rq,nb,'ops/rq ',nid)
       if (ifbuoy)   call dump_serial(but0,(nb+1)**2,'ops/but ',nid)
+      if (ifedvs)   call dump_serial(edk,ns*(nb+1),'ops/edk ',nid)
 
       if (ifedvs) then
          call dump_serial(rbfwt,ns*nb,'ops/rbfwt ',nid)

@@ -221,7 +221,7 @@ c-----------------------------------------------------------------------
       if (ierr.gt.0) goto 199
 
       n = lx1*ly1*lz1*nelt
-      n2= lx2*ly2*lz2*nelt
+      n2 = lx2*ly2*lz2*nelv
 
       call push_sol(vx,vy,vz,pr,t)
 

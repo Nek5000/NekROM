@@ -147,6 +147,10 @@ c-----------------------------------------------------------------------
          else
             ifrom(5)=ifedvs
             ifpod(5)=ifrom(5)
+            ifpod(3)=ifrom(5)
+            ifpod(4)=ifrom(5)
+            ifrom(3)=ifrom(5)
+            ifrom(4)=ifrom(5)
          endif
       endif
 
