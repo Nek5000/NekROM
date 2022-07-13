@@ -768,6 +768,56 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine rbf_wt_unit
+
+      include 'SIZE'
+      include 'INPUT'
+      include 'MOR'
+
+      common /scrtest/ wk((lb+1)*ls)
+
+      real vv(ls*lb)
+
+      ifedvs = .true.
+
+      anch(1) = 100000
+      anch(2) = 750000
+      anch(3) = 400000
+      rbf_sigma(1) = 650000
+      rbf_sigma(2) = 650000
+      rbf_sigma(3) = 650000
+
+      call read_serial(edk,ls*(lb+1),'tops/edk ',wk,nid)
+      call read_serial(vv,ls*lb,'tops/rbfwt ',wk,nid)
+      call c_rbfwt(rbfwt,rbf_sigma,edk,anch,ls,lb)
+
+      iexit=0
+
+      s1=0.
+      s2=0.
+
+      if (nio.eq.0) write (6,*) 'live | data'
+
+      do j=1,ls
+      do i=1,lb
+         s1=s1+(rbfwt(i+(j-1)*lb)-vv(i+(j-1)*lb))**2
+         s2=s2+(vv(i+(j-1)*lb))**2
+         if (nio.eq.0) write(6,*)'rbfwt',i+(j-1)*lb,
+     $                 rbfwt(i+(j-1)*lb),vv(i+(j-1)*lb)
+      enddo
+      enddo
+
+      edif=sqrt(s1/s2)
+
+      if (nio.eq.0) write (6,*) 'edif',edif,s1,s2
+
+      if (edif.gt.3.e-11) iexit=iexit+1
+
+      call exitm(iexit)
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine rf_unit
 
       include 'SIZE'

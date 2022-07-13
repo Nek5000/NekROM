@@ -1,0 +1,10 @@
+#!/bin/bash
+
+# Get rbf weights
+
+case "$1" in
+    rbf)
+        wget -nv -O t.t https://uofi.box.com/shared/static/fnbeq6tu7ip2vt9ues1n1ght6kd65f9v.gz;;
+esac
+
+tar -xvf t.t

@@ -1,0 +1,198 @@
+      include 't.f'
+c-----------------------------------------------------------------------
+      subroutine userf(i,j,k,eg) ! set acceleration term
+c
+c     Note: this is an acceleration term, NOT a force!
+c     Thus, ffx will subsequently be multiplied by rho(x,t).
+c
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+      integer i,j,k,e,eg
+
+      common /rayleigh_r/ rapr,ta2pr,sra
+
+c     e = gllel(eg)
+
+      buoy =     temp ! Zero-mean; sqrt(Ra) scaling
+
+      ffx  = 0
+      ffy  = 0
+      ffz  = 0
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine userq(i,j,k,eg) ! set source term
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+      integer i,j,k,e,eg
+
+c     e = gllel(eg)
+
+      qvol   = 0.0
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine userbc(i,j,k,f,eg) ! set up boundary conditions
+c     NOTE ::: This routine MAY NOT be called by every process
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+
+      ux   = 0.0
+      uy   = 0.0
+      uz   = 0.0
+      temp = 0.0
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine useric(i,j,k,eg) ! set up initial conditions
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+      integer i,j,k,e,eg
+
+      ux   = 0.0
+      uy   = 0.0
+      uz   = 0.0
+      temp = 0.0
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine usrdat   ! This routine to modify element vertices
+      include 'SIZE'
+      include 'TOTAL'
+
+      real tmp
+
+      call chebyvert_y
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine usrdat3
+      include 'SIZE'
+      include 'TOTAL'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine uservp (i,j,k,eg)   ! BE SURE TO SET ifuservp=.true.
+      include 'SIZE'
+      include 'NEKUSE'
+
+      include 'TOTAL'
+      integer e,eg
+
+      if (ifield.eq.1) then
+         utrans=param(1)
+         udiff =param(2)
+      else
+         e = gllel(eg)
+         utrans=param(7)
+         udiff =param(8) 
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine usrdat2
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      integer n,iel,ifc,id_face
+      real xmin,xmax,ymin,ymax,scaley,scalex
+      real glmin,glmax
+
+      integer e,f
+
+      n = lx1*ly1*lz1*nelv
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine userchk
+
+      call test
+      call exitt0
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine rom_userchk
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine rom_userbases
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine rom_userfop
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine rom_userrhs
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine chebyvert_y
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      eps=1.e-5
+
+      xmax=-10000.
+      xmin= 10000.
+
+      ymax=-10000.
+      ymin= 10000.
+
+      zmax=-10000.
+      zmin= 10000.
+
+      do ie=1,nelt
+      do ic=1,2**ldim
+         xmax=max(xmax,xc(ic,ie))
+         xmin=min(xmin,xc(ic,ie))
+         ymax=max(ymax,yc(ic,ie))
+         ymin=min(ymin,yc(ic,ie))
+         zmax=max(zmax,zc(ic,ie))
+         zmin=min(zmin,zc(ic,ie))
+      enddo
+      enddo
+
+      if (nio.eq.0) write (6,*) 'x',xmin,xmax
+      if (nio.eq.0) write (6,*) 'y',ymin,ymax
+
+      xmin=glmin(xmin,1)
+      xmax=glmax(xmax,1)
+
+      ymin=glmin(ymin,1)
+      ymax=glmax(ymax,1)
+
+      zmin=glmin(zmin,1)
+      zmax=glmax(zmax,1)
+
+      do ie=1,nelt
+      do ic=1,2**ldim
+         x=xc(ic,ie)
+         y=yc(ic,ie)
+c     if (nio.eq.0) write (6,*) 'yc_b',yc(ic,ie)
+         y=.5*(1.-cos(pi*y))
+         yc(ic,ie)=y
+c     if (nio.eq.0) write (6,*) 'yc',yc(ic,ie)
+      enddo
+      enddo
+
+      return
+      end

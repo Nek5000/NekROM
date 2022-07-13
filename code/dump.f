@@ -422,6 +422,10 @@ c-----------------------------------------------------------------------
       if (ifbuoy)   call dump_serial(but0,(nb+1)**2,'ops/but ',nid)
       if (ifedvs)   call dump_serial(edk,ns*(nb+1),'ops/edk ',nid)
 
+      if (ifedvs) then
+         call dump_serial(rbfwt,ns*nb,'ops/rbfwt ',nid)
+      endif
+
       if (ifei) then
          l=1
          do j=1,nres
