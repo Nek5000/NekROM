@@ -56,7 +56,7 @@ c           if (.not.ifcomb.and.ifpb) call snorm(edb)
       ! iaug = 3: iaug = 1 + iaug = 2
 
       if (iaug.ne.0) then
-         if (abs(iaug).gt.2) then
+         if (abs(iaug).le.2) then
             m=(nb-1)/2
             nb=m*2+1
          else
