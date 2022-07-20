@@ -48,54 +48,53 @@ c           if (.not.ifcomb.and.ifpb) call snorm(edb)
          endif
 
          if (ifcomb.and.ifpb) call cnorm(ub,vb,wb,tb)
-      endif
 
-      ! z = \zeta
-      ! iaug = 1: Pi_incomprn {z_0 \cdot \nabla z + z \cdot \nabla z_0}
-      ! iaug = 2: Pi_incomprn {z \cdot \nabla z}
-      ! iaug = 3: iaug = 1 + iaug = 2
+         ! z = \zeta
+         ! iaug = 1: Pi_incomprn {z_0 \cdot \nabla z + z \cdot \nabla z_0}
+         ! iaug = 2: Pi_incomprn {z \cdot \nabla z}
+         ! iaug = 3: iaug = 1 + iaug = 2
 
-      if (iaug.ne.0) then
-         if (abs(iaug).le.2) then
-            m=(nb-1)/2
-            nb=m*2+1
-         else
-            m=(nb-1)/3
-            nb=m*3+1
+         if (iaug.ne.0) then
+            if (abs(iaug).le.2) then
+               m=(nb-1)/2
+               nb=m*2+1
+            else
+               m=(nb-1)/3
+               nb=m*3+1
+            endif
+
+            ic=1+m
+
+            if (abs(iaug).eq.1) then
+               do i=0,m
+                  call setab(uvwb(1,1,ic),uvwb(1,1,i),uvwb(1,1,0))
+                  ic=ic+1
+               enddo
+            else if (abs(iaug).eq.2) then
+               do i=0,m
+                  call setab(uvwb(1,1,ic),uvwb(1,1,i),uvwb(1,1,i))
+                  ic=ic+1
+               enddo
+            else
+               do i=0,m
+                  call setab(uvwb(1,1,ic),uvwb(1,1,i),uvwb(1,1,0))
+                  ic=ic+1
+               enddo
+               do i=1,m
+                  call setab(uvwb(1,1,ic),uvwb(1,1,i),uvwb(1,1,i))
+                  ic=ic+1
+               enddo
+            endif
+
+            ! orthonormalize velocity basis
+            if (iaug.gt.0) call orthonormb(uvwb(1,1,1),ldim,nb)
+
+            do i=1,nb
+               call opcopy(ub(1,i),vb(1,i),wb(1,i),
+     $            uvwb(1,1,i),uvwb(1,2,i),uvwb(1,ldim,i))
+            enddo
          endif
-
-         ic=1+m
-
-         if (abs(iaug).eq.1) then
-            do i=0,m
-               call setab(uvwb(1,1,ic),uvwb(1,1,i),uvwb(1,1,0))
-               ic=ic+1
-            enddo
-         else if (abs(iaug).eq.2) then
-            do i=0,m
-               call setab(uvwb(1,1,ic),uvwb(1,1,i),uvwb(1,1,i))
-               ic=ic+1
-            enddo
-         else
-            do i=0,m
-               call setab(uvwb(1,1,ic),uvwb(1,1,i),uvwb(1,1,0))
-               ic=ic+1
-            enddo
-            do i=1,m
-               call setab(uvwb(1,1,ic),uvwb(1,1,i),uvwb(1,1,i))
-               ic=ic+1
-            enddo
-         endif
-
-         ! orthonormalize velocity basis
-         if (iaug.gt.0) call orthonormb(uvwb(1,1,1),ldim,nb)
-
-         do i=1,nb
-            call opcopy(ub(1,i),vb(1,i),wb(1,i),
-     $         uvwb(1,1,i),uvwb(1,2,i),uvwb(1,ldim,i))
-         enddo
       endif
-
       call nekgsync
       if (nio.eq.0) write (6,*) 'bas_time:',dnekclock()-bas_time
       if (nio.eq.0) write (6,*) 'exiting setbases'
