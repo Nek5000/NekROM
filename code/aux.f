@@ -873,7 +873,7 @@ c-----------------------------------------------------------------------
       logical iftmp
 
       common /scrdump2/ ux1(lt),uy1(lt),uz1(lt),tt(lt),wk(lt)
-      common /testb/ ux2(lt),uy2(lt),uz2(lt)
+      common /testb/ ux2(lt),uy2(lt),uz2(lt),ux3(lt),uy3(lt),uz3(lt)
 
       iftmp=ifxyo
       ifxyo=.true.
@@ -887,8 +887,8 @@ c-----------------------------------------------------------------------
          if (ifrom(2)) call recont_rms(tt)
          call outpost(ux2,uy2,uz2,pr,tt,'rms')
 
-         call reconu_rm2(ux2,uy2,uz2,u2a)
-         call outpost(ux2,uy2,uz2,pr,tt,'rm2')
+         call reconu_rm2(ux3,uy3,uz3,u2a)
+         call outpost(ux3,uy3,uz3,pr,tt,'rm2')
 
          call opcol2(ux1,uy1,uz1,ux1,uy1,uz1)
          call opsub2(ux2,uy2,uz2,ux1,uy1,uz1)
