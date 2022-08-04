@@ -3142,7 +3142,7 @@ c-----------------------------------------------------------------------
 
       ! return shuffled index for a given original index
 
-      m = nint((nb-1)/nsplit)
+      m = nint(1.0*(nb-1)/nsplit)
 
       if (indo.le.m) then
          abm_shuffle_helper=(indo-1)*nsplit+2
