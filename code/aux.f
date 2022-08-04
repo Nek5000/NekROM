@@ -102,7 +102,6 @@ c-----------------------------------------------------------------------
          if (nio.eq.0) write (6,*) 'reconu_rms:',j,'/',nb
          do i=0,nb
             call admcol3(ux,ub(1,i),vb(1,j),u2a(1+i+(nb+1)*j),n)
-            if (ldim.eq.3) then
             call admcol3(uy,vb(1,i),wb(1,j),u2a(1+i+(nb+1)*j),n)
             if (ldim.eq.3)
      $         call admcol3(uz,wb(1,i),ub(1,j),u2a(1+i+(nb+1)*j),n)
