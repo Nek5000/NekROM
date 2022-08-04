@@ -87,7 +87,8 @@ c           if (.not.ifcomb.and.ifpb) call snorm(edb)
             endif
 
             ! orthonormalize velocity basis
-            if (iaug.gt.0) call orthonormb(uvwb(1,1,1),ldim,nb)
+            if (iaug.lt.0) call abm_shuffle
+            call orthonormb(uvwb(1,1,1),ldim,nb)
 
             do i=1,nb
                call opcopy(ub(1,i),vb(1,i),wb(1,i),

@@ -3137,3 +3137,42 @@ c-----------------------------------------------------------------------
 
       return
       end
+c-----------------------------------------------------------------------
+      function abm_shuffle_helper(indo,nb,nsplit)
+
+      ! return shuffled index for a given original index
+
+      m = nint((nb-1)/nsplit)
+
+      if (indo.le.m) then
+         abm_shuffle_helper=(indo-1)*nsplit+2
+      else if (indo.eq.m+1) then
+         abm_shuffle_helper=1
+      else if (indo.le.2*m+1) then
+         abm_shuffle_helper=(indo-2-m)*nsplit+3
+      else
+         abm_shuffle_helper=(indo-2-m*2)*nsplit+4
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine abm_shuffle
+
+      include 'SIZE'
+      include 'MOR'
+
+      do i=1,nb
+         indn=abm_shuffle_helper(i,nb,max(abs(iaug),2))
+         call opcopy(ub(1,indn),vb(1,indn),wb(1,indn),
+     $               uvwb(1,1,i),uvwb(1,2,i),uvwb(1,ldim,i))
+      enddo
+
+      do i=1,nb
+         call opcopy(uvwb(1,1,i),uvwb(1,2,i),uvwb(1,ldim,i),
+     $               ub(1,i),vb(1,i),wb(1,i))
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
