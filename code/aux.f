@@ -85,6 +85,32 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine reconu_rm2(ux,uy,uz)
+
+      include 'SIZE'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real ux(lt),uy(lt),uz(lt)
+
+      n=lx1*ly1*lz1*nelv
+
+      call opzero(ux,uy,uz)
+
+      do j=0,nb
+         if (nio.eq.0) write (6,*) 'reconu_rms:',j,'/',nb
+         do i=0,nb
+            call admcol3(ux,ub(1,i),vb(1,j),u2a(1+i+(nb+1)*j),n)
+            call admcol3(uy,vb(1,i),wb(1,j),u2a(1+i+(nb+1)*j),n)
+            if (ldim.eq.3)
+     $         call admcol3(uz,wb(1,i),ub(1,j),u2a(1+i+(nb+1)*j),n)
+         enddo
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine reconv(ux,uy,uz,coef)
 
       include 'SIZE'
@@ -846,7 +872,7 @@ c-----------------------------------------------------------------------
       logical iftmp
 
       common /scrdump2/ ux1(lt),uy1(lt),uz1(lt),tt(lt),wk(lt)
-      common /testb/ ux2(lt),uy2(lt),uz2(lt)
+      common /testb/ ux2(lt),uy2(lt),uz2(lt),ux3(lt),uy3(lt),uz3(lt)
 
       iftmp=ifxyo
       ifxyo=.true.
@@ -859,6 +885,9 @@ c-----------------------------------------------------------------------
          call reconu_rms(ux2,uy2,uz2,u2a)
          if (ifrom(2)) call recont_rms(tt)
          call outpost(ux2,uy2,uz2,pr,tt,'rms')
+
+         call reconu_rm2(ux3,uy3,uz3,u2a)
+         call outpost(ux3,uy3,uz3,pr,tt,'rm2')
 
          call opcol2(ux1,uy1,uz1,ux1,uy1,uz1)
          call opsub2(ux2,uy2,uz2,ux1,uy1,uz1)
