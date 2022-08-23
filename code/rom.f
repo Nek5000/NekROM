@@ -1858,7 +1858,10 @@ c-----------------------------------------------------------------------
 
       call dump_serial(ua,nb+1,'ops/ua ',nid)
       call dump_serial(u2a,(nb+1)**2,'ops/u2a ',nid)
-      if (ifrom(2)) call dump_serial(uta,nb+1,'ops/uta ',nid)
+      if (ifrom(2)) then
+         call dump_serial(uta,nb+1,'ops/uta ',nid)
+         call dump_serial(ut2a,(nb+1)**2,'ops/ut2a ',nid)
+      endif
 
       if (ifrecon) call dump_sfld
 
