@@ -1704,6 +1704,8 @@ c-----------------------------------------------------------------------
 
       common /scrsetf/ wk1(lt),wk2(lt),wk3(lt)
 
+      logical ifexist
+
       if (nio.eq.0) write (6,*) 'inside setf'
 
       call rzero(rf,nb)
@@ -1713,32 +1715,42 @@ c-----------------------------------------------------------------------
       n=lx1*ly1*lz1*nelv
 
       if (ifforce.and.ifrom(1)) then ! assume fx,fy,fz has mass
-         do i=1,nb
-            rf(i)=glsc2(ub(1,i),fx,n)+glsc2(vb(1,i),fy,n)
-            if (ldim.eq.3) rf(i)=rf(i)+glsc2(wb(1,i),fz,n)
-            if (nio.eq.0) write (6,*) rf(i),i,'rf'
-         enddo
-         call opcopy(wk1,wk2,wk3,fx,fy,fz)
-         call opbinv1(wk1,wk2,wk3,wk1,wk2,wk3,1.)
-         call outpost(wk1,wk2,wk3,pavg,tavg,'fff')
+         if (rmode.eq.'ON '.or.rmode.eq.'CP ') then
+            inquire (file='ops/rf',exist=ifexist)
+            if (ifexist) call read_serial(rf,nb,'ops/rf ',wk,nid)
+         else
+            do i=1,nb
+               rf(i)=glsc2(ub(1,i),fx,n)+glsc2(vb(1,i),fy,n)
+               if (ldim.eq.3) rf(i)=rf(i)+glsc2(wb(1,i),fz,n)
+               if (nio.eq.0) write (6,*) rf(i),i,'rf'
+            enddo
+            call opcopy(wk1,wk2,wk3,fx,fy,fz)
+            call opbinv1(wk1,wk2,wk3,wk1,wk2,wk3,1.)
+            call outpost(wk1,wk2,wk3,pavg,tavg,'fff')
+         endif
       endif
 
       if (ifsource.and.ifrom(2)) then ! assume qq has mass
-         do i=1,nb
-            rq(i)=glsc2(qq,tb(1,i,1),n)
-            if (nio.eq.0) write (6,*) rq(i),i,'rq'
-         enddo
-         call copy(wk1,qq,n)
-         call binv1(wk1)
-         call outpost(vx,vy,vz,pavg,wk1,'qqq')
-         if (ifsrct) then
+         if (rmode.eq.'ON '.or.rmode.eq.'CP ') then
+            inquire (file='ops/rq',exist=ifexist)
+            if (ifexist) call read_serial(rq,nb,'ops/rq ',wk,nid)
+         else
             do i=1,nb
-               rqt(i)=glsc2(qqxyz,tb(1,i,1),n)
-               if (nio.eq.0) write (6,*) rqt(i),i,'rqt'
+               rq(i)=glsc2(qq,tb(1,i,1),n)
+               if (nio.eq.0) write (6,*) rq(i),i,'rq'
             enddo
-            call copy(wk1,qqxyz,n)
+            call copy(wk1,qq,n)
             call binv1(wk1)
             call outpost(vx,vy,vz,pavg,wk1,'qqq')
+            if (ifsrct) then
+               do i=1,nb
+                  rqt(i)=glsc2(qqxyz,tb(1,i,1),n)
+                  if (nio.eq.0) write (6,*) rqt(i),i,'rqt'
+               enddo
+               call copy(wk1,qqxyz,n)
+               call binv1(wk1)
+               call outpost(vx,vy,vz,pavg,wk1,'qqq')
+            endif
          endif
       endif
 

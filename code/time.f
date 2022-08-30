@@ -679,7 +679,7 @@ c-----------------------------------------------------------------------
             call add2s2(tmp1(1),tmp2(1),-gz,nb)
          endif
       else if (ifforce) then
-         call add2(tmp1(1),rg(1),nb)
+         call add2(tmp1(1),rf(1),nb)
       endif
 
       call shift(fu,tmp1(1),nb,3)
