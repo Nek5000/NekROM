@@ -1702,7 +1702,7 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      common /scrsetf/ wk1(lt),wk2(lt),wk3(lt)
+      common /scrsetf/ wk1(lt),wk2(lt),wk3(lt),wk(lb+1)
 
       logical ifexist
 
