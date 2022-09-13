@@ -1065,7 +1065,7 @@ c-----------------------------------------------------------------------
 
          do i=0,ldimt1
             ifreads(i)=ifrom(i)
-            write(6,*)'ifreads',ifreads(i)
+            if (nio.eq.0) write(6,*)'ifreads',ifreads(i)
          enddo
 
          call read_fields(
