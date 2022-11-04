@@ -1315,9 +1315,11 @@ c     call cpart(ic1,ic2,jc1,jc2,kc1,kc2,ncloc,nb,np,nid+1) ! new indexing
                   if (ifield.eq.1) then
                      call opcopy(wku(1,1),wku(1,2),wku(1,ldim),
      $                  ub(1,j),vb(1,j),wb(1,j))
-                     call convect_axis(cu,ldim,ux,uy,uz,wku)
+                     call convect_axis(cu,ldim,
+     $                  ub(1,k),vb(1,k),wb(1,k),wku)
                   else
-                     call convect_axis(cu,1,ux,uy,uz,tb(1,j,1))
+                     call convect_axis(cu,1,
+     $                  ub(1,k),vb(1,k),wb(1,k),tb(1,j,1))
                   endif
                else
                   if (ifield.eq.1) then
