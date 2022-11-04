@@ -305,11 +305,15 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'  
       include 'TOTAL' 
+      include 'AVG'
       include 'MOR'
 
       parameter (ltot1=lx1*ly1*lz1*lelt)
       common /SCRNS/ u2(ltot1),ux(ltot1),uy(ltot1),uz(ltot1)
       common /rorrsom/ alpha,omega,eps,vmaxi
+      common /scrsetf/ wk1(ltot1),wk2(ltot1),wk3(ltot1),wk(lb+1)
+
+      logical ifexist
 C
       real    eto,timeo,e0,et
       save    eto,timeo,e0,et
@@ -317,6 +321,38 @@ c
       integer icalld
       save    icalld
       data    icalld/0/
+
+      ntot =nx1*ny1*nz1*nelv
+
+      if (icalld.eq.0) then
+         if (rmode.eq.'ON '.or.rmode.eq.'CP ') then
+            inquire (file='ops/rf',exist=ifexist)
+            if (ifexist) call read_serial(rf,nb,'ops/rf ',wk,nid)
+         else
+            call copy(fx,bm1,ntot)
+            call cmult(fx,2.0,ntot)
+            call rzero(fy,ntot)
+            call rzero(fz,ntot)
+
+            ! Construct body force operator by
+            ! integrating test function with body force
+            call rzero(rf,nb)
+            do i=1,nb
+               rf(i)=glsc2(ub(1,i),fx,ntot)+glsc2(vb(1,i),fy,ntot)
+               if (ldim.eq.3) rf(i)=rf(i)+glsc2(wb(1,i),fz,ntot)
+               if (nio.eq.0) write (6,*) rf(i),i,'rf'
+            enddo
+            call dump_serial(rf,nb,'ops/rf ',nid)
+
+            ! Verify that the body force is 2
+            call opcopy(wk1,wk2,wk3,fx,fy,fz)
+            call opbinv1(wk1,wk2,wk3,wk1,wk2,wk3,1.)
+            iftmp=ifxyo
+            ifxyo=.true.
+            call outpost(wk1,wk2,wk3,pavg,tavg,'fff')
+            ifxyo=iftmp
+         endif
+      endif
 
 c     n=nx1*ny1*nz1*nelv
 c     do i=1,n
@@ -332,8 +368,6 @@ c     call exitti ('quit userchk to dump perturbation field',nelv)
       icalld=icalld+1
 c     if (istep.le.5) call uexact(vx,vy,vz,time)
 
-
-      ntot =nx1*ny1*nz1*nelv
       do 110 i=1,ntot
          y=ym1(i,1,1,1)
          u0 = 1.0-y**2
@@ -404,11 +438,17 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine rom_userrhs
+      subroutine rom_userrhs(rom_rhs)
 
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
+
+      real rom_rhs(lb)
+
+      if (ifrom(1)) then
+         call add2s2(rom_rhs,rf,param(2),nb)
+      endif
 
       return
       end

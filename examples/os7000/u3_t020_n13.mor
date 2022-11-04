@@ -1,7 +1,7 @@
 [general]
 mode = all
 field = v
-nb=2
+nb=1
 
 [POD]
 type = l2
