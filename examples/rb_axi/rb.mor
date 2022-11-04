@@ -1,0 +1,8 @@
+[general]
+mode = off
+field = vt
+nb = 20
+decoupled = no
+
+[pod]
+mode0 = avg
