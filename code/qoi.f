@@ -40,8 +40,6 @@ c-----------------------------------------------------------------------
          fd(2)=fd(2)+(ak*abveck(1,2,k)+bk*abveck(2,2,k))/real(2*k)
 c        write (6,*) 'ak pdrag',k,ak,bk,fd(1),fd(2),lk
       enddo
-      call gop(fd(1),wk1,'+  ',1)
-      call gop(fd(2),wk1,'+  ',1)
 
       return
       end
