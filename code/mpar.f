@@ -154,6 +154,9 @@ c-----------------------------------------------------------------------
          endif
       endif
 
+      call finiparser_getbool(i_out,'general:setbases',ifnd)
+      if (ifnd.eq.1) ifsetbases=i_out.eq.1
+
       ibuoy=0
 
       call finiparser_getdbl(d_out,'buoyancy:magnitude',ifnd)
@@ -575,6 +578,7 @@ c-----------------------------------------------------------------------
       call bcast(ifdecpl,lsize)
 
       call bcast(ifcflow,lsize)
+      call bcast(ifsetbases,lsize)
 
       call bcast(ifcp,lsize)
       call bcast(ifcore,lsize)

@@ -236,7 +236,9 @@ c-----------------------------------------------------------------------
       call mor_init_fields
       call mor_set_params_uni_post
 
-      call setbases
+      if (ifsetbases) then
+         call setbases
+      endif
       call rom_userbases
 
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
@@ -668,6 +670,7 @@ c-----------------------------------------------------------------------
       ifcp=.false.
       ifcore=.true.
       ifquad=.false.
+      ifsetbases=.true.
 
       do i=0,ldimt1
          ifpod(i)=.false.
