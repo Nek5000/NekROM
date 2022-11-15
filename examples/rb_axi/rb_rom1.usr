@@ -18,16 +18,14 @@ c-----------------------------------------------------------------------
          tb(i,0,1)=x+1.
          ub(i,0)=0.
          vb(i,0)=0.
+         wb(i,0)=0.
+         uvwb(i,1,0)=0.
+         uvwb(i,2,0)=0.
       enddo
 
-      call copy(gx,bm1,n)
-      call cmult(gx,-rapr,n)
-      call rzero(gy,n)
+      ifxyo=.true.
 
-      eqn='ADE'
-      ifsub0=.true.
-
-      call offline_mode
+      call rom_update
 
       call exitt0
 
@@ -261,10 +259,10 @@ c-----------------------------------------------------------------------
  
       pr  = param(2)
 
-      open (unit=30,file='mu')
+      open (unit=30,file='eps')
       read(30,*) eps
       close (unit=30)
-      eps=1.60+eps
+      rmu=eps-1.6
 
       Rc  = param(76)
       Ta2 = param(77)
@@ -276,7 +274,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine calc_nuss
+      subroutine calc_nuss(rnus,s)
 
       include 'SIZE'
       include 'TOTAL'
@@ -284,12 +282,13 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       common /cnussb/ tx(lt),ty(lt),tz(lt),ones(lt)
+      real s(1)
 
       n=lx1*ly1*lz1*nelv
 
       call rone(ones,n)
 
-      call gradm1(tx,ty,tz,t,nelt)
+      call gradm1(tx,ty,tz,s,nelt)
       qx=glsc2(tx,bm1,n)
       b=glsum(bm1,n)
       rnus=-(qx-qy)/(b)
@@ -314,16 +313,76 @@ c-----------------------------------------------------------------------
       a= glsum(a,1)
       ta=glsum(ta,1)
 
+      rnus = ta / a
+
       if (nio.eq.0) write (6,*) time,ta/a,'nus'
 
       return
       end
 c-----------------------------------------------------------------------
       subroutine rom_userbases
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      nv=lx1*ly1*lz1*nelv
+
+      if (nid.eq.0) then
+         open (unit=12,file='ops/buxt')
+         do j=0,nb
+         do i=1,nb
+            write (12,*) glsc3(ub(1,i),tb(1,j,1),bm1,nv)
+         enddo
+         enddo
+         close (unit=12)
+
+         open (unit=12,file='qoi/nus')
+         nio=-1
+         do i=0,nb
+            call calc_nuss(rnus,tb(1,i,1))
+            if (nid.eq.0) write (12,*) rnus
+            if (nid.eq.0) write (6,*) time,rnus,'bnus'
+         enddo
+         nio=nid
+         close (unit=12)
+      endif
+
       return
       end
 c-----------------------------------------------------------------------
       subroutine rom_userchk
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      common /myops/ qoi(0:lb),buxt((lb+1)*lb+1)
+
+      if (ad_step.eq.0) then
+         open (unit=12,file='ops/buxt')
+         do j=0,nb
+         do i=1,nb
+            read (12,*) buxt(i+j*nb)
+         enddo
+         enddo
+         close (unit=12)
+
+         open (unit=12,file='qoi/nus')
+         do i=0,nb
+            read (12,*) qoi(i)
+         enddo
+         close (unit=12)
+      endif
+
+      romnus=0.
+      do i=0,nb
+         romnus=romnus+qoi(i)*ut(i)
+      enddo
+
+      if (nid.eq.0.and.mod(ad_step,100).eq.0)
+     $   write (6,*) ad_step,time,romnus, 'nus'
+
       return
       end
 c-----------------------------------------------------------------------
@@ -331,7 +390,22 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine rom_userrhs
+      subroutine rom_userrhs(rhs)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      common /myops/ qoi(0:lb),buxt((lb+1)*lb+1)
+      common /gffd_r/ rapr,ta2pr,r_i,r_o,r_m
+
+      real rhs(1)
+
+      if (ifield.eq.1) then
+         call mxm(buxt,nb,ut,nb+1,rtmp2,1)
+         call add2s2(rhs,rtmp2,-rapr,nb)
+      endif
+
       return
       end
 c-----------------------------------------------------------------------

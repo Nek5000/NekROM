@@ -1,8 +1,8 @@
 [general]
-mode = off
+mode = on
 field = vt
-nb = 20
+nb = 40
 decoupled = no
 
 [pod]
-mode0 = avg
+mode0 = state

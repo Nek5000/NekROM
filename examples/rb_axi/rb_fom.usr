@@ -9,7 +9,7 @@ c-----------------------------------------------------------------------
 
       if (istep.eq.0) time=0.
 
-      if (mod(istep,200).eq.0) call calc_nuss
+      if (mod(istep,100).eq.0) call calc_nuss
 
       return
       end
@@ -241,11 +241,9 @@ c
 c
       Pr  = param(2)
 
-      open (unit=30,file='mu')
-      read(30,*) eps
+      open (unit=30,file='eps')
+      read (30,*) eps
       close (unit=30)
-
-      eps=1.60+eps
 
       Rc  = param(76)
       Ta2 = param(77)

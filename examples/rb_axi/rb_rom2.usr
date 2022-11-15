@@ -265,10 +265,11 @@ c-----------------------------------------------------------------------
  
       Pr  = param(2)
 
-      open (unit=30,file='mu')
-      read(30,*) rmu
+      open (unit=30,file='eps')
+      read(30,*) eps
       close (unit=30)
-      eps=1.60+rmu
+c     eps=1.60+rmu
+      rmu=eps-1.6
 
       Rc  = param(76)
       Ta2 = param(77)
@@ -380,7 +381,7 @@ c-----------------------------------------------------------------------
 
       common /myops/ qoi(0:lb),buxt((lb+1)*lb+1)
 
-      if (ad_step.eq.0.and.nid.eq.0) then
+      if (ad_step.eq.0) then
          open (unit=12,file='qoi/nus')
          do i=0,nb
             read (12,*) qoi(i)
@@ -400,8 +401,8 @@ c-----------------------------------------------------------------------
          romnus=romnus+qoi(i)*ut(i)
       enddo
 
-      if (nid.eq.0) write (6,*) ad_step,time,romnus,'rnus'
-c     call exitt0
+      if (nid.eq.0.and.mod(ad_step,100).eq.0)
+     $   write (6,*) ad_step,time,romnus, 'nus'
 
       return
       end
