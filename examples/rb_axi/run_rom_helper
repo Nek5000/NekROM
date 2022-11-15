@@ -1,0 +1,8 @@
+#!/bin/bash
+
+mkdir rom$1
+echo "$2" > eps
+nekmpi rb 1
+mv eps rom$1/
+mv rb.log.1 rom$1/logfile
+grep ' nus' rom$1/logfile > rom$1/nus.dat
