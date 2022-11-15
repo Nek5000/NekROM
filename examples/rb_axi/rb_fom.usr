@@ -1,0 +1,301 @@
+c-----------------------------------------------------------------------
+      subroutine userchk
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      n=nx1*ny1*nz1*nelt
+      tmax=glamax(t,n)
+
+      if (istep.eq.0) time=0.
+
+      if (mod(istep,100).eq.0) call calc_nuss
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine uservp (ix,iy,iz,iel)
+      include 'SIZE'
+C     include 'TSTEP'
+      include 'TOTAL'
+      include 'NEKUSE'
+C
+      UDIFF =0.
+      UTRANS=0.
+      RETURN
+      END
+C
+c-----------------------------------------------------------------------
+      subroutine userf  (ix,iy,iz,iel)
+      include 'SIZE'
+      include 'TSTEP'
+      include 'INPUT'
+      include 'NEKUSE'
+C
+      common /gffd_r/ rapr,ta2pr,r_i,r_o,r_m
+c
+      integer icalld
+      save    icalld
+      data    icalld/0/
+c
+      if (icalld.eq.0) then
+         icalld=icalld+1
+         call gffd_const
+      endif
+c
+      bouy = temp*rapr
+c
+      if (if3d) then
+         ffx  =   uy*Ta2Pr
+         ffy  = - ux*Ta2Pr
+         ffz  = bouy
+      elseif (ifaxis) then
+         ffx  = -bouy
+         ffy  =  0.
+      else
+         ffx  = 0.
+         ffy  = bouy
+      endif
+c
+      RETURN
+      END
+c-----------------------------------------------------------------------
+      subroutine userq  (ix,iy,iz,iel)
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+C
+      QVOL   = 0.0
+      SOURCE = 0.0
+      RETURN
+      END
+c-----------------------------------------------------------------------
+      subroutine userbc (ix,iy,iz,iside,iel)
+      include 'SIZE'
+      include 'TSTEP'
+      include 'INPUT'
+      include 'NEKUSE'
+      common /gffd_r/ rapr,ta2pr,r_i,r_o,r_m
+c
+      ux=0.
+      uy=0.
+      uz=0.
+c
+c
+c     Temp = 0 on top, 1 on bottom
+c
+      temp=0.
+c
+      if (if3d) then
+         if (z.lt.0.1) temp = 1.
+      elseif (ifaxis) then
+c        Assume that x domain is on interval [-1,0]
+         temp = 1.+x
+      else
+         if (y.lt.0.1) temp = 1.
+      endif
+c
+      return
+      END
+C
+c-----------------------------------------------------------------------
+      subroutine useric (ix,iy,iz,iel)
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+c     double precision rand
+c
+c     integer isave
+c     save    isave
+c     data    isave/0/
+c
+      integer icalld
+      save    icalld
+      data    icalld/0/
+      real rand_phase(120)
+c
+      common /gffd_r/ rapr,ta2pr,r_i,r_o,r_m
+c
+      tiny=1.e-2
+      if (icalld.eq.0) then
+         iseed=997
+c        call srand(iseed)
+         write(6,*) nid,' yup! ',ifield
+         one = 1.0
+         twopi = 8.0*atan(one)
+         do i=1,120
+            rand_phase(i) = ran1(twopi)
+            write(6,1) i,rand_phase(i),nid,ifield
+         enddo
+c
+         call gffd_const
+      endif
+   1  format('ran:',i9,f12.6,2i4)
+      icalld=icalld+1
+c
+      rr = atan2(y,x)
+      ss = atan2(x,z)
+      tt = atan2(y,z)
+c
+      one = 1.
+      pi2  = 8.*atan(one)
+      r    = x*x + y*y
+      if (r.gt.0.) r = sqrt(r)
+c
+      if (ifield.eq.1) then
+         ux = 0.
+         uy = 0.
+         uz = 0.
+         wav= 0.
+         do i=1,30
+            p1 = rand_phase(i)
+            p2 = rand_phase(2*i)
+            p3 = rand_phase(3*i)
+            p4 = rand_phase(4*i)
+            xx = x*cos(p1+99.9*z) - y*sin(p1+999*z)
+            yy = y*cos(p1+99.9*z) + x*sin(p1+999*z)
+            ai = i
+            bi = 1. + (ai/6.)**4
+            ai = 1./(ai* sqrt(bi))
+            ai = sqrt(ai)
+            ri = i*pi2*5.0
+            zi = i*pi2
+            wav= i
+            uxd = ai*(cos(ri*yy+p1)*sin(zi*z+p2)*cos(ri*xx+p3)
+     $            +tiny*(sin(wav*ss+p4)+cos(wav*tt+p2)))
+            uyd = ai*(sin(ri*xx+p1)*cos(zi*z+p2)*cos(ri*yy+p3)
+     $            +tiny*(cos(wav*ss+p4)+sin(wav*tt+p2)))
+            uzd = ai*(cos(ri*xx+p1)*cos(zi*z+p2)*cos(ri*yy+p3)
+     $            +tiny*(cos(wav*rr+p4)+cos(wav*tt+p2)))
+            ux = ux + uxd
+            uy = uy + uyd
+            uz = uz + uzd
+c           if (nid.eq.0) write(6,*) 'ux',ux,uxd,ai
+         enddo
+         ux=tiny*ux
+         uy=tiny*uy
+         uz=tiny*uz
+         uz=0.
+c        if (nid.eq.0) write(6,*) 'ux:',ux,ai,uxd,p1
+c        if (nid.eq.0) write(6,*) 'uy:',uy,bi,uyd,p2
+c        if (nid.eq.0) write(6,*) 'uz:',uz,tiny,uzd,p3
+      else
+         temp = 0.
+         do i=1,30
+            p1 = rand_phase(i)
+            p2 = rand_phase(2*i)
+            p3 = rand_phase(3*i)
+            p4 = rand_phase(4*i)
+            ai = i
+            bi = 1. + (ai/6.)**4
+            ai = 1./(ai* sqrt(bi))
+            ai = sqrt(ai)
+            ri = i*pi2*5.0
+            zi = i*pi2
+            xx = x*cos(p1+99.9*z) - y*sin(p1+999*z)
+            yy = y*cos(p1+99.9*z) + x*sin(p1+999*z)
+            wav= i
+            td   = ai*(sin(ri*xx+p1)*sin(zi*z+p2)*sin(ri*yy+p3)
+     $            +tiny*(sin(wav*ss+p4)+sin(wav*tt+p2)))
+            temp = temp + td
+         enddo
+         temp = temp * .4
+      endif
+      temp=0.8
+      return
+      END
+c-----------------------------------------------------------------------
+      subroutine usrdat3
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine usrdat2
+
+      include 'SIZE'
+      include 'TOTAL'
+
+c     param(66) = 4.   ! use  .fld file format for output
+c     param(67) = 4.   ! use  .fld file format for input
+
+      x0 = -1.
+      x1 =  0.
+      y0 =  0.
+      y1 =  5.
+
+      call rescale_x(xm1,x0,x1)
+      call rescale_x(ym1,y0,y1)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine usrdat
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine gffd_const
+c
+      include 'SIZE'
+      include 'INPUT'
+c
+      common /gffd_r/ rapr,ta2pr,r_i,r_o,r_m
+c
+      Pr  = param(2)
+
+      open (unit=30,file='eps')
+      read (30,*) eps
+      close (unit=30)
+
+      Rc  = param(76)
+      Ta2 = param(77)
+      Ra  = Rc*(1.+eps)
+c
+      rapr    = ra*pr
+      if (nio.eq.0) write (6,*) rapr,'rapr'
+      ta2pr   = ta2*pr
+c
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine calc_nuss
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /cnussb/ tx(lt),ty(lt),tz(lt),ones(lt)
+
+      n=lx1*ly1*lz1*nelv
+
+      call rone(ones,n)
+
+      call gradm1(tx,ty,tz,t,nelt)
+      qx=glsc2(tx,bm1,n)
+      b=glsum(bm1,n)
+      rnus=-(qx-qy)/(b)
+
+      eps=1.e-6
+      tavg=glsc2(t,bm1,n)/b
+      ta=0.
+      a=0.
+      do ie=1,nelt
+      do ifc=1,ldim*2
+         call facind(kx1,kx2,ky1,ky2,kz1,kz2,lx1,ly1,lz1,ifc)
+         x1=xm1(kx1,ky1,kz1,ie)
+         x2=xm1(kx2,ky2,kz2,ie)
+         xa=.5*(x1+x2)
+         if (cbc(ifc,ie,2).eq.'t  '.and.xa.gt.-eps) then
+            ta=ta+facint_v(tx,area,ifc,ie)
+            a=a+facint_v(ones,area,ifc,ie)
+         endif
+      enddo
+      enddo
+
+      a= glsum(a,1)
+      ta=glsum(ta,1)
+
+      if (nio.eq.0) write (6,*) istep,time,ta/a,'nus'
+
+      return
+      end
+c-----------------------------------------------------------------------

@@ -1,0 +1,15 @@
+#!/bin/bash
+
+i="$1"
+eps="$2"
+np="$3"
+
+echo "$eps" > eps
+makenek rb_fom 
+nekmpi rb $np
+
+mkdir fom"$i"
+mv eps fom"${i}"/
+mv rb0.f* fom"${i}"/
+mv rb.log.$np fom"${i}"/logfile
+grep ' nus' fom"${i}"/logfile > fom"${i}"/nus.dat

@@ -626,12 +626,16 @@ c-----------------------------------------------------------------------
 
       include 'SIZE'
       include 'MASS'
+      include 'TSTEP'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
       real t1(lt),t2(lt),t3(lt),t4(lt),t5(lt),t6(lt)
 
+      jfield=ifield
+      ifield=1
       wl2vip=op_glsc2_wt(t1,t2,t3,t4,t5,t6,bm1)
+      ifield=jfield
 
       return
       end
