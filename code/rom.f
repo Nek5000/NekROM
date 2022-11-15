@@ -236,9 +236,7 @@ c-----------------------------------------------------------------------
       call mor_init_fields
       call mor_set_params_uni_post
 
-      if (ifsetbases) then
-         call setbases
-      endif
+      if (ifsetbases) call setbases
       call rom_userbases
 
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
