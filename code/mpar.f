@@ -643,6 +643,11 @@ c-----------------------------------------------------------------------
       data mor4  /'.mor'/
 
       len = ltrunc(path,132)
+
+      if(len.lt.1) then
+         call chcopy(path1(1),'./',2)
+      endif
+
       if (indx1(path1(len),'/',1).lt.1) then
          call chcopy(path1(len+1),'/',1)
       endif
