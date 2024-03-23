@@ -844,6 +844,8 @@ c-----------------------------------------------------------------------
       real gram(1),s(1)
       character*3 cips
 
+      start_time=dnekclock()
+
       if (cips.eq.'L2 ') then
          call gengraml2(gram,s,ms,mdim)
       else if (cips.eq.'H10') then
@@ -854,6 +856,8 @@ c-----------------------------------------------------------------------
          if (nid.eq.0) write (6,*) 'unsupported ips in gengram'
          call exitti('failed in gengram, exiting...$',1)
       endif
+
+      if (nio.eq.0) write (6,*) 'gg_time:',dnekclock()-start_time
 
       return
       end
@@ -1328,10 +1332,12 @@ c-----------------------------------------------------------------------
 
       if (ifpod) then
          call genevec(gram,eval,ns,nb,mdim)
+         start_time=dnekclock()
          do i=1,mdim
             call dgemm('N','N',n,nb,ns,1.,
      $         snaps(1,i,1),lt*mdim,gram,ns,0.,basis(1,i,1),lt*mdim)
          enddo
+         if (nio.eq.0) write (6,*) 'dgemm_time:',dnekclock()-start_time
       endif
 
       return
