@@ -29,7 +29,7 @@ c-----------------------------------------------------------------------
 
       common /workbr/ v(lbat),w(lbat)
 
-      ntrial = 128
+      ntrial = 1024
 
       do n=1,lbat
          time_min = 1.0e+10
