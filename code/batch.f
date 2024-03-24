@@ -1,6 +1,7 @@
 c-----------------------------------------------------------------------
       subroutine breduce(a,n,m)
 
+      include 'SIZE'
       include 'LMOR'
 
       ! global reduction of vector a of length n (batch size m)
