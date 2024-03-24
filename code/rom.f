@@ -1337,12 +1337,15 @@ c                    call setcnv_u1(tb(1,j))
                endif
                do i=1,nb
                   if (ifield.eq.1) then
-                     cel=op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),
+                     rtmp1(i,1)=op_vlsc2_wt(ub(1,i),vb(1,i),wb(1,i),
      $                  cu(1,1),cu(1,2),cu(1,ldim),ones)
                   else
-                     cel=glsc2(tb(1,i,1),cu,n)
+                     rtmp1(i,1)=vlsc2(tb(1,i,1),cu,n)
                   endif
-                  call setc_local(cl,cel,ic1,ic2,jc1,jc2,kc1,kc2,i,j,k)
+               enddo
+               call breduce(rtmp1,nb,1)
+               do i=1,nb
+                  call setc_local(cl,rtmp1(i,1),ic1,ic2,jc1,jc2,kc1,kc2,i,j,k)
                   if (nid.eq.0) write (100,*) cel
                enddo
             enddo
