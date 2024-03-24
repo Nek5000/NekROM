@@ -17,6 +17,7 @@
       parameter (lmsk=1) ! number of partitions
 
       parameter (lintp=1) ! max number of interpolation points
+      parameter (lbat=1024) ! max size of batch vector (inner-product iter.)
 
       parameter (lbavg=1+0*(lb-1)) ! size of average field allocation
 
