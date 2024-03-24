@@ -13,7 +13,7 @@ c-----------------------------------------------------------------------
       if (m.gt.lbat) m = lbat
       i=1
 
-      do while (i.lt.n)
+      do while (i.le.n)
          call gop(a(i),w,'+  ',1,min(m,n-i+1))
          i=i+m
       enddo
