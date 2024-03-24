@@ -843,6 +843,8 @@ c-----------------------------------------------------------------------
       ! mdim := vector dimension
       ! cips := inner-product space specifier
 
+      include 'SIZE'
+
       real gram(1),s(1)
       character*3 cips
 
