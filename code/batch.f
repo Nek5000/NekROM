@@ -33,15 +33,15 @@ c-----------------------------------------------------------------------
       common /workbr/ v(lbat),w(lbat)
 
       ntrial = 128
-      do ir=1,n
-         v(ir) = rand()
-      enddo
 
       do n=1,lbat
          time_min = 1.0e+10
          time_max = 0.0
          time_avg = 0.0
          time_avg2 = 0.0
+         do ir=1,n
+            v(ir) = rand()
+         enddo
          do i=1,ntrial
             start_time=dnekclock()
             call breduce(v,n,1)
