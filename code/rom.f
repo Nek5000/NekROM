@@ -1347,7 +1347,7 @@ c                    call setcnv_u1(tb(1,j))
                do i=1,nb
                   call setc_local(cl,rtmp1(i,1),
      $               ic1,ic2,jc1,jc2,kc1,kc2,i,j,k)
-                  if (nid.eq.0) write (100,*) cel
+                  if (nid.eq.0) write (100,*) rtmp1(i,1)
                enddo
             enddo
          enddo
