@@ -717,6 +717,7 @@ c-----------------------------------------------------------------------
       gz=0.
 
       nintp=0
+      nbat=1
 
       if (nio.eq.0) write (6,*) 'exiting mor_init_params'
 
@@ -1343,7 +1344,7 @@ c                    call setcnv_u1(tb(1,j))
                      rtmp1(i,1)=vlsc2(tb(1,i,1),cu,n)
                   endif
                enddo
-               call breduce(rtmp1,nb,1)
+               call breduce(rtmp1,nb,nbat)
                do i=1,nb
                   call setc_local(cl,rtmp1(i,1),
      $               ic1,ic2,jc1,jc2,kc1,kc2,i,j,k)

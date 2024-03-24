@@ -824,7 +824,7 @@ c-----------------------------------------------------------------------
          if (nio.eq.0) write (6,1) j,gram(1,j)
       enddo
 
-      call breduce(gram,ms*ms,1)
+      call breduce(gram,ms*ms,nbat)
 
       if (nio.eq.0) write (6,*) 'exiting gengraml2'
 
