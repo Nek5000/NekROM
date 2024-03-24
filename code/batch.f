@@ -10,15 +10,12 @@ c-----------------------------------------------------------------------
 
       real a(n)
 
-      ! remainder k from n / m
       if (m.gt.lbat) m = lbat
-
-      k = n / m
       i=1
 
       do while (i.lt.n)
          call gop(a(i),w,'+  ',1,min(m,n-i+1))
-         i=i+l
+         i=i+m
       enddo
 
       return
