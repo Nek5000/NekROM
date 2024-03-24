@@ -41,7 +41,7 @@ c-----------------------------------------------------------------------
          enddo
          do i=1,ntrial
             start_time=dnekclock()
-            call breduce(v,n,1)
+            call breduce(v,n,n)
             end_time=dnekclock()
             time = end_time - start_time
             time_min = min(time_min,time)
