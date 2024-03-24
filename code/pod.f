@@ -677,15 +677,15 @@ c-----------------------------------------------------------------------
          if (mdim.ge.2) call axhelm(vv,s(1,2,j),ones,zeros,1,2)
          if (mdim.eq.3) call axhelm(ww,s(1,3,j),ones,zeros,1,3)
          do i=j,ms ! Form the Gramian, U=U_K^T A U_K using H^1_0 Norm
-            gram(i,j)=s1*glsc2(uu,s(1,1,i),n)
-     $               +s2*glsc3(s(1,1,i),s(1,1,j),bm1,n)
+            gram(i,j)=s1*vlsc2(uu,s(1,1,i),n)
+     $               +s2*vlsc3(s(1,1,i),s(1,1,j),bm1,n)
             if (mdim.ge.2) then
-               gram(i,j)=gram(i,j)+s1*glsc2(vv,s(1,2,i),n)
-     $                            +s2*glsc3(s(1,2,i),s(1,2,j),bm1,n)
+               gram(i,j)=gram(i,j)+s1*vlsc2(vv,s(1,2,i),n)
+     $                            +s2*vlsc3(s(1,2,i),s(1,2,j),bm1,n)
             endif
             if (mdim.eq.3) then
-               gram(i,j)=gram(i,j)+s1*glsc2(ww,s(1,3,i),n)
-     $                            +s2*glsc3(s(1,3,i),s(1,3,j),bm1,n)
+               gram(i,j)=gram(i,j)+s1*vlsc2(ww,s(1,3,i),n)
+     $                            +s2*vlsc3(s(1,3,i),s(1,3,j),bm1,n)
             endif
             if (i.ne.j) gram(j,i)=gram(i,j)
          enddo
@@ -727,12 +727,12 @@ c-----------------------------------------------------------------------
          if (mdim.ge.2) call axhelm(vv,s(1,2,j),ones,zeros,1,2)
          if (mdim.eq.3) call axhelm(ww,s(1,3,j),ones,zeros,1,3)
          do i=j,ms ! Form the Gramian, U=U_K^T A U_K using H^1_0 Norm
-            gram(i,j)=glsc2(uu,s(1,1,i),n)
+            gram(i,j)=vlsc2(uu,s(1,1,i),n)
             if (mdim.ge.2) then
-               gram(i,j)=gram(i,j)+glsc2(vv,s(1,2,i),n)
+               gram(i,j)=gram(i,j)+vlsc2(vv,s(1,2,i),n)
             endif
             if (mdim.eq.3) then
-               gram(i,j)=gram(i,j)+glsc2(ww,s(1,3,i),n)
+               gram(i,j)=gram(i,j)+vlsc2(ww,s(1,3,i),n)
             endif
             if (i.ne.j) gram(j,i)=gram(i,j)
          enddo
@@ -824,8 +824,6 @@ c-----------------------------------------------------------------------
          if (nio.eq.0) write (6,1) j,gram(1,j)
       enddo
 
-      call breduce(gram,ms*ms,nbat)
-
       if (nio.eq.0) write (6,*) 'exiting gengraml2'
 
     1 format (' gram',i5,' ',1p1e16.6)
@@ -833,7 +831,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine gengram(gram,s,ms,mdim,cips)
+      subroutine gengram(gram,s,ms,mdim,cips,nbat)
 
       ! set the Gramian based on the inner-product set by ips
 
@@ -842,6 +840,7 @@ c-----------------------------------------------------------------------
       ! ms   := number of snapshots
       ! mdim := vector dimension
       ! cips := inner-product space specifier
+      ! nbat := number of inner-product batches
 
       include 'SIZE'
 
@@ -860,6 +859,8 @@ c-----------------------------------------------------------------------
          if (nid.eq.0) write (6,*) 'unsupported ips in gengram'
          call exitti('failed in gengram, exiting...$',1)
       endif
+
+      call breduce(gram,ms*ms,nbat)
 
       if (nio.eq.0) write (6,*) 'gg_time:',dnekclock()-start_time
 
