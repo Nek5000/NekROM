@@ -25,8 +25,8 @@ c-----------------------------------------------------------------------
          call loadbases
       else if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
          if (ifrom(1)) then
-            call pod(
-     $         uvwb(1,1,1),eval,ug,us0,ldim,ips,nb,ns,ifpb,'ops/gu  ')
+            call pod(uvwb(1,1,1),eval,ug,us0,ldim,ips,nb,ns,ifpb,
+     $         'ops/gu  ',nbat)
             if (ifcflow) call set0flow(uvwb(1,1,1),nb,idirf)
             do ib=1,nb
                call opcopy(ub(1,ib),vb(1,ib),wb(1,ib),
@@ -38,12 +38,12 @@ c-----------------------------------------------------------------------
          endif
          if (ifrom(2)) then
             call pod(tb(1,1,1),eval,ug,ts0(1,1,1),1,ips,
-     $               nb,ns,ifpb,'ops/gt  ')
+     $               nb,ns,ifpb,'ops/gt  ',nbat)
             if (.not.ifcomb.and.ifpb) call snorm(tb)
          endif
          if (ifedvs) then
             call pod(tb(1,1,4),eval,ug,ts0(1,1,4),1,ips,nb
-     $              ,ns,ifpb,'ops/ged ')
+     $              ,ns,ifpb,'ops/ged ',nbat)
 c           if (.not.ifcomb.and.ifpb) call snorm(edb)
          endif
 
@@ -840,7 +840,7 @@ c-----------------------------------------------------------------------
       ! ms   := number of snapshots
       ! mdim := vector dimension
       ! cips := inner-product space specifier
-      ! nbat := number of inner-product batches
+      ! nbat := number of inner-products in batch
 
       include 'SIZE'
 
@@ -1302,7 +1302,8 @@ c       if (nio.eq.0) write(6,*)i,enr(i),'Nmax for field',ifld
       return
       end
 c-----------------------------------------------------------------------
-      subroutine pod(basis,eval,gram,snaps,mdim,cips,nb,ns,ifpod,cop)
+      subroutine pod(basis,eval,gram,snaps,mdim,cips,nb,ns,ifpod,cop,
+     $   nbat)
 
       ! return pod basis created from snapshots
 
@@ -1316,6 +1317,7 @@ c-----------------------------------------------------------------------
       ! ns    := number of snapshots
       ! ifpod := apply POD procedure
       ! cop   := Gramian dump target
+      ! nbat  := number of inner-products in batch
 
       include 'SIZE'
 
@@ -1331,7 +1333,7 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelt
 
-      call gengram(gram,snaps,ns,mdim,cips)
+      call gengram(gram,snaps,ns,mdim,cips,nbat)
 
       call dump_serial(gram,ns*ns,cop,nid)
 
