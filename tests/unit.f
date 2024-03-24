@@ -30,7 +30,7 @@ c-----------------------------------------------------------------------
       param(173) = 0.
 
       call rom_setup
-      call gengram(ug,us0,ns,ldim,ips)
+      call gengram(ug,us0,ns,ldim,ips,1)
 
       call read_serial(vv,ls*ls,'tops/gu ',wk,nid)
 
