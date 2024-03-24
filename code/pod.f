@@ -814,15 +814,17 @@ c-----------------------------------------------------------------------
 
       do j=1,ms ! Form the Gramian, U=U_K^T A U_K using L2 Norm
       do i=j,ms
-         gram(i,j)=glsc3(s(1,1,i),s(1,1,j),bm1,n)
+         gram(i,j)=vlsc3(s(1,1,i),s(1,1,j),bm1,n)
          if (mdim.ge.2)
-     $      gram(i,j)=gram(i,j)+glsc3(s(1,2,i),s(1,2,j),bm1,n)
+     $      gram(i,j)=gram(i,j)+vlsc3(s(1,2,i),s(1,2,j),bm1,n)
          if (mdim.ge.3)
-     $      gram(i,j)=gram(i,j)+glsc3(s(1,3,i),s(1,3,j),bm1,n)
+     $      gram(i,j)=gram(i,j)+vlsc3(s(1,3,i),s(1,3,j),bm1,n)
          if (i.ne.j) gram(j,i)=gram(i,j)
       enddo
          if (nio.eq.0) write (6,1) j,gram(1,j)
       enddo
+
+      call breduce(gram,ms*ms,1)
 
       if (nio.eq.0) write (6,*) 'exiting gengraml2'
 
