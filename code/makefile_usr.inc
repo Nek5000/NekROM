@@ -1,5 +1,6 @@
 $(OBJDIR)/ana.o    :$(MOR_DIR)/code/ana.f    MOR LMOR;  $(FC) -c $(FL2) $< -o $@
 $(OBJDIR)/aux.o    :$(MOR_DIR)/code/aux.f    MOR LMOR;  $(FC) -c $(FL2) $< -o $@
+$(OBJDIR)/batch.o  :$(MOR_DIR)/code/batch.f  MOR LMOR;  $(FC) -c $(FL2) $< -o $@
 $(OBJDIR)/conv.o   :$(MOR_DIR)/code/conv.f   MOR LMOR;  $(FC) -c $(FL2) $< -o $@
 $(OBJDIR)/const.o  :$(MOR_DIR)/code/const.f  MOR LMOR;  $(FC) -c $(FL2) $< -o $@
 $(OBJDIR)/dump.o   :$(MOR_DIR)/code/dump.f   MOR LMOR;  $(FC) -c $(FL2) $< -o $@

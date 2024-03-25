@@ -25,8 +25,8 @@ c-----------------------------------------------------------------------
          call loadbases
       else if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
          if (ifrom(1)) then
-            call pod(
-     $         uvwb(1,1,1),eval,ug,us0,ldim,ips,nb,ns,ifpb,'ops/gu  ')
+            call pod(uvwb(1,1,1),eval,ug,us0,ldim,ips,nb,ns,ifpb,
+     $         'ops/gu  ',nbat)
             if (ifcflow) call set0flow(uvwb(1,1,1),nb,idirf)
             do ib=1,nb
                call opcopy(ub(1,ib),vb(1,ib),wb(1,ib),
@@ -38,12 +38,12 @@ c-----------------------------------------------------------------------
          endif
          if (ifrom(2)) then
             call pod(tb(1,1,1),eval,ug,ts0(1,1,1),1,ips,
-     $               nb,ns,ifpb,'ops/gt  ')
+     $               nb,ns,ifpb,'ops/gt  ',nbat)
             if (.not.ifcomb.and.ifpb) call snorm(tb)
          endif
          if (ifedvs) then
             call pod(tb(1,1,4),eval,ug,ts0(1,1,4),1,ips,nb
-     $              ,ns,ifpb,'ops/ged ')
+     $              ,ns,ifpb,'ops/ged ',nbat)
 c           if (.not.ifcomb.and.ifpb) call snorm(edb)
          endif
 
@@ -677,15 +677,15 @@ c-----------------------------------------------------------------------
          if (mdim.ge.2) call axhelm(vv,s(1,2,j),ones,zeros,1,2)
          if (mdim.eq.3) call axhelm(ww,s(1,3,j),ones,zeros,1,3)
          do i=j,ms ! Form the Gramian, U=U_K^T A U_K using H^1_0 Norm
-            gram(i,j)=s1*glsc2(uu,s(1,1,i),n)
-     $               +s2*glsc3(s(1,1,i),s(1,1,j),bm1,n)
+            gram(i,j)=s1*vlsc2(uu,s(1,1,i),n)
+     $               +s2*vlsc3(s(1,1,i),s(1,1,j),bm1,n)
             if (mdim.ge.2) then
-               gram(i,j)=gram(i,j)+s1*glsc2(vv,s(1,2,i),n)
-     $                            +s2*glsc3(s(1,2,i),s(1,2,j),bm1,n)
+               gram(i,j)=gram(i,j)+s1*vlsc2(vv,s(1,2,i),n)
+     $                            +s2*vlsc3(s(1,2,i),s(1,2,j),bm1,n)
             endif
             if (mdim.eq.3) then
-               gram(i,j)=gram(i,j)+s1*glsc2(ww,s(1,3,i),n)
-     $                            +s2*glsc3(s(1,3,i),s(1,3,j),bm1,n)
+               gram(i,j)=gram(i,j)+s1*vlsc2(ww,s(1,3,i),n)
+     $                            +s2*vlsc3(s(1,3,i),s(1,3,j),bm1,n)
             endif
             if (i.ne.j) gram(j,i)=gram(i,j)
          enddo
@@ -727,12 +727,12 @@ c-----------------------------------------------------------------------
          if (mdim.ge.2) call axhelm(vv,s(1,2,j),ones,zeros,1,2)
          if (mdim.eq.3) call axhelm(ww,s(1,3,j),ones,zeros,1,3)
          do i=j,ms ! Form the Gramian, U=U_K^T A U_K using H^1_0 Norm
-            gram(i,j)=glsc2(uu,s(1,1,i),n)
+            gram(i,j)=vlsc2(uu,s(1,1,i),n)
             if (mdim.ge.2) then
-               gram(i,j)=gram(i,j)+glsc2(vv,s(1,2,i),n)
+               gram(i,j)=gram(i,j)+vlsc2(vv,s(1,2,i),n)
             endif
             if (mdim.eq.3) then
-               gram(i,j)=gram(i,j)+glsc2(ww,s(1,3,i),n)
+               gram(i,j)=gram(i,j)+vlsc2(ww,s(1,3,i),n)
             endif
             if (i.ne.j) gram(j,i)=gram(i,j)
          enddo
@@ -814,11 +814,11 @@ c-----------------------------------------------------------------------
 
       do j=1,ms ! Form the Gramian, U=U_K^T A U_K using L2 Norm
       do i=j,ms
-         gram(i,j)=glsc3(s(1,1,i),s(1,1,j),bm1,n)
+         gram(i,j)=vlsc3(s(1,1,i),s(1,1,j),bm1,n)
          if (mdim.ge.2)
-     $      gram(i,j)=gram(i,j)+glsc3(s(1,2,i),s(1,2,j),bm1,n)
+     $      gram(i,j)=gram(i,j)+vlsc3(s(1,2,i),s(1,2,j),bm1,n)
          if (mdim.ge.3)
-     $      gram(i,j)=gram(i,j)+glsc3(s(1,3,i),s(1,3,j),bm1,n)
+     $      gram(i,j)=gram(i,j)+vlsc3(s(1,3,i),s(1,3,j),bm1,n)
          if (i.ne.j) gram(j,i)=gram(i,j)
       enddo
          if (nio.eq.0) write (6,1) j,gram(1,j)
@@ -831,7 +831,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine gengram(gram,s,ms,mdim,cips)
+      subroutine gengram(gram,s,ms,mdim,cips,nbat)
 
       ! set the Gramian based on the inner-product set by ips
 
@@ -840,9 +840,14 @@ c-----------------------------------------------------------------------
       ! ms   := number of snapshots
       ! mdim := vector dimension
       ! cips := inner-product space specifier
+      ! nbat := number of inner-products in batch
+
+      include 'SIZE'
 
       real gram(1),s(1)
       character*3 cips
+
+      start_time=dnekclock()
 
       if (cips.eq.'L2 ') then
          call gengraml2(gram,s,ms,mdim)
@@ -854,6 +859,10 @@ c-----------------------------------------------------------------------
          if (nid.eq.0) write (6,*) 'unsupported ips in gengram'
          call exitti('failed in gengram, exiting...$',1)
       endif
+
+      call breduce(gram,ms*ms,nbat)
+
+      if (nio.eq.0) write (6,*) 'gg_time:',dnekclock()-start_time
 
       return
       end
@@ -1293,7 +1302,8 @@ c       if (nio.eq.0) write(6,*)i,enr(i),'Nmax for field',ifld
       return
       end
 c-----------------------------------------------------------------------
-      subroutine pod(basis,eval,gram,snaps,mdim,cips,nb,ns,ifpod,cop)
+      subroutine pod(basis,eval,gram,snaps,mdim,cips,nb,ns,ifpod,cop,
+     $   nbat)
 
       ! return pod basis created from snapshots
 
@@ -1307,6 +1317,7 @@ c-----------------------------------------------------------------------
       ! ns    := number of snapshots
       ! ifpod := apply POD procedure
       ! cop   := Gramian dump target
+      ! nbat  := number of inner-products in batch
 
       include 'SIZE'
 
@@ -1322,16 +1333,18 @@ c-----------------------------------------------------------------------
 
       n=lx1*ly1*lz1*nelt
 
-      call gengram(gram,snaps,ns,mdim,cips)
+      call gengram(gram,snaps,ns,mdim,cips,nbat)
 
       call dump_serial(gram,ns*ns,cop,nid)
 
       if (ifpod) then
          call genevec(gram,eval,ns,nb,mdim)
+         start_time=dnekclock()
          do i=1,mdim
             call dgemm('N','N',n,nb,ns,1.,
      $         snaps(1,i,1),lt*mdim,gram,ns,0.,basis(1,i,1),lt*mdim)
          enddo
+         if (nio.eq.0) write (6,*) 'dgemm_time:',dnekclock()-start_time
       endif
 
       return
