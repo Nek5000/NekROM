@@ -114,7 +114,7 @@ c-----------------------------------------------------------------------
          call aop(fldtmp,u,af,imesh)
       else if (itype.eq.3) then
          call hop(fldtmp,u,af,bf,bm1,imesh)
-      end
+      endif
 
       do j=1,nv
          res(j)=vlsc2(u,v(1,j),n)
