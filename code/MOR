@@ -20,8 +20,8 @@ c     parameters and common blocks for MOR
      $               pic(lx2*ly2*lz2*lelm),
      $               tic(lx1*ly1*lz1*lelm)
 
-      common /morcoef/ uk((lub+1)*(lsu+1)),tk((ltb+1)*(lst+1)),timek(lcs),
-     $                 edk((lub+1)*(lsu+1))
+      common /morcoef/ uk((lub+1)*(lsu+1)),tk((ltb+1)*(lst+1)),
+     $                 timek(lcs),edk((lub+1)*(lsu+1))
       common /morcoef2/ ukp((lub+1)*lsu),tkp((ltb+1)*lst)
 
       common /morusnap/ us0(lx1*ly1*lz1*lelm,ldim,lsu)
