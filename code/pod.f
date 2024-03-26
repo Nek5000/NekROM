@@ -150,7 +150,7 @@ c-----------------------------------------------------------------------
 
       common /scrgg/ uu(lt),vv(lt),ww(lt)
 
-      real ck(0:nb,1),usnap(lt,ldim,ls),
+      real ck(0:nb,1),usnap0(lt,ldim,ls),
      $     sb(lt,mdim,0:nb),wk(ns)
 
       n=lx1*ly1*lz1*nelt
