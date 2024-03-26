@@ -470,7 +470,7 @@ c-----------------------------------------------------------------------
       if (nio.eq.0) write (6,*) 'begin update setup'
 
       call nekgsync
-      proj_time=dnekclock()
+      kupd_time=dnekclock()
 
       if (ifpod(1)) then
          do i=1,ns
@@ -485,7 +485,7 @@ c-----------------------------------------------------------------------
       endif
 
       call nekgsync
-      if (nio.eq.0) write (6,*) 'proj_time:',dnekclock()-proj_time
+      if (nio.eq.0) write (6,*) 'kupd_time:',dnekclock()-kupd_time
 
 c     call hyperpar
       call update_hyper(ukp,tkp)
