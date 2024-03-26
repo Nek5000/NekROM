@@ -1337,9 +1337,9 @@ c                    call setcnv_u1(tb(1,j))
                   endif
                endif
                if (ifield.eq.1) then
-                  call uip(rtmp1,cu,uvwb(1,1,1),nb,0,ifield,nbat)
+                  call uip(rtmp1,cu,uvwb(1,1,1),nb,0,ndim,nbat,fldtmp)
                else
-                  call uip(rtmp1,cu,tb(1,1,1),nb,0,ifield,nbat)
+                  call uip(rtmp1,cu,tb(1,1,1),nb,0,1,nbat,fldtmp)
                endif
                do i=1,nb
                   call setc_local(cl,rtmp1(i,1),

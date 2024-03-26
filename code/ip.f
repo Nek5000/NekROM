@@ -84,13 +84,14 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine uip(res,u,v,nv,itype,imesh,nbat,af,bf)
+      subroutine uip(res,u,v,nv,itype,imesh,nbat,wk,af,bf)
 
       ! returns inner-product of u and v based on itype
       ! res:   inner-product results i.e., entries of |u(1)v(1,i)|
       ! itype: 0 = discrete L2, 1 = L2, 2 = H10, 3 = H1
-      ! imesh: 1 = velocity, 2 = thermal
+      ! mdim: 1 = thermal, ndim = velocity
       ! nbat: number of elements in a batch for gop
+      ! wk:   work array
       ! af (if itype.le.1): property fields for aop
       ! bf (if itype.le.2): property fields for hop
 
@@ -99,7 +100,10 @@ c-----------------------------------------------------------------------
 
       parameter lt=lx1*ly1*lz1*lelt
 
-      real res(nv),u(lt),v(lt,nv),af(lt)
+      real res(nv),u(lt,1),v(lt,mdim,nv),wk(lt,ldim),af(lt),bf(lt)
+
+      imesh=1
+      if (mdim.eq.1) imesh=2
 
       if (imesh.eq.1) then
          n=lx1*ly1*lz1*nelv
@@ -108,17 +112,20 @@ c-----------------------------------------------------------------------
       endif
 
       if (itype.eq.0) then
-         call iop(fldtmp,u,imesh)
+         call iop(wk,u,imesh)
       else if (itype.eq.1) then
-         call bop(fldtmp,u,imesh)
+         call bop(wk,u,imesh)
       else if (itype.eq.2) then
-         call aop(fldtmp,u,af,imesh)
+         call aop(wk,u,af,imesh)
       else if (itype.eq.3) then
-         call hop(fldtmp,u,af,bf,bm1,imesh)
+         call hop(wk,u,af,bf,bm1,imesh)
       endif
 
       do j=1,nv
-         res(j)=vlsc2(u,v(1,j),n)
+         res(j)=0.
+         do idim=1,mdim
+            res(j)=res(j)+vlsc2(wk(1,idim),v(1,idim,j),n)
+         enddo
       enddo
 
       if (nbat.ge.1) call breduce(res,nv,nbat)

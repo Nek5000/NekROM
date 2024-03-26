@@ -178,14 +178,14 @@ c-----------------------------------------------------------------------
 
          do ib=1,nb
             call uip(ck(1,ns+1),sb(1,1,ib),sb(1,1,ib),1,
-     $         itype,imesh,0,uu,vv)
+     $         itype,imesh,0,fldtmp,uu,vv)
             call breduce(ck(1,ns+1),nb,nbat)
          enddo
          call invcol1(ck(1,ns+1),nb)
 
          do ib=1,nb
             call uip(wk,sb(1,1,ib),usnap0(1,1,ib),ns,
-     $         itype,imesh,nbat,uu,vv)
+     $         itype,imesh,nbat,fldtmp,uu,vv)
             do i=1,ns
                ck(ib,i)=wk(i)*ck(ib,ns+1)
             enddo
