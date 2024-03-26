@@ -46,6 +46,7 @@ c-----------------------------------------------------------------------
       subroutine aop(au,u,af,imesh)
 
       include 'SIZE'
+      include 'LMOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
