@@ -590,9 +590,9 @@ c-----------------------------------------------------------------------
          call nekgsync
          proj_time=dnekclock()
 
-         if (ifpod(1)) call pv2k(uk,us0,ub,vb,wb)
-         if (ifpod(2)) call ps2k(tk,ts0(1,1,1),tb(1,0,1))
-         if (ifedvs) call ps2k(edk,ts0(1,1,4),tb(1,0,4))
+         if (ifpod(1)) call p2k(uk,us0,uvwb,ndim,ukp)
+         if (ifpod(2)) call p2k(tk,ts0(1,1,1),tb(1,0,1),1,tkp)
+         if (ifedvs)   call p2k(edk,ts0(1,1,4),tb(1,0,4),1,ukp)
 
          call nekgsync
          if (nio.eq.0) write (6,*) 'proj_time:',dnekclock()-proj_time
@@ -1336,15 +1336,11 @@ c                    call setcnv_u1(tb(1,j))
                      call cc(cu,1)
                   endif
                endif
-               do i=1,nb
-                  if (ifield.eq.1) then
-                     rtmp1(i,1)=op_vlsc2_wt(ub(1,i),vb(1,i),wb(1,i),
-     $                  cu(1,1),cu(1,2),cu(1,ldim),ones)
-                  else
-                     rtmp1(i,1)=vlsc2(tb(1,i,1),cu,n)
-                  endif
-               enddo
-               call breduce(rtmp1,nb,nbat)
+               if (ifield.eq.1) then
+                  call uip(rtmp1,cu,uvwb(1,1,1),nb,0,ifield,nbat)
+               else
+                  call uip(rtmp1,cu,tb(1,1,1),nb,0,ifield,nbat)
+               endif
                do i=1,nb
                   call setc_local(cl,rtmp1(i,1),
      $               ic1,ic2,jc1,jc2,kc1,kc2,i,j,k)

@@ -133,6 +133,68 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine p2k(ck,usnap0,sb,mdim,wk)
+
+      ! set snapshot coefficients for a given vector basis
+
+      ! ck           := coefficients
+      ! usnap0       := snapshots (assume 0th mode is subtracted)
+      ! sb           := basis functions
+      ! mdim         := 1 -> scalar, ndim -> vector
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /scrgg/ uu(lt),vv(lt),ww(lt)
+
+      real ck(0:nb,1),usnap(lt,ldim,ls),
+     $     sb(lt,mdim,0:nb),wk(ns,2)
+
+      n=lx1*ly1*lz1*nelt
+
+      if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
+         if (ips.eq.'L2 ') then
+            itype=1
+         else if (ips.eq.'H10') then
+            itype=2
+            call copy(uu,ones,n)
+         else if (ips.eq.'HLM') then
+            itype=3
+            r1=1./ad_re
+            r2=ad_beta(1,3)/ad_dt
+            call cfill(uu,r1,n)
+            call cfill(vv,r2,n)
+         endif
+
+         do i=1,ns+1
+            ck(0,i)=1.
+         enddo
+
+         imesh=1
+         if (mdim.eq.1) imesh=2
+
+         do ib=1,nb
+            call uip(ck(1,ns+1),sb(1,1,ib),sb(1,1,ib),1,
+     $         itype,imesh,0,uu,vv)
+            call breduce(ck(1,ns+1),nb,nbat)
+         enddo
+         call invcol1(ck(1,ns+1),nb)
+
+         do ib=1,nb
+            call uip(res,sb(1,1,ib),usnap0(1,1,ib),ns,
+     $         itype,imesh,nbat,uu,vv)
+            do i=1,ns
+               ck(ib,i)=res(i)*ck(ib,ns+1)
+            enddo
+         enddo
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine pv2k(ck,usnap,uub,vvb,wwb)
 
       ! set snapshot coefficients for a given vector basis
@@ -155,19 +217,6 @@ c-----------------------------------------------------------------------
       n=lx1*ly1*lz1*nelt
 
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
-c        if (ips.eq.'H10') then
-c           do j=1,ns
-c              call axhelm(uu,usnap(1,1,j),ones,zeros,1,1)
-c              call axhelm(vv,usnap(1,2,j),ones,zeros,1,2)
-c              if (ldim.eq.3)
-c    $            call axhelm(ww,usnap(1,ldim,j),ones,zeros,1,3)
-c              ck(0,j)=1.
-c              do i=1,nb
-c                 ck(i,j)=glsc2(uu,uub(1,i),n)+glsc2(vv,vvb(1,i),n)
-c                 if (ldim.eq.3) ck(i,j)=ck(i,j)+glsc2(ww,wwb(1,i),n)
-c              enddo
-c           enddo
-c        else
          do i=1,ns
             if (nio.eq.0) write (6,*) 'pv2k: ',i,'/',ns
             nio=-1
@@ -175,9 +224,6 @@ c        else
      $           uub,vvb,wwb)
             nio=nid
          enddo
-c        endif
-      else
-         ! implement read here
       endif
 
       return
