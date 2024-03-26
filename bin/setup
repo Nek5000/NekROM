@@ -2,4 +2,4 @@
 
 export MOR_DIR=$(cd ..; pwd -P)
 export PATH=$MOR_DIR/bin:$PATH
-export USR="$USR ana.o aux.o conv.o dump.o ei.o filter.o lapack.o pod.o qoi.o rom.o read.o time.o const.o unit.o rk.o legacy.o mpar.o riesz.o batch.o"
+export USR="$USR ana.o aux.o conv.o dump.o ei.o filter.o lapack.o pod.o qoi.o rom.o read.o time.o const.o unit.o rk.o legacy.o mpar.o riesz.o batch.o ip.o"

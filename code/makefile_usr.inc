@@ -6,6 +6,7 @@ $(OBJDIR)/const.o  :$(MOR_DIR)/code/const.f  MOR LMOR;  $(FC) -c $(FL2) $< -o $@
 $(OBJDIR)/dump.o   :$(MOR_DIR)/code/dump.f   MOR LMOR;  $(FC) -c $(FL2) $< -o $@
 $(OBJDIR)/ei.o     :$(MOR_DIR)/code/ei.f     MOR LMOR;  $(FC) -c $(FL2) $< -o $@
 $(OBJDIR)/filter.o :$(MOR_DIR)/code/filter.f MOR LMOR;  $(FC) -c $(FL2) $< -o $@
+$(OBJDIR)/ip.o     :$(MOR_DIR)/code/ip.f     MOR LMOR;  $(FC) -c $(FL2) $< -o $@
 $(OBJDIR)/lapack.o :$(MOR_DIR)/code/lapack.f MOR LMOR;  $(FC) -c $(FL0) $< -o $@
 $(OBJDIR)/legacy.o :$(MOR_DIR)/code/legacy.f MOR LMOR;  $(FC) -c $(FL2) $< -o $@
 $(OBJDIR)/pod.o    :$(MOR_DIR)/code/pod.f    MOR LMOR;  $(FC) -c $(FL2) $< -o $@
