@@ -84,7 +84,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine uip(res,u,v,nv,itype,imesh,nbat,wk,af,bf)
+      subroutine uip(res,u,v,nv,itype,mdim,nbat,wk,af,bf)
 
       ! returns inner-product of u and v based on itype
       ! res:   inner-product results i.e., entries of |u(1)v(1,i)|
@@ -118,14 +118,13 @@ c-----------------------------------------------------------------------
       else if (itype.eq.2) then
          call aop(wk,u,af,imesh)
       else if (itype.eq.3) then
-         call hop(wk,u,af,bf,bm1,imesh)
+         call hop(wk,u,af,bf,imesh)
       endif
 
       do j=1,nv
          res(j)=0.
          do idim=1,mdim
             res(j)=res(j)+vlsc2(wk(1,idim),v(1,idim,j),n)
-            res(j)=res(j)+1.
          enddo
       enddo
 

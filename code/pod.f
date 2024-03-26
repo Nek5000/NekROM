@@ -32,7 +32,13 @@ c-----------------------------------------------------------------------
                call opcopy(ub(1,ib),vb(1,ib),wb(1,ib),
      $            uvwb(1,1,ib),uvwb(1,2,ib),uvwb(1,ldim,ib))
             enddo
-            if (.not.ifcomb.and.ifpb) call vnorm(ub,vb,wb)
+            if (.not.ifcomb.and.ifpb) then
+               call vnorm(ub,vb,wb)
+               do ib=1,nb
+                  call opcopy(uvwb(1,1,ib),uvwb(1,2,ib),uvwb(1,ldim,ib)
+     $                       ,ub(1,ib),vb(1,ib),wb(1,ib))
+               enddo
+            endif
          else
             call opcopy(ub,vb,wb,uic,vic,wic)
          endif
@@ -150,7 +156,7 @@ c-----------------------------------------------------------------------
 
       common /scrgg/ uu(lt),vv(lt),ww(lt)
 
-      real ck(0:nb,1),usnap0(lt,ldim,ls),
+      real ck(0:nb,1),usnap0(lt,mdim,ls),
      $     sb(lt,mdim,0:nb),wk(ns)
 
       n=lx1*ly1*lz1*nelt
@@ -174,14 +180,14 @@ c-----------------------------------------------------------------------
          enddo
 
          do ib=1,nb
-            call uip(ck(1,ns+1),sb(1,1,ib),sb(1,1,ib),1,
+            call uip(ck(ib,ns+1),sb(1,1,ib),sb(1,1,ib),1,
      $         itype,mdim,0,fldtmp,uu,vv)
          enddo
          call breduce(ck(1,ns+1),nb,nbat)
          call invcol1(ck(1,ns+1),nb)
 
          do ib=1,nb
-            call uip(wk,sb(1,1,ib),usnap0(1,1,ib),ns,
+            call uip(wk,sb(1,1,ib),usnap0(1,1,1),ns,
      $         itype,mdim,nbat,fldtmp,uu,vv)
             do i=1,ns
                ck(ib,i)=wk(i)*ck(ib,ns+1)
