@@ -151,7 +151,7 @@ c-----------------------------------------------------------------------
       common /scrgg/ uu(lt),vv(lt),ww(lt)
 
       real ck(0:nb,1),usnap(lt,ldim,ls),
-     $     sb(lt,mdim,0:nb),wk(ns,2)
+     $     sb(lt,mdim,0:nb),wk(ns)
 
       n=lx1*ly1*lz1*nelt
 
@@ -184,10 +184,10 @@ c-----------------------------------------------------------------------
          call invcol1(ck(1,ns+1),nb)
 
          do ib=1,nb
-            call uip(res,sb(1,1,ib),usnap0(1,1,ib),ns,
+            call uip(wk,sb(1,1,ib),usnap0(1,1,ib),ns,
      $         itype,imesh,nbat,uu,vv)
             do i=1,ns
-               ck(ib,i)=res(i)*ck(ib,ns+1)
+               ck(ib,i)=wk(i)*ck(ib,ns+1)
             enddo
          enddo
       endif
