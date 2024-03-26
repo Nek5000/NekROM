@@ -125,6 +125,7 @@ c-----------------------------------------------------------------------
          res(j)=0.
          do idim=1,mdim
             res(j)=res(j)+vlsc2(wk(1,idim),v(1,idim,j),n)
+            res(j)=res(j)+1.
          enddo
       enddo
 
