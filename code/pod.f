@@ -173,19 +173,16 @@ c-----------------------------------------------------------------------
             ck(0,i)=1.
          enddo
 
-         imesh=1
-         if (mdim.eq.1) imesh=2
-
          do ib=1,nb
             call uip(ck(1,ns+1),sb(1,1,ib),sb(1,1,ib),1,
-     $         itype,imesh,0,fldtmp,uu,vv)
-            call breduce(ck(1,ns+1),nb,nbat)
+     $         itype,mdim,0,fldtmp,uu,vv)
          enddo
+         call breduce(ck(1,ns+1),nb,nbat)
          call invcol1(ck(1,ns+1),nb)
 
          do ib=1,nb
             call uip(wk,sb(1,1,ib),usnap0(1,1,ib),ns,
-     $         itype,imesh,nbat,fldtmp,uu,vv)
+     $         itype,mdim,nbat,fldtmp,uu,vv)
             do i=1,ns
                ck(ib,i)=wk(i)*ck(ib,ns+1)
             enddo
