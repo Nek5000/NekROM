@@ -2,19 +2,18 @@
 # Visit https://bit.ly/cffinit to generate yours today!
 
 cff-version: 1.2.0
-title: NekROM
-message: >-
-  If you use this software, please cite it using the
-  metadata from this file.
+title: "NekROM"
+message: "If you use this software, please cite it using information from this file."
 type: software
 authors:
-  - given-names: Kento
-    family-names: Kaneko
-    email: kaneko@mit.edu
-  - given-names: Ping-Hsuan
-    family-names: Tsai
-    email: pht2@illinois.edu
-repository-code: 'https://github.com/Nek5000/NekROM'
+  - given-names: "Kento"
+    family-names: "Kaneko"
+    email: "kaneko@mit.edu"
+  - given-names: "Ping-Hsuan"
+    family-names: "Tsai"
+    email: "pinghsuan@vt.edu"
+repository-code: "https://github.com/Nek5000/NekROM"
+acknowledgments: "This work was initiated in 2018 under close advisement by Paul Fischer (fischerp@illinois.edu)." 
 abstract: >
   This package include tools to help apply model-order
   reduction (MOR) to data produced by Nek5000 to generate
@@ -26,6 +25,10 @@ abstract: >
   operators and QOI factors from the ops/ and qoi/
   directories.
 keywords:
-  - model-order reduction
-  - reduced order model
+  - model
+  - order
+  - reduction
+  - reduced
+  - ROM
+  - MOR
   - Nek5000
