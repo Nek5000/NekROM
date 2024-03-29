@@ -128,7 +128,7 @@ c-----------------------------------------------------------------------
          enddo
       enddo
 
-      if (nbat.ge.1) call breduce(res,nv,nbat)
+      call breduce(res,nv,nbat)
 
       return
       end
