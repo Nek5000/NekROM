@@ -92,8 +92,8 @@ c-----------------------------------------------------------------------
       ! mdim: 1 = thermal, ndim = velocity
       ! nbat: number of elements in a batch for gop
       ! wk:   work array
-      ! af (itype.ge.1): property fields for aop
-      ! bf (itype.ge.2): property fields for hop
+      ! af (itype.gt.1): property fields for aop
+      ! bf (itype.gt.2): property fields for hop
 
       include 'SIZE'
       include 'LMOR'
