@@ -86,14 +86,17 @@ c-----------------------------------------------------------------------
 c-----------------------------------------------------------------------
       subroutine uip(res,u,v,nv,itype,mdim,nbat,wk,af,bf)
 
-      ! returns inner-product of u and v based on itype
-      ! res:   inner-product results i.e., entries of |u(1)v(1,i)|
-      ! itype: 0 = discrete L2, 1 = L2, 2 = H10, 3 = H1
-      ! mdim: 1 = thermal, ndim = velocity
-      ! nbat: number of elements in a batch for gop
-      ! wk:   work array
-      ! af (itype.gt.1): property fields for aop
-      ! bf (itype.gt.2): property fields for hop
+      ! evaluates inner-product of u and v('s) based on itype
+
+      ! res:   inner-product results i.e., entries of |u:v_i|
+      ! itype: 0 -> discrete L2, 1 -> L2, 2 -> H10, 3 -> H1
+      ! mdim:  1 -> thermal, ndim -> velocity
+      ! nbat:  number of elements in a batch for gop
+      ! wk:    work array
+
+      ! optional
+      ! af (itype.ge.2): property field for aop
+      ! bf (itype.ge.3): property field for hop
 
       include 'SIZE'
       include 'LMOR'
