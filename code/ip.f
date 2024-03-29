@@ -92,13 +92,13 @@ c-----------------------------------------------------------------------
       ! mdim: 1 = thermal, ndim = velocity
       ! nbat: number of elements in a batch for gop
       ! wk:   work array
-      ! af (if itype.le.1): property fields for aop
-      ! bf (if itype.le.2): property fields for hop
+      ! af (itype.ge.1): property fields for aop
+      ! bf (itype.ge.2): property fields for hop
 
       include 'SIZE'
       include 'LMOR'
 
-      parameter lt=lx1*ly1*lz1*lelt
+      parameter (lt=lx1*ly1*lz1*lelt)
 
       real res(nv),u(lt,1),v(lt,mdim,nv),wk(lt,ldim),af(lt),bf(lt)
 
