@@ -15,14 +15,20 @@ c-----------------------------------------------------------------------
       endif
 
       if (m.le.0) return
+      if (nid.eq.0) write (6,*) 'wp 0',m,lbat
 
       m = min(m,lbat)
+      if (nid.eq.0) write (6,*) 'wp 1',m
 
       k = n / m
+      if (nid.eq.0) write (6,*) 'wp 2',k,n,m
       if (n.ne.k*m) k=k+1
+      if (nid.eq.0) write (6,*) 'wp 3',k
       m = n / k
+      if (nid.eq.0) write (6,*) 'wp 4',m
 
       nrem = n - k*m
+      if (nid.eq.0) write (6,*) 'wp 5',nrem
 
       if (nid.eq.0) then
          write (6,*) 'starting loop with k=',k,' m=',m,' nrem=',nrem
