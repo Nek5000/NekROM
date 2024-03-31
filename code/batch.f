@@ -1,5 +1,5 @@
 c-----------------------------------------------------------------------
-      subroutine breduce(a,n,m)
+      subroutine breduce(a,nn,mm)
 
       include 'SIZE'
       include 'LMOR'
@@ -8,43 +8,43 @@ c-----------------------------------------------------------------------
 
       common /workbr/ v(lbat),w(lbat)
 
-      real a(n)
+      real a(nn)
 
       if (nid.eq.0) then
-         write (6,*) 'calling breduce with n=',n,' m=',m
+         write (6,*) 'calling breduce with n=',nn,' m=',mm
       endif
 
-      if (m.le.0) return
-      if (nid.eq.0) write (6,*) 'wp 0',m,lbat
+      if (mm.le.0) return
+      write (6,*) 'wp 0',mm,lbat
 
-      if (m.gt.lbat) m=lbat
-      if (nid.eq.0) write (6,*) 'wp 1',m
+      if (mm.gt.lbat) mm=lbat
+      if (nid.eq.0) write (6,*) 'wp 1',mm
 
-      k = n / m
-      if (nid.eq.0) write (6,*) 'wp 2',k,n,m
-      if (n.ne.k*m) k=k+1
-      if (nid.eq.0) write (6,*) 'wp 3',k
+      kk = nn / mm
+      write (6,*) 'wp 2',kk,nn,mm
+      if (nn.ne.kk*mm) kk=kk+1
+      write (6,*) 'wp 3',kk
       write (6,*) 'breduce_test_idivide',10000/10000
-      m = n / k
-      if (nid.eq.0) write (6,*) 'wp 4',m
+      mm = nn / kk
+      write (6,*) 'wp 4',mm
 
-      nrem = n - k*m
-      if (nid.eq.0) write (6,*) 'wp 5',nrem
+      nnrem = nn - kk*mm
+      if (nid.eq.0) write (6,*) 'wp 5',nnrem
 
       if (nid.eq.0) then
-         write (6,*) 'starting loop with k=',k,' m=',m,' nrem=',nrem
+         write (6,*) 'starting loop with k=',kk,' m=',mm,' nrem=',nnrem
       endif
 
       ia=1
-      do i=1,k-nrem
-         call gop(a(ia),w,'+  ',m)
-         ia=ia+m
-      enddo
+c     do i=1,kk-nnrem
+c        call gop(a(ia),w,'+  ',mm)
+c        ia=ia+mm
+c     enddo
 
-      do i=1,nrem
-         call gop(a(ia),w,'+  ',m+1)
-         ia=ia+m+1
-      enddo
+c     do i=1,nnrem
+c        call gop(a(ia),w,'+  ',mm+1)
+c        ia=ia+mm+1
+c     enddo
 
       return
       end
