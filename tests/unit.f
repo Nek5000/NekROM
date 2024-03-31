@@ -17,12 +17,11 @@ c-----------------------------------------------------------------------
       include 'INPUT'
       include 'MOR'
 
-      common /scrtest/ wk(ls*ls)
+      common /scrtest/ wk(ls*ls),vv(ls,ls)
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
       logical iflag
-      real vv(ls,ls)
 
       param(171) = 1.
       if (iflag) param(171) = 0.
