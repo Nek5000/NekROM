@@ -10,6 +10,10 @@ c-----------------------------------------------------------------------
 
       real a(n)
 
+      if (nid.eq.0) then
+         write (6,*) 'calling breduce with n=',n,' m=',m
+      endif
+
       if (m.le.0) return
 
       m = min(m,lbat)
@@ -19,6 +23,10 @@ c-----------------------------------------------------------------------
       m = n / k
 
       nrem = n - k*m
+
+      if (nid.eq.0) then
+         write (6,*) 'starting loop with k=',k,' m=',m,' nrem=',nrem
+      endif
 
       ia=1
       do i=1,k-nrem
