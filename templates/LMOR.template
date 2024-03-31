@@ -4,7 +4,7 @@
       parameter (lmp=1)   ! 0 -> disable pressure allocation
       parameter (lmt=1)   ! 0 -> disable temperature allocation
 
-      parameter (ls=100)  ! max number of snapshots
+      parameter (ls=200)  ! max number of snapshots
       parameter (lcs=ls)  ! max number of coefficient set
 
       parameter (lei=0)   ! 0 -> one residual, 1 -> affine decomp
