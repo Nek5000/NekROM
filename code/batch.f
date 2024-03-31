@@ -24,6 +24,7 @@ c-----------------------------------------------------------------------
       if (nid.eq.0) write (6,*) 'wp 2',k,n,m
       if (n.ne.k*m) k=k+1
       if (nid.eq.0) write (6,*) 'wp 3',k
+      write (6,*) 'breduce_test_idivide',10000/10000
       m = n / k
       if (nid.eq.0) write (6,*) 'wp 4',m
 

@@ -142,6 +142,8 @@ c-----------------------------------------------------------------------
       param(172) = 1.
       param(173) = 0.
 
+      write (6,*) 'a0_unit_test_idivide',10000/10000
+
       call rom_setup
       call a0_unit_helper(au0)
 
