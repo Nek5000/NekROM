@@ -11,7 +11,6 @@ c-----------------------------------------------------------------------
       real a(n)
 
       m = min(m,lbat)
-      i=1
 
       k = n / m
       if (n.ne.k*m) k=k+1
@@ -19,11 +18,15 @@ c-----------------------------------------------------------------------
 
       nrem = n - k*m
 
-      do while (i.le.n)
-         ngop=m
-         if (i.le.nrem) ngop=ngop+1
-         call gop(a(i),w,'+  ',ngop)
-         i=i+ngop
+      ia=1
+      do i=1,k-nrem
+         call gop(a(ia),w,'+  ',m)
+         ia=ia+m
+      enddo
+
+      do i=1,nrem
+         call gop(a(ia),w,'+  ',m+1)
+         ia=ia+m+1
       enddo
 
       return
