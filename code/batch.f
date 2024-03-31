@@ -10,12 +10,20 @@ c-----------------------------------------------------------------------
 
       real a(n)
 
-      if (m.gt.lbat) m = lbat
+      m = min(m,lbat)
       i=1
 
+      k = n / m
+      if (n.ne.k*m) k=k+1
+      m = n / k
+
+      nrem = n - (k+1)*m
+
       do while (i.le.n)
-         call gop(a(i),w,'+  ',min(m,n-i+1))
-         i=i+m
+         ngop=m
+         if (i.le.nrem) ngop=ngop+1
+         call gop(a(i),w,'+  ',ngop)
+         i=i+ngop
       enddo
 
       return
