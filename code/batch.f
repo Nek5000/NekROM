@@ -17,7 +17,7 @@ c-----------------------------------------------------------------------
       if (m.le.0) return
       if (nid.eq.0) write (6,*) 'wp 0',m,lbat
 
-      m = min(m,lbat)
+      if (m.gt.lbat) m=lbat
       if (nid.eq.0) write (6,*) 'wp 1',m
 
       k = n / m
