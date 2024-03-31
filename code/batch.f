@@ -1,5 +1,5 @@
 c-----------------------------------------------------------------------
-      subroutine breduce(a,nn,mm)
+      subroutine breduce(a,n,m)
 
       include 'SIZE'
       include 'LMOR'
@@ -8,43 +8,16 @@ c-----------------------------------------------------------------------
 
       common /workbr/ v(lbat),w(lbat)
 
-      real a(nn)
+      real a(n)
 
-      if (nid.eq.0) then
-         write (6,*) 'calling breduce with n=',nn,' m=',mm
-      endif
+      if (m.le.0) return 
+      if (m.gt.lbat) m = lbat
+      i=1
 
-      if (mm.le.0) return
-      write (6,*) 'wp 0',mm,lbat
-
-      if (mm.gt.lbat) mm=lbat
-      if (nid.eq.0) write (6,*) 'wp 1',mm
-
-      kk = nn / mm
-      write (6,*) 'wp 2',kk,nn,mm
-      if (nn.ne.kk*mm) kk=kk+1
-      write (6,*) 'wp 3',kk
-      write (6,*) 'breduce_test_idivide',10000/10000
-      mm = nn / kk
-      write (6,*) 'wp 4',mm
-
-      nnrem = nn - kk*mm
-      if (nid.eq.0) write (6,*) 'wp 5',nnrem
-
-      if (nid.eq.0) then
-         write (6,*) 'starting loop with k=',kk,' m=',mm,' nrem=',nnrem
-      endif
-
-      ia=1
-c     do i=1,kk-nnrem
-c        call gop(a(ia),w,'+  ',mm)
-c        ia=ia+mm
-c     enddo
-
-c     do i=1,nnrem
-c        call gop(a(ia),w,'+  ',mm+1)
-c        ia=ia+mm+1
-c     enddo
+      do while (i.le.n)
+         call gop(a(i),w,'+  ',min(m,n-i+1))
+         i=i+m
+      enddo
 
       return
       end
