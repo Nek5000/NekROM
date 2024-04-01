@@ -17,11 +17,12 @@ c-----------------------------------------------------------------------
       include 'INPUT'
       include 'MOR'
 
-      common /scrtest/ wk(ls*ls),vv(ls*ls)
+      common /scrtest/ wk(ls*ls)
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
       logical iflag
+      real vv(ls,ls)
 
       param(171) = 1.
       if (iflag) param(171) = 0.
@@ -31,7 +32,7 @@ c-----------------------------------------------------------------------
       call rom_setup
       call gengram(ug,us0,ns,ldim,ips,1)
 
-      call read_serial(vv,ns*ns,'tops/gu ',wk,nid)
+      call read_serial(vv,ls*ls,'tops/gu ',wk,nid)
 
       iexit=0
 
@@ -41,14 +42,12 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'live | data'
 
-      do j=1,ns
-      do i=1,ns
-         ind=i+(j-1)*ns
-         indt=j+(i-1)*ns
-         s1=s1+(ug(ind,1)-ug(indt,1))**2
-         s2=s2+(ug(ind,1)-vv(ind))**2
-         s3=s3+vv(ind)**2
-         if (nio.eq.0) write (6,*) 'gram',i,j,ug(ind,1),vv(ind)
+      do j=1,ls
+      do i=1,ls
+         s1=s1+(ug(i,j)-ug(j,i))**2
+         s2=s2+(ug(i,j)-vv(i,j))**2
+         s3=s3+vv(i,j)**2
+         if (nio.eq.0) write (6,*) 'gram',i,j,ug(i,j),vv(i,j)
       enddo
       enddo
 
@@ -143,8 +142,6 @@ c-----------------------------------------------------------------------
       if (iflag) param(171) = 0.
       param(172) = 1.
       param(173) = 0.
-
-      write (6,*) 'a0_unit_test_idivide',10000/10000
 
       call rom_setup
       call a0_unit_helper(au0)
@@ -475,7 +472,7 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'edif',edif,s1,s2
 
-      if (edif.gt.2.e-10) iexit=iexit+1
+      if (edif.gt.9.e-11) iexit=iexit+1
 
       s1=0.
       s2=0.
@@ -493,7 +490,7 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'edif',edif,s1,s2
 
-      if (edif.gt.2.e-10) iexit=iexit+2
+      if (edif.gt.9.e-11) iexit=iexit+2
 
       s1=0.
       s2=0.
