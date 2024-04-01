@@ -31,7 +31,7 @@ c-----------------------------------------------------------------------
       call rom_setup
       call gengram(ug,us0,ns,ldim,ips,1)
 
-      call read_serial(vv,ls*ls,'tops/gu ',wk,nid)
+      call read_serial(vv,ns*ns,'tops/gu ',wk,nid)
 
       iexit=0
 
