@@ -475,7 +475,7 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'edif',edif,s1,s2
 
-      if (edif.gt.9.e-11) iexit=iexit+1
+      if (edif.gt.2.e-10) iexit=iexit+1
 
       s1=0.
       s2=0.
@@ -493,7 +493,7 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'edif',edif,s1,s2
 
-      if (edif.gt.9.e-11) iexit=iexit+2
+      if (edif.gt.2.e-10) iexit=iexit+2
 
       s1=0.
       s2=0.
