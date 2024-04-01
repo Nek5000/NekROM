@@ -17,7 +17,7 @@ c-----------------------------------------------------------------------
       include 'INPUT'
       include 'MOR'
 
-      common /scrtest/ wk(ls*ls),vv(ls,ls)
+      common /scrtest/ wk(ls*ls),vv(ls*ls)
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
@@ -41,12 +41,14 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'live | data'
 
-      do j=1,ls
-      do i=1,ls
-         s1=s1+(ug(i,j)-ug(j,i))**2
-         s2=s2+(ug(i,j)-vv(i,j))**2
-         s3=s3+vv(i,j)**2
-         if (nio.eq.0) write (6,*) 'gram',i,j,ug(i,j),vv(i,j)
+      do j=1,ns
+      do i=1,ns
+         ind=i+(j-1)*ns
+         indt=j+(i-1)*ns
+         s1=s1+(ug(ind,1)-ug(indt,1))**2
+         s2=s2+(ug(ind,1)-vv(ind))**2
+         s3=s3+vv(ind)**2
+         if (nio.eq.0) write (6,*) 'gram',i,j,ug(ind,1),vv(ind)
       enddo
       enddo
 
