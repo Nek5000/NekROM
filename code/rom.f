@@ -590,9 +590,9 @@ c-----------------------------------------------------------------------
          call nekgsync
          proj_time=dnekclock()
 
-c        if (ifpod(1)) call p2k(uk,us0,uvwb,ndim,ukp)
-c        if (ifpod(2)) call p2k(tk,ts0(1,1,1),tb(1,0,1),1,tkp)
-c        if (ifedvs)   call p2k(edk,ts0(1,1,4),tb(1,0,4),1,ukp)
+         if (ifpod(1)) call p2k(uk,us0,uvwb,ndim,ukp)
+         if (ifpod(2)) call p2k(tk,ts0(1,1,1),tb(1,0,1),1,tkp)
+         if (ifedvs)   call p2k(edk,ts0(1,1,4),tb(1,0,4),1,ukp)
 
          call nekgsync
          if (nio.eq.0) write (6,*) 'proj_time:',dnekclock()-proj_time
