@@ -29,6 +29,8 @@ sed -i.bu "s/ls=.*)/ls=2)/g" LMOR
 sed -i.bu "s/lx1=.*)/lx1=12)/g" SIZE
 sed -i.bu "s/lxd=.*)/lxd=18)/g" SIZE
 
+source $MOR_DIR/bin/setusr
+USR="$USR tensor.o"
 $SOURCE_ROOT/bin/makenek test1
 $SOURCE_ROOT/bin/genmap << Z
 test1

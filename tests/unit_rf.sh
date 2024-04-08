@@ -4,6 +4,7 @@ mkdir t
 cd t
 $MOR_DIR/bin/linkm
 source $MOR_DIR/bin/setusr
+USR="$USR tensor.o"
 
 sed 's/(ltr=.*)/(ltr=80)/g' LMOR > LMOR.tmp
 mv LMOR.tmp LMOR
@@ -25,6 +26,7 @@ sed -i.bu "s/ls=.*)/ls=2)/g" LMOR
 sed -i.bu "s/lx2=.*)/lx2=lx1)/g" SIZE
 sed -i.bu "s/leleg=.*)/leleg=48)/g" SIZE
 sed -i.bu "s/ldimt=.*)/ldimt=4)/g" SIZE
+
 fold_start makenek Makenek
 $SOURCE_ROOT/bin/makenek rf_unit
 fold_end makenek

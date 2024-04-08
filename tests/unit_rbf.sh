@@ -4,6 +4,7 @@ mkdir t
 cd t
 $MOR_DIR/bin/linkm
 source $MOR_DIR/bin/setusr
+USR="$USR tensor.o"
 
 sed 's/(ltr=.*)/(ltr=80)/g' LMOR > LMOR.tmp
 mv LMOR.tmp LMOR
