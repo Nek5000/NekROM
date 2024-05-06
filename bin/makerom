@@ -1,5 +1,5 @@
 #!/bin/bash
 
 $MOR_DIR/bin/linkm
-source $MOR_DIR/setusr
+source $MOR_DIR/bin/setusr
 makenek $1
