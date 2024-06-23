@@ -1,1 +1,1 @@
-export USR="$USR ana.o aux.o batch.o conv.o dump.o ei.o filter.o ip.o lapack.o pod.o qoi.o rom.o read.o time.o const.o unit.o rk.o legacy.o mpar.o riesz.o"
+export USR="$USR ana.o aux.o batch.o const.o conv.o dump.o ei.o filter.o ip.o lapack.o legacy.o mpar.o pod.o qoi.o rk.o rom.o read.o riesz.o tensor.o time.o unit.o"
