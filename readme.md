@@ -7,7 +7,7 @@ This package include tools to help apply model-order reduction (MOR) to data pro
 Set shell variables (in .bashrc for BASH users):
 
 ```
-export MOR_DIR='/path/to/NekROM'
+export MOR_DIR=/path/to/NekROM
 export PATH="$MOR_DIR/bin:$PATH"
 ```
 
