@@ -1,0 +1,30 @@
+name: MATLAB Driver Test
+
+on: [push]
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+
+    env:
+      MOR_DIR: /home/runner/work/NekROM/NekROM
+
+    steps:
+    - name: Checkout repository
+      uses: actions/checkout@v2
+
+    - name: Set up MATLAB
+      uses: matlab-actions/setup-matlab@v1
+      with:
+        release: R2023b  # Replace with your MATLAB release
+
+    - name: Install gdown
+      run: pip install gdown
+
+    - name: Install unzip
+      if: runner.os == 'Linux'
+      run: sudo apt-get install -y unzip
+
+    - name: Run MATLAB tests
+      run: |
+        $MOR_DIR/tests/matlab_test/test.sh
