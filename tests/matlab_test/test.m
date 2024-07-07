@@ -70,3 +70,9 @@ expected_array = [
 ];
 tolerance = 1e-10;
 assert(all(abs(ucoef(:, end) - expected_array) < tolerance), 'Arrays are not equal within the specified tolerance');
+
+% Display ucoef and expected_array
+disp('ucoef:');
+disp(ucoef(:, end));
+disp('expected_array:');
+disp(expected_array);
