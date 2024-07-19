@@ -1,0 +1,11 @@
+#!/bin/bash
+
+makerom cyl_rom
+neklmpi cyl 1
+
+logfile=cyl.log.1
+
+# The detail computation of drag in the ROM is in Kento Kaneko An Augmented Basis Method for Reduced Order Models of Turbulent Flow. Ph.D. thesis (2022).
+grep dragx $logfile | sed 's/dragx//' > rom.dragx.dat
+grep dragy $logfile | sed 's/dragy//' > rom.dragy.dat
+
