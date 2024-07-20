@@ -267,7 +267,7 @@ c-----------------------------------------------------------------------
       save icalld
       data icalld /0/
 
-      real vort(lt)
+      real vort(lt),work1(lt),work2(lt)
 
       call rom_userchk
 
