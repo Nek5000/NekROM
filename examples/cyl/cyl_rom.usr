@@ -53,6 +53,7 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       param(170) = -1
+      nsteps = 25 * 1e3 ! reduce to 100 CTUs
 
       call rom_update
 
@@ -201,11 +202,8 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       if (ad_step.eq.0) then
-         call copy(u,uk,nb+1)
-c        call rzero(u,nb+1)
-c        if (nid.eq.0) call copy(u,uk,nb+1)
-
-c        call gop(u,ut,'+  ',nb+1)
+         isnap = 100 ! restart from 401 CTU snapshot
+         call copy(u,uk(1+(isnap-1)*(nb+1)),nb+1)
       endif
 
       return
