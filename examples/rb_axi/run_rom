@@ -5,6 +5,10 @@ d1=fom4
 
 nb1=21;
 
+eps0=1.6;
+eps1=2.6;
+deps=0.05
+
 makerom rb_rom1;
 
 sed 's/mode = on/mode = off/' rb.mor > tmp.mor
@@ -12,21 +16,20 @@ mv tmp.mor rb.mor
 
 ls -r $d0/rb0.f* > file.list
 
-nek rb
+echo $eps0 > eps
+neklmpi rb 1
 mv basrb0.f* $d0/
 
 ls -r $d1/rb0.f* > file.list
 
-nek rb
+echo $eps1 > eps
+neklmpi rb 1
 mv basrb0.f* $d1/
 
 makerom rb_rom2;
 ls $d0/basrb0.f* | head -21 > bas.list
 ls $d1/basrb0.f* | head -21 | tail -n +2 >> bas.list
 
-eps0=1.6;
-eps1=2.6;
-deps=0.05
 
 ./run_rom_helper -1 0
 
