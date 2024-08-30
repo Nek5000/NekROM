@@ -259,7 +259,7 @@ c-----------------------------------------------------------------------
       include 'AVG'
 
       parameter (lt=lx1*ly1*lz1*lelt)
-      common /scrrstep/ t1(lt),t2(lt),t3(lt),work(lt)
+      common /scrrstep/ t1(lt),t2(lt),t3(lt),vort(lt)
       common /scrbdfext/ rhs(0:lb,2),rhstmp(0:lb),
      $                   utmp1(0:lb),utmp2(0:lb)
       common /nekmpi/ nidd,npp,nekcomm,nekgroup,nekreal
@@ -267,7 +267,7 @@ c-----------------------------------------------------------------------
       save icalld
       data icalld /0/
 
-      real vort(lt),work1(lt),work2(lt)
+      real work1(1),work2(1)
 
       call rom_userchk
 
