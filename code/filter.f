@@ -125,7 +125,7 @@ c-----------------------------------------------------------------------
          endif
 
          if (ifrom(2)) then
-            call copy(t,tb(1,i),nt)
+            call copy(t,tb(1,i,1),nt)
             call add2(t,tb,nt)
          endif
 

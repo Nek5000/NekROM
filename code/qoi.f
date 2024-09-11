@@ -40,6 +40,8 @@ c-----------------------------------------------------------------------
          fd(2)=fd(2)+(ak*abveck(1,2,k)+bk*abveck(2,2,k))/real(2*k)
 c        write (6,*) 'ak pdrag',k,ak,bk,fd(1),fd(2),lk
       enddo
+      call gop(fd(1),wk1,'+  ',1)
+      call gop(fd(2),wk1,'+  ',1)
 
       return
       end
@@ -272,11 +274,11 @@ c-----------------------------------------------------------------------
          else
             do j=0,nb
                do i=0,nb
-                  call ctbulk_num(
-     $               tbn(i+j*(nb+1),0),ub(1,i),vb(1,i),wb(1,i),tb(1,j))
+                  call ctbulk_num(tbn(i+j*(nb+1),0),
+     $               ub(1,i),vb(1,i),wb(1,i),tb(1,j,1))
                enddo
                call ctbulk_den(tbd(j),ub(1,j),vb(1,j),wb(1,j))
-               call ctsurf(tsa(j),tb(1,j))
+               call ctsurf(tsa(j),tb(1,j,1))
             enddo
 
             call dump_serial(tsa,nb+1,'qoi/tsa ',nid)
@@ -301,7 +303,7 @@ c-----------------------------------------------------------------------
          endif
       else if (inus.eq.2) then
          do i=0,nb
-            call gradm1(tx,ty,tz,tb(1,i))
+            call gradm1(tx,ty,tz,tb(1,i,1))
 
             eps=1.e-6
             ta=0.
@@ -339,7 +341,7 @@ c-----------------------------------------------------------------------
       else if (inus.eq.3) then
          tbn(0,0)=2.
          do j=0,nb
-            call ctsurf3(tsa(j),tb(1,j))
+            call ctsurf3(tsa(j),tb(1,j,1))
          enddo
 
          do i=0,nb
@@ -349,7 +351,7 @@ c-----------------------------------------------------------------------
          call rone(ones,lx1*ly1*lz1*nelt)
          if (rmode.ne.'ON ') then
          do i=0,nb
-            call gradm1(tx,ty,tz,tb(1,i))
+            call gradm1(tx,ty,tz,tb(1,i,1))
 
             eps=1.e-3
             ta=0.
@@ -387,7 +389,7 @@ c-----------------------------------------------------------------------
          call rone(ones,lx1*ly1*lz1*nelt)
          if (rmode.ne.'ON ') then
          do i=0,nb
-            call gradm1(tx,ty,tz,tb(1,i))
+            call gradm1(tx,ty,tz,tb(1,i,1))
 
             eps=1.e-3
             ta=0.
@@ -426,7 +428,7 @@ c-----------------------------------------------------------------------
          iobj=1
 
          do i=0,nb
-            call gradm1(tx,ty,tz,tb(1,i))
+            call gradm1(tx,ty,tz,tb(1,i,1))
             a=0.
             s=0.
 

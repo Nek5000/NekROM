@@ -138,6 +138,28 @@ c-----------------------------------------------------------------------
       call finiparser_getbool(i_out,'general:cflow',ifnd)
       if (ifnd.eq.1) ifcflow=i_out.eq.1
 
+      call finiparser_getbool(i_out,'general:eddy_vis',ifnd)
+      if (ifnd.eq.1) then
+         ifedvs=i_out.eq.1
+         if (ldimt.lt.4) then
+            write(6,*) 'recompile with ldimt=4!'
+            ierr=ierr+1
+         else
+            ifrom(5)=ifedvs
+            ifpod(5)=ifrom(5)
+            ifpod(3)=ifrom(5)
+            ifpod(4)=ifrom(5)
+            ifrom(3)=ifrom(5)
+            ifrom(4)=ifrom(5)
+         endif
+      endif
+
+      call finiparser_getbool(i_out,'general:setbases',ifnd)
+      if (ifnd.eq.1) ifsetbases=i_out.eq.1
+
+      call finiparser_getdbl(d_out,'general:nbat',ifnd)
+      if (ifnd.eq.1) nbat=nint(d_out)
+
       ibuoy=0
 
       call finiparser_getdbl(d_out,'buoyancy:magnitude',ifnd)
@@ -515,6 +537,7 @@ c-----------------------------------------------------------------------
       call bcast(tbarrseq,isize)
       call bcast(nintp,isize)
       call bcast(iaug,isize)
+      call bcast(nbat,isize)
 
       ! reals
 
@@ -533,7 +556,7 @@ c-----------------------------------------------------------------------
 
       call bcast(ifrecon,lsize)
 
-      do i=1,2
+      do i=0,ldimt1
          call bcast(ifpod(i),lsize)
          call bcast(ifrom(i),lsize)
       enddo
@@ -559,10 +582,12 @@ c-----------------------------------------------------------------------
       call bcast(ifdecpl,lsize)
 
       call bcast(ifcflow,lsize)
+      call bcast(ifsetbases,lsize)
 
       call bcast(ifcp,lsize)
       call bcast(ifcore,lsize)
       call bcast(ifquad,lsize)
+      call bcast(ifedvs,lsize)
 
       return
       END
@@ -622,6 +647,11 @@ c-----------------------------------------------------------------------
       data mor4  /'.mor'/
 
       len = ltrunc(path,132)
+
+      if(len.lt.1) then
+         call chcopy(path1(1),'./',2)
+      endif
+
       if (indx1(path1(len),'/',1).lt.1) then
          call chcopy(path1(len+1),'/',1)
       endif

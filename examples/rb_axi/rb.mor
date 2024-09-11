@@ -1,0 +1,8 @@
+[general]
+mode = on
+field = vt
+nb = 40
+decoupled = no
+
+[pod]
+mode0 = state

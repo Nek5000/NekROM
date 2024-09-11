@@ -8,6 +8,8 @@ c-----------------------------------------------------------------------
       common /scrbdfext/ rhs(0:lb,2),rhstmp(0:lb),
      $                   utmp1(0:lb),utmp2(0:lb)
 
+      common /eddyma/ cedm((lb**2-1)*ledvis+1),cedvec((lb-1)*ledvis+1)
+
       logical ifdebug
       integer chekbc
 
@@ -15,6 +17,7 @@ c-----------------------------------------------------------------------
 
       ifdebug=.true.
       ifdebug=.false.
+      jfield=ifield
 
       ulast_time = dnekclock()
 
@@ -48,6 +51,7 @@ c     if (icount.le.2) then
          return
       endif
 
+      ifield=2
       if (ifrom(2)) then
          if (ad_step.le.3) then
             ttime=dnekclock()
@@ -76,7 +80,10 @@ c     if (icount.le.2) then
             call update_k(uk,ukp,tk,tkp)
          endif
 
+         call rom_userfop
+
          call setr_t(rhs(1,2),icount)
+         call rom_userrhs(rhs(1,2))
 
          ttime=dnekclock()
          if (.not.ifcomb) then
@@ -120,10 +127,16 @@ c     if (icount.le.2) then
          endif
       endif
 
+      ifield=1
       if (ifrom(1)) then
          if (ad_step.le.3) then
             ttime=dnekclock()
             call seth(hlm,au,bu,1./ad_re)
+            if (ifedvs) then
+               edv(0) = 1
+               edv(1) = 1
+               call addeddy(hlm,cedm,cedvec,cedd,edv)
+            endif
             if (ad_step.eq.3) call dump_serial(hlm,nb*nb,'ops/hu ',nid)
             do j=1,nb-nplay
             do i=1,nb-nplay
@@ -148,7 +161,10 @@ c     if (icount.le.2) then
             call update_k(uk,ukp,tk,tkp)
          endif
 
+         call rom_userfop
+
          call setr_v(rhs(1,1),icount)
+         call rom_userrhs(rhs(1,1))
 
          ttime=dnekclock()
          if (.not.ifcomb) then
@@ -228,6 +244,8 @@ c     if (icount.le.2) then
       if (ifrom(2)) call shift(ut,rhs(0,2),nb+1,5)
       if (ifrom(1)) call shift(u,rhs,nb+1,5)
 
+      ifield=jfield
+
       ustep_time=ustep_time+dnekclock()-ulast_time
 
       return
@@ -294,7 +312,7 @@ c        call cubar
             enddo
          endif
 
-         if (rmode.ne.'ON '.and.rmode.ne.'CP ') then
+         if (ifrecon) then
             jstep=istep
             call reconv(vx,vy,vz,u)
             call opcopy(t1,t2,t3,vx,vy,vz)
@@ -617,6 +635,7 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       common /scrrhs/ tmp1(0:lb),tmp2(0:lb)
+      common /eddyma/ cedm((lb**2-1)*ledvis+1),cedvec((lb-1)*ledvis+1)
 
       real rhs(nb)
 
@@ -630,6 +649,11 @@ c-----------------------------------------------------------------------
       do i=1,nb
          rhs(i)=rhs(i)+s*au0(1+i)
       enddo
+      if (ifedvs) then
+         do i=1,nb
+            rhs(i)=rhs(i)-cedvec(i)
+         enddo
+      endif
 
       if (ifcp) then
          if (ifcore) then 
@@ -655,7 +679,7 @@ c-----------------------------------------------------------------------
             call add2s2(tmp1(1),tmp2(1),-gz,nb)
          endif
       else if (ifforce) then
-         call add2(tmp1(1),rg(1),nb)
+         call add2(tmp1(1),rf(1),nb)
       endif
 
       call shift(fu,tmp1(1),nb,3)
@@ -1482,3 +1506,33 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine addeddy(flu,cedm,cedvec,cl,uu)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      real uu(0:nb), flu(nb,nb)
+      real cedm(nb,nb),cedvec(nb)
+
+      real tmp(nb,0:nb)
+      real cl(ic1:ic2,jc1:jc2,kc1:kc2)
+      real cm(ic1:ic2,jc1:jc2)
+
+      call rzero(tmp,nb*(nb+1))
+
+      call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),uu(kc1),(kc2-kc1+1),cm,1)
+
+      do j=jc1,jc2
+      do i=ic1,ic2
+      tmp(i,j) = tmp(i,j)+cm(i,j)
+      enddo
+      enddo
+      call gop(tmp,stmp,'+  ',nb*(nb+1))
+      call copy(cedm,tmp(1,1),nb*nb)
+      call copy(cedvec,tmp(1,0),nb)
+
+      call add2(flu,cedm,nb*nb)
+
+      return
+      end

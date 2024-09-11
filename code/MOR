@@ -12,7 +12,7 @@ c     parameters and common blocks for MOR
      $                  wb(lx1*ly1*lz1*lelm,0:lub),
      $                  uvwb(lx1*ly1*lz1*lelm,ldim,0:lub),
      $                  pb(lx2*ly2*lz2*lelm,0:lpb),
-     $                  tb(lx1*ly1*lz1*lelm,0:ltb)
+     $                  tb(lx1*ly1*lz1*lelm,0:ltb,ldimt)
 
       common /moric/ uic(lx1*ly1*lz1*lelm),
      $               vic(lx1*ly1*lz1*lelm),
@@ -20,12 +20,13 @@ c     parameters and common blocks for MOR
      $               pic(lx2*ly2*lz2*lelm),
      $               tic(lx1*ly1*lz1*lelm)
 
-      common /morcoef/ uk((lub+1)*lsu),tk((ltb+1)*lst),timek(lcs)
+      common /morcoef/ uk((lub+1)*(lsu+1)),tk((ltb+1)*(lst+1)),
+     $                 timek(lcs),edk((lub+1)*(lsu+1))
       common /morcoef2/ ukp((lub+1)*lsu),tkp((ltb+1)*lst)
 
       common /morusnap/ us0(lx1*ly1*lz1*lelm,ldim,lsu)
       common /morpsnap/ prs(lx2*ly2*lz2*lelm,lsp)
-      common /mortsnap/ ts0(lx1*ly1*lz1*lelm,lst)
+      common /mortsnap/ ts0(lx1*ly1*lz1*lelm,lst,ldimt)
 
       common /morsnaptmp/ snapt(lx1*ly1*lz1*lelm,ldim,lsu)
 
@@ -120,7 +121,7 @@ c     parameters and common blocks for MOR
 
       integer ad_nsteps,ad_iostep,ad_step,ad_qstep
       common /moripar/ ad_nsteps,ad_iostep,ad_step,ad_qstep,inus,
-     $                 navg_step,mb,nb,nbo,nplay,nintp,iaug
+     $                 navg_step,mb,nb,nbo,nplay,nintp,iaug,nbat
 
       common /morivars/ i0,j0,k0,i1,j1,k1,nns,ns,nskip,navg,ncloc,npr,
      $                  npart,isolve,ic1,ic2,jc1,jc2,kc1,kc2,idirf
@@ -166,18 +167,19 @@ c     parameters and common blocks for MOR
       ! Flags
 
       logical ifl2,ifvort,ifstep,ifpart,ifavg0,ifplay,
-     $        ifcdrag,ifrms,ifread,ifreads(3),ifforce,ifpod(0:ldimt1),
-     $        ifbuoy,ifrom(0:ldimt1),ifcintp,iffastc,ifcnuss,ifctke,
+     $        ifcdrag,ifrms,ifread,ifreads(0:ldimt1),ifforce,
+     $        ifpod(0:ldimt1),ifbuoy,ifrom(0:ldimt1),
+     $        ifcintp,iffastc,ifcnuss,ifctke,
      $        iffasth,ifavisc,ifsource,ifei,ifsub0,ifrecon,iftneu,
      $        ifdecpl,ifcore,ifquad,ifhelm,ifsrct,iftflux,ifcomb,ifpb,
-     $        ifcp,ifcflow
+     $        ifcp,ifcflow,ifsetbases
 
       common /morflags/ ifl2,ifvort,ifstep,ifavg0,ifplay,
      $                  ifcdrag,ifrms,ifread,ifforce,ifpod,
      $                  ifbuoy,ifrom,ifcintp,iffastc,ifcnuss,ifctke,
      $                  iffasth,ifavisc,ifsource,ifei,ifsub0,ifrecon,
      $                  iftneu,ifdecpl,ifcore,ifquad,ifhelm,ifsrct,
-     $                  iftflux,ifcomb,ifpb,ifcp,ifcflow
+     $                  iftflux,ifcomb,ifpb,ifcp,ifcflow,ifsetbases
 
       real last_time,misc_time,lu_time,
      $     copt_time,quasi_time,lnsrch_time,
@@ -258,3 +260,18 @@ c     parameters and common blocks for MOR
       common /mordiff2/ psit(lx1*ly1*lz1*lelm,ldim*ldim,ldim,lbavg)
 
       common /morflucop/ fv_op(lbavg*lbavg),ft_op(lbavg*lbavg)
+
+      ! Eddy Viscosity
+
+      logical ifedvs
+
+      common /moredflags/ ifedvs
+
+      common /moredops/ cedd((lcloc-1)*lmu+1)
+
+      common /moresol/ edv(0:(lub+1)*5-1),edvua((lub+1)**2)
+
+      ! RBF
+      common /morrbf/ rbfmat((ls**2-1)*ledvis+1),
+     $                rbfwt((ls*lb-1)*ledvis+1),
+     $                rbf_sigma((lb-1)*ledvis+1),anch((ls-1)*ledvis+1)

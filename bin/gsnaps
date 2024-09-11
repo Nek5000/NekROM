@@ -16,6 +16,10 @@ case "$1" in
         wget -nv -O t.t https://uofi.box.com/shared/static/8499xg74j4a2jt58d8cw85pedvbgw4u9.gz;;
     cyl_rect_full)
         wget -nv -O t.t https://uofi.box.com/shared/static/d2lbk9pirwb891bqw7bezadk5tk99v4h.gz;;
+    ann)
+        wget -nv -O t.t https://uofi.box.com/shared/static/d4bsk6ik4z36hzw5eryyxfco4b2zay1y.gz;;
+    rft)
+        wget -nv -O t.t https://uofi.box.com/shared/static/yeei38btvmn804gsljlwziym1zkcstwp.gz;;
 esac
 
 tar -xvf t.t &> /dev/null

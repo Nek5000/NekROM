@@ -1,0 +1,14 @@
+[general]
+mode = all
+field = vt
+nb = 21
+
+[POD]
+type = l2
+mode0 = avg
+augment = 2
+
+[QOI]
+freq = 25
+drag = yes
+nu = 6

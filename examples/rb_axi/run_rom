@@ -1,0 +1,43 @@
+echo "run_rom: start";
+
+d0=fom0
+d1=fom4
+
+nb1=21;
+
+makerom rb_rom1;
+
+sed 's/mode = on/mode = off/' rb.mor > tmp.mor
+mv tmp.mor rb.mor
+
+ls -r $d0/rb0.f* > file.list
+
+nek rb
+mv basrb0.f* $d0/
+
+ls -r $d1/rb0.f* > file.list
+
+nek rb
+mv basrb0.f* $d1/
+
+makerom rb_rom2;
+ls $d0/basrb0.f* | head -21 > bas.list
+ls $d1/basrb0.f* | head -21 | tail -n +2 >> bas.list
+
+eps0=1.6;
+eps1=2.6;
+deps=0.05
+
+./run_rom_helper -1 0
+
+sed 's/mode = off/mode = on/' rb.mor > tmp.mor
+mv tmp.mor rb.mor
+
+
+for i in {0..20}; do
+   eps=$(echo "$eps0 + $i * $deps" | \bc -l);
+   echo "run_rom $i: eps=$eps";
+   ./run_rom_helper $i $eps
+done
+
+echo "run_rom: done";

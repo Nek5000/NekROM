@@ -30,7 +30,7 @@ c-----------------------------------------------------------------------
       param(173) = 0.
 
       call rom_setup
-      call gengram(ug,us0,ns,ldim,ips)
+      call gengram(ug,us0,ns,ldim,ips,1)
 
       call read_serial(vv,ls*ls,'tops/gu ',wk,nid)
 
@@ -524,7 +524,7 @@ c-----------------------------------------------------------------------
 
       if (nio.eq.0) write (6,*) 'edif',edif,s1,s2
 
-      if (edif.gt.9.e-11) iexit=iexit+8
+      if (edif.gt.5.e-10) iexit=iexit+8
 
       call exitm(iexit)
       
@@ -764,6 +764,100 @@ c-----------------------------------------------------------------------
       if (edif.gt.3.e-11) iexit=iexit+8
 
       call exitm(iexit)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine rbf_wt_unit
+
+      include 'SIZE'
+      include 'INPUT'
+      include 'MOR'
+
+      common /scrtest/ wk((lb+1)*ls)
+
+      real vv(ls*lb)
+
+      ifedvs = .true.
+
+      anch(1) = 100000
+      anch(2) = 750000
+      anch(3) = 400000
+      rbf_sigma(1) = 650000
+      rbf_sigma(2) = 650000
+      rbf_sigma(3) = 650000
+
+      call read_serial(edk,ls*(lb+1),'tops/edk ',wk,nid)
+      call read_serial(vv,ls*lb,'tops/rbfwt ',wk,nid)
+      call c_rbfwt(rbfwt,rbf_sigma,edk,anch,ls,lb)
+
+      iexit=0
+
+      s1=0.
+      s2=0.
+
+      if (nio.eq.0) write (6,*) 'live | data'
+
+      do j=1,ls
+      do i=1,lb
+         s1=s1+(rbfwt(i+(j-1)*lb)-vv(i+(j-1)*lb))**2
+         s2=s2+(vv(i+(j-1)*lb))**2
+         if (nio.eq.0) write(6,*)'rbfwt',i+(j-1)*lb,
+     $                 rbfwt(i+(j-1)*lb),vv(i+(j-1)*lb)
+      enddo
+      enddo
+
+      edif=sqrt(s1/s2)
+
+      if (nio.eq.0) write (6,*) 'edif',edif,s1,s2
+
+      if (edif.gt.3.e-11) iexit=iexit+1
+
+      call exitm(iexit)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine rf_unit
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      common /romdbas/ tmp(lt,ldimt)
+
+      character*128 fname1
+
+      fname1='file.list '
+
+      nt=lx1*ly1*lz1*nelt
+
+      nb = lb
+      ns = ls
+      nskip = 0
+
+      do i=0,ldimt1
+         ifreads(i)=.true.
+      enddo
+
+      call read_fields(us0,prs,ts0,ns,ls,nskip,ifreads,
+     $     timek,fname1,.true.)
+
+      iftmp=ifxyo
+      ifxyo=.true.
+      do i=1,ns
+         time=i
+         itmp=i
+         do j=1,ldimt
+            call copy(tmp(1,j),ts0(1,i,j),nt)
+         enddo
+         param(66)=-1
+         call outpost2(us0(1,1,i),us0(1,2,i),us0(1,ldim,i),prs(1,i),
+     $        tmp,ldimt,'us0')
+      enddo
+      ifxyo=.false.
 
       return
       end

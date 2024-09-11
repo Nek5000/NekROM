@@ -1,0 +1,24 @@
+#!/bin/bash
+
+np=4;
+eps0=1.6;
+eps1=2.6;
+deps=0.25;
+
+echo "run_fom start"
+
+wget https://uofi.box.com/shared/static/b5bfmz2hi5g5jykxl1phgu6ewdg2tfzj.f00001
+mv b5bfmz2hi5g5jykxl1phgu6ewdg2tfzj.f00001 r0.f00001
+
+genmap << Z
+rb
+0.1
+Z
+
+for i in {0..4}; do
+    eps=$(echo "$eps0 + $i * $deps" | bc -l);
+    echo "run $i: eps=$eps";
+   ./run_fom_helper $i $eps $np
+done
+
+echo "run_fom done";

@@ -1,0 +1,1088 @@
+c-----------------------------------------------------------------------
+      include 't.f'
+c-----------------------------------------------------------------------
+      subroutine rayleigh_const
+
+      include 'SIZE'
+      include 'INPUT'
+
+      common /rayleigh/ gr,ra,prandtl,nu
+      real nu                      ! Nusselt number ( = output value )
+      
+      prandtl = 0.71               ! Prandtl number
+
+c     gr = 122000                  ! Grashof number
+c     gr = 600000                  ! Grashof number
+      ra = gr/prandtl              ! Rayleigh number
+
+      param(1) = 1.0               ! density, rho
+      param(2) = sqrt(prandtl/ra)  ! kinematic viscosity
+
+      param(7) = 1.0               ! rho Cp
+      param(8) = 1/sqrt(prandtl*ra)! thermal diffusivity
+
+
+      cpfld(1,1)=param(2)          ! Constant parameters: fluid
+      cpfld(1,2)=param(1)          ! 
+
+      cpfld(2,1)=param(8)          ! Constant parameters: thermal
+      cpfld(2,2)=param(7)          !
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine uservp(i,j,k,eg) ! set variable properties
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+      integer i,j,k,e,eg
+     
+c     e = gllel(eg)
+
+      udiff  = 0.0
+      utrans = 0.0
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine userf(i,j,k,eg) ! set acceleration term
+c
+c     Note: this is an acceleration term, NOT a force!
+c     Thus, ffx will subsequently be multiplied by rho(x,t).
+c
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+      integer i,j,k,e,eg
+
+c     e = gllel(eg)
+
+      ffx = 0.0
+      ffy = temp
+      ffz = 0.0
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine userq(i,j,k,eg) ! set source term
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+      integer i,j,k,e,eg
+
+c     e = gllel(eg)
+
+      qvol   = 0.0
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine userbc(i,j,k,f,eg) ! set up boundary conditions
+c     NOTE ::: This routine MAY NOT be called by every process
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+      integer i,j,k,f,e,eg
+
+c     if (cbc(f,gllel(eg),ifield).eq.'v01')
+
+      ux   = 0.0
+      uy   = 0.0
+      uz   = 0.0
+      temp = 0.0
+
+      rad = sqrt(x*x + y*y)
+
+      if (rad.lt.0.9) temp=1.0
+
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine useric(i,j,k,eg) ! set up initial conditions
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+      integer i,j,k,e,eg
+
+      ux   = 0.0
+      uy   = 0.0
+      uz   = 0.0
+      temp = 0.0
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine userchk
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      real u_ref(2),ut_ref(2)
+
+      u_ref(1)=6.7911616104859842
+      u_ref(2)=0.76785585020936731
+      ut_ref(1)=5.1399988037167335
+      ut_ref(2)=0.44007668397847510
+
+      n = lx1*ly1*lz1*nelt
+
+      call opcopy(ub(1,0),vb(1,0),wb(1,0),vx,vy,vz) ! set zeroth mode
+      call copy(tb(1,0,1),t,n) ! set zeroth mode
+      call readic(1,1,1,ttk,'ic.list ')
+      call test
+
+      do i=1,nb
+      write(6,*)i,u(i),ut(i),'u and ut coefficient'
+      enddo
+
+      iexit=0
+
+      s1=0.
+      s2=0.
+
+      if (nio.eq.0) write (6,*) 'live | data'
+
+      do i=1,nb
+         s1=s1+(u(i)-u_ref(i))**2
+         s2=s2+u(i)**2
+         if (nio.eq.0) write (6,*) 'u',
+     $                 i,j,u,u_ref
+      enddo
+
+      edif=sqrt(s1/s2)
+
+      if (nio.eq.0) write (6,*) 'edif',edif,s1,s2
+
+      if (edif.gt.2.e-11) iexit=iexit+1
+
+      s1=0.
+      s2=0.
+
+      do i=1,nb
+         s1=s1+(ut(i)-ut_ref(i))**2
+         s2=s2+ut(i)**2
+         if (nio.eq.0) write (6,*) 'ut',
+     $                 i,j,ut,ut_ref
+      enddo
+
+      edif=sqrt(s1/s2)
+
+      if (nio.eq.0) write (6,*) 'edif',edif,s1,s2
+
+      if (edif.gt.2.e-11) iexit=iexit+2
+
+      call exitm(iexit)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine userqtl ! Set thermal divergence
+
+      call userqtl_scig
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine usrdat   ! This routine to modify element vertices
+      include 'SIZE'
+      include 'TOTAL'
+
+      common /rayleigh/ gr,ra,prandtl,nu
+
+      open(unit=11,file='Grashof')
+      read(11,*) gr
+      close(11)
+
+      write(6,1) gr
+   1  format(1p1e12.4,' Grashof number')
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine usrdat3
+      include 'SIZE'
+      include 'TOTAL'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine usrdat2
+      include 'SIZE'
+      include 'TOTAL'
+
+      call rayleigh_const
+
+      x0 = -pi
+      x1 =  pi
+      call rescale_x(xm1,x0,x1)
+
+      Gap     = 1.0
+      D_inner = Gap/1.09  !! From inspection of Van Dyke figures
+      R_inner = D_inner/2.
+
+      y0 = -Gap
+      y1 = 0.0
+      call rescale_x(ym1,y0,y1)
+
+      n = lx1*ly1*lz1*nelt
+      do i=1,n
+
+         x=xm1(i,1,1,1)
+         y=ym1(i,1,1,1)
+         z=zm1(i,1,1,1)
+
+         rad   = y - R_inner
+         theta = x
+
+         xm1(i,1,1,1) =  rad*sin(theta)
+         ym1(i,1,1,1) = -rad*cos(theta)
+
+      enddo
+c     call outpost(xm1,ym1,zm1,pr,t,'   ')  ! Inspect here
+c     call exitti('quit dat2$',n)           ! if you wish
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine compute_nusselt(nu)
+
+c     integrated flux
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      real nu,a(2),q(2)
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      common /scruz/ tx(lt),ty(lt),tz(lt),work(lx1*ly1*lz1)
+
+      integer e,f,eg,icalld
+      data icalld /0/
+
+      if (icalld.eq.0) then 
+         icalld = 1
+         call set_obj  ! define objects for surface integrals
+      endif
+c     if (istep.eq.0) call set_obj  ! define objects for surface integrals
+
+      call gradm1(tx,ty,tz,t)
+
+      call rzero(a,2)
+      call rzero(q,2)
+
+      do iobj=1,nobj
+         do mem=1,nmember(iobj)
+            eg=object(iobj,mem,1)
+            f =object(iobj,mem,2)
+            e =gllel(eg)
+            call surface_flux_area_local(dq,aq,tx,ty,tz,e,f,work)
+            a(iobj) = a(iobj) + aq
+            q(iobj) = q(iobj) + dq
+         enddo
+      enddo
+      call gop(a,work,'+  ',2)
+      call gop(q,work,'+  ',2)
+      nu = q(1)/a(1)
+      if (nio.eq.0) write(6,1) istep,time,q(1),a(1),nu
+    1 format(i9,1p4e12.4,' flux and area')
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine surface_flux_area_local(dq,aq,qx,qy,qz,e,f,w)
+c
+c     Here, we create a copy of the V19 subroutine surface_flux_area, 
+c     just to ensure compatability with both V19 and V17.
+c
+      include 'SIZE'
+      include 'GEOM'
+      include 'INPUT'
+      include 'PARALLEL'
+      include 'TOPOL'
+
+      parameter (l=lx1*ly1*lz1)
+      real qx(l,1),qy(l,1),qz(l,1),w(lx1,ly1,lz1)
+      integer e,f
+
+      call           faccl3  (w,qx(1,e),unx(1,1,f,e),f)
+      call           faddcl3 (w,qy(1,e),uny(1,1,f,e),f)
+      if (if3d) call faddcl3 (w,qz(1,e),unz(1,1,f,e),f)
+      call dsset(lx1,ly1,lz1)
+      iface  = eface1(f)
+      js1    = skpdat(1,iface)
+      jf1    = skpdat(2,iface)
+      jskip1 = skpdat(3,iface)
+      js2    = skpdat(4,iface)
+      jf2    = skpdat(5,iface)
+      jskip2 = skpdat(6,iface)
+      dq = 0
+      aq = 0
+      i  = 0
+      do 100 j2=js2,jf2,jskip2
+      do 100 j1=js1,jf1,jskip1
+         i = i+1
+         dq    = dq + area(i,1,f,e)*w(j1,j2,1)
+         aq    = aq + area(i,1,f,e)
+  100 continue
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine set_obj  ! define objects for surface integrals
+c
+      include 'SIZE'
+      include 'TOTAL'
+
+      integer e,f,eg
+
+      nobj = 1  ! 2 Objects:  End Faces; Cylinder Surface
+      iobj = 0
+
+      if (maxobj.lt.nobj) call exitti('increase maxobj in SIZE$',nobj)
+
+      nxyz  = lx1*ly1*lz1
+      nface = 2*ldim
+
+      do e=1,nelv
+      do f=1,nface
+         if (cbc(f,e,1).eq.'W  ') then
+
+            rad=xm1(1,1,1,e)**2+ym1(1,1,1,e)**2
+            rad=sqrt(rad)
+            if (rad.lt.1.0) then ! Element is near inner cylinder 
+               iobj = 1
+               nmember(iobj) = nmember(iobj) + 1
+               mem = nmember(iobj)
+               eg  = lglel(e)
+               object(iobj,mem,1) = eg
+               object(iobj,mem,2) = f
+            endif
+
+         endif
+      enddo
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine rom_userchk
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      common /rayleigh/ gr,ra,prandtl,nu
+      real nu                      ! Nusselt number ( = output value )
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      common /velsave/ uo(lt),vo(lt),wo(lt),to(lt)
+
+      n = lx1*ly1*lz1*nelt
+
+      ! The following two lines are required in the rom_userchk
+      ! Reconstruct vel and temp from u and ut rom coefficient
+      call reconv(vx,vy,vz,u)
+      call recont(t,ut)
+
+      if (mod(ad_step,iostep).eq.0) then
+         dmax = 0.
+         do i=1,n
+            dvx=vx(i,1,1,1)-uo(i)
+            dvy=vy(i,1,1,1)-vo(i)
+            dv2=sqrt(dvx*dvx+dvy*dvy)
+            dmax = max(dmax,dv2)      ! pointwise infinity norm
+         enddo
+         dmax = glmax(dmax,1)         ! global max, over all processors
+
+         dvdt = dmax/dt
+         if (nio.eq.0) write(6,*) dmax,dt,'dmax, dt'
+
+         tmx = glamax(t,n)
+         umx = glamax(vx,n)
+         vmx = glamax(vy,n)
+
+         call compute_nusselt(nu)
+
+         if (nio.eq.0) write(6,1) istep,time,tmx,umx,vmx,
+     $                 nu,dmax,dvdt
+    1 format(i9,1p7e12.4,' tmax')
+
+         call opcopy(uo,vo,wo,vx,vy,vz)   ! Save old velocity
+
+         if (istep.gt.1000.and.dvdt.lt.1.e-6) then
+            call outpost(vx,vy,vz,pr,t,'   ')
+            call exitti ('Reached steady state.$',istep)
+         endif
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine cmeantke
+
+      include 'SIZE'
+      include 'MOR'
+
+      real tmp((nb+1)**2),tmp1(nb+1)
+      real t1,t2
+
+      if (nio.eq.0) write (6,*) 'inside cmeantke'
+
+      call col3(tmp,bu0,u2a,(nb+1)**2)
+      t1 = vlsum(tmp,(nb+1)**2)
+      call mxm(bu0,nb+1,ua,nb+1,tmp1,1)
+      t2 = vlsc2(tmp1,ua,nb+1)
+      if (nio.eq.0) write(6,*)'mean tke',t1,t2,(t1-t2)/2
+
+      call col3(tmp,bt0,ut2a,(nb+1)**2)
+      t1 = vlsum(tmp,(nb+1)**2)
+      if (nio.eq.0) then
+      do i=1,nb
+      write(6,*)i,uta(i),'uta check' 
+      enddo
+      endif
+      call mxm(bt0,nb+1,uta,nb+1,tmp1,1)
+      t2 = vlsc2(tmp1,uta,nb+1)
+      if (nio.eq.0) write(6,*)'mean tfluc',t1,t2,(t1-t2)
+
+      if (nio.eq.0) write (6,*) 'exiting cmeantke'
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine check_rom_residual
+      
+      ! This subroutine is used to check the residual with the ROM 
+      ! solution. Residual is tested with FOM space.
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      real coef1(0:nb),coef2(0:(nb+1)**2-1)
+      real DVC  (LX1,LY1,LZ1,LELV)
+
+      write(6,*)'checking u2j'
+      do i=0,((nb+1)**2)*8-1
+      write(6,*)i,u2j(i)
+      enddo
+
+      write(6,*)'checking u2a'
+      do i=1,(nb+1)**2
+      write(6,*)i,u2a(i)
+      enddo
+
+      write(6,*)'checking ua'
+      do i=0,nb
+      write(6,*)i,ua(i)
+      enddo
+
+      write(6,*)'checking uj'
+      do i=0,(nb+1)*8-1
+      write(6,*)i,uj(i)
+      enddo
+
+      write(6,*)'checking u'
+      do i=0,(nb+1)*5-1
+      write(6,*)i,u(i)
+      write(6,*)'param(2)',param(2)
+      enddo
+
+      n = lx1*ly1*lz1*nelv
+
+      ! Initialize residual vectors
+c     if (ifrom(1)) call opzero(res_u(1,1),res_u(1,2),res_u(1,ldim))
+c     write(6,*)'max of res 1',
+c    $           glamax(res_u(1,1),n),glamin(res_u(1,1),n)
+
+c     call set_betaj
+c     call set_alphaj
+
+c     call mxm(uj,nb+1,betaj,8,coef1,1)
+c     call res_in_time(coef1)
+
+c     write(6,*)'max of res 2',
+c    $           glamax(res_u(1,1),n),glamin(res_u(1,1),n)
+c     call copy(coef1,ua,nb+1)
+c     call res_in_diff(coef1)
+c     write(6,*)'max of res 3',
+c    $           glamax(res_u(1,1),n),glamin(res_u(1,1),n)
+
+c     call mxm(u2j,(nb+1)**2,alphaj,8,coef2,1)
+c     do j=0,nb
+c     do i=0,nb
+c        coef2(i+(nb+1)*j)=coef2(i+(nb+1)*j)+u2a(1+i+(nb+1)*j)
+c     enddo
+c     enddo
+c     call res_in_advec(coef2)
+c     write(6,*)'max of res 4',
+c    $           glamax(res_u(1,1),n),glamin(res_u(1,1),n)
+
+c     if (ifeddy) call res_in_eddy(coef2)
+c     call outpost(res_u(1,1),res_u(1,2),res_u(1,ldim),pr,t,'res')
+c     write(6,*)'max of res 5',
+c    $           glamax(res_u(1,1),n),glamin(res_u(1,1),n)
+
+      call set_rom_residual
+      call set_riesz_one
+
+c     call dsavg(res_u(1,1))
+c     call opbinv1(res_u(1,1),res_u(1,2),res_u(1,ldim),
+c    $             res_u(1,1),res_u(1,2),res_u(1,ldim),1.0)
+c     CALL OPDSSUM (res_u(1,1),res_u(1,2),res_u(1,ldim))
+      IFTMP=IFXYO
+      ifxyo=.true.
+      call outpost(res_u(1,1),res_u(1,2),res_u(1,ldim),pr,t,'res')
+      call outpost(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),pr,eh_t,'ris')
+      call c_riesz_norm
+c     CALL OPDIV   (DVC,eh_u(1,1),eh_u(1,2),eh_u(1,ldim))
+c     CALL DSSUM   (DVC,lx1,ly1,lz1)
+c     CALL COL2    (DVC,BINVM1,n)
+c     call outpost(eh_u(1,1),eh_u(1,2),eh_u(1,ldim),pr,eh_t,'div')
+      ifxyo=iftm
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine mean_err
+
+      ! Compute the mean error between FOM and ROM
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real wk1(lt),wk2(lt),wk3(lt),wk4(lt)
+      integer icount
+
+      n = lx1*ly1*lz1*nelv
+
+      if (nid.eq.0) write(6,*)'compute mean error'
+
+      ! Construct MOR averaged field
+c     do i=0,nb
+c     write(6,*)'check ua',i,ua(i)
+c     enddo
+
+      if (ifrom(1)) then
+         ifield=1
+         call reconv(wk1,wk2,wk3,ua)
+      endif
+
+      if (ifrom(2)) then
+         ifield=2
+         call recont(wk4,uta)
+      endif
+
+      iftmp=ifxyo
+      ifxyo=.true.
+      call outpost(wk1,wk2,wk3,pr,wk4,'dif')
+      ifxyo=iftmp
+
+      rom_unorm_h10 = 0.0
+      rom_unorm_l2 = 0.0
+      rom_unorm_h1 = 0.0
+      rom_tnorm_h10 = 0.0
+      rom_tnorm_l2 = 0.0
+      rom_tnorm_h1 = 0.0
+
+      ! compute norms of the truth field
+      if (ifrom(1)) then
+         rom_unorm_h10 = h10vip(wk1,wk2,wk3,wk1,wk2,wk3)
+         rom_unorm_l2 = wl2vip(wk1,wk2,wk3,wk1,wk2,wk3)
+         rom_unorm_h1 = rom_unorm_h10 + rom_unorm_l2
+      endif
+
+      if (ifrom(2)) then
+         rom_tnorm_h10 = h10sip(wk4,wk4)
+         rom_tnorm_l2 = wl2sip(wk4,wk4)
+         rom_tnorm_h1 = rom_tnorm_h10 + rom_tnorm_l2
+      endif
+
+      rom_norm_h10 = rom_unorm_h10+rom_tnorm_h10
+      rom_norm_l2 = rom_unorm_l2+rom_tnorm_l2
+      rom_norm_h1 = rom_unorm_h1+rom_tnorm_h1
+
+      if (nid.eq.0) then
+         if (ifrom(1)) then
+            write(6,*)'ROM h10 norm for u:',sqrt(rom_unorm_h10)
+            write(6,*)'ROM l2 norm for u:',sqrt(rom_unorm_l2)
+            write(6,*)'ROM h1 norm for u:',sqrt(rom_unorm_h1)
+         endif
+         if (ifrom(2)) then
+            write(6,*)'ROM h10 norm for t:',sqrt(rom_tnorm_h10)
+            write(6,*)'ROM l2 norm for t:',sqrt(rom_tnorm_l2)
+            write(6,*)'ROM h1 norm for t:',sqrt(rom_tnorm_h1)
+         endif
+         write(6,*)'ROM h10 norm:',sqrt(rom_norm_h10)
+         write(6,*)'ROM l2 norm:',sqrt(rom_norm_l2)
+         write(6,*)'ROM h1 norm:',sqrt(rom_norm_h1)
+      endif
+
+      ! construct the path associated to the parameter theta_g
+      call nekgsync
+
+      call readic(1,1,1,ttk,'fom_avg.list ')
+      iftmp=ifxyo
+      ifxyo=.true.
+      call outpost(vx,vy,vz,pr,t,'dif')
+      ifxyo=iftmp
+
+      fom_unorm_h10 = 0.0
+      fom_unorm_l2 = 0.0
+      fom_unorm_h1 = 0.0
+      fom_tnorm_h10 = 0.0
+      fom_tnorm_l2 = 0.0
+      fom_tnorm_h1 = 0.0
+
+      ! compute norms of the truth field
+      if (ifrom(1)) then
+         fom_unorm_h10 = h10vip(vx,vy,vz,vx,vy,vz)
+         fom_unorm_l2 = wl2vip(vx,vy,vz,vx,vy,vz)
+         fom_unorm_h1 = fom_unorm_h10 + fom_unorm_l2
+      endif
+
+      if (ifrom(2)) then
+         fom_tnorm_h10 = h10sip(t,t)
+         fom_tnorm_l2 = wl2sip(t,t)
+         fom_tnorm_h1 = fom_tnorm_h10 + fom_tnorm_l2
+      endif
+
+      fom_norm_h10 = fom_unorm_h10+fom_tnorm_h10
+      fom_norm_l2 = fom_unorm_l2+fom_tnorm_l2
+      fom_norm_h1 = fom_unorm_h1+fom_tnorm_h1
+
+      if (nid.eq.0) then
+         if (ifrom(1)) then
+            write(6,*)'FOM h10 norm for u:',sqrt(fom_unorm_h10)
+            write(6,*)'FOM l2 norm for u:',sqrt(fom_unorm_l2)
+            write(6,*)'FOM h1 norm for u:',sqrt(fom_unorm_h1)
+         endif
+         if (ifrom(2)) then
+            write(6,*)'FOM h10 norm for t:',sqrt(fom_tnorm_h10)
+            write(6,*)'FOM l2 norm for t:',sqrt(fom_tnorm_l2)
+            write(6,*)'FOM h1 norm for t:',sqrt(fom_tnorm_h1)
+         endif
+         write(6,*)'FOM h10 norm:',sqrt(fom_norm_h10)
+         write(6,*)'FOM l2 norm:',sqrt(fom_norm_l2)
+         write(6,*)'FOM h1 norm:',sqrt(fom_norm_h1)
+      endif
+
+      ! compute the difference between truth and MOR
+      if (ifrom(1)) call opsub2(wk1,wk2,wk3,vx,vy,vz)
+      if (ifrom(2)) call sub2(wk4,t,n)
+      iftmp=ifxyo
+      ifxyo=.true.
+      call outpost(wk1,wk2,wk3,pr,wk4,'dif')
+      ifxyo=iftmp
+
+      diff_unorm_h10 = 0.0
+      diff_unorm_l2 = 0.0
+      diff_unorm_h1 = 0.0
+      diff_tnorm_h10 = 0.0
+      diff_tnorm_l2 = 0.0
+      diff_tnorm_h1 = 0.0
+
+      if (ifrom(1)) then
+         diff_unorm_h10 = h10vip(wk1,wk2,wk3,wk1,wk2,wk3)
+         diff_unorm_l2 = wl2vip(wk1,wk2,wk3,wk1,wk2,wk3)
+         diff_unorm_h1 = diff_unorm_h10 + diff_unorm_l2
+      endif
+
+      if (ifrom(2)) then
+      diff_tnorm_h10 = h10sip(wk4,wk4)
+      diff_tnorm_l2 = wl2sip(wk4,wk4)
+      diff_tnorm_h1 = diff_tnorm_h10 + diff_tnorm_l2
+      endif
+
+      diff_norm_h10 = diff_unorm_h10+diff_tnorm_h10
+      diff_norm_l2 = diff_unorm_l2+diff_tnorm_l2
+      diff_norm_h1 = diff_unorm_h1+diff_tnorm_h1
+
+      if (nid.eq.0) then
+         if (ifrom(1)) then
+            write(6,*)'absolute h1  error for u:',
+     $                 sqrt(diff_unorm_h1)
+            write(6,*)'absolute h10 error for u:',
+     $                 sqrt(diff_unorm_h10)
+            write(6,*)'absolute l2  error for u:',
+     $                 sqrt(diff_unorm_l2)
+            write(6,*)'relative h1  error for u:',
+     $                 sqrt(diff_unorm_h1/fom_unorm_h1)
+            write(6,*)'relative h10 error for u:',
+     $                 sqrt(diff_unorm_h10/fom_unorm_h10)
+            write(6,*)'relative l2  error for u:',
+     $                 sqrt(diff_unorm_l2/fom_unorm_l2)
+         endif
+         if (ifrom(2)) then
+            write(6,*)'absolute h1  error for t:',
+     $                 sqrt(diff_tnorm_h1)
+            write(6,*)'absolute h10 error for t:',
+     $                 sqrt(diff_tnorm_h10)
+            write(6,*)'absolute l2  error for t:',
+     $                 sqrt(diff_tnorm_l2)
+            write(6,*)'relative h1  error for t:',
+     $                 sqrt(diff_tnorm_h1/fom_tnorm_h1)
+            write(6,*)'relative h10 error for t:',
+     $                 sqrt(diff_tnorm_h10/fom_tnorm_h10)
+            write(6,*)'relative l2  error for t:',
+     $                 sqrt(diff_tnorm_l2/fom_tnorm_l2)
+         endif
+      write(6,*)'absolute h1  error:',sqrt(diff_norm_h1)
+      write(6,*)'absolute h10 error:',sqrt(diff_norm_h10)
+      write(6,*)'absolute l2  error:',sqrt(diff_norm_l2)
+      write(6,*)'relative h1  error:',sqrt(diff_norm_h1/fom_norm_h1)
+      write(6,*)'relative h10 error:',sqrt(diff_norm_h10/fom_norm_h10)
+      write(6,*)'relative l2  error:',sqrt(diff_norm_l2/fom_norm_l2)
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine mean_projerr
+
+      ! Compute the mean error between FOM and projection
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real wk1(lt),wk2(lt),wk3(lt),wk4(lt)
+      real wk5(lt),wk6(lt),wk7(lt),wk8(lt)
+      real coef(0:nb)
+      integer theta_g
+      integer icount
+
+      character*36 str1
+      character*36 str2
+      character*36 str3
+      character*72 str4
+      character*72 str5
+      character*72 str6
+      common /scrk2/ t4(lt),t5(lt),t6(lt)
+
+      n = lx1*ly1*lz1*nelv
+
+      if (nid.eq.0) write(6,*)'compute mean error'
+
+      call readic(1,1,1,ttk,'fom_avg.list ')
+      iftmp=ifxyo
+      ifxyo=.true.
+      call outpost(vx,vy,vz,pr,t,'dif')
+      ifxyo=iftmp
+
+      fom_unorm_h10 = 0.0
+      fom_unorm_l2 = 0.0
+      fom_unorm_h1 = 0.0
+      fom_tnorm_h10 = 0.0
+      fom_tnorm_l2 = 0.0
+      fom_tnorm_h1 = 0.0
+
+      ! compute norms of the truth field
+      if (ifrom(1)) then
+         fom_unorm_h10 = h10vip(vx,vy,vz,vx,vy,vz)
+         fom_unorm_l2 = wl2vip(vx,vy,vz,vx,vy,vz)
+         fom_unorm_h1 = fom_unorm_h10 + fom_unorm_l2
+      endif
+
+      if (ifrom(2)) then
+         fom_tnorm_h10 = h10sip(t,t)
+         fom_tnorm_l2 = wl2sip(t,t)
+         fom_tnorm_h1 = fom_tnorm_h10 + fom_tnorm_l2
+      endif
+
+      fom_norm_h10 = fom_unorm_h10+fom_tnorm_h10
+      fom_norm_l2 = fom_unorm_l2+fom_tnorm_l2
+      fom_norm_h1 = fom_unorm_h1+fom_tnorm_h1
+
+      if (nid.eq.0) then
+         if (ifrom(1)) then
+            write(6,*)'FOM h10 norm for u:',sqrt(fom_unorm_h10)
+            write(6,*)'FOM l2 norm for u:',sqrt(fom_unorm_l2)
+            write(6,*)'FOM h1 norm for u:',sqrt(fom_unorm_h1)
+         endif
+         if (ifrom(2)) then
+            write(6,*)'FOM h10 norm for t:',sqrt(fom_tnorm_h10)
+            write(6,*)'FOM l2 norm for t:',sqrt(fom_tnorm_l2)
+            write(6,*)'FOM h1 norm for t:',sqrt(fom_tnorm_h1)
+         endif
+         write(6,*)'FOM h10 norm:',sqrt(fom_norm_h10)
+         write(6,*)'FOM l2 norm:',sqrt(fom_norm_l2)
+         write(6,*)'FOM h1 norm:',sqrt(fom_norm_h1)
+      endif
+
+      ! Construct projection averaged field
+      if (ifrom(1)) then 
+      ifield=1
+      call opcopy(wk5,wk6,wk7,vx,vy,vz)
+      call opsub2(wk5,wk6,wk7,ub,vb,wb)
+      call pv2b(coef,wk5,wk6,wk7,ub,vb,wb)
+      call reconv(wk1,wk2,wk3,coef)
+      endif
+      if (ifrom(2)) then
+      ifield=2
+      call copy(wk8,t,n)
+      call sub2(wk8,tb,n)
+      call ps2b(coef,wk8,tb)
+      call recont(wk4,coef)
+      endif
+      iftmp=ifxyo
+      ifxyo=.true.
+      call outpost(wk1,wk2,wk3,pr,wk4,'dif')
+      ifxyo=iftmp
+
+      rom_unorm_h10 = 0.0
+      rom_unorm_l2 = 0.0
+      rom_unorm_h1 = 0.0
+      rom_tnorm_h10 = 0.0
+      rom_tnorm_l2 = 0.0
+      rom_tnorm_h1 = 0.0
+
+      ! compute norms of the truth field
+      if (ifrom(1)) then
+         rom_unorm_h10 = h10vip(wk1,wk2,wk3,wk1,wk2,wk3)
+         rom_unorm_l2 = wl2vip(wk1,wk2,wk3,wk1,wk2,wk3)
+         rom_unorm_h1 = rom_unorm_h10 + rom_unorm_l2
+      endif
+
+      if (ifrom(2)) then
+         rom_tnorm_h10 = h10sip(wk4,wk4)
+         rom_tnorm_l2 = wl2sip(wk4,wk4)
+         rom_tnorm_h1 = rom_tnorm_h10 + rom_tnorm_l2
+      endif
+
+      rom_norm_h10 = rom_unorm_h10+rom_tnorm_h10
+      rom_norm_l2 = rom_unorm_l2+rom_tnorm_l2
+      rom_norm_h1 = rom_unorm_h1+rom_tnorm_h1
+
+      if (nid.eq.0) then
+         if (ifrom(1)) then
+            write(6,*)'Proj h10 norm for u:',sqrt(rom_unorm_h10)
+            write(6,*)'Proj l2 norm for u:',sqrt(rom_unorm_l2)
+            write(6,*)'Proj h1 norm for u:',sqrt(rom_unorm_h1)
+         endif
+         if (ifrom(2)) then
+            write(6,*)'Proj h10 norm for t:',sqrt(rom_tnorm_h10)
+            write(6,*)'Proj l2 norm for t:',sqrt(rom_tnorm_l2)
+            write(6,*)'Proj h1 norm for t:',sqrt(rom_tnorm_h1)
+         endif
+         write(6,*)'Proj h10 norm:',sqrt(rom_norm_h10)
+         write(6,*)'Proj l2 norm:',sqrt(rom_norm_l2)
+         write(6,*)'Proj h1 norm:',sqrt(rom_norm_h1)
+      endif
+
+      ! compute the difference between truth and MOR
+      if (ifrom(1)) call opsub2(wk1,wk2,wk3,vx,vy,vz)
+      if (ifrom(2)) call sub2(wk4,t,n)
+      iftmp=ifxyo
+      ifxyo=.true.
+      call outpost(wk1,wk2,wk3,pr,wk4,'dif')
+      ifxyo=iftmp
+
+      diff_unorm_h10 = 0.0
+      diff_unorm_l2 = 0.0
+      diff_unorm_h1 = 0.0
+      diff_tnorm_h10 = 0.0
+      diff_tnorm_l2 = 0.0
+      diff_tnorm_h1 = 0.0
+
+      if (ifrom(1)) then
+         diff_unorm_h10 = h10vip(wk1,wk2,wk3,wk1,wk2,wk3)
+         diff_unorm_l2 = wl2vip(wk1,wk2,wk3,wk1,wk2,wk3)
+         diff_unorm_h1 = diff_unorm_h10 + diff_unorm_l2
+      endif
+
+      if (ifrom(2)) then
+      diff_tnorm_h10 = h10sip(wk4,wk4)
+      diff_tnorm_l2 = wl2sip(wk4,wk4)
+      diff_tnorm_h1 = diff_tnorm_h10 + diff_tnorm_l2
+      endif
+
+      diff_norm_h10 = diff_unorm_h10+diff_tnorm_h10
+      diff_norm_l2 = diff_unorm_l2+diff_tnorm_l2
+      diff_norm_h1 = diff_unorm_h1+diff_tnorm_h1
+
+      if (nid.eq.0) then
+         if (ifrom(1)) then
+            write(6,*)'absolute h1  error for u:',
+     $                 sqrt(diff_unorm_h1)
+            write(6,*)'absolute h10 error for u:',
+     $                 sqrt(diff_unorm_h10)
+            write(6,*)'absolute l2  error for u:',
+     $                 sqrt(diff_unorm_l2)
+            write(6,*)'relative h1  error for u:',
+     $                 sqrt(diff_unorm_h1/fom_unorm_h1)
+            write(6,*)'relative h10 error for u:',
+     $                 sqrt(diff_unorm_h10/fom_unorm_h10)
+            write(6,*)'relative l2  error for u:',
+     $                 sqrt(diff_unorm_l2/fom_unorm_l2)
+         endif
+         if (ifrom(2)) then
+            write(6,*)'absolute h1  error for t:',
+     $                 sqrt(diff_tnorm_h1)
+            write(6,*)'absolute h10 error for t:',
+     $                 sqrt(diff_tnorm_h10)
+            write(6,*)'absolute l2  error for t:',
+     $                 sqrt(diff_tnorm_l2)
+            write(6,*)'relative h1  error for t:',
+     $                 sqrt(diff_tnorm_h1/fom_tnorm_h1)
+            write(6,*)'relative h10 error for t:',
+     $                 sqrt(diff_tnorm_h10/fom_tnorm_h10)
+            write(6,*)'relative l2  error for t:',
+     $                 sqrt(diff_tnorm_l2/fom_tnorm_l2)
+         endif
+      write(6,*)'absolute h1  error:', sqrt(diff_norm_h1)
+      write(6,*)'absolute h10 error:', sqrt(diff_norm_h10)
+      write(6,*)'absolute l2  error:', sqrt(diff_norm_l2)
+      write(6,*)'relative h1  error:', sqrt(diff_norm_h1/fom_norm_h1)
+      write(6,*)'relative h10 error:', sqrt(diff_norm_h10/fom_norm_h10)
+      write(6,*)'relative l2  error:', sqrt(diff_norm_l2/fom_norm_l2)
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine readic(nsu,nsp,nst,ttk,fn)
+
+c     This routine reads files specificed in fname
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'ZPER'
+      include 'AVG'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      parameter (lt2=lx2*ly2*lz2*lelt)
+
+      real ttk(nsu)
+
+      character*128 fn
+      character*128 fnlint
+
+      common /scrk2/ t4(lt),t5(lt),t6(lt)
+
+      call nekgsync
+      gsf_time=dnekclock()
+
+      ierr = 0
+      call lints(fnlint,fn,128)
+      if (nid.eq.0) open(77,file=fnlint,status='old',err=199)
+      ierr = iglmax(ierr,1)
+      if (ierr.gt.0) goto 199
+
+      n = lx1*ly1*lz1*nelt
+      n2= lx2*ly2*lz2*nelt
+
+      call opcopy(t4,t5,t6,xm1,ym1,zm1)
+
+      nsave=max(max(nsu,nsp),nst)
+
+      if (nio.eq.0) write (6,*) 'nsu,nsp,nst:',nsu,nsp,nst
+
+      icount = 0
+      do ipass=1,1
+         call blank(initc,127)
+         initc(1) = 'done '
+         if (nid.eq.0) read(77,127,end=998) initc(1)
+  998    call bcast(initc,127)
+  127    format(a127)
+         if (nio.eq.0) write (6,*) ipass,' '
+
+         if (indx1(initc,'done ',5).eq.0) then ! We're not done
+            icount = icount+1
+            nfiles = 1
+            ttmp=time
+            call restart(nfiles)  ! Note -- time is reset.
+            ttk(icount)=time
+            time=ttmp
+
+            ip=ipass
+         else
+            goto 999
+         endif
+      enddo
+
+  999 continue  ! clean up averages
+      if (nid.eq.0) close(77)
+
+      nsave = icount ! Actual number of files read
+      nocp = nsave
+
+      call nekgsync
+      if (nio.eq.0) write (6,*) 'gsf_time:',dnekclock()-gsf_time
+
+      return
+
+  199 continue ! exception handle for file not found
+
+      call nekgsync
+      if (nio.eq.0) write (6,*) 'gsf_time:',dnekclock()-gsf_time
+
+      ierr = 1
+      if (nid.eq.0) ierr = iglmax(ierr,1)
+      write (6,*) fnlint
+      call exitti('readic did not find list file.$',ierr)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine rom_userbases ! set user-defined ROM basis
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+c     do i=1,nb
+c        call call incomprn(uvwb(1,1,i),uvwb(1,2,i),uvwb(1,ldim,i),pb)
+c     enddo
+
+c     call orthonormb(uvwb,ldim,nb)
+c     call orthonormb(tb,1,nb)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine rom_userrhs(urhs) ! set right hand size for ROM evolution
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      real urhs(nb)
+
+      if (ifield.eq.1) then
+c        call cadd(urhs,1.0,nb)
+      else if (ifield.eq.2) then
+c        call cadd(urhs,1.0,nb)
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine rom_userfop ! set forward operator for ROM evolution
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      if (ifield.eq.1) then
+c        call seth(hlm(1,1),au,bu,1./ad_re)
+c        call invmat(hinv,hlu,hlm,ihlu,ihlu2,nb)
+      else if (ifield.eq.2) then
+c        call seth(hlm(1,2),at,bt,1./ad_pe)
+c        call invmat(hinv,hlu(1,2),hlm(1,2),ihlu(1,2),ihlu2(1,2),nb)
+      endif
+
+c     call update_k(uk,ukp,tk,tkp)
+
+      return
+      end
+c-----------------------------------------------------------------------

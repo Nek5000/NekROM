@@ -1,0 +1,15 @@
+#!/bin/bash
+
+# assume Nek5000 is set up
+
+makenek cyl
+
+genmap << Z
+cyl
+0.1
+Z
+
+neklmpi cyl 1
+
+mkdir snaps
+mv *cyl0.f* logfile snaps/

@@ -52,6 +52,9 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
+      param(170) = -1
+      nsteps = 25 * 1e3 ! reduce to 100 CTUs
+
       call rom_update
 
       call exitt0
@@ -193,6 +196,38 @@ c
       end
 c-----------------------------------------------------------------------
       subroutine rom_userchk
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      if (ad_step.eq.0) then
+         isnap = 100 ! restart from 401 CTU snapshot
+         call copy(u,uk(1+(isnap-1)*(nb+1)),nb+1)
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine rom_userbases
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine rom_userfop
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine rom_userrhs
 
       include 'SIZE'
       include 'TOTAL'

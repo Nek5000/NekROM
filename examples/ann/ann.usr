@@ -1,0 +1,332 @@
+c-----------------------------------------------------------------------
+      subroutine rayleigh_const
+
+      include 'SIZE'
+      include 'INPUT'
+
+      common /rayleigh/ gr,ra,prandtl,nu
+      real nu                      ! Nusselt number ( = output value )
+      
+      prandtl = 0.71               ! Prandtl number
+
+c     gr = 122000                  ! Grashof number
+      gr = 1                       ! Grashof number
+      ra = gr/prandtl              ! Rayleigh number
+
+      param(1) = 1.0               ! density, rho
+      param(2) = sqrt(prandtl/ra)  ! kinematic viscosity
+
+      param(7) = 1.0               ! rho Cp
+      param(8) = 1/sqrt(prandtl*ra)! thermal diffusivity
+
+
+      cpfld(1,1)=param(2)          ! Constant parameters: fluid
+      cpfld(1,2)=param(1)          ! 
+
+      cpfld(2,1)=param(8)          ! Constant parameters: thermal
+      cpfld(2,2)=param(7)          !
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine uservp(i,j,k,eg) ! set variable properties
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+      integer i,j,k,e,eg
+     
+c     e = gllel(eg)
+
+      udiff  = 0.0
+      utrans = 0.0
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine userf(i,j,k,eg) ! set acceleration term
+c
+c     Note: this is an acceleration term, NOT a force!
+c     Thus, ffx will subsequently be multiplied by rho(x,t).
+c
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+      integer i,j,k,e,eg
+
+c     e = gllel(eg)
+
+      ffx = 0.0
+      ffy = temp
+      ffz = 0.0
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine userq(i,j,k,eg) ! set source term
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+      integer i,j,k,e,eg
+
+c     e = gllel(eg)
+
+      qvol   = 0.0
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine userbc(i,j,k,f,eg) ! set up boundary conditions
+c     NOTE ::: This routine MAY NOT be called by every process
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+      integer i,j,k,f,e,eg
+
+c     if (cbc(f,gllel(eg),ifield).eq.'v01')
+
+      ux   = 0.0
+      uy   = 0.0
+      uz   = 0.0
+      temp = 0.0
+
+      rad = sqrt(x*x + y*y)
+
+      if (rad.lt.0.9) temp=1.0
+
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine useric(i,j,k,eg) ! set up initial conditions
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+      integer i,j,k,e,eg
+
+      ux   = 0.0
+      uy   = 0.0
+      uz   = 0.0
+      temp = 0.0
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine userchk
+      include 'SIZE'
+      include 'TOTAL'
+
+      common /rayleigh/ gr,ra,prandtl,nu
+      real nu                      ! Nusselt number ( = output value )
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      common /velsave/ uo(lt),vo(lt),wo(lt),to(lt)
+
+      n = lx1*ly1*lz1*nelt
+
+      dmax = 0.
+      do i=1,n
+         dvx=vx(i,1,1,1)-uo(i)
+         dvy=vy(i,1,1,1)-vo(i)
+         dv2=sqrt(dvx*dvx+dvy*dvy)
+         dmax = max(dmax,dv2)      ! pointwise infinity norm
+      enddo
+      dmax = glmax(dmax,1)         ! global max, over all processors
+
+      dvdt = dmax/dt
+
+      tmax = glamax(t,n)
+      umax = glamax(vx,n)
+      vmax = glamax(vy,n)
+
+      call compute_nusselt(nu)
+
+      if (nio.eq.0) write(6,1) istep,time,tmax,umax,vmax,nu,dmax,dvdt
+    1 format(i9,1p7e12.4,' tmax')
+
+      call opcopy(uo,vo,wo,vx,vy,vz)   ! Save old velocity
+
+      if (istep.gt.1000.and.dvdt.lt.1.e-6) then
+         call outpost(vx,vy,vz,pr,t,'   ')
+         call exitti ('Reached steady state.$',istep)
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine userqtl ! Set thermal divergence
+
+      call userqtl_scig
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine usrdat   ! This routine to modify element vertices
+      include 'SIZE'
+      include 'TOTAL'
+
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine usrdat3
+      include 'SIZE'
+      include 'TOTAL'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine usrdat2
+      include 'SIZE'
+      include 'TOTAL'
+
+      call rayleigh_const
+
+      x0 = -pi
+      x1 =  pi
+      call rescale_x(xm1,x0,x1)
+
+      Gap     = 1.0
+      D_inner = Gap/1.09  !! From inspection of Van Dyke figures
+      R_inner = D_inner/2.
+
+      y0 = -Gap
+      y1 = 0.0
+      call rescale_x(ym1,y0,y1)
+
+      n = lx1*ly1*lz1*nelt
+      do i=1,n
+
+         x=xm1(i,1,1,1)
+         y=ym1(i,1,1,1)
+         z=zm1(i,1,1,1)
+
+         rad   = y - R_inner
+         theta = x
+
+         xm1(i,1,1,1) =  rad*sin(theta)
+         ym1(i,1,1,1) = -rad*cos(theta)
+
+      enddo
+c     call outpost(xm1,ym1,zm1,pr,t,'   ')  ! Inspect here
+c     call exitti('quit dat2$',n)           ! if you wish
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine compute_nusselt(nu)
+
+c     integrated flux
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      real nu,a(2),q(2)
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      common /scruz/ tx(lt),ty(lt),tz(lt),work(lx1*ly1*lz1)
+
+      integer e,f,eg
+
+      if (istep.eq.0) call set_obj  ! define objects for surface integrals
+
+      call gradm1(tx,ty,tz,t)
+
+      call rzero(a,2)
+      call rzero(q,2)
+
+      do iobj=1,nobj
+         do mem=1,nmember(iobj)
+            eg=object(iobj,mem,1)
+            f =object(iobj,mem,2)
+            e =gllel(eg)
+            call surface_flux_area_local(dq,aq,tx,ty,tz,e,f,work)
+            a(iobj) = a(iobj) + aq
+            q(iobj) = q(iobj) + dq
+         enddo
+      enddo
+      call gop(a,work,'+  ',2)
+      call gop(q,work,'+  ',2)
+      nu = q(1)/a(1)
+      if (nio.eq.0) write(6,1) istep,time,q(1),a(1),nu
+    1 format(i9,1p4e12.4,' flux and area')
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine surface_flux_area_local(dq,aq,qx,qy,qz,e,f,w)
+c
+c     Here, we create a copy of the V19 subroutine surface_flux_area, 
+c     just to ensure compatability with both V19 and V17.
+c
+      include 'SIZE'
+      include 'GEOM'
+      include 'INPUT'
+      include 'PARALLEL'
+      include 'TOPOL'
+      parameter (l=lx1*ly1*lz1)
+      real qx(l,1),qy(l,1),qz(l,1),w(lx1,ly1,lz1)
+      integer e,f
+      call           faccl3  (w,qx(1,e),unx(1,1,f,e),f)
+      call           faddcl3 (w,qy(1,e),uny(1,1,f,e),f)
+      if (if3d) call faddcl3 (w,qz(1,e),unz(1,1,f,e),f)
+      call dsset(lx1,ly1,lz1)
+      iface  = eface1(f)
+      js1    = skpdat(1,iface)
+      jf1    = skpdat(2,iface)
+      jskip1 = skpdat(3,iface)
+      js2    = skpdat(4,iface)
+      jf2    = skpdat(5,iface)
+      jskip2 = skpdat(6,iface)
+      dq = 0
+      aq = 0
+      i  = 0
+      do 100 j2=js2,jf2,jskip2
+      do 100 j1=js1,jf1,jskip1
+         i = i+1
+         dq    = dq + area(i,1,f,e)*w(j1,j2,1)
+         aq    = aq + area(i,1,f,e)
+  100 continue
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine set_obj  ! define objects for surface integrals
+c
+      include 'SIZE'
+      include 'TOTAL'
+
+      integer e,f,eg
+
+      nobj = 1  ! 2 Objects:  End Faces; Cylinder Surface
+      iobj = 0
+
+      if (maxobj.lt.nobj) call exitti('increase maxobj in SIZE$',nobj)
+
+      nxyz  = lx1*ly1*lz1
+      nface = 2*ldim
+
+      do e=1,nelv
+      do f=1,nface
+         if (cbc(f,e,1).eq.'W  ') then
+
+            rad=xm1(1,1,1,e)**2+ym1(1,1,1,e)**2
+            rad=sqrt(rad)
+            if (rad.lt.1.0) then ! Element is near inner cylinder 
+               iobj = 1
+               nmember(iobj) = nmember(iobj) + 1
+               mem = nmember(iobj)
+               eg  = lglel(e)
+               object(iobj,mem,1) = eg
+               object(iobj,mem,2) = f
+            endif
+
+         endif
+      enddo
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------

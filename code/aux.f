@@ -28,7 +28,7 @@ c-----------------------------------------------------------------------
       call rzero(tt,n)
 
       do i=0,nb
-         call add2s2(tt,tb(1,i),coef(i),n)
+         call add2s2(tt,tb(1,i,1),coef(i),n)
       enddo
 
       return
@@ -51,7 +51,7 @@ c-----------------------------------------------------------------------
 
       do j=0,nb
       do i=0,nb
-         call col3(tbt,tb(1,i),tb(1,j),n)
+         call col3(tbt,tb(1,i,1),tb(1,j,1),n)
          call add2s2(tt,tbt,ut2a(1+i+(nb+1)*j),n)
       enddo
       enddo
@@ -79,6 +79,32 @@ c-----------------------------------------------------------------------
             call admcol3(uy,vb(1,i),vb(1,j),u2a(1+i+(nb+1)*j),n)
             if (ldim.eq.3)
      $         call admcol3(uz,wb(1,i),wb(1,j),u2a(1+i+(nb+1)*j),n)
+         enddo
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine reconu_rm2(ux,uy,uz)
+
+      include 'SIZE'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      real ux(lt),uy(lt),uz(lt)
+
+      n=lx1*ly1*lz1*nelv
+
+      call opzero(ux,uy,uz)
+
+      do j=0,nb
+         if (nio.eq.0) write (6,*) 'reconu_rms:',j,'/',nb
+         do i=0,nb
+            call admcol3(ux,ub(1,i),vb(1,j),u2a(1+i+(nb+1)*j),n)
+            call admcol3(uy,vb(1,i),wb(1,j),u2a(1+i+(nb+1)*j),n)
+            if (ldim.eq.3)
+     $         call admcol3(uz,wb(1,i),ub(1,j),u2a(1+i+(nb+1)*j),n)
          enddo
       enddo
 
@@ -371,7 +397,7 @@ c-----------------------------------------------------------------------
       call opadd2(vx,vy,vz,ux,uy,uz)
       call add2(pr,pp,lx2*ly2*lz2*nelv)
 
-      do idim=1,1
+      do idim=1,ldimt
          call add2(t(1,idim),tt(1,idim),lx1*ly1*lz1*nelt)
       enddo
 
@@ -400,6 +426,7 @@ c-----------------------------------------------------------------------
       subroutine copy_sol(vx,vy,vz,pr,t,ux,uy,uz,pp,tt)
 
       include 'SIZE'
+      include 'INPUT'
 
       parameter (lt1=lx1*ly1*lz1*lelt)
       parameter (lt2=lx2*ly2*lz2*lelt)
@@ -409,11 +436,10 @@ c-----------------------------------------------------------------------
 
       call opcopy(vx,vy,vz,ux,uy,uz)
       call copy(pr,pp,lx2*ly2*lz2*nelv)
-      call copy(t,tt,lx1*ly1*lz1*nelv)
 
-c     do idim=1,ldimt
-c        call copy(t(1,idim),tt(1,idim),lx1*ly1*lz1*nelt)
-c     enddo
+      do idim=1,min(1+npscal,ldimt)
+         call copy(t(1,idim),tt(1,idim),lx1*ly1*lz1*nelt)
+      enddo
 
       return
       end
@@ -846,7 +872,7 @@ c-----------------------------------------------------------------------
       logical iftmp
 
       common /scrdump2/ ux1(lt),uy1(lt),uz1(lt),tt(lt),wk(lt)
-      common /testb/ ux2(lt),uy2(lt),uz2(lt)
+      common /testb/ ux2(lt),uy2(lt),uz2(lt),ux3(lt),uy3(lt),uz3(lt)
 
       iftmp=ifxyo
       ifxyo=.true.
@@ -859,6 +885,9 @@ c-----------------------------------------------------------------------
          call reconu_rms(ux2,uy2,uz2,u2a)
          if (ifrom(2)) call recont_rms(tt)
          call outpost(ux2,uy2,uz2,pr,tt,'rms')
+
+         call reconu_rm2(ux3,uy3,uz3,u2a)
+         call outpost(ux3,uy3,uz3,pr,tt,'rm2')
 
          call opcol2(ux1,uy1,uz1,ux1,uy1,uz1)
          call opsub2(ux2,uy2,uz2,ux1,uy1,uz1)
@@ -874,10 +903,10 @@ c-----------------------------------------------------------------------
          call opzero(ux1,uy1,uz1)
          do j=0,nb
          do i=0,nb
-            call admcol3(ux1,ub(1,i),tb(1,j),uuta(1+i+(nb+1)*j),n)
-            call admcol3(uy1,vb(1,i),tb(1,j),uuta(1+i+(nb+1)*j),n)
+            call admcol3(ux1,ub(1,i),tb(1,j,1),uuta(1+i+(nb+1)*j),n)
+            call admcol3(uy1,vb(1,i),tb(1,j,1),uuta(1+i+(nb+1)*j),n)
             if (ldim.eq.3)
-     $         call admcol3(uz1,wb(1,i),tb(1,j),uuta(1+i+(nb+1)*j),n)
+     $         call admcol3(uz1,wb(1,i),tb(1,j,1),uuta(1+i+(nb+1)*j),n)
          enddo
          enddo
          call outpost(ux1,uy1,uz1,pr,tt,'tmn')
@@ -1418,7 +1447,7 @@ c        write(6,*)sample(ipass)
                label(i) = j
             endif
          enddo
-         call copy(cent_fld(1,i),ts0(1,label(i)),n)
+         call copy(cent_fld(1,i),ts0(1,label(i),1),n)
       enddo
 
       ! minimize distortion measure
@@ -1428,7 +1457,7 @@ c        write(6,*)sample(ipass)
          call rzero(rnk,ls*k)
          do i=1,ls
             do j=1,k
-              call sub3(tmp(1,j),ts0(1,i),cent_fld(1,j),n)
+              call sub3(tmp(1,j),ts0(1,i,1),cent_fld(1,j),n)
               dist(j) = glsc2(tmp(1,j),tmp(1,j),n)
             enddo
             write(6,*)ls,minloc(dist),sample(i)
@@ -1459,7 +1488,7 @@ c        enddo
          do i=1,k
             call rzero(cent_fld,n*k)
             do j=1,ls
-               call add2s2(cent_fld(1,i),ts0(1,j),rnk(j,i),n)
+               call add2s2(cent_fld(1,i),ts0(1,j,1),rnk(j,i),n)
             enddo
             call cmult(cent_fld(1,i),1./num_sc(i),n)
             centroid(i) = glsc2(sample,rnk(1,i),ls)/num_sc(i)
@@ -1476,7 +1505,7 @@ c                 write(6,*)i,centroid(i),sample(j)
                   label(i) = j
                endif
             enddo
-            call copy(cent_fld(1,i),ts0(1,label(i)),n)
+            call copy(cent_fld(1,i),ts0(1,label(i),1),n)
          enddo
          call c_distortion_measure(obj_f,cent_fld,rnk,k)
          write(6,*)kk,obj_f,'distortion measure M'
@@ -1534,7 +1563,7 @@ c-----------------------------------------------------------------------
       do i=1,ls
          do j=1,k
             if (abs(rnk(i,j)-1).le.1e-8) then
-               call sub3(tmp(1,j),ts0(1,i),cent_fld(1,j),n)
+               call sub3(tmp(1,j),ts0(1,i,1),cent_fld(1,j),n)
                dist(j) = glsc2(tmp(1,j),tmp(1,j),n)
                obj_f = obj_f + dist(j)
             endif
@@ -1581,8 +1610,8 @@ c-----------------------------------------------------------------------
       do j=1,ns
       ttk(0,j) = 1.
       do i=1,nocp
-         ww=sip(tb(1,i),tb(1,i))
-         vv=sip(tb(1,i),ts0(1,j))
+         ww=sip(tb(1,i,1),tb(1,i,1))
+         vv=sip(tb(1,i,1),ts0(1,j,1))
          ttk(i,j) = vv/ww
       enddo
       enddo
@@ -1597,7 +1626,7 @@ c-----------------------------------------------------------------------
             call sub2(us0(1,2,i),vy,n)
             if (ldim.eq.3) call sub2(us0(1,ldim,i),vz,n)
          endif
-         if (ifrom(2)) call sub2(ts0(1,i),t,n)
+         if (ifrom(2)) call sub2(ts0(1,i,1),t,n)
       enddo
 
       if (nio.eq.0) write (6,*) 'exiting projtoprerb'
@@ -1755,7 +1784,7 @@ c-----------------------------------------------------------------------
       call rzero(tt,n)
 
       do i=1,nocp
-         call add2s2(tt,tb(1,i),coef(i),n)
+         call add2s2(tt,tb(1,i,1),coef(i),n)
       enddo
 
       return
@@ -2940,6 +2969,238 @@ c-----------------------------------------------------------------------
 
       call divm1(wk(1,2,1),wk(1,1,1),wk(1,1,2),wk(1,1,3))
       call divm1(wk(1,2,1),wk(1,1,1),wk(1,1,2),wk(1,1,3))
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine orthonormb(b,mdim,nb)
+
+      ! orthonormalize fields with modified Gram-Schmidt
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      real b(lx1*ly1*lz1*lelt,mdim,nb)
+
+      nv=lx1*ly1*lz1*nelv
+      nt=lx1*ly1*lz1*nelt
+
+      do i=1,nb
+         do j=1,i-1
+            if (mdim.eq.ldim) then
+               sc=-vip(b(1,1,i),b(1,2,i),b(1,ldim,i),
+     $                 b(1,1,j),b(1,2,j),b(1,ldim,j))
+
+               call opadds(b(1,1,i),b(1,2,i),b(1,ldim,i),
+     $                      b(1,1,j),b(1,2,j),b(1,ldim,j),sc,nv,2)
+            else if (mdim.eq.1) then
+               sc=-sip(b(1,1,i),b(1,1,j))
+               call add2s2(b(1,1,i),b(1,1,j),sc,nt)
+            endif
+         enddo
+         if (mdim.eq.ldim) then
+            sc=1./sqrt(vip(b(1,1,i),b(1,2,i),b(1,ldim,i),
+     $                     b(1,1,i),b(1,2,i),b(1,ldim,i)))
+            call opcmult(b(1,1,i),b(1,2,i),b(1,ldim,i),sc)
+         else if (mdim.eq.1) then
+            sc=1./sqrt(sip(b(1,1,i),b(1,1,i)))
+            call cmult(b(1,1,i),sc,nt)
+         endif
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine setab(uxyz,uvwb,uvwb0)
+
+      ! generate augmented basis from ABM
+
+      ! uxyz  := ABM mode
+      ! uvwb  := original basis mode
+      ! uvwb0 := original basis mode or 0th mode
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      common /scrns/ txyz(lt,ldim)
+
+      real uxyz(lt,ldim),uvwb(lt,ldim),uvwb0(lt,ldim)
+
+      call evalcflds(uxyz,uvwb,uvwb0,ldim,1,.true.)
+      call evalcflds(txyz,uvwb0,uvwb,ldim,1,.true.)
+      call opadd2(uxyz(1,1),uxyz(1,2),uxyz(1,ldim),
+     $            txyz(1,1),txyz(1,2),txyz(1,ldim))
+
+
+      call opbinv1(uxyz(1,1),uxyz(1,2),uxyz(1,ldim),
+     $             uxyz(1,1),uxyz(1,2),uxyz(1,ldim),1.)
+
+      call incomprn(uxyz(1,1),uxyz(1,2),uxyz(1,ldim),prlag)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine rbf_setup(rbfwt,rbf_sigma,edk,anch,ns,nb)
+
+      ! Setup RBF Method, compute sigma and weight based 
+      ! on edk and anch arrays
+
+      ! Output : rbfwt, rbf_sigma
+      ! Input  : edk, anch, ns, nb
+
+      ! rbfwt := rbf weight
+      ! rbf_sigma:= variance used in rbf
+      ! (anch, edk) := sample points
+      ! ns := number of sample points
+      ! nb := number of modes
+
+      real rbfwt(ns,nb)   ! rbf matrix and weight
+      real rbf_sigma(nb)  ! rbf parameter
+      real edk(0:nb,ns)   ! rbf data value
+      real anch(ns)       ! rbf data point
+      integer ns,nb
+
+      call set_rbf_sig(rbf_sigma,edk,anch,ns,nb)
+      call c_rbfwt(rbfwt,rbf_sigma,edk,anch,ns,nb)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine set_rbf_sig(rbf_sigma,edk,anch,ns,nb)
+
+      ! Compute RBF sigma based on edk and anch arrays
+
+      ! Output : rbf_sigma
+      ! Input  : edk, anch, ns, nb
+
+      ! rbf_sigma:= variance used in rbf
+      ! (anch, edk) := sample points
+      ! ns := number of sample points
+      ! nb := number of modes
+
+      real rbf_sigma(nb)                 ! rbf parameter
+      real edk(0:nb,ns),edkk(ns,0:nb)    ! rbf data value
+      real anch(ns)                      ! rbf data point
+      real rbftmp1(ns**2)                ! array used in invmat
+      integer ns,nb
+
+      real rbf_mean
+
+      open(unit=11,file='anch')
+      do i=1,ns
+         read(11,*) anch(i)
+      enddo
+      close(11)
+
+      ! transpose
+      call transpose(edkk,ns,edk,nb+1)
+
+      do k=1,nb
+         call copy(rbftmp1,edkk(1,k),ns)
+         rbf_mean = vlsum(rbftmp1,ns)/ns
+         call cadd(rbftmp1,-1.0*rbf_mean,ns)
+         call vsq(rbftmp1,ns)
+         rbf_sigma(k) = sqrt(vlsum(rbftmp1,ns)/ns)
+
+         write(6,*) 'rbf_sigma k:',k,rbf_sigma(k)
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine c_rbfwt(rbfwt,rbf_sigma,edk,anch,ns,nb)
+
+      ! Compute RBF weight based on edk and anch arrays
+
+      ! Output : rbfwt
+      ! Input  : rbf_sigma, edk, anch, ns, nb
+
+      ! rbfwt := rbf weight
+      ! rbf_sigma:= variance used in rbf
+      ! (anch, edk) := sample points
+      ! ns := number of sample points
+      ! nb := number of modes
+
+      real rbfmat(ns,ns), rbfwt(ns,nb)   ! rbf matrix and weight
+      real rbf_sigma(nb)                 ! rbf parameter
+      real edk(0:nb,ns),edkk(ns,0:nb)    ! rbf data value
+      real anch(ns)                      ! rbf data point
+      real rbftmp1(ns**2),rbftmp2(ns**2) ! array used in invmat
+      integer itmp3(ns),itmp4(ns)
+      integer ns,nb
+
+      ! transpose
+      call transpose(edkk,ns,edk,nb+1)
+
+      do k=1,nb
+         write(6,*) 'mode k:',k,rbf_sigma(k),'Construct RBF matrix...'
+
+         ! setup rbf matrix
+         do j=1,ns
+         do i=1,ns
+            rbfmat(i,j) = exp(-1.*(anch(i)-anch(j))**2/
+     $                           (2*(rbf_sigma(k)**2)))
+         enddo
+         enddo
+
+         call invmat(rbftmp1,rbftmp2,rbfmat,itmp3,itmp4,ns)
+         call mxm(rbftmp1,ns,edkk(1,k),ns,rbfwt(1,k),1)
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine rbf_interp(edv,test_p,rbfwt,rbf_sigma,anch,ns,nb)
+
+      real test_p, dist_p(ns)
+      real edv(nb),rbfwt(ns,nb),rbf_sigma(nb)
+      real anch(ns)
+
+      do k=1,nb
+         do j=1,ns
+            dist_p(j)=exp(-1.*(test_p-anch(j))**2/(2*(rbf_sigma(k)**2)))
+         enddo
+         edv(k) = vlsc2(rbfwt(1,k),dist_p,ns)
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      function abm_shuffle_helper(indo,nb,nsplit)
+
+      ! return shuffled index for a given original index
+
+      m = nint(1.0*(nb-1)/nsplit)
+
+      if (indo.le.m) then
+         abm_shuffle_helper=(indo-1)*nsplit+2
+      else if (indo.eq.m+1) then
+         abm_shuffle_helper=1
+      else if (indo.le.2*m+1) then
+         abm_shuffle_helper=(indo-2-m)*nsplit+3
+      else
+         abm_shuffle_helper=(indo-2-m*2)*nsplit+4
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine abm_shuffle
+
+      include 'SIZE'
+      include 'MOR'
+
+      do i=1,nb
+         indn=abm_shuffle_helper(i,nb,max(abs(iaug),2))
+         call opcopy(ub(1,indn),vb(1,indn),wb(1,indn),
+     $               uvwb(1,1,i),uvwb(1,2,i),uvwb(1,ldim,i))
+      enddo
+
+      do i=1,nb
+         call opcopy(uvwb(1,1,i),uvwb(1,2,i),uvwb(1,ldim,i),
+     $               ub(1,i),vb(1,i),wb(1,i))
+      enddo
 
       return
       end
