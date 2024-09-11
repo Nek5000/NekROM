@@ -474,14 +474,14 @@ c-----------------------------------------------------------------------
          call read_serial(rtmp1(1,1),1,'ops/nb ',rtmp2,-1)
          mb=nint(rtmp1(1,1))
          if (mb.lt.nb) then
-            write (6,*) 'mb less than nb... ',mb
+            write (6,*) 'ERROR: ops/nb < nb, decrease nb in .mor'
             ierr=ierr+1
          endif
 
          call read_serial(rtmp1(1,1),1,'ops/ns ',rtmp2,-1)
          nns=nint(rtmp1(1,1))
          if (nns.lt.ns) then
-            write (6,*) 'ms less than ns... ',nns
+            write (6,*) 'ERROR: ops/ns < ns, decrease ns in .mor'
             ierr=ierr+1
          endif
       endif
