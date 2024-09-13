@@ -495,36 +495,36 @@ c-----------------------------------------------------------------------
       n  = lx1*ly1*lz1*nelt
       if (ifpod(1)) then
          if (rmode.eq.'ON '.or.rmode.eq.'ONB'.or.rmode.eq.'CP ') then
-            call read_serial(umin,nb,'ops/umin ',wk,nid)
-            call read_serial(umax,nb,'ops/umax ',wk,nid)
+            call read_serial(upmin,nb,'ops/umin ',wk,nid)
+            call read_serial(upmax,nb,'ops/umax ',wk,nid)
          else
-            call cfill(umin,1.e9,nb)
-            call cfill(umax,-1.e9,nb)
+            call cfill(upmin,1.e9,nb)
+            call cfill(upmax,-1.e9,nb)
             do j=1,ns
             do i=1,nb
-               if (uuk(i,j).lt.umin(i)) umin(i)=uuk(i,j)
-               if (uuk(i,j).gt.umax(i)) umax(i)=uuk(i,j)
+               if (uuk(i,j).lt.upmin(i)) upmin(i)=uuk(i,j)
+               if (uuk(i,j).gt.upmax(i)) upmax(i)=uuk(i,j)
             enddo
             enddo
             do j=1,nb                    ! compute hyper-parameter
-               d= umax(j)-umin(j)
-               umin(j) = umin(j) - ep * d
-               umax(j) = umax(j) + ep * d
-               if (nio.eq.0) write (6,*) j,umin(j),umax(j),'uminmax'
+               d= upmax(j)-upmin(j)
+               upmin(j) = upmin(j) - ep * d
+               upmax(j) = upmax(j) + ep * d
+               if (nio.eq.0) write (6,*) j,upmin(j),upmax(j),'uminmax'
             enddo
          endif
 
          ! compute distance between umax and umin
-         call sub3(udis,umax,umin,nb)
+         call sub3(updis,upmax,upmin,nb)
 
          if (nio.eq.0) then
             do i=1,nb
-               write (6,*) i,udis(i),'udis'
+               write (6,*) i,updis(i),'udis'
             enddo
          endif
          if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
-            call dump_serial(umin,nb,'ops/umin ',nid)
-            call dump_serial(umax,nb,'ops/umax ',nid)
+            call dump_serial(upmin,nb,'ops/umin ',nid)
+            call dump_serial(upmax,nb,'ops/umax ',nid)
          endif
       endif   
 
