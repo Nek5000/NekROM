@@ -530,36 +530,36 @@ c-----------------------------------------------------------------------
 
       if (ifpod(2)) then
          if (rmode.eq.'ON '.or.rmode.eq.'ONB'.or.rmode.eq.'CP ') then
-            call read_serial(tmin,nb,'ops/tmin ',wk,nid)
-            call read_serial(tmax,nb,'ops/tmax ',wk,nid)
+            call read_serial(tpmin,nb,'ops/tmin ',wk,nid)
+            call read_serial(tpmax,nb,'ops/tmax ',wk,nid)
          else
-            call cfill(tmin,1.e9,nb)
-            call cfill(tmax,-1.e9,nb)
+            call cfill(tpmin,1.e9,nb)
+            call cfill(tpmax,-1.e9,nb)
             do j=1,ns
             do i=1,nb
-               if (ttk(i,j).lt.tmin(i)) tmin(i)=ttk(i,j)
-               if (ttk(i,j).gt.tmax(i)) tmax(i)=ttk(i,j)
+               if (ttk(i,j).lt.tpmin(i)) tpmin(i)=ttk(i,j)
+               if (ttk(i,j).gt.tpmax(i)) tpmax(i)=ttk(i,j)
             enddo
             enddo
             do j=1,nb                    ! compute hyper-parameter
-               d= tmax(j)-tmin(j)
-               tmin(j) = tmin(j) - ep * d
-               tmax(j) = tmax(j) + ep * d
-               if (nio.eq.0) write (6,*) j,tmin(j),tmax(j),'tminmax'
+               d= tpmax(j)-tpmin(j)
+               tpmin(j) = tpmin(j) - ep * d
+               tpmax(j) = tpmax(j) + ep * d
+               if (nio.eq.0) write (6,*) j,tpmin(j),tpmax(j),'tminmax'
             enddo
          endif
 
          ! compute distance between tmax and tmin
-         call sub3(tdis,tmax,tmin,nb)
+         call sub3(tpdis,tpmax,tpmin,nb)
          if (nio.eq.0) then
             do i=1,nb
-               write (6,*) i,tdis(i),'tdis'
+               write (6,*) i,tpdis(i),'tdis'
             enddo
          endif
 
          if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
-            call dump_serial(tmin,nb,'ops/tmin ',nid)
-            call dump_serial(tmax,nb,'ops/tmax ',nid)
+            call dump_serial(tpmin,nb,'ops/tmin ',nid)
+            call dump_serial(tpmax,nb,'ops/tmax ',nid)
          endif
       endif   
 
