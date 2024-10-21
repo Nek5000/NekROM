@@ -4,7 +4,7 @@ c     Note: Keys have to be in capital letters
 c
       integer MORDICT_NKEYS
 
-      parameter (MORDICT_NKEYS = 61)
+      parameter (MORDICT_NKEYS = 62)
 
       character*132 mordictkey(MORDICT_NKEYS)
       data
@@ -55,17 +55,18 @@ c
      &  mordictkey(45) / 'FILTER:TYPE' /
      &  mordictkey(46) / 'FILTER:MODES' /
      &  mordictkey(47) / 'FILTER:RADIUS' /
-     &  mordictkey(48) / 'BUOYANCY' /
-     &  mordictkey(49) / 'BUOYANCY:MAGNITUDE' /
-     &  mordictkey(50) / 'BUOYANCY:ANGLE' /
-     &  mordictkey(51) / 'BUOYANCY:GX' /
-     &  mordictkey(52) / 'BUOYANCY:GY' /
-     &  mordictkey(53) / 'BUOYANCY:GZ' /
-     &  mordictkey(54) / 'EI' /
-     &  mordictkey(55) / 'EI:MODE' /
-     &  mordictkey(56) / 'EI:EQN' /
-     &  mordictkey(57) / 'TENDEC' /
-     &  mordictkey(58) / 'TENDEC:MODE' /
-     &  mordictkey(59) / 'TENDEC:RANK' /
-     &  mordictkey(60) / 'TENDEC:CORE' /
-     &  mordictkey(61) / 'TENDEC:SKEW' /
+     &  mordictkey(48) / 'FILTER:RELAXATION' /
+     &  mordictkey(49) / 'BUOYANCY' /
+     &  mordictkey(50) / 'BUOYANCY:MAGNITUDE' /
+     &  mordictkey(51) / 'BUOYANCY:ANGLE' /
+     &  mordictkey(52) / 'BUOYANCY:GX' /
+     &  mordictkey(53) / 'BUOYANCY:GY' /
+     &  mordictkey(54) / 'BUOYANCY:GZ' /
+     &  mordictkey(55) / 'EI' /
+     &  mordictkey(56) / 'EI:MODE' /
+     &  mordictkey(57) / 'EI:EQN' /
+     &  mordictkey(58) / 'TENDEC' /
+     &  mordictkey(59) / 'TENDEC:MODE' /
+     &  mordictkey(60) / 'TENDEC:RANK' /
+     &  mordictkey(61) / 'TENDEC:CORE' /
+     &  mordictkey(62) / 'TENDEC:SKEW' /

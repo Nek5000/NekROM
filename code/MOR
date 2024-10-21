@@ -219,6 +219,7 @@ c     parameters and common blocks for MOR
       integer rbf 
       common /morfilter/ rdft,dfops(lub*lub)
       common /morifilt/  rbf
+      common /morrelax/  relax
 
       ! Tensor Decomposition 
 

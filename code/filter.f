@@ -245,3 +245,25 @@ c
       return
       end
 c-----------------------------------------------------------------------
+      subroutine efr_relaxation(filtered_coef,coef,relax,nb)
+
+      ! perform the relaxation step in the evolve-filter-relaxation method
+
+      ! INPUT:
+      ! filtered_coef := filtered ROM coefficient
+      ! coef          := ROM coefficient
+      ! relax         := relaxation parameter ([0, 1])
+      ! nb            := size of filtered_coef and coef arrays
+
+      ! OUTPUT:
+      ! filtered_coef := (1-relax)*coef + relax*filtered_coef
+
+      real filtered_coef(1:nb), coef(1:nb)
+      real relax
+      integer nb
+
+      call cmult(filtered_coef,relax,nb)
+      call add2s2(filtered_coef,coef,(1.-relax),nb)
+
+      return
+      end
