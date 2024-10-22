@@ -198,11 +198,13 @@ c     if (icount.le.2) then
          endif
 
          if (cfloc.eq.'POST') then
-         if (cftype.eq.'TFUN') then
-            call pod_proj(rhs(1,1),rbf,nb,'step  ')
-         else if (cftype.eq.'DIFF') then
-            call pod_df(rhs(1,1))
-         endif
+            ! copy unfiltered coefficients
+            call copy(utmp1(1),rhs(1,1),nb)
+            if (cftype.eq.'TFUN') then
+               call pod_proj(rhs(1,1),rbf,nb,'step  ')
+            else if (cftype.eq.'DIFF') then
+               call pod_df(rhs(1,1))
+            endif
          endif
 
          solve_time=solve_time+dnekclock()-ttime
@@ -238,8 +240,13 @@ c     if (icount.le.2) then
          call copy(rhs(1,2),rhs(1,1),nb)
       endif
 
-      if (cfloc.eq.'POST'.and.cftype.eq.'POLY')
-     $   call apply_les_imp(rhs(0,1),rhs(0,2),rdft,fles1,fles2,rtmp1)
+      if (cfloc.eq.'POST') then
+         if (cftype.eq.'POLY') then
+            call apply_les_imp(rhs(0,1),rhs(0,2),rdft,fles1,fles2,rtmp1)
+         elseif ((cftype.eq.'TFUN').or.(cftype.eq.'DIFF')) then
+            call efr_relaxation(rhs(1,1),utmp1(1),relax,nb)
+         endif
+      endif
 
       if (ifrom(2)) call shift(ut,rhs(0,2),nb+1,5)
       if (ifrom(1)) call shift(u,rhs,nb+1,5)

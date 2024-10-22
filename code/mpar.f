@@ -411,6 +411,9 @@ c-----------------------------------------------------------------------
          endif
       endif
 
+      call finiparser_getdbl(d_out,'filter:relaxation',ifnd)
+      if (ifnd.eq.1) relax=d_out
+
       ! EI
 
       call finiparser_getbool(i_out,'ei:mode',ifnd)
@@ -547,6 +550,7 @@ c-----------------------------------------------------------------------
       call bcast(tbarr0,wdsize)
       call bcast(rbf,wdsize)
       call bcast(rdft,wdsize)
+      call bcast(relax,wdsize)
       call bcast(gx,wdsize)
       call bcast(gy,wdsize)
       call bcast(gz,wdsize)
