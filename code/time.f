@@ -67,6 +67,7 @@ c     if (icount.le.2) then
                if (ifdecpl) then
                   call copy(hinv(1,2),hlm(1,2),(nb-nplay)**2)
                   call diag(hinv(1,2),wt(1,2),rhs(1,2),nb)
+                  call update_k(uk,ukp,tk,tkp)
                else
                   call invmat(hinv(1,2),hlu(1,2),hlm(1,2),
      $            ihlu(1,2),ihlu2(1,2),nb-nplay)
@@ -77,7 +78,6 @@ c     if (icount.le.2) then
                endif
             endif
             lu_time=lu_time+dnekclock()-ttime
-            call update_k(uk,ukp,tk,tkp)
          endif
 
          call rom_userfop
@@ -148,6 +148,7 @@ c     if (icount.le.2) then
                if (ifdecpl) then
                   call copy(hinv,hlm,(nb-nplay)**2)
                   call diag(hinv,wt,rhs(1,1),nb)
+                  call update_k(uk,ukp,tk,tkp)
                else
                   call invmat(hinv,hlu,hlm,ihlu,ihlu2,nb-nplay)
                if (nio.eq.0) write (6,*) 'check nplay',nplay,'cp3'
@@ -158,7 +159,6 @@ c     if (icount.le.2) then
                endif
             endif
             lu_time=lu_time+dnekclock()-ttime
-            call update_k(uk,ukp,tk,tkp)
          endif
 
          call rom_userfop
