@@ -222,11 +222,7 @@ c-----------------------------------------------------------------------
       call set_bdf_coef(ad_alpha,ad_beta)
       call mor_init_params
 
-      if (param(170).lt.0) then
-         call mor_set_params_par
-      else
-         call mor_set_params_rea
-      endif
+      call mor_set_params_par
 
       if (nid.eq.0) write (6,*) 'post par rea'
       call mor_show_params
