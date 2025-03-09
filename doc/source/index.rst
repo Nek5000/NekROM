@@ -46,6 +46,8 @@ API
 
   pod
 
+  qoi
+
   read
 
   riesz

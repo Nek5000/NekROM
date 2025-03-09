@@ -18,7 +18,7 @@ release = '1.0.0'
 
 extensions = ['sphinx.ext.autodoc','sphinxfortran.fortran_domain','sphinxfortran.fortran_autodoc']
 
-fortran_src = [os.path.abspath('../../code/MOR'), os.path.abspath('../../code/')]
+fortran_src = [os.path.abspath('../../code/')]
 fortran_ext = ["f"]
 
 templates_path = ['_templates']
