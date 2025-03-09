@@ -18,7 +18,7 @@ pip install sphinx-fortran
 pip install six
 
 # Clone this branch of numpy: https://github.com/nchristensen/numpy/tree/common-block-division
-# cd into the numpy directory and install it into the conda environment using these instructions: https://numpy.org/doc/stable//building/index.html#building-from-source-to-use-numpy
+# cd into the numpy directory and install it into the conda environment as follow (uses these instructions: https://numpy.org/doc/stable//building/index.html#building-from-source-to-use-numpy)
 cd numpy
 git submodule update --init
 pip install . --no-build-isolation
