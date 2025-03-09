@@ -8,7 +8,7 @@ Instructions to build documentation:
 
 # Set up a new conda environment and activate it or use an existing conda environment if you don't mind using a development version of numpy
 conda create -n nekrom-docs
-conda activate nekrom
+conda activate nekrom-docs
 # Install dependencies to build numpy
 conda install pip cython compilers openblas meson-python pkg-config
 
