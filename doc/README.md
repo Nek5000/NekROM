@@ -28,3 +28,6 @@ cd NekROM/doc
 make html
 # To view the documentation, cd into NekROM/doc/build and open index.html in your web browser
 # Refactor source code following this style to make data show up in the documentation. https://ostueker.github.io/Example_Fortran/RefactoringFortranForSphinx.html
+
+# Note: it appears sphinx-fortran does not support multi-line comments for parameters.
+
