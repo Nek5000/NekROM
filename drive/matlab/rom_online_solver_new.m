@@ -78,7 +78,7 @@ for j=1:length(deims)
 ndeim_pts = deims(j);
 clsdeim = true;
 
-[au_full, bu_full, cu_full, u0_full, uk_full, mb, ns] = load_full_ops('../ops');
+[au_full, bu_full, cu_full, u0_full, uk_full, mb, ns] = load_full_ops('../../examples/ldc/ops');
 
 %size(au_full)
 
@@ -103,13 +103,13 @@ if (ifleray) || (ifefr) || (iftr)
 end
 
 %% Get the grid and POD bases for plotting purposes
-cname='../basldc'; % Modify this for your case
+cname='../../examples/ldc/basldc'; % Modify this for your case
 %avg_cname='../avgcyl';
 bas_snaps = NekSnaps(cname);
 [pod_u, pod_v, x_fom, y_fom] = get_grid_and_pod(bas_snaps);
 
 %% Get the non-linear snapshots and calculate the DEIM points
-nl_cname = '../csnldc'; % Modify this for your case
+nl_cname = '../../examples/ldc/csnldc'; % Modify this for your case
 nl_snaps = NekSnaps(nl_cname);
 
 % Begin integrate ROM with BDFk/EXTk
@@ -212,7 +212,7 @@ iostep = 500;%250;%500;%10;
       break;
    end;
 
-   bool_plot = false;
+   bool_plot = true;
    if (mod(istep,iostep) == 0);
       ucoef(istep/iostep,:)=u(:,1);
       u(:,1)
