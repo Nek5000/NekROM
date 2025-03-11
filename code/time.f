@@ -115,14 +115,6 @@ c     if (icount.le.2) then
             call mxm(rhstmp(1),1,wt(1,2),nb,rhs(1,2),nb)
          endif
 
-         if (cfloc.eq.'POST') then
-         if (cftype.eq.'TFUN') then
-            call pod_proj(rhs(1,2),rbf,nb,'step  ')
-         else if (cftype.eq.'DIFF') then
-            call pod_df(rhs(1,2))
-         endif
-         endif
-
          tsolve_time=tsolve_time+dnekclock()-ttime
          endif
       endif
