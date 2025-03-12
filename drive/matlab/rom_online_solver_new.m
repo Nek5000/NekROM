@@ -72,11 +72,11 @@ end
 
 %deims= [1 2 3 4 5 6 7 8 9 10]
 %deims= [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20]
-deims= [0];%[200];%[2,4,8,16,20 40 80 100 200 400 800 1000]
+deims= [200];%[2,4,8,16,20 40 80 100 200 400 800 1000]
 % number of deim points
 for j=1:length(deims)
 ndeim_pts = deims(j);
-clsdeim = true;
+clsdeim = false;
 
 [au_full, bu_full, cu_full, u0_full, uk_full, mb, ns] = load_full_ops('../../examples/ldc/ops');
 
@@ -212,7 +212,7 @@ iostep = 500;%250;%500;%10;
       break;
    end;
 
-   bool_plot = true;
+   bool_plot = false;
    if (mod(istep,iostep) == 0);
       ucoef(istep/iostep,:)=u(:,1);
       u(:,1)
@@ -390,34 +390,6 @@ function F = rom_residual(x,a,b,diff,betas,dt,ito,rhs)
    F = norm(F1);
 end
 
-function [pod_u, pod_v, x_fom, y_fom] = get_grid_and_pod(snaps)
-  x_fom = snaps.flds{1}.x;
-  y_fom = snaps.flds{1}.y;
-
-  [nr, ns, nE] = size(x_fom);
-  nL = nr*ns*nE;
-  [nbasis, nbasis1] = size(snaps.flds)
-  pod_u = [];
-  pod_v = [];
-  for i=1:nbasis;
-    %u_snap = snaps.flds{i}.u;
-    pod_u = [pod_u, reshape(snaps.flds{i}.u, nL,1)];
-    pod_v = [pod_v, reshape(snaps.flds{i}.v,nL,1)];
-  end;
-
-
-  % The bases are not 
-  %[pod_u;pod_v]'*[pod_u;pod_v]
-  %exit;
-
-  %avg_snaps = NekSnaps(avg_cname);
-  %u_avg = reshape(avg_snaps.flds{1}.u,nL,1);
-  %v_avg = reshape(avg_snaps.flds{1}.v,nL,1);
-  %% Technically not the POD anymore
-  %exit;
-  %pod_u(:,1) = u_avg(:,1);
-  %pod_v(:,1) = v_avg(:,1);
-end;
 
 % This needs to do the same thing as
 % reshape(cu*utmp(:,1),nb,nb+1)*u(:,1);
