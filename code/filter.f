@@ -1,13 +1,12 @@
 c-----------------------------------------------------------------------
       subroutine pod_proj(uu,r1,nn,msg)
-
       ! Apply smoothing function to vector uu
-
+      !
       ! uu:= output/input, vector to be filtered
       ! r1:= input, number of modes to be filtered
       ! nn:= input, length of vector uu
-      ! msg:= input, used as an indicator for different filter
-      ! functions. Currently, we support msg = step, linear, parabo, and
+      ! msg:= input, used indicator for different filter functions. 
+      ! Currently, we support msg = step, linear, parabo, and
       ! cubic.
 
       real uu(nn)
