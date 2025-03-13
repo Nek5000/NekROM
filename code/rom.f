@@ -1020,6 +1020,7 @@ c-----------------------------------------------------------------------
          write (6,*) 'mp_cftype      ',cftype
          write (6,*) 'mp_rbf         ',rbf
          write (6,*) 'mp_rdft        ',rdft
+         write (6,*) 'mp_relax       ',relax
          write (6,*) ' '
          write (6,*) 'mp_navg_step   ',navg_step
          write (6,*) 'mp_rk_tol      ',rk_tol
