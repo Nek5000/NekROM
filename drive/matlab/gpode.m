@@ -1,7 +1,7 @@
 function[p] = gpode (U, m)
  [~ , ~ , p] = qr (U' , 'vector');
  p = p(1:size(U, 2))';
- for i = length(p) + 1:m
+ for i = (length(p) + 1):m
    [~ , S , W] = svd(U(p, :) , 0);
    g = S(end - 1, end - 1).^2 - S(end, end)^2;
    Ub = W'* U';

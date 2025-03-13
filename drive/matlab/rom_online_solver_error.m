@@ -664,6 +664,7 @@ function[P,indices] = calc_deim_proj_mat(U_nl)
     end;
 end
 
+
 function [out_coef] = conv_deim_fixed(ucoef, pod_u, pod_v, nl_snaps_obj, deim_pts,istep,algo,oversample_factor)
     persistent proj_mat u_deimu v_deimu u_deimv v_deimv ux_deimu uy_deimu vx_deimv vy_deimv;
     persistent u_deim_stack v_deim_stack ux_deim_stack uy_deim_stack

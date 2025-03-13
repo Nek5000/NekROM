@@ -34,9 +34,9 @@
 
 clear all; close all;
 
-nsteps = 1e5;%80000;%1.25000E+05;%20000; 
+nsteps = 10*1e5;%80000;%1.25000E+05;%20000; 
 dt     = 1.000000E-03;%0.001;
-iostep = 500;%250;%500;%10;
+iostep = 5*1000;%500;%250;%500;%10;
 nu     = 1./15000;%0.01;
 nb     = 20;
 
@@ -73,6 +73,7 @@ end
 %deims= [1 2 3 4 5 6 7 8 9 10]
 %deims= [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20]
 deims= [200];%[2,4,8,16,20 40 80 100 200 400 800 1000]
+n_os_points=0;
 % number of deim points
 for j=1:length(deims)
 ndeim_pts = deims(j);
@@ -153,7 +154,7 @@ for istep=1:nsteps
    else;
    % DEIM version
    % Should be close, but not identical to, the above
-    c_coef = conv_deim(u(:,1), pod_u, pod_v, nl_snaps,ndeim_pts,istep,clsdeim)-c1+c2*utmp(:,1)+c3*utmp(:,1);
+    c_coef = conv_deim(u(:,1), pod_u, pod_v, nl_snaps,ndeim_pts,istep,clsdeim,n_os_points)-c1+c2*utmp(:,1)+c3*utmp(:,1);
    end;
 
    %norm(pod_u(:,1:nb+1)*c_coef)
@@ -182,7 +183,7 @@ for istep=1:nsteps
 %     else
 %  nsteps = 80000;%1.25000E+05;%20000; 
 dt     = 1.000000E-03;%0.001;
-iostep = 500;%250;%500;%10;
+iostep = 100;%500;%250;%500;%10;
       % if constraints are satisfied, do normal solve
 %        if isempty(hufac)
 %           h=bu*betas(1,ito)/dt+au*nu;
@@ -212,7 +213,7 @@ iostep = 500;%250;%500;%10;
       break;
    end;
 
-   bool_plot = false;
+   bool_plot = true;
    if (mod(istep,iostep) == 0);
       ucoef(istep/iostep,:)=u(:,1);
       u(:,1)

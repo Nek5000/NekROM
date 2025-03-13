@@ -1,7 +1,7 @@
-function [out_coef] = conv_deim(ucoef, pod_u, pod_v, nl_snaps_obj, ndeim_pts,istep,clsdeim)
+function [out_coef] = conv_deim(ucoef, pod_u, pod_v, nl_snaps_obj, ndeim_pts,istep,clsdeim,n_os_points)
     persistent proj_mat Ainv inv_p_nl u_deimu v_deimu u_deimv v_deimv ux_deimu uy_deimu vx_deimv vy_deimv;
-    persistent u_deim_stack v_deim_stack ux_deim_stack uy_deim_stack
-    persistent inds
+    persistent u_deim_stack v_deim_stack ux_deim_stack uy_deim_stack tau mu A_tau_inv alpha nl_bas_inds% nl_max_coef nl_min_coef;
+    persistent inds;
 
 %   if isempty(proj_mat)
     if istep == 1
@@ -35,6 +35,11 @@ function [out_coef] = conv_deim(ucoef, pod_u, pod_v, nl_snaps_obj, ndeim_pts,ist
         % Maybe 500 snapshots is not enough?
         nl_bas = orth(nl_bas,1e-16); % Use all of the snapshots for now.
 
+        % For use with Constrained DEIM
+        %nl_snapshot_proj = nl_bas'*nl_snaps;
+        %nl_max_coef = max(nl_snapshot_proj,[],2);
+        %nl_min_coef = min(nl_snapshot_proj,[],2); 
+
 
         nl_bas_u = nl_bas(1:nL,:);
         nl_bas_v = nl_bas(nL+1:end,:);
@@ -67,7 +72,7 @@ function [out_coef] = conv_deim(ucoef, pod_u, pod_v, nl_snaps_obj, ndeim_pts,ist
                [P, inds] = calc_qdeim_proj_mat(nl_bas); % Should select points based on the basis
             else;
             % Can oversample if desired.
-               inds = s_opt_generator(nl_bas, ndeim_pts + 100, [])
+               inds = s_opt_generator(nl_bas, ndeim_pts + n_os_points, [])
                inds = inds';
             end;
             % For testing, use all rows
@@ -130,6 +135,7 @@ function [out_coef] = conv_deim(ucoef, pod_u, pod_v, nl_snaps_obj, ndeim_pts,ist
 
         proj_mat = [pod_u(:,2:end); pod_v(:,2:end)]'*nl_bas;
 
+        nl_bas_inds = nl_bas(inds,:);
         if size(nl_bas,2) == size(inds,1);   
             inv_p_nl = inv(nl_bas(inds,:));
         else;
@@ -145,9 +151,20 @@ function [out_coef] = conv_deim(ucoef, pod_u, pod_v, nl_snaps_obj, ndeim_pts,ist
         % Doesn't seem like the 2 should be necessary
         %Ainv = inv(2*nl_bas(inds,:)'*nl_bas(inds,:));
         Ainv = inv(nl_bas(inds,:)'*nl_bas(inds,:));
+
+        % Matrices for MCLSDEIM
+        nl_snapshot_proj = nl_bas'*nl_snaps;
+        tau = inv(cov(nl_snapshot_proj'));
+        size(nl_snapshot_proj)
+        size(tau)
+        size(nl_bas_inds)
+        mu = mean(nl_snapshot_proj,2);
+        alpha = 1e-14;
+        A_tau_inv = inv(nl_bas(inds,:)'*nl_bas(inds,:) + alpha*tau); 
     end;
 
     separate=false;
+    mclsdeim = true;
 
     if separate
         conv_u_deim = ((u_deimu(:,2:end)*ucoef(2:end)).*(ux_deimu(:,2:end)*ucoef(2:end)) + (v_deimu(:,2:end)*ucoef(2:end)).*(uy_deimu(:,2:end)*ucoef(2:end)));
@@ -159,6 +176,17 @@ function [out_coef] = conv_deim(ucoef, pod_u, pod_v, nl_snaps_obj, ndeim_pts,ist
         if clsdeim;
             b = proj_mat'*ucoef(2:end);
             out_coef = out_coef - ((b'*out_coef)/(b'*Ainv*b))*(Ainv*b);
+        elseif mclsdeim;
+            %disp('here');
+            b = proj_mat'*ucoef(2:end);
+            out_coef = A_tau_inv*(nl_bas_inds'*conv_deim + alpha*tau*mu); 
+            out_coef = out_coef - ((b'*out_coef)/(b'*A_tau_inv*b))*(A_tau_inv*b);
+
+        %    This does not work. It keeps the problem from blowing up for longer, but it still eventually blows up.
+        %    disp('HERE');
+        %    options = optimoptions('fmincon','Algorithm','interior-point','Display','off');
+        %    cmin_func = @(x) inv_p_nl@x;
+        %    [out_coef,fval,exitflag,output] = fmincon(cmin_func,conv_deim,[],[],[],[],nl_max_coef,nl_min_coef,[],options);
         end;
         out_coef = proj_mat*out_coef;
     end;
