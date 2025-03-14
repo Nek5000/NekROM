@@ -709,8 +709,10 @@ c-----------------------------------------------------------------------
 
       cfloc='NONE'
       cftype='NONE'
+      regtype='NONE '
       rbf=0.5
       rdft=0.5
+      relax=0.0
 
       gx=0.
       gy=0.
@@ -1021,6 +1023,8 @@ c-----------------------------------------------------------------------
          write (6,*) 'mp_rbf         ',rbf
          write (6,*) 'mp_rdft        ',rdft
          write (6,*) 'mp_relax       ',relax
+         write (6,*) ' '
+         write (6,*) 'mp_regularization ',regtype
          write (6,*) ' '
          write (6,*) 'mp_navg_step   ',navg_step
          write (6,*) 'mp_rk_tol      ',rk_tol

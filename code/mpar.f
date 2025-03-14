@@ -414,6 +414,24 @@ c-----------------------------------------------------------------------
       call finiparser_getdbl(d_out,'filter:relaxation',ifnd)
       if (ifnd.eq.1) relax=d_out
 
+      ! Regularization
+
+      call finiparser_getstring(c_out,'regularization:type',ifnd)
+      if (ifnd.eq.1) then
+         call capit(c_out,132)
+         if (index(c_out,'LERAY').eq.1) then
+            regtype='LERAY'
+         else if (index(c_out,'EFR').eq.1) then
+            regtype='EFR  '
+         else if (index(c_out,'TR').eq.1) then
+            regtype='TR   '
+         else
+            regtype='INVA '
+            write (6,*) 'invalid option for regularization:type ',c_out
+            ierr=ierr+1
+         endif
+      endif
+
       ! EI
 
       call finiparser_getbool(i_out,'ei:mode',ifnd)
@@ -519,6 +537,7 @@ c-----------------------------------------------------------------------
       call bcast(ips,csize*3)
       call bcast(cfloc,csize*4)
       call bcast(cftype,csize*4)
+      call bcast(regtype,csize*5)
 
       ! integers
 
