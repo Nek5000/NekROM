@@ -422,11 +422,11 @@ c-----------------------------------------------------------------------
          if (index(c_out,'LERAY').eq.1) then
             regtype='LERAY'
          else if (index(c_out,'EFR').eq.1) then
-            regtype='EFR'
+            regtype='EFR  '
          else if (index(c_out,'TR').eq.1) then
-            regtype='TR'
+            regtype='TR   '
          else
-            regtype='INVA'
+            regtype='INVA '
             write (6,*) 'invalid option for regularization:type ',c_out
             ierr=ierr+1
          endif

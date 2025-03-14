@@ -690,8 +690,7 @@ c-----------------------------------------------------------------------
       endif
 
       ! Add time-relaxation term
-      if (regtype.eq.'TR') then
-         if (nio.eq.0) write(6,*) 'Inside TR'
+      if (regtype.eq.'TR   ') then
          call copy(tmp2,u,nb+1)
          ! Filter velocity coefficients
          if (cftype.eq.'TFUN') then

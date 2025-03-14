@@ -709,7 +709,7 @@ c-----------------------------------------------------------------------
 
       cfloc='NONE'
       cftype='NONE'
-      regtype='None'
+      regtype='NONE '
       rbf=0.5
       rdft=0.5
       relax=0.0
