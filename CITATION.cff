@@ -1,0 +1,44 @@
+# This CITATION.cff file was generated with cffinit.
+# Visit https://bit.ly/cffinit to generate yours today!
+
+cff-version: 1.2.0
+title: NekROM
+message: >-
+  If you use this software, please cite it using the
+  metadata from this file.
+type: software
+authors:
+  - given-names: Kento
+    family-names: Kaneko
+    email: kento.kaneko@epfl.ch
+    affiliation: EPFL
+  - given-names: Ping-Hsuan
+    family-names: Tsai
+    email: pinghsuan@vt.edu
+    affiliation: Virginia Tech
+    orcid: 'https://orcid.org/0009-0003-2388-7580'
+  - given-names: Nicholas 
+    family-names: Christensen
+    email: njchris2@illinois.edu
+    affiliation: 'University of Illinois at Urbana, Champaign'
+  - given-names: Paul
+    family-names: Fischer
+    email: fischerp@illinois.edu
+    affiliation: 'University of Illinois at Urbana, Champaign'
+repository-code: 'https://github.com/Nek5000/NekROM'
+abstract: >-
+  This package include tools to help apply model-order
+  reduction (MOR) to data produced by Nek5000 to generate
+  reduced-order models (ROM). The generated ROMs can be run
+  either in the Fortran driver embedded inside the Nek5000
+  userchk subroutine or can be run separately by provided
+  driver scripts in Matlab, Python, and Julia. Users can
+  also provide their own drivers which read the ROM
+  operators and QOI factors from the ops/ and qoi/
+  directories.
+keywords:
+  - Model order reduction
+  - Spectral element method
+  - Boussinesq
+license: MIT
+date-released: '2025-03-10'
