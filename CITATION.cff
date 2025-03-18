@@ -26,7 +26,8 @@ authors:
     email: fischerp@illinois.edu
     affiliation: 'University of Illinois at Urbana, Champaign'
 repository-code: 'https://github.com/Nek5000/NekROM'
-abstract: >-
+acknowledgments: "This work was initiated in 2018 under close advisement by Paul Fischer (fischerp@illinois.edu)." 
+abstract: >
   This package include tools to help apply model-order
   reduction (MOR) to data produced by Nek5000 to generate
   reduced-order models (ROM). The generated ROMs can be run
