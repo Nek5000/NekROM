@@ -20,11 +20,11 @@ authors:
   - given-names: Nicholas
     family-names: Christensen
     email: njchris2@illinois.edu
-    affiliation: University of Illinois at Urbana, Champaign
+    affiliation: University of Illinois at Urbana-Champaign
   - given-names: Paul
     family-names: Fischer
     email: fischerp@illinois.edu
-    affiliation: University of Illinois at Urbana, Champaign
+    affiliation: University of Illinois at Urbana-Champaign
 repository-code: 'https://github.com/Nek5000/NekROM'
 abstract: >-
   This package include tools to help apply model-order
