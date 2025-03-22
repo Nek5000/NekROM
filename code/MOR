@@ -206,11 +206,11 @@ c     parameters and common blocks for MOR
       common /mortest/ ul2(lub),uh10(lub)
 
       character*6 cts
-      character*5 scopt
+      character*5 scopt,regtype
       character*3 ips,rmode
       character*4 cftype,cfloc,eqn
 
-      common /morchar/ ips,eqn,rmode,cts,scopt,cftype,cfloc
+      common /morchar/ ips,eqn,rmode,cts,scopt,cftype,cfloc,regtype
 
       common /morid/ ones(lx1*ly1*lz1*lelm),zeros(lx1*ly1*lz1*lelm)
       common /morrk/ grk(lb*6*2),urki(lb*2),urko(lb*2),
