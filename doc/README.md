@@ -50,8 +50,7 @@ make html
 To view the generated documentation, navigate to the build directory and open `index.html` in your browser:
 ```sh
 cd NekROM/doc/build
-open index.html  # macOS
-xdg-open index.html  # Linux
+open index.html
 ```
 
 ## Refactoring Fortran Code for Documentation
