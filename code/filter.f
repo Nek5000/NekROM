@@ -1,13 +1,13 @@
 c-----------------------------------------------------------------------
       subroutine pod_proj(uu,r1,nn,msg)
-      ! Apply smoothing function to vector uu
+      ! Apply smoothing function to ROM coefficients vector uu.
       !
-      ! uu:= output/input, vector to be filtered
-      ! r1:= input, number of modes to be filtered
-      ! nn:= input, length of vector uu
+      ! uu:= output/input, ROM coefficients vector to be filtered.
+      ! r1:= input, number of modes to be filtered.
+      ! nn:= input, length of vector uu.
       ! msg:= input, specifier for for different filter functions. 
-      ! Currently, msg = step, linear, parabo, and
-      ! cubic are supported specifiers.
+      ! Currently, msg = step is supported specifier. msg = linear,
+      ! parabo and cubic are deprecated.
 
       real uu(nn)
       real a1,a2,a3,a4
@@ -41,11 +41,11 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine pod_df(uu)
-
-      ! Apply differential filter (DF) to vector uu
-
-      ! uu := vector that will be filtered
-
+      ! Apply ROM differential filter (DF) to ROM coefficients vector
+      ! uu.
+      !
+      ! uu:= output/input, ROM coefficients vector to be filtered.
+      !
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
@@ -76,14 +76,14 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine setdf(flu,a,b,ad_diff)
-
-      ! Set up differential filter (DF) operator B + ad_diff * A
-
-      ! flu := differential filter operator
-      ! a := ROM stiffness matrix
-      ! b := ROM mass matrix
-      ! ad_diff := radius of the DF
-
+      ! Set up ROM differential filter (DF) operator B + filter radius *
+      ! A.
+      !
+      ! flu:= output, differential filter operator.
+      ! a:= input, ROM stiffness matrix.
+      ! b:= input, ROM mass matrix.
+      ! ad_diff:= input, filter radius.
+      !
       include 'SIZE'
       include 'MOR'
 
@@ -245,17 +245,12 @@ c
       end
 c-----------------------------------------------------------------------
       subroutine efr_relaxation(filtered_coef,coef,relax,nb)
-
-      ! perform the relaxation step in the evolve-filter-relaxation method
-
-      ! INPUT:
-      ! filtered_coef := filtered ROM coefficient
-      ! coef          := ROM coefficient
-      ! relax         := relaxation parameter ([0, 1])
-      ! nb            := size of filtered_coef and coef arrays
-
-      ! OUTPUT:
-      ! filtered_coef := (1-relax)*coef + relax*filtered_coef
+      ! Perform the relaxation step in the evolve-filter-relaxation ROM.
+      !
+      ! filtered_coef:= input/output, filtered ROM coefficients vector.
+      ! coef:= input, unfilterd ROM coefficients vector.
+      ! relax:= input, relaxation parameter in [dt, 1].
+      ! nb:= input, length of vector filtered_coef and coef.
 
       real filtered_coef(1:nb), coef(1:nb)
       real relax
