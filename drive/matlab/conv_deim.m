@@ -2,7 +2,7 @@ function [out_coef] = conv_deim(ucoef, pod_u, pod_v, nl_snaps_obj, ndeim_pts,ist
     persistent proj_mat Ainv inv_p_nl u_deimu v_deimu u_deimv v_deimv ux_deimu uy_deimu vx_deimv vy_deimv;
     persistent u_deim_stack v_deim_stack ux_deim_stack uy_deim_stack tau mu A_tau_inv alpha nl_bas_inds% nl_max_coef nl_min_coef;
     persistent inds;
-
+  
 %   if isempty(proj_mat)
     if istep == 1
         % Stuff to be precomputed
@@ -20,7 +20,7 @@ function [out_coef] = conv_deim(ucoef, pod_u, pod_v, nl_snaps_obj, ndeim_pts,ist
         lgrad=@(u,mode) grad(u,rx,ry,sx,sy,jaci,d,mode);
         nL = prod(size(x));
         Me = reshape(jac.*(w*w'),nL,1);
-        
+
         %% Calculate the POD of the NL snapshots
         gramian = nl_snaps'*diag([Me;Me])*nl_snaps;
         gramian = 0.5*(gramian + gramian');
@@ -164,7 +164,7 @@ function [out_coef] = conv_deim(ucoef, pod_u, pod_v, nl_snaps_obj, ndeim_pts,ist
     end;
 
     separate=false;
-    mclsdeim = true;
+    mclsdeim = false;
 
     if separate
         conv_u_deim = ((u_deimu(:,2:end)*ucoef(2:end)).*(ux_deimu(:,2:end)*ucoef(2:end)) + (v_deimu(:,2:end)*ucoef(2:end)).*(uy_deimu(:,2:end)*ucoef(2:end)));

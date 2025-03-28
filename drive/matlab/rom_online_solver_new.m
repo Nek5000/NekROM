@@ -34,17 +34,37 @@
 
 clear all; close all;
 
-path='../../examples/ldc/';
+%path='../../examples/ldc/';
+%casename='ldc';
 
-nsteps = 10*1e5;%80000;%1.25000E+05;%20000; 
-dt     = 1.000000E-03;%0.001;
-iostep = 5*1000;%500;%250;%500;%10;
-nu     = 1./15000;%0.01;
-nb     = 20;
+path='../../examples/conv/';
+casename='cyl';
+
+% Should just use the values from the .rea file by default
+% allowing for overrides
+if contains(path, 'ldc')
+    nsteps = 10*1e5;%80000;%1.25000E+05;%20000; 
+    dt     = 1.000000E-03;%0.001;
+    iostep = 5*1000;%500;%250;%500;%10;
+    nu     = 1./15000;%0.01;
+    nb     = 20;
+elseif contains(path,'conv')
+    nsteps = 1.25000E+05;%20000; 
+    dt     = 4.000000E-03;%0.001;
+    iostep = 100;%250;%500;%10;
+    nu     = 0.01;
+    nb     = 20;
+else
+  disp('Error: unrecognized case');
+  exit;
+end;
+
+% Whether or not to plot on an iostep
+bool_plot = true;
 
 ifcopt  = false;
-ifleray = false;
-ifefr   = false;
+ifleray = false;%false;
+ifefr   = false;%false;
 iftr    = false;
 
 if ifcopt
@@ -75,11 +95,11 @@ end
 %deims= [1 2 3 4 5 6 7 8 9 10]
 %deims= [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20]
 deims= [200];%[2,4,8,16,20 40 80 100 200 400 800 1000]
-n_os_points=0;
 % number of deim points
 for j=1:length(deims)
 ndeim_pts = deims(j);
-clsdeim = false;
+n_os_points=ndeim_pts;
+clsdeim = true;
 
 [au_full, bu_full, cu_full, u0_full, uk_full, mb, ns] = load_full_ops(strcat(path,'ops'));
 
@@ -106,13 +126,15 @@ if (ifleray) || (ifefr) || (iftr)
 end
 
 %% Get the grid and POD bases for plotting purposes
-cname=strcat(path,'basldc'); % Modify this for your case
+cname=strcat(path,strcat('bas',casename)); % Modify this for your case
+%cname
+%exit
 %avg_cname='../avgcyl';
 bas_snaps = NekSnaps(cname);
 [pod_u, pod_v, x_fom, y_fom] = get_grid_and_pod(bas_snaps);
 
 %% Get the non-linear snapshots and calculate the DEIM points
-nl_cname = strcat(path,'csnldc'); % Modify this for your case
+nl_cname = strcat(path,strcat('csn',casename)); % Modify this for your case
 nl_snaps = NekSnaps(nl_cname);
 %h=bu*betas(1,ito)/dt+au*nu;
 
@@ -217,7 +239,6 @@ iostep = 100;%500;%250;%500;%10;
       break;
    end;
 
-   bool_plot = true;
    if (mod(istep,iostep) == 0);
       ucoef(istep/iostep,:)=u(:,1);
       u(:,1)
@@ -250,9 +271,9 @@ if ndeim_pts > 0;
     else
         clsdeimstr='';
     end;
-    casedir= sprintf('nb%d_results_ndeim_pts%d_%s_%s',nb,ndeim_pts,clsdeimstr,reg_str)
+    casedir= sprintf('%s_nb%d_results_ndeim_pts%d_%s_%s',casename,nb,ndeim_pts,clsdeimstr,reg_str)
 else
-    casedir= sprintf('nb%d_results_%s',nb,reg_str)
+    casedir= sprintf('%s_nb%d_results_%s',casename_nb,reg_str)
 end;
 mkdir(casedir);
 

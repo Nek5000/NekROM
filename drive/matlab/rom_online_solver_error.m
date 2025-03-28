@@ -123,7 +123,7 @@ u(:,1)=u0;
 
 coef_errs_all = [];
 coef_errs_single = [];
-for deim_pts_indx=1:size(deims,2);
+%for deim_pts_indx=1:size(deims,2);
 deim_pts = deims(deim_pts_indx);
 tensor_coefs = [];
 deim_coefs = [];
@@ -133,18 +133,19 @@ for k = 1:size(uk,2)
  %size(uk)
  %size(c3)
  %exit
- c_coef_tensor = conv_deim_fixed(u(:,1), pod_u, pod_v, nl_snaps,deim_pts,k,algo,oversample_factor)-c1+c2*utmp(:,1)+c3*utmp(:,1); 
- c_coef_deim =  (reshape(c0*utmp(:,1),nb,nb+1)*u(:,1));
+ %c_coef_deim = conv_deim(u(:,1), pod_u, pod_v, nl_snaps,deim_pts,k,algo,oversample_factor)-c1+c2*utmp(:,1)+c3*utmp(:,1); 
+ c_coef_tensor =  (reshape(c0*utmp(:,1),nb,nb+1)*u(:,1));
  tensor_coefs = [tensor_coefs, c_coef_tensor];
- deim_coefs = [deim_coefs, c_coef_deim];
+ %deim_coefs = [deim_coefs, c_coef_deim];
 end
-coef_err_vec = [];
-for coef = 1:size(tensor_coefs,1);    
-    coef_err_vec = [coef_err_vec; norm(tensor_coefs(coef,:) - deim_coefs(coef,:))/norm(tensor_coefs(coef,:))];
-end;
-coef_errs_single = [coef_errs_single, coef_err_vec];
-coef_errs_all = [coef_errs_all, norm(tensor_coefs - deim_coefs)/norm(tensor_coefs)];
-end;
+tensor_soln = 
+%coef_err_vec = [];
+%for coef = 1:size(tensor_coefs,1);    
+%    coef_err_vec = [coef_err_vec; norm(tensor_coefs(coef,:) - deim_coefs(coef,:))/norm(tensor_coefs(coef,:))];
+%end;
+%coef_errs_single = [coef_errs_single, coef_err_vec];
+%coef_errs_all = [coef_errs_all, norm(tensor_coefs - deim_coefs)/norm(tensor_coefs)];
+%end;
 
 %hold on;
 coef_errs_all
@@ -159,6 +160,12 @@ ylabel("Coefficient two-norm relative error");
 title(sprintf('LDC with %s',algo));
 pause(60);
 exit;
+
+
+
+
+%% The rest of this is irrelevant
+
 
 for istep=1:nsteps
    istep

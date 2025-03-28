@@ -16,9 +16,10 @@ else:
     print("Error: 'deim_pts' followed by a number not found in the directory string.")
     sys.exit(1)
 """
-nsteps = 100000;#1.25000E+05;%20000; 
+nsteps = 100000*10;#1.25000E+05;%20000;
+sample_cutoff_time = 100; 
 dt     = 1.000000E-03;#0.001;
-iostep = 500#40;#250;%500;%10;
+iostep = 1000*5#40;#250;%500;%10;
 nb=21
 
 #nsnapshots = 80000//iostep;
@@ -29,25 +30,29 @@ deim_pts_number = 200
 
 
 directories = ["nb20_results_GROM",
+               #"nb20_results_deim_pts2000_EFR",
+               "nb20_results_ndeim_pts200__GROM",
+               "nb20_results_ndeim_pts200__CROM", 
                "nb20_results_ndeim_pts200_clsdeim_GROM",
+               #"nb20_results_ndeim_pts200_mclsdeim_GROM",
                #"nb20_results_deim_pts2000_EFR"
                #"nb40_results_sopt_pts200_EFR",
                #"nb40_results_deim_pts2000_GROM", 
                #"nb40_results_deim_pts2000_EFR", 
                #"nb40_results_deim_pts2000_TR", 
                #"nb40_results_deim_pts2000_Leray", 
-               #"nb40_results_deim_pts2000_CROM", 
                #"nb40_results_GROM", "nb40_results_EFR", "nb40_results_TR", "nb40_results_Leray"
                ]
 labels = ["GROM",
-          "CLSDEIM-GROM",
           #"DEIM-EFR", 
           #"DEIM-TR", 
           #"DEIM-Leray", 
-          #"DEIM-CROM", 
-          #"GROM", 
+          "DEIM-GROM", 
+          "DEIM-CROM", 
           #"EFR",
           #"TR", 
+          "CLSDEIM-GROM",
+          #"MCLDEIM-GROM",
           #"Leray"
          ]
 
@@ -76,11 +81,12 @@ for label, directory in zip(labels, directories):
 
     mode = 1
     ax1.plot(t, adtr1[:, mode], '--', label=label)
-    ax1.legend(loc=0)
     ax1.set_xlabel(r"Time $t$")
-    ax1.set_ylabel(r"ROM coefficient")
+    ax1.set_ylabel(r"Value of first ROM coefficient")
     ax1.set_title(f"DEIM points:{deim_pts_number}")
 
+ax1.vlines(100, -3, 3,  label="Sample window")
+ax1.legend(loc=0)
 #data = np.loadtxt("../ops/uk")
 #uk = np.reshape(data, (2001, nb))
 #ax1.plot(np.arange(0,2001)*io_dt,(uk[:, mode]), 'k-', label='FOM projection')
