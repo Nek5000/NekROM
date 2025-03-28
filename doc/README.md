@@ -39,9 +39,9 @@ pip install . --no-build-isolation
 Refer to [NumPy's build instructions](https://numpy.org/doc/stable//building/index.html#building-from-source-to-use-numpy) for more details.
 
 ### 4. Build the NekROM Documentation
-Clone the `documentation` branch of NekROM and build the HTML documentation:
+Clone NekROM and build the HTML documentation:
 ```sh
-git clone https://github.com/nchristensen/NekROM.git
+git clone https://github.com/Nek5000/NekROM.git
 cd NekROM/doc
 make html
 ```
@@ -57,4 +57,4 @@ open index.html
 Follow [this guide](https://ostueker.github.io/Example_Fortran/RefactoringFortranForSphinx.html) to refactor source code so that data appears correctly in the documentation.
 
 ### Known Issue
-- `sphinx-fortran` does not support multi-line comments for parameters.
+- `sphinx-fortran` does not appear to support multi-line comments for parameters.
