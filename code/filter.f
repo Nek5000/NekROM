@@ -41,8 +41,7 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine pod_df(uu)
-      ! Apply ROM differential filter (DF) to ROM coefficients vector
-      ! uu.
+      ! Apply ROM differential filter to ROM coefficients vector uu.
       !
       ! uu:= output/input, ROM coefficients vector to be filtered.
       !
