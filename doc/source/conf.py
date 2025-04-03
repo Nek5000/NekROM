@@ -23,8 +23,17 @@ os.makedirs(temp_code_dir, exist_ok=True)
 for filename in os.listdir(code_dir):
     f = open(code_dir + filename, mode='rt')
     tmpfile = open(temp_code_dir + filename, mode='wt')
+    skip_if_continued = False
     for line in f:
-        if not 'include ' in line:
+        if 'include ' in line:
+            skip_if_continued = True
+        elif 'common ' in line:
+            skip_if_continued = True
+        elif len(line) > 6 and line[5] != ' ' and skip_if_continued == True:
+            pass
+        elif len(line) > 6 and line[5] == ' ' and skip_if_continued == True:
+            skip_if_continued = False
+        else:
             tmpfile.write(line)
 
     f.close()
