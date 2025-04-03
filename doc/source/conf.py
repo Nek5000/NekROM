@@ -23,8 +23,14 @@ os.makedirs(temp_code_dir, exist_ok=True)
 for filename in os.listdir(code_dir):
     f = open(code_dir + filename, mode='rt')
     tmpfile = open(temp_code_dir + filename, mode='wt')
+    skip_if_continued = False
     for line in f:
-        if not 'include ' in line:
+        if 'include ' in line or 'common ' in line:
+            skip_if_continued = True
+        elif skip_if_continued == True and len(line) >= 6 and line[5] != ' ':
+            pass # The skipped include/common is continued onto the next line
+        else:
+            skip_if_continued = False
             tmpfile.write(line)
 
     f.close()
@@ -33,7 +39,11 @@ for filename in os.listdir(code_dir):
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ['sphinx.ext.autodoc','sphinxfortran.fortran_domain','sphinxfortran.fortran_autodoc']
+extensions = ['sphinx.ext.autodoc',
+              'sphinxfortran.fortran_domain',
+              'sphinxfortran.fortran_autodoc', 
+              'sphinx.ext.mathjax', 
+              'sphinx-mathjax-offline']
 
 #fortran_src = [os.path.abspath(code_dir)]
 fortran_src = [os.path.abspath(temp_code_dir)]
