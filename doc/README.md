@@ -27,7 +27,7 @@ conda install pip cython compilers openblas meson-python pkg-config
 pip install sphinx sphinx-fortran six
 ```
 
-### 3. Install development version of NumPy
+### 3. Install Development Version of NumPy
 Clone and build development version of NumPy (has Fortran parsing bugfix):
 ```sh
 git clone https://github.com/numpy/numpy.git
