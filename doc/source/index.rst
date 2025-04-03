@@ -14,7 +14,7 @@ API
 ===
 .. toctree::
   :maxdepth: 1
-  :caption: Contents:
+  :caption: API:
 
   ana
 

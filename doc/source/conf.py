@@ -33,7 +33,7 @@ for filename in os.listdir(code_dir):
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
 
-extensions = ['sphinx.ext.autodoc','sphinxfortran.fortran_domain','sphinxfortran.fortran_autodoc']
+extensions = ['sphinx.ext.autodoc','sphinxfortran.fortran_domain','sphinxfortran.fortran_autodoc', 'sphinx.ext.mathjax', 'sphinx-mathjax-offline']
 
 #fortran_src = [os.path.abspath(code_dir)]
 fortran_src = [os.path.abspath(temp_code_dir)]

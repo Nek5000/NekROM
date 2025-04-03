@@ -24,7 +24,7 @@ conda install pip cython compilers openblas meson-python pkg-config
 
 #### Install Documentation Dependencies
 ```sh
-pip install sphinx sphinx-fortran six
+pip install sphinx sphinx-fortran six sphinx-mathjax-offline
 ```
 
 ### 3. Install NumPy from a Specific Branch
@@ -55,6 +55,3 @@ open index.html
 
 ## Refactoring Fortran Code for Documentation
 Follow [this guide](https://ostueker.github.io/Example_Fortran/RefactoringFortranForSphinx.html) to refactor source code so that data appears correctly in the documentation.
-
-### Known Issue
-- `sphinx-fortran` does not appear to support multi-line comments for parameters.

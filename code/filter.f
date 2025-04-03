@@ -1,13 +1,13 @@
 c-----------------------------------------------------------------------
       subroutine pod_proj(uu,r1,nn,msg)
-      ! Apply smoothing function to ROM coefficients vector uu.
+      ! Apply smoothing function to ROM coefficients vector `uu`.
       !
       ! uu:= output/input, ROM coefficients vector to be filtered.
       ! r1:= input, number of modes to be filtered.
       ! nn:= input, length of vector uu.
       ! msg:= input, specifier for for different filter functions. 
-      ! Currently, msg = step is supported specifier. msg = linear,
-      ! parabo and cubic are deprecated.
+      !     Currently, `msg = step` is a supported specifier. 
+      !     `msg = linear`, `msg = parabo` and `msg = cubic` are deprecated.
 
       real uu(nn)
       real a1,a2,a3,a4
@@ -41,7 +41,7 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine pod_df(uu)
-      ! Apply ROM differential filter to ROM coefficients vector uu.
+      ! Apply ROM differential filter to ROM coefficients vector `uu`.
       !
       ! uu:= output/input, ROM coefficients vector to be filtered.
       !
@@ -75,8 +75,8 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine setdf(flu,a,b,ad_diff)
-      ! Set up ROM differential filter (DF) operator B + filter radius *
-      ! A.
+      ! Set up ROM differential filter (DF) operator 
+      ! :math:`B + \text{filter radius} * A`.
       !
       ! flu:= output, differential filter operator.
       ! a:= input, ROM stiffness matrix.
@@ -96,9 +96,8 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine set_les_imp(fles1,fles2)
-
-      ! set implicit les matrices
-
+      ! Set implicit les matrices.
+      ! 
       ! fles1 := filtering matrix for velocity
       ! fles2 := filtering matrix for temperature
 
@@ -143,9 +142,8 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine apply_les_imp(uu,tt,sig,fles1,fles2,tmp)
-
-      ! apply implicit les filter to coefficients
-
+      ! Apply implicit les filter to coefficients.
+      !
       ! uu    := velocity coefficients
       ! tt    := temperature coefficients
       ! sig   := filter strength
@@ -179,11 +177,12 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine evalnut(nut,u1,u2,u3)
-
-      ! evaluate eddy viscosity
-
-      ! nut        := eddy viscosity field
-      ! <u1,u2,u3> := velocity field
+      ! Evaluate eddy viscosity.
+      !
+      ! nut := eddy viscosity field
+      ! u1  := first component of velocity field
+      ! u2  := second component of velocity field
+      ! u3  := third component of velocity field
 
       include 'SIZE'
       include 'TOTAL'
