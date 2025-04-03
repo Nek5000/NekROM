@@ -25,11 +25,9 @@ for filename in os.listdir(code_dir):
     tmpfile = open(temp_code_dir + filename, mode='wt')
     skip_if_continued = False
     for line in f:
-        if 'include ' in line:
+        if 'include ' in line or 'common ' in line:
             skip_if_continued = True
-        elif 'common ' in line:
-            skip_if_continued = True
-        elif len(line) > 6 and line[5] != ' ' and skip_if_continued == True:
+        elif skip_if_continued == True and len(line) > 6 and line[5] != ' ':
             pass # The skipped include/common is continued onto the next line
         else:
             skip_if_continued = False
