@@ -4,7 +4,7 @@ c-----------------------------------------------------------------------
       !
       ! uu:= output/input, ROM coefficients vector to be filtered.
       ! r1:= input, number of modes to be filtered.
-      ! nn:= input, length of vector uu.
+      ! nn:= input, length of vector `uu`.
       ! msg:= input, specifier for for different filter functions. 
       !     Currently, `msg = step` is a supported specifier. 
       !     `msg = linear`, `msg = parabo` and `msg = cubic` are deprecated.
