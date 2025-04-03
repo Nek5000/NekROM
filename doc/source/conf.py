@@ -30,10 +30,9 @@ for filename in os.listdir(code_dir):
         elif 'common ' in line:
             skip_if_continued = True
         elif len(line) > 6 and line[5] != ' ' and skip_if_continued == True:
-            pass
-        elif len(line) > 6 and line[5] == ' ' and skip_if_continued == True:
-            skip_if_continued = False
+            pass # The skipped include/common is continued onto the next line
         else:
+            skip_if_continued = False
             tmpfile.write(line)
 
     f.close()
