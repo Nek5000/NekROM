@@ -1,34 +1,59 @@
-Useful resources
-https://ostueker.github.io/Example_Fortran/UsingSphinxFortran.html
-https://github.com/ostueker/Example_Fortran
-https://sphinx-fortran.readthedocs.io/en/latest/user.autodoc.html
-https://github.com/VACUMM/sphinx-fortran/tree/master
+# Building Documentation for NekROM
 
-Instructions to build documentation:
+## Useful Resources
+- [Using Sphinx with Fortran](https://ostueker.github.io/Example_Fortran/UsingSphinxFortran.html)
+- [Example Fortran Repository](https://github.com/ostueker/Example_Fortran)
+- [Sphinx-Fortran Documentation](https://sphinx-fortran.readthedocs.io/en/latest/user.autodoc.html)
+- [VACUMM Sphinx-Fortran](https://github.com/VACUMM/sphinx-fortran/tree/master)
 
-# Set up a new conda environment and activate it or use an existing conda environment if you don't mind using a development version of numpy
+## Instructions to Build Documentation
+
+### 1. Set Up a Conda Environment
+If you don’t mind using a development version of NumPy, you can use an existing Conda environment. Otherwise, create and activate a new environment:
+```sh
 conda create -n nekrom-docs
 conda activate nekrom-docs
-# Install dependencies to build numpy
+```
+
+### 2. Install Dependencies
+
+#### Install Dependencies for Building NumPy
+```sh
 conda install pip cython compilers openblas meson-python pkg-config
+```
 
-# Install documentation dependencies with pip
-pip install sphinx 
-pip install sphinx-fortran 
-pip install six
+#### Install Documentation Dependencies
+```sh
+pip install sphinx sphinx-fortran six
+```
 
-# Clone this branch of numpy: https://github.com/nchristensen/numpy/tree/common-block-division
-# cd into the numpy directory and install it into the conda environment as follow (uses these instructions: https://numpy.org/doc/stable//building/index.html#building-from-source-to-use-numpy)
+### 3. Install development version of NumPy
+Clone and build development version of NumPy (has Fortran parsing bugfix):
+```sh
+git clone https://github.com/numpy/numpy.git
 cd numpy
-git checkout common-block-division
 git submodule update --init
 pip install . --no-build-isolation
+```
+Refer to [NumPy's build instructions](https://numpy.org/doc/stable//building/index.html#building-from-source-to-use-numpy) for more details.
 
-# Clone this branch of NekROM: https://github.com/nchristensen/NekROM/tree/documentation
+### 4. Build the NekROM Documentation
+Clone NekROM and build the HTML documentation:
+```sh
+git clone https://github.com/Nek5000/NekROM.git
 cd NekROM/doc
 make html
-# To view the documentation, cd into NekROM/doc/build and open index.html in your web browser
-# Refactor source code following this style to make data show up in the documentation. https://ostueker.github.io/Example_Fortran/RefactoringFortranForSphinx.html
+```
 
-# Note: it appears sphinx-fortran does not support multi-line comments for parameters.
+### 5. View the Documentation
+To view the generated documentation, navigate to the build directory and open `index.html` in your browser:
+```sh
+cd NekROM/doc/build
+open index.html
+```
 
+## Refactoring Fortran Code for Documentation
+Follow [this guide](https://ostueker.github.io/Example_Fortran/RefactoringFortranForSphinx.html) to refactor source code so that data appears correctly in the documentation.
+
+### Known Issue
+- `sphinx-fortran` does not appear to support multi-line comments for parameters.

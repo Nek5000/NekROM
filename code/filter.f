@@ -5,9 +5,9 @@ c-----------------------------------------------------------------------
       ! uu:= output/input, vector to be filtered
       ! r1:= input, number of modes to be filtered
       ! nn:= input, length of vector uu
-      ! msg:= input, used indicator for different filter functions. 
-      ! Currently, we support msg = step, linear, parabo, and
-      ! cubic.
+      ! msg:= input, specifier for for different filter functions. 
+      ! Currently, msg = step, linear, parabo, and
+      ! cubic are supported specifiers.
 
       real uu(nn)
       real a1,a2,a3,a4
