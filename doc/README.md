@@ -27,12 +27,11 @@ conda install pip cython compilers openblas meson-python pkg-config
 pip install sphinx sphinx-fortran six sphinx-mathjax-offline
 ```
 
-### 3. Install NumPy from a Specific Branch
-Clone and install NumPy from the `common-block-division` branch:
+### 3. Install Development Version of NumPy
+Clone and build development version of NumPy (has Fortran parsing bugfix):
 ```sh
-git clone https://github.com/nchristensen/numpy.git
+git clone https://github.com/numpy/numpy.git
 cd numpy
-git checkout common-block-division
 git submodule update --init
 pip install . --no-build-isolation
 ```
