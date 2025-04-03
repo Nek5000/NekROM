@@ -246,9 +246,9 @@ c-----------------------------------------------------------------------
       ! Perform the relaxation step in the evolve-filter-relaxation ROM.
       !
       ! filtered_coef:= input/output, filtered ROM coefficients vector.
-      ! coef:= input, unfilterd ROM coefficients vector.
+      ! coef:= input, unfiltered ROM coefficients vector.
       ! relax:= input, relaxation parameter in [dt, 1].
-      ! nb:= input, length of vector filtered_coef and coef.
+      ! nb:= input, length of vector `filtered_coef` and `coef`.
 
       real filtered_coef(1:nb), coef(1:nb)
       real relax
