@@ -33,17 +33,61 @@
 %     Set to true if you want to use time-relaxataion ROM (TR-ROM)
 
 clear all; close all;
+addpath('./point_generators');
 
-nsteps = 1e5;%1.25000E+05;%20000; 
-dt     = 1e-3;%4.000000E-03;%0.001;
-iostep = 250;%500;%10;
-nu     = 1/15000;%0.01;
-nb     = 20;
+%path='../../examples/ldc/';
+%casename='ldc';
 
-ifcopt  = true;
-ifleray = false;
-ifefr   = false;
+%path='../../examples/conv/';
+%casename='cyl';
+
+path='../../examples/shear4/';
+casename='thin';
+
+% Should just use the values from the .rea file by default
+% allowing for overrides
+if contains(path, 'ldc')
+    nsteps = 10*1e5;%80000;%1.25000E+05;%20000; 
+    dt     = 1.000000E-03;%0.001;
+    iostep = 5*1000;%500;%250;%500;%10;
+    nu     = 1./15000;%0.01;
+    nb     = 20;
+elseif contains(path,'conv')
+    nsteps = 1.25000E+05;%20000; 
+    dt     = 4.000000E-03;%0.001;
+    iostep = 100;%250;%500;%10;
+    nu     = 0.01;
+    nb     = 20;
+elseif contains(path,'shear4')
+    nsteps = 40000;
+    dt     = 1e-4;
+    iostep = 100;
+    nu     = 1/40000;
+    nb     = 20;    
+else
+  disp('Error: unrecognized case');
+  exit;
+end;
+
+% Whether or not to plot on an iostep
+bool_plot = true;
+
+ifcopt  = false;
+ifleray = false;%false;
+ifefr   = false;%false;
 iftr    = false;
+
+if ifcopt
+    reg_str = 'CROM';
+elseif ifleray
+reg_str = 'Leray';
+elseif ifefr
+    reg_str = 'EFR';
+elseif iftr;
+    reg_str = 'TR';
+else
+    reg_str = 'GROM';
+end;   
 
 if (ifleray)
    radius = 0.01; % Feel free to change it
@@ -58,12 +102,20 @@ elseif (ifefr) || (iftr)
    end
 end
 
+%deims= [1 2 3 4 5 6 7 8 9 10]
+%deims= [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20]
+deims= [0];%[200];%[2,4,8,16,20 40 80 100 200 400 800 1000]
+% number of deim points
+for j=1:length(deims)
+ndeim_pts = deims(j);
+n_os_points=ndeim_pts;
+clsdeim = true;
 
-[au_full, bu_full, cu_full, u0_full, uk_full, mb, ns] = load_full_ops('../ops');
+[au_full, bu_full, cu_full, u0_full, uk_full, mb, ns] = load_full_ops(strcat(path,'ops'));
 
 %size(au_full)
 
-[au, a0, bu, cu, u0, uk, ukmin, ukmax] = get_r_dim_ops(au_full, bu_full, cu_full, u0_full, uk_full, nb);
+[au, a0, bu, cu, c0, c1, c2, c3, u0, uk, ukmin, ukmax] = get_r_dim_ops(au_full, bu_full, cu_full, u0_full, uk_full, nb);
 
 %size(uk_full)
 %size(uk)
@@ -84,19 +136,26 @@ if (ifleray) || (ifefr) || (iftr)
 end
 
 %% Get the grid and POD bases for plotting purposes
-cname='../bascyl';
+cname=strcat(path,strcat('bas',casename));
+%cname
+%exit
 %avg_cname='../avgcyl';
 bas_snaps = NekSnaps(cname);
 [pod_u, pod_v, x_fom, y_fom] = get_grid_and_pod(bas_snaps);
 
 %% Get the non-linear snapshots and calculate the DEIM points
-nl_cname = '../csncyl';
-nl_snaps = NekSnaps(nl_cname);
+if ndeim_pts > 0;
+    nl_cname = strcat(path,strcat('csn',casename));
+    nl_snaps = NekSnaps(nl_cname);
+end;
+%h=bu*betas(1,ito)/dt+au*nu;
+
 
 % Begin integrate ROM with BDFk/EXTk
 u     = zeros(nb+1,3); % vectors for BDF3/EXT3
 u(:,1)=u0;
 [alphas, betas] = setcoef();
+
 
 for istep=1:nsteps
    istep
@@ -122,19 +181,21 @@ for istep=1:nsteps
    %% Compare the NL evaluation results.
 
    % ROM convection tensor version
-   c_coef = reshape(cu*utmp(:,1),nb,nb+1)*u(:,1)
-   %ext(:,1)=ext(:,1)-reshape(cu*utmp(:,1),nb,nb+1)*u(:,1);
+   if ndeim_pts == 0;
+    c_coef = (reshape(c0*utmp(:,1),nb,nb+1)*u(:,1));
+%  c_coef' %ext(:,1)=ext(:,1)-reshape(cu*utmp(:,1),nb,nb+1)*u(:,1);
 
    % Pseudo ROM version
    % This should be identical to the above.
-   c_coef = conv_fom(u(:,1), pod_u, pod_v, bas_snaps)
+%  c_coef = (conv_fom(u(:,1), pod_u, pod_v, bas_snaps))
    %norm(pod_u(:,1:nb+1)*c_coef)
-
+   else;
    % DEIM version
    % Should be close, but not identical to, the above
-   c_coef = conv_deim(u(:,1), pod_u, pod_v, nl_snaps)
+    c_coef = conv_deim(u(:,1), pod_u, pod_v, nl_snaps,ndeim_pts,istep,clsdeim,n_os_points)-c1+c2*utmp(:,1)+c3*utmp(:,1);
+   end;
+
    %norm(pod_u(:,1:nb+1)*c_coef)
-   exit;
    ext(:,1)=ext(:,1)-c_coef;
 
    %% End result comparison
@@ -153,12 +214,15 @@ for istep=1:nsteps
    % Solve the linear system to get next step solution
    if (ifcopt)
 %     if any(u(2:end,1) > ukmax(2:end)) || any(u(2:end,1) < ukmin(2:end))
-         fprintf('in constrained %d \n',istep);
+         %fprintf('in constrained %d \n',istep);
          options = optimoptions('fmincon','Algorithm','interior-point','Display','off');
          [x,fval,exitflag,output] = fmincon(@(x)rom_residual(x,au,bu,nu,betas,dt,ito,rhs),u(2:end,1),[],[],[],[],ukmin(2:end),ukmax(2:end),[],options);
          u_new = [1,x'];
 %     else
-%        % if constraints are satisfied, do normal solve
+%  nsteps = 80000;%1.25000E+05;%20000; 
+dt     = 1.000000E-03;%0.001;
+iostep = 100;%500;%250;%500;%10;
+      % if constraints are satisfied, do normal solve
 %        if isempty(hufac)
 %           h=bu*betas(1,ito)/dt+au*nu;
 %           hfac=chol(h);
@@ -183,10 +247,15 @@ for istep=1:nsteps
    u = shift(u,u_new,3);
    time = time+dt;
 
-   if (mod(istep,iostep) == 0)
+   if any(isnan(u(:,1)));
+      break;
+   end;
+
+   if (mod(istep,iostep) == 0);
       ucoef(istep/iostep,:)=u(:,1);
       u(:,1)
-      
+
+      if bool_plot;      
       u_proj = pod_u(:,1:nb+1)*u(1:end,1);
       v_proj = pod_v(:,1:nb+1)*u(1:end,1);
      
@@ -195,21 +264,36 @@ for istep=1:nsteps
       hold off;
       patch_plot(x_fom,y_fom, reshape(u_abs,size(x_fom)), [], 'PlotType', 'surface');
       pause(0.01);
+     end;
    end
 
 end
 
-plot(ucoef(:,2)); hold on;
-plot(flip(uk(2,:)));
-pause(60);
+%size(ucoef)
+%ucoef
+%exit;
 
-casedir= sprintf('nb%d_results',nb)
+%plot(ucoef(:,2)); hold on;
+%plot(flip(uk(2,:)));
+%pause(60);
+
+if ndeim_pts > 0;
+    if clsdeim
+        clsdeimstr='clsdeim';
+    else
+        clsdeimstr='';
+    end;
+    casedir= sprintf('%s_nb%d_results_ndeim_pts%d_%s_%s',casename,nb,ndeim_pts,clsdeimstr,reg_str)
+else
+    casedir= sprintf('%s_nb%d_results_%s',casename_nb,reg_str)
+end;
 mkdir(casedir);
 
 % Dump out ucoef in casedir
 fileID = fopen(casedir+"/ucoef",'w');
 fprintf(fileID,"%24.15e\n",ucoef);
 fclose(fileID);
+end
 
 %#####################################
 %
@@ -227,7 +311,7 @@ function [a0_full, b0_full, c0_full, u0_full, uk_full, mb, ms] =  load_full_ops(
 %
 % Output:
 % a0_full : Full stiffness matrix of size mb+1 x mb+1 (The +1 comes from the zeroth mode)
-% b0_full : Full   mass    matrix of size mb+1 x mb+1
+% b-1_full : Full   mass    matrix of size mb+1 x mb+1
 % cu_full : Full advection tensor of size mb x mb+1 x mb+1
 % u0_full : Vector of size mb+1, which contains the ROM coefficients of the
 %           projection of initial conditons onto mb-reduced space
@@ -265,7 +349,7 @@ function [a0_full, b0_full, c0_full, u0_full, uk_full, mb, ms] =  load_full_ops(
    
 end
 
-function [a, a0, b, c, u0, uk, ukmin, ukmax] =  get_r_dim_ops(au_full, bu_full, cu_full, u0_full, uk_full, nb)
+function [a, a0, b, c, c0, c1, c2, c3, u0, uk, ukmin, ukmax] =  get_r_dim_ops(au_full, bu_full, cu_full, u0_full, uk_full, nb)
    index  = [1:nb+1];
    index1 = [1:nb];
    index2 = [2:nb+1];
@@ -273,8 +357,14 @@ function [a, a0, b, c, u0, uk, ukmin, ukmax] =  get_r_dim_ops(au_full, bu_full, 
    a0     = au_full(index2,1);
    b      = bu_full(index2,index2);
 
-   c      = cu_full(index1,index,index);
-   c      = reshape(c,nb*(nb+1),nb+1);
+   cutmp  = cu_full(index1,index,index);
+   c0      = reshape(cutmp,nb*(nb+1),nb+1);
+   c1 = cutmp(:,1,1);                                                       
+   c2 = reshape(cutmp(:,1,:),nb,nb+1);                                      
+   c3 = reshape(cutmp(:,:,1),nb,nb+1); 
+
+   c      = cu_full(index1,index2,index2);
+   c      = reshape(c,nb*(nb),nb);
 
    u0      = u0_full(index);
 
@@ -338,34 +428,6 @@ function F = rom_residual(x,a,b,diff,betas,dt,ito,rhs)
    F = norm(F1);
 end
 
-function [pod_u, pod_v, x_fom, y_fom] = get_grid_and_pod(snaps)
-  x_fom = snaps.flds{1}.x;
-  y_fom = snaps.flds{1}.y;
-
-  [nr, ns, nE] = size(x_fom);
-  nL = nr*ns*nE;
-  [nbasis, nbasis1] = size(snaps.flds)
-  pod_u = [];
-  pod_v = [];
-  for i=1:nbasis;
-    %u_snap = snaps.flds{i}.u;
-    pod_u = [pod_u, reshape(snaps.flds{i}.u, nL,1)];
-    pod_v = [pod_v, reshape(snaps.flds{i}.v,nL,1)];
-  end;
-
-
-  % The bases are not 
-  %[pod_u;pod_v]'*[pod_u;pod_v]
-  %exit;
-
-  %avg_snaps = NekSnaps(avg_cname);
-  %u_avg = reshape(avg_snaps.flds{1}.u,nL,1);
-  %v_avg = reshape(avg_snaps.flds{1}.v,nL,1);
-  %% Technically not the POD anymore
-  %exit;
-  %pod_u(:,1) = u_avg(:,1);
-  %pod_v(:,1) = v_avg(:,1);
-end;
 
 % This needs to do the same thing as
 % reshape(cu*utmp(:,1),nb,nb+1)*u(:,1);
@@ -412,142 +474,36 @@ function [out_coef] = conv_fom(ucoef, pod_u, pod_v, snaps)
     out_coef = [pod_u(:,2:end); pod_v(:,2:end)]'*[conv_u_fom; conv_v_fom];
 end
 
-% This needs to do the same thing as
-% reshape(cu*utmp(:,1),nb,nb+1)*u(:,1);
-function [out_coef] = conv_deim(ucoef, pod_u, pod_v, nl_snaps_obj)
-    persistent proj_mat u_deimu v_deimu u_deimv v_deimv ux_deimu uy_deimu vx_deimv vy_deimv;
-    persistent u_deim_stack v_deim_stack ux_deim_stack uy_deim_stack
+function [pod_u, pod_v, x_fom, y_fom] = get_grid_and_pod(snaps)
+  x_fom = snaps.flds{1}.x;
+  y_fom = snaps.flds{1}.y;
 
-    if isempty(proj_mat)
-        % Stuff to be precomputed
+  [nr, ns, nE] = size(x_fom);
+  nL = nr*ns*nE;
+  [nbasis, nbasis1] = size(snaps.flds)
+  pod_u = [];
+  pod_v = [];
+  for i=1:nbasis;
+    %u_snap = snaps.flds{i}.u;
+    pod_u = [pod_u, reshape(snaps.flds{i}.u, nL,1)];
+    pod_v = [pod_v, reshape(snaps.flds{i}.v,nL,1)];
+  end;
 
-        % Read in the snapshots.     
-        [nl_u_snaps, nl_v_snaps] = get_grid_and_pod(nl_snaps_obj);
-        nl_snaps = [nl_u_snaps; nl_v_snaps];
 
-        x=nl_snaps_obj.flds{1}.x;
-        y=nl_snaps_obj.flds{1}.y;
-        nx1 = size(x,1);
-        [zi, w] = zwgll(nx1-1);
-        d = deriv_mat(zi);
-        [xr,yr,xs,ys,rx,ry,sx,sy,jac,jaci,d] = deriv_geo(x,y,d);
-        lgrad=@(u,mode) grad(u,rx,ry,sx,sy,jaci,d,mode);
-        nL = prod(size(x));
-        Me = reshape(jac.*(w*w'),nL,1);
-        
-        %% Calculate the POD of the NL snapshots
-        gramian = nl_snaps'*diag([Me;Me])*nl_snaps;
-        gramian = 0.5*(gramian + gramian');
-        [nl_eigvecs, nl_eigvals] = eig(gramian);
-        [nl_eigvals_sorted, sort_inds] = sort(diag(abs(nl_eigvals)),'descend');
-        nl_eigvecs = nl_eigvecs(:,sort_inds);
-        nl_bas = nl_snaps*nl_eigvecs; % Using all of the modes 
-        nl_bas = nl_bas(:,1:10); % Using 10 basis vectors
-        % Maybe 500 snapshots is not enough?
-        nl_bas = orth(nl_bas,1e-16); % Use all of the snapshots for now.
-        %nl_bas = orth(nl_bas(:,1:500),1e-16);
-        %for i = 1:size(nl_bas,2)
-        %    nl_bas(:,i) = nl_bas(:,i)/norm(nl_bas(:,i));
-        %end
+  % The bases are not 
+  %[pod_u;pod_v]'*[pod_u;pod_v]
+  %exit;
 
-        separate=true;
-
-        if separate % Calculate the QDEIM points separately for u and v
-            % This probably won't work.
-            [P_u, nl_u_inds] = calc_qdeim_proj_mat(nl_u_snaps);
-            [P_v, nl_v_inds] = calc_qdeim_proj_mat(nl_v_snaps);
-            % Take half of the DEIM points from u and half from v
-            n_deim_points_u = ceil(size(nl_bas,2)/2);
-            n_deim_points_v = floor(size(nl_bas,2)/2);
-            nl_u_inds = nl_u_inds(1,1:n_deim_points_u); 
-            nl_v_inds = nl_v_inds(1,1:n_deim_points_v); 
-
-            inds = [nl_u_inds, nl_v_inds + size(nl_u_snaps,1)];
-        else % Let the QDEIM algorithm decide which u points
-            % and which v points to use.
-            % Maybe this isn't right for vector quantities.
-            % Could try to set the rows so ones that
-            % correspond to the same point in space are
-            % drawn for each u and v.
-            [P, inds] = calc_qdeim_proj_mat(nl_snaps);
-            % For testing, use all rows
-            %divider = size(nl_u_snaps,1);
-            %nl_u_inds = inds(inds <= divider);
-            %nl_v_inds = inds(inds > divider);
-            %nl_u_inds
-            %exit
-            %inds = [nl_u_inds, nl_v_inds];
-            inds = inds(:,1:size(nl_bas,2));
-
-            %inds = [1:size(nl_snaps,1)];
-        end;
-        % Use as many indices as nl basis functions
-
-       
-        %size(nl_snaps) 
-        %size(nl_bas)
-        %size(inds) 
-        % Kento's ROM approach. Calculate the gradients of the POD modes
-        
-        ux_pods = [];
-        uy_pods = [];
-        vx_pods = [];
-        vy_pods = [];
-        for i = 1:size(pod_u,2);
-            [ux_pod, uy_pod] = lgrad(reshape(pod_u(:,i),size(x)),0);
-            [vx_pod, vy_pod] = lgrad(reshape(pod_v(:,i),size(x)),0);
-            ux_pods = [ux_pods, reshape(ux_pod, nL,1)];
-            uy_pods = [uy_pods, reshape(uy_pod, nL,1)];
-            vx_pods = [vx_pods, reshape(vx_pod, nL,1)];
-            vy_pods = [vy_pods, reshape(vy_pod, nL,1)];
-        end;
-
-      
-        % Is this problematic? What does it mean to integrate on the DEIM points?
-        u_deim = Me.*pod_u;
-        v_deim = Me.*pod_v;
-        %u_deim = pod_u;
-        %v_deim = pod_v;
-    
-        if separate
-            u_deimu = u_deim(nl_u_inds,:);
-            v_deimu = v_deim(nl_u_inds,:);
-            u_deimv = u_deim(nl_v_inds,:);
-            v_deimv = v_deim(nl_v_inds,:);
-
-            ux_deimu = ux_pods(nl_u_inds,:);
-            uy_deimu = uy_pods(nl_u_inds,:);
-            vx_deimv = vx_pods(nl_v_inds,:);
-            vy_deimv = vy_pods(nl_v_inds,:);
-        else
-            u_deim_stack = [u_deim; u_deim];
-            u_deim_stack = u_deim_stack(inds,:);
-            v_deim_stack = [v_deim; v_deim];
-            v_deim_stack = v_deim_stack(inds,:);
-
-            ux_deim_stack = [ux_pods; vx_pods];
-            ux_deim_stack = ux_deim_stack(inds,:);
-            uy_deim_stack = [uy_pods; vy_pods];
-            uy_deim_stack = uy_deim_stack(inds,:);
-        end;
-
-        proj_mat = [pod_u(:,2:end); pod_v(:,2:end)]'*nl_bas*inv(nl_bas(inds,:)); 
-        %proj_mat = [pod_u(:,2:end); pod_v(:,2:end)]'*([Me;Me].*nl_bas)*inv(nl_bas(inds,:)); 
-        % For testing
-        %proj_mat = [pod_u(:,2:end); pod_v(:,2:end)]';
-    end;
-
-    if separate
-        conv_u_deim = ((u_deimu*ucoef).*(ux_deimu*ucoef) + (v_deimu*ucoef).*(uy_deimu*ucoef));
-        conv_v_deim = ((u_deimv*ucoef).*(vx_deimv*ucoef) + (v_deimv*ucoef).*(vy_deimv*ucoef)); 
-        out_coef = proj_mat*[conv_u_deim; conv_v_deim];
-    else
-        conv_deim = ((u_deim_stack*ucoef).*(ux_deim_stack*ucoef) + (v_deim_stack*ucoef).*(uy_deim_stack*ucoef));
-        out_coef = proj_mat*conv_deim;
-    end;
+  %avg_snaps = NekSnaps(avg_cname);
+  %u_avg = reshape(avg_snaps.flds{1}.u,nL,1);
+  %v_avg = reshape(avg_snaps.flds{1}.v,nL,1);
+  %% Technically not the POD anymore
+  %exit;
+  %pod_u(:,1) = u_avg(:,1);
+  %pod_v(:,1) = v_avg(:,1);
 end
 
-
+%{
 function[P,indices] = calc_qdeim_proj_mat(U_nl)
     [A,B,P] = qr(U_nl');
     P = P(:,1:size(U_nl,2));
@@ -557,7 +513,6 @@ function[P,indices] = calc_qdeim_proj_mat(U_nl)
         indices = [indices, ind];
     end;
 end
-
 
 function[P,indices] = calc_deim_proj_mat(U_nl)
     [maxval, ind] = max(abs(U_nl(:,1)), [], 1);
@@ -576,4 +531,6 @@ function[P,indices] = calc_deim_proj_mat(U_nl)
     P(ind,i) = 1;
     end;
 end
+%}
+
 
