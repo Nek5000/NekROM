@@ -9,6 +9,8 @@ build:
   os: ubuntu-24.04
   tools:
     python: "mambaforge-latest"
+  conda:
+    environment: environment.yml
   jobs:
     post_create_environment:
       - bash ./doc/scripts/build_numpy.sh
