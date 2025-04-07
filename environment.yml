@@ -1,6 +1,4 @@
 name: nekrom-doc
-channels:
-    - conda-forge
 dependencies:
     - pip 
     - cython 
