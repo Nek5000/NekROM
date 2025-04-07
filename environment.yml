@@ -1,0 +1,15 @@
+name: nekrom-doc
+channels:
+    - conda-forge
+dependencies:
+    - pip 
+    - cython 
+    - compilers 
+    - openblas 
+    - meson-python 
+    - pkg-config
+    - pip:
+        - sphinx
+        - sphinx-fortran
+        - six
+        - sphinx-mathjax-offline
