@@ -115,14 +115,6 @@ c     if (icount.le.2) then
             call mxm(rhstmp(1),1,wt(1,2),nb,rhs(1,2),nb)
          endif
 
-         if (cfloc.eq.'POST') then
-         if (cftype.eq.'TFUN') then
-            call pod_proj(rhs(1,2),rbf,nb,'step  ')
-         else if (cftype.eq.'DIFF') then
-            call pod_df(rhs(1,2))
-         endif
-         endif
-
          tsolve_time=tsolve_time+dnekclock()-ttime
          endif
       endif
@@ -687,6 +679,21 @@ c-----------------------------------------------------------------------
          endif
       else if (ifforce) then
          call add2(tmp1(1),rf(1),nb)
+      endif
+
+      ! Add time-relaxation term
+      if (regtype.eq.'TR   ') then
+         call copy(tmp2,u,nb+1)
+         ! Filter velocity coefficients
+         if (cftype.eq.'TFUN') then
+            call pod_proj(tmp2(1),rbf,nb,'step  ')
+         else if (cftype.eq.'DIFF') then
+            call pod_df(tmp2(1))
+         endif
+
+         ! compute velocity fluctuation
+         call sub3(rf,u(1),tmp2(1),nb)
+         call add2s2(tmp1(1),rf,-1.0*relax,nb)
       endif
 
       call shift(fu,tmp1(1),nb,3)

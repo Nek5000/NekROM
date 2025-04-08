@@ -1,0 +1,13 @@
+name: nekrom-doc
+dependencies:
+    - pip 
+    - cython 
+    - compilers 
+    - openblas 
+    - meson-python 
+    - pkg-config
+    - pip:
+        - sphinx
+        - sphinx-fortran
+        - six
+        - sphinx-mathjax-offline
