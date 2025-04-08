@@ -33,6 +33,8 @@
 %     Set to true if you want to use time-relaxataion ROM (TR-ROM)
 
 clear all; close all;
+
+% Add any important scripts to path
 addpath('./point_generators');
 
 %path='../../examples/ldc/';
@@ -72,9 +74,10 @@ end;
 % Whether or not to plot on an iostep
 bool_plot = true;
 
+% ROM stabilization strategies
 ifcopt  = false;
-ifleray = false;%false;
-ifefr   = false;%false;
+ifleray = false;
+ifefr   = false;
 iftr    = false;
 
 if ifcopt
@@ -102,27 +105,23 @@ elseif (ifefr) || (iftr)
    end
 end
 
-%deims= [1 2 3 4 5 6 7 8 9 10]
-%deims= [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20]
 deims= [170];%[170];%[2,4,8,16,20 40 80 100 200 400 800 1000]
+%ps_alg='sopt';
+ps_alg ='gpode';
+%ps_alg = 'gappy_pod';
+%ps_alg = 'gnat';
+
+hr_alg="clsdeim";
+
 % number of deim points
-for j=1:length(deims)
-ndeim_pts = deims(j);
-n_os_points=4*ndeim_pts;
+%for j=1:length(deims)
+ndeim_pts = nb;%deims(j);
+os_multiplier = 4;
+n_os_points=os_multiplier*ndeim_pts;
 clsdeim = true;
 
 [au_full, bu_full, cu_full, u0_full, uk_full, mb, ns] = load_full_ops(strcat(path,'ops'));
-
-%size(au_full)
-
 [au, a0, bu, cu, c0, c1, c2, c3, u0, uk, ukmin, ukmax] = get_r_dim_ops(au_full, bu_full, cu_full, u0_full, uk_full, nb);
-
-%size(uk_full)
-%size(uk)
-%exit;
-
-%size(au)
-%exit;
 
 % Initialize variables
 time   = 0.;
@@ -137,8 +136,6 @@ end
 
 %% Get the grid and POD bases for plotting purposes
 cname=strcat(path,strcat('bas',casename));
-%cname
-%exit
 %avg_cname='../avgcyl';
 bas_snaps = NekSnaps(cname);
 [pod_u, pod_v] = get_snaps(bas_snaps);
@@ -184,17 +181,18 @@ for istep=1:nsteps
    % ROM convection tensor version
    if ndeim_pts == 0;
     c_coef = (reshape(c0*utmp(:,1),nb,nb+1)*u(:,1));
-%  c_coef' %ext(:,1)=ext(:,1)-reshape(cu*utmp(:,1),nb,nb+1)*u(:,1);
+    %c_coef' %ext(:,1)=ext(:,1)-reshape(cu*utmp(:,1),nb,nb+1)*u(:,1);
 
-   % Pseudo ROM version
-   % This should be identical to the above.
-%  c_coef = (conv_fom(u(:,1), pod_u, pod_v, bas_snaps))
-   %norm(pod_u(:,1:nb+1)*c_coef)
+    % Pseudo ROM version
+    % This should be identical to the above.
+    %  c_coef = (conv_fom(u(:,1), pod_u, pod_v, bas_snaps))
+    %norm(pod_u(:,1:nb+1)*c_coef)
    else;
-   % DEIM version
-   % Should be close, but not identical to, the above
+    % DEIM version
+    % Should be close, but not identical to, the above
 
-    c_coef = conv_deim(u(:,1), pod_u, pod_v, x_fom, y_fom, nl_snaps,ndeim_pts,istep,clsdeim,n_os_points)-c1+c2*utmp(:,1)+c3*utmp(:,1);
+    c_coef = conv_deim(u(:,1), pod_u, pod_v, x_fom, y_fom, nl_snaps,ndeim_pts,istep,clsdeim,n_os_points,ps_alg);
+    c_coef = c_coef - c1+c2*utmp(:,1)+c3*utmp(:,1);
    end;
 
    %norm(pod_u(:,1:nb+1)*c_coef)
@@ -222,8 +220,8 @@ for istep=1:nsteps
          u_new = [1,x'];
 %     else
 %  nsteps = 80000;%1.25000E+05;%20000; 
-dt     = 1.000000E-03;%0.001;
-iostep = 100;%500;%250;%500;%10;
+%dt     = 1.000000E-03;%0.001;
+%iostep = 100;%500;%250;%500;%10;
       % if constraints are satisfied, do normal solve
 %        if isempty(hufac)
 %           h=bu*betas(1,ito)/dt+au*nu;
@@ -271,14 +269,7 @@ iostep = 100;%500;%250;%500;%10;
 
 end
 
-%size(ucoef)
-%ucoef
-%exit;
-
-%plot(ucoef(:,2)); hold on;
-%plot(flip(uk(2,:)));
-%pause(60);
-
+% Output results
 if ndeim_pts > 0;
     if clsdeim
         clsdeimstr='clsdeim';
@@ -295,7 +286,8 @@ mkdir(casedir);
 fileID = fopen(casedir+"/ucoef",'w');
 fprintf(fileID,"%24.15e\n",ucoef);
 fclose(fileID);
-end
+
+%end
 
 %#####################################
 %
@@ -431,50 +423,6 @@ function F = rom_residual(x,a,b,diff,betas,dt,ito,rhs)
 end
 
 
-% This needs to do the same thing as
-% reshape(cu*utmp(:,1),nb,nb+1)*u(:,1);
-function [out_coef] = conv_fom(ucoef, pod_u, pod_v, snaps)
-    x=snaps.flds{1}.x;
-    y=snaps.flds{1}.y;
-    nx1 = size(x,1);
-    [zi, w] = zwgll(nx1-1);
-    d = deriv_mat(zi);
-    [xr,yr,xs,ys,rx,ry,sx,sy,jac,jaci,d] = deriv_geo(x,y,d);
-    lgrad=@(u,mode) grad(u,rx,ry,sx,sy,jaci,d,mode);
-    nL = prod(size(x));
-    Me = reshape(jac.*(w*w'),nL,1);
-
-    if false; % Normal way of calculating the gradient
-        [ux_fom, uy_fom] = lgrad(u_fom, 0);
-        [vx_fom, vy_fom] = lgrad(v_fom, 0);
-    else
-        % Kento's ROM approach. Calculate the gradients of the POD modes
-        ux_pods = [];
-        uy_pods = [];
-        vx_pods = [];
-        vy_pods = [];
-        for i = 1:size(pod_u,2);
-            [ux_pod, uy_pod] = lgrad(reshape(pod_u(:,i),size(x)),0);
-            [vx_pod, vy_pod] = lgrad(reshape(pod_v(:,i),size(x)),0);
-            ux_pods = [ux_pods, reshape(ux_pod, nL,1)];
-            uy_pods = [uy_pods, reshape(uy_pod, nL,1)];
-            vx_pods = [vx_pods, reshape(vx_pod, nL,1)];
-            vy_pods = [vy_pods, reshape(vy_pod, nL,1)];
-        end;
-        ux_fom = reshape(ux_pods*ucoef, size(x));
-        uy_fom = reshape(uy_pods*ucoef, size(x));
-        vx_fom = reshape(vx_pods*ucoef, size(x));
-        vy_fom = reshape(vy_pods*ucoef, size(x));
-    end
-
-    u_fom = reshape(Me.*pod_u*ucoef, size(x));
-    v_fom = reshape(Me.*pod_v*ucoef, size(x));
-
-    conv_u_fom = reshape(u_fom.*ux_fom + v_fom.*uy_fom, nL,1);
-    conv_v_fom = reshape(u_fom.*vx_fom + v_fom.*vy_fom, nL,1);
-    
-    out_coef = [pod_u(:,2:end); pod_v(:,2:end)]'*[conv_u_fom; conv_v_fom];
-end
 
 %{
 function[P,indices] = calc_qdeim_proj_mat(U_nl)

@@ -7,11 +7,11 @@ function[indices] = gappy_pod(U_nl, n)
     for i=2:p;
         for k=1:n_iter;
             l=(i-2)*n_iter + k;
-            c = pinv(U_nl(indices(1:l),1:i-1), U_nl(indices(1:l),i));
+            c = pinv(U_nl(indices(1:l),1:i-1)) * U_nl(indices(1:l),i);
             r = U_nl(:,i) - U_nl(:,1:i-1)*c;
             [maxval, ind] = max(abs(r), [], 1);
             indices(end+1) = ind;
-            if len(indices) == n;
+            if size(indices,2) == n;
                 return;
             end;
         end;

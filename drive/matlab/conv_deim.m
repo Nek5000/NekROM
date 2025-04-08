@@ -1,5 +1,6 @@
 % Convection operator that uses DEIM points
-function [out_coef] = conv_deim(ucoef, pod_u, pod_v, x, y, nl_snaps_obj, ndeim_pts,istep,clsdeim,n_os_points)
+function [out_coef] = conv_deim(ucoef, pod_u, pod_v, x, y, nl_snaps_obj, ndeim_pts,istep,clsdeim,n_os_points,ps_alg)
+
     persistent proj_mat Ainv inv_p_nl u_deimu v_deimu u_deimv v_deimv ux_deimu uy_deimu vx_deimv vy_deimv;
     persistent u_deim_stack v_deim_stack ux_deim_stack uy_deim_stack tau mu A_tau_inv alpha nl_bas_inds% nl_max_coef nl_min_coef;
     persistent inds;
@@ -70,13 +71,27 @@ function [out_coef] = conv_deim(ucoef, pod_u, pod_v, x, y, nl_snaps_obj, ndeim_p
         else % Use the same QDEIM points for u and v.
             % Maybe this isn't right for vector quantities.
             % Will this satisfy the divergence-free constraints?
+            % Yes, because it is projected onto the divergence-free subspace
+            % of the snapshots
 %           [P, inds] = calc_qdeim_proj_mat(nl_snaps);
+            if strcmp(ps_alg, 'sopt')
+                % Can oversample if desired.
+                inds = s_opt_generator(nl_bas, ndeim_pts + n_os_points, []);
+                inds = inds';
+            elseif strcmp(ps_alg, 'gpode') || strcmp(ps_alg, 'qdeim')
+                inds = gpode(nl_bas, ndeim_pts + n_os_points);
+                inds = inds';
+            elseif strcmp(ps_alg, 'gappy_pod') || strcmp(ps_alg, 'deim');
+                inds = gappy_pod(nl_bas, ndeim_pts + n_os_points);
+            elseif strcmp(ps_alg, 'gnat')
+                inds = gnat(nl_bas, ndeim_pts, ndeim_pts + n_os_points);
+            else
+                throw(Mexception('Unknown point selection algorithm %s', ps_alg));
+            end;
+
             if false;
                [P, inds] = calc_qdeim_proj_mat(nl_bas); % Should select points based on the basis
             else;
-            % Can oversample if desired.
-               inds = s_opt_generator(nl_bas, ndeim_pts + n_os_points, [])
-               inds = inds';
             end;
             % For testing, use all rows
             %inds = [1:size(nl_snaps,1)];
