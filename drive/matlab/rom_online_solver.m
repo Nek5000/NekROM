@@ -63,7 +63,7 @@ elseif contains(path,'shear4')
     dt     = 1e-4;
     iostep = 100;
     nu     = 1/40000;
-    nb     = 20;    
+    nb     = 30;    
 else
   disp('Error: unrecognized case');
   exit;
@@ -104,11 +104,11 @@ end
 
 %deims= [1 2 3 4 5 6 7 8 9 10]
 %deims= [1 2 3 4 5 6 7 8 9 10 11 12 13 14 15 16 17 18 19 20]
-deims= [0];%[200];%[2,4,8,16,20 40 80 100 200 400 800 1000]
+deims= [170];%[170];%[2,4,8,16,20 40 80 100 200 400 800 1000]
 % number of deim points
 for j=1:length(deims)
 ndeim_pts = deims(j);
-n_os_points=ndeim_pts;
+n_os_points=4*ndeim_pts;
 clsdeim = true;
 
 [au_full, bu_full, cu_full, u0_full, uk_full, mb, ns] = load_full_ops(strcat(path,'ops'));
@@ -141,7 +141,8 @@ cname=strcat(path,strcat('bas',casename));
 %exit
 %avg_cname='../avgcyl';
 bas_snaps = NekSnaps(cname);
-[pod_u, pod_v, x_fom, y_fom] = get_grid_and_pod(bas_snaps);
+[pod_u, pod_v] = get_snaps(bas_snaps);
+[x_fom, y_fom] = get_grid(bas_snaps);
 
 %% Get the non-linear snapshots and calculate the DEIM points
 if ndeim_pts > 0;
@@ -192,7 +193,8 @@ for istep=1:nsteps
    else;
    % DEIM version
    % Should be close, but not identical to, the above
-    c_coef = conv_deim(u(:,1), pod_u, pod_v, nl_snaps,ndeim_pts,istep,clsdeim,n_os_points)-c1+c2*utmp(:,1)+c3*utmp(:,1);
+
+    c_coef = conv_deim(u(:,1), pod_u, pod_v, x_fom, y_fom, nl_snaps,ndeim_pts,istep,clsdeim,n_os_points)-c1+c2*utmp(:,1)+c3*utmp(:,1);
    end;
 
    %norm(pod_u(:,1:nb+1)*c_coef)
@@ -285,7 +287,7 @@ if ndeim_pts > 0;
     end;
     casedir= sprintf('%s_nb%d_results_ndeim_pts%d_%s_%s',casename,nb,ndeim_pts,clsdeimstr,reg_str)
 else
-    casedir= sprintf('%s_nb%d_results_%s',casename_nb,reg_str)
+    casedir= sprintf('%s_nb%d_results_%s',casename,nb,reg_str)
 end;
 mkdir(casedir);
 
@@ -472,35 +474,6 @@ function [out_coef] = conv_fom(ucoef, pod_u, pod_v, snaps)
     conv_v_fom = reshape(u_fom.*vx_fom + v_fom.*vy_fom, nL,1);
     
     out_coef = [pod_u(:,2:end); pod_v(:,2:end)]'*[conv_u_fom; conv_v_fom];
-end
-
-function [pod_u, pod_v, x_fom, y_fom] = get_grid_and_pod(snaps)
-  x_fom = snaps.flds{1}.x;
-  y_fom = snaps.flds{1}.y;
-
-  [nr, ns, nE] = size(x_fom);
-  nL = nr*ns*nE;
-  [nbasis, nbasis1] = size(snaps.flds)
-  pod_u = [];
-  pod_v = [];
-  for i=1:nbasis;
-    %u_snap = snaps.flds{i}.u;
-    pod_u = [pod_u, reshape(snaps.flds{i}.u, nL,1)];
-    pod_v = [pod_v, reshape(snaps.flds{i}.v,nL,1)];
-  end;
-
-
-  % The bases are not 
-  %[pod_u;pod_v]'*[pod_u;pod_v]
-  %exit;
-
-  %avg_snaps = NekSnaps(avg_cname);
-  %u_avg = reshape(avg_snaps.flds{1}.u,nL,1);
-  %v_avg = reshape(avg_snaps.flds{1}.v,nL,1);
-  %% Technically not the POD anymore
-  %exit;
-  %pod_u(:,1) = u_avg(:,1);
-  %pod_v(:,1) = v_avg(:,1);
 end
 
 %{

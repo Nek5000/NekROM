@@ -1,4 +1,5 @@
-function [out_coef] = conv_deim(ucoef, pod_u, pod_v, nl_snaps_obj, ndeim_pts,istep,clsdeim,n_os_points)
+% Convection operator that uses DEIM points
+function [out_coef] = conv_deim(ucoef, pod_u, pod_v, x, y, nl_snaps_obj, ndeim_pts,istep,clsdeim,n_os_points)
     persistent proj_mat Ainv inv_p_nl u_deimu v_deimu u_deimv v_deimv ux_deimu uy_deimu vx_deimv vy_deimv;
     persistent u_deim_stack v_deim_stack ux_deim_stack uy_deim_stack tau mu A_tau_inv alpha nl_bas_inds% nl_max_coef nl_min_coef;
     persistent inds;
@@ -8,11 +9,12 @@ function [out_coef] = conv_deim(ucoef, pod_u, pod_v, nl_snaps_obj, ndeim_pts,ist
         % Stuff to be precomputed
 
         % Read in the snapshots.     
-        [nl_u_snaps, nl_v_snaps] = get_grid_and_pod(nl_snaps_obj);
+        [nl_u_snaps, nl_v_snaps] = get_snaps(nl_snaps_obj);
         nl_snaps = [nl_u_snaps; nl_v_snaps];
 
-        x=nl_snaps_obj.flds{1}.x;
-        y=nl_snaps_obj.flds{1}.y;
+        % Calculate mass matrix with Jacobian
+        %x=nl_snaps_obj.flds{1}.x;
+        %y=nl_snaps_obj.flds{1}.y;
         nx1 = size(x,1);
         [zi, w] = zwgll(nx1-1);
         d = deriv_mat(zi);
@@ -67,6 +69,7 @@ function [out_coef] = conv_deim(ucoef, pod_u, pod_v, nl_snaps_obj, ndeim_pts,ist
             inds = [nl_u_inds, nl_v_inds + size(nl_u_snaps,1)];
         else % Use the same QDEIM points for u and v.
             % Maybe this isn't right for vector quantities.
+            % Will this satisfy the divergence-free constraints?
 %           [P, inds] = calc_qdeim_proj_mat(nl_snaps);
             if false;
                [P, inds] = calc_qdeim_proj_mat(nl_bas); % Should select points based on the basis
