@@ -56,4 +56,4 @@ In addition to the .rea support for setting internal parameters, .mor files are 
 
 # Documentation
 
-Documentation for NekROM is available at [https://nekrom.readthedocs.io/en/latest/](https://nekrom.readthedocs.io/en/latest/) or built locally following the instructions in `doc/README.md`.
+Documentation for NekROM is available at [https://nekrom.readthedocs.io/en/latest/](https://nekrom.readthedocs.io/en/latest/) or can be built locally following the instructions in `doc/README.md`.
