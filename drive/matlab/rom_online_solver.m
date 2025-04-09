@@ -44,7 +44,7 @@ addpath('./point_generators');
 %casename='cyl';
 
 path='../../examples/shear4/';
-casename='thin';
+casename='shear4';%'thin';
 
 % Should just use the values from the .rea file by default
 % allowing for overrides
@@ -61,7 +61,7 @@ elseif contains(path,'conv')
     nu     = 0.01;
     nb     = 20;
 elseif contains(path,'shear4')
-    nsteps = 40000;
+    nsteps = 2*40000;
     dt     = 1e-4;
     iostep = 100;
     nu     = 1/40000;
@@ -105,18 +105,20 @@ elseif (ifefr) || (iftr)
    end
 end
 
-deims= [170];%[170];%[2,4,8,16,20 40 80 100 200 400 800 1000]
-%ps_alg='sopt';
-ps_alg ='gpode';
+%deims= [50];%[170];%[2,4,8,16,20 40 80 100 200 400 800 1000]
+%% Point selection algorithm
+ps_alg='sopt';
+%ps_alg ='gpode';
 %ps_alg = 'gappy_pod';
 %ps_alg = 'gnat';
 
+%% Hyperreduction algorithms
 hr_alg="clsdeim";
 
 % number of deim points
 %for j=1:length(deims)
-ndeim_pts = nb;%deims(j);
-os_multiplier = 4;
+ndeim_pts = 175;%deims(j);
+os_multiplier = 2;
 n_os_points=os_multiplier*ndeim_pts;
 clsdeim = true;
 
@@ -323,6 +325,9 @@ function [a0_full, b0_full, c0_full, u0_full, uk_full, mb, ms] =  load_full_ops(
 
    % load stiffness matrix
    a0_full = dlmread(fullfile(path,"au"));
+   %size(a0_full)
+   %mb+1
+   %(mb+1)*(mb+1)
    a0_full = reshape(a0_full,mb+1,mb+1);
 
    % load mass matrix
