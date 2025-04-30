@@ -24,7 +24,7 @@ conda install pip cython compilers openblas meson-python pkg-config
 
 #### Install Documentation Dependencies
 ```sh
-pip install sphinx sphinx-fortran six sphinx-mathjax-offline sphinx-rtd-theme
+pip install sphinx sphinx-fortran six sphinx-mathjax-offline sphinx-book-theme myst-parser
 ```
 
 ### 3. Install Development Version of NumPy

@@ -2,5 +2,5 @@ sphinx
 sphinx-fortran
 six
 sphinx-mathjax-offline
-sphinx-rtd-theme
+sphinx-book-theme
 myst-parser
