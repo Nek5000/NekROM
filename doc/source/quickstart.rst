@@ -18,41 +18,47 @@ the process with the 2D flow past a cylinder example.
     git clone https://github.com/Nek5000/NekROM.git
     git clone https://github.com/Nek5000/Nek5000.git
 
-Maybe build Nek5000 tools?
-
 2. Set environment variables
 
 .. code-block:: shell
    
-    export PATH=$PATH:NekROM/bin:Nek5000/bin
-    export MOR_DIR=NekROM/bin
+    export PATH=$PATH:$(pwd)/NekROM/bin:$(pwd)/Nek5000/bin
+    export MOR_DIR=$(pwd)/NekROM/bin
 
-3. Change to cylinder example directory
+3. Build Nek5000 tools
+
+.. code-block:: shell
+
+    cd Nek5000/tools
+    ./maketools
+    cd ../../
+
+4. Change to cylinder example directory
 
 .. code-block:: shell
 
     cd NekROM/examples/cyl
 
-4. Generate the FOM snapshots
+5. Generate the FOM snapshots
 
 .. code-block:: shell
 
     ./run_fom
 
-Also generate drag and lift data
-Explain the run script here. Maybe can include the script text as well?
+This run script executes the Nek5000 cylinder case and extracts drag and lift data.
+See below for more details.
 
-5. Run the ROM using the FOM snapshots
+6. Run the ROM using the FOM snapshots
 
 .. code-block:: shell
 
     ./run_rom
 
-Creates the POD bases and uses them to run the simulation as a reduced-order model
+This run script creates the POD bases and uses them to run the reduced-order simulation.
+See below for more details.
 
-Explain the run script here. Maybe can include the script text as well.
 
-6. Visualize the ROM
+7. Visualize the ROM
 
 .. code-block:: shell
 
@@ -93,9 +99,9 @@ Executing NekROM generates several different kinds of files.
 
 `avgcyl0.*`: The average mode I assume. Why are there multiple ones of these.
 
-`lapcyl0.*`: What are these files?
+`lapcyl0.*`: ????
 
-`tkecyl0.*`: Turbulent kinetic energy I assume
+`tkecyl0.*`: Turbulent kinetic energy
 
 `tmncyl0.*`: ????
 
@@ -114,3 +120,4 @@ NekROM input files
 ^^^^^^^^^^^^^^^^^^^^^^
 Running parametrically
 ^^^^^^^^^^^^^^^^^^^^^^
+TODO
