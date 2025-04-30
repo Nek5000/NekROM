@@ -3,3 +3,4 @@ sphinx-fortran
 six
 sphinx-mathjax-offline
 sphinx-rtd-theme
+myst-parser
