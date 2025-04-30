@@ -14,4 +14,3 @@ dependencies:
         - sphinx-book-theme
         - myst-parser
         - numpy>=2.2.5
-
