@@ -97,7 +97,7 @@ Executing NekROM generates several different kinds of files.
 
 `bascyl0.*`: Snapshots of the POD modes. The mode number is indicated in the file extension.
 
-`avgcyl0.*`: The average mode I assume. Why are there multiple ones of these.
+`avgcyl0.*`: The average modes.
 
 `lapcyl0.*`: ????
 
@@ -111,11 +111,57 @@ Executing NekROM generates several different kinds of files.
 NekROM input files
 ^^^^^^^^^^^^^^^^^^
 
-`LMOR`: Compile-time parameters for NekROM
+`LMOR`: Compile-time parameters for NekROM. This is generated when `makerom` is executed.
+
+.. code-block:: fortran
+
+      ! MOR Compile-Time Allocation Parameters
+
+      parameter (lmu=1)   ! 0 -> disable velocity allocation
+      parameter (lmp=1)   ! 0 -> disable pressure allocation
+      parameter (lmt=1)   ! 0 -> disable temperature allocation
+
+      parameter (ls=500)  ! max number of snapshots
+      parameter (lcs=ls)  ! max number of coefficient set
+
+      parameter (lei=0)   ! 0 -> one residual, 1 -> affine decomp
+      parameter (lb=20)       ! max number of basis
+      parameter (lelm=lelt)   ! number of local elements
+      parameter (ltr=1+0*399) ! max number of tensor rank
+      parameter (ledvis=0)   ! 0 -> disable eddy viscosity allocation
+
+      parameter (lk=1)   ! largest wave number for pdrag calculation
+      parameter (lmsk=1) ! number of partitions
+
+      parameter (lintp=1) ! max number of interpolation points
+      parameter (lbat=1024) ! max size of batch vector (inner-product iter.)
+
+      parameter (lbavg=1+0*(lb-1)) ! size of average field allocation
+
+      ! Auxiliary
+
+      parameter (lsu=(lcs-1)*lmu+1) ! size of velocity snapshots allocation
+      parameter (lsp=(lcs-1)*lmp+1) ! size of pressure snapshots allocation
+      parameter (lst=(lcs-1)*lmt+1) ! size of temperature snapshots allocation
+
+      parameter (lub=(lb-1)*lmu+1) ! size of velocity basis allocation
+      parameter (lpb=(lb-1)*lmp+1) ! size of pressure basis allocation
+      parameter (ltb=(lb-1)*lmt+1) ! size of temperature basis allocation
+
+      parameter (lres=1) ! size of residual storage
+      parameter (lres_u=((3*lb+lb**2)-1)*lei+1) ! size of residual storage for vel
+      parameter (lres_t=((2*lb+lb**2)-1)*lei+1) ! size of residual storage for temp
+
 
 `cyl.mor`: Run-time parameters for NekROM
 
-`cyl_rom.usr`: Similar to `.usr` files in Nek5000 with several NekROM specific functions.
+.. literalinclude:: ../../examples/cyl/cyl.mor
+    :language: text
+
+`cyl_rom.usr`: User specified functions for NekROM case. This is similar to the Nek5000 `cyl_fom.usr` file, but
+also has several NekROM specific functions. Additionally, `param(170) = -1` is added to `userchk` in this
+file to tell NekROM to read from `cyl.mor` rather than the FOM `cyl.rea` file. NekROM specific functions
+include the following: `rom_userchk`, `rom_userbases`, `rom_userfop`, and `rom_userrhs`.
 
 ^^^^^^^^^^^^^^^^^^^^^^
 Running parametrically
