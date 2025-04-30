@@ -10,11 +10,20 @@ Welcome to NekROM's documentation!
    :maxdepth: 2
    :caption: Contents:
 
+Guides
+======
+.. toctree::
+  :maxdepth: 1
+
+  quickstart
+
+
 API
 ===
 .. toctree::
   :maxdepth: 1
   :caption: API:
+
 
   ana
 

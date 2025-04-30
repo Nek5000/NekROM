@@ -2,6 +2,10 @@
 
 This package include tools to help apply model-order reduction (MOR) to data produced by [Nek5000](https://github.com/Nek5000/Nek5000) to generate reduced-order models (ROM). The generated ROMs can be run either in the Fortran driver embedded inside the Nek5000 userchk subroutine or can be run separately by provided driver scripts in Matlab, Python, and Julia. Users can also provide their own drivers which read the ROM operators and QOI factors from the `ops/` and `qoi/` directories.
 
+# Documentation
+
+Documentation for NekROM is available at [https://nekrom.readthedocs.io/en/latest/](https://nekrom.readthedocs.io/en/latest/) or can be built locally following the instructions in `doc/README.md`.
+
 # Setup & Procedure
 
 Set shell variables (in .bashrc for BASH users):
@@ -53,7 +57,3 @@ Our procedure for updating the code is exclusively through pull requests (no pus
 # Parameter File Support
 
 In addition to the .rea support for setting internal parameters, .mor files are supported for [par](https://nek5000.github.io/NekDoc/user_files.html)-like dictionary. The possible key/values are described in templates/mpar.template.
-
-# Documentation
-
-Documentation for NekROM is available at [https://nekrom.readthedocs.io/en/latest/](https://nekrom.readthedocs.io/en/latest/) or can be built locally following the instructions in `doc/README.md`.
