@@ -61,3 +61,12 @@ language = 'en'
 
 html_theme = 'sphinx_rtd_theme'#'alabaster'
 html_static_path = ['_static']
+
+# Add edit links to Github
+html_context = {
+    "display_github": True, # Integrate GitHub
+    "github_user": "Nek5000", # Username
+    "github_repo": "NekROM", # Repo name
+    "github_version": "master", # Version
+    "conf_py_path": "/doc/source/", # Path in the checkout to the docs root
+}
