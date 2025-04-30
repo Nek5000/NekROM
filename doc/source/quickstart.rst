@@ -97,15 +97,16 @@ Executing NekROM generates several different kinds of files.
 
 `bascyl0.*`: Snapshots of the POD modes. The mode number is indicated in the file extension.
 
-`avgcyl0.*`: The average modes.
+`avgcyl0.*`: The average modes. These files include the average of the snapshots and the reconstructed average.
 
-`lapcyl0.*`: ????
+`uiccyl0.*`: Initial conditions
 
 `tkecyl0.*`: Turbulent kinetic energy
 
-`tmncyl0.*`: ????
+`lapcyl0.*`: 
 
-`uiccyl0.*`: ????
+`tmncyl0.*`:
+
 
 ^^^^^^^^^^^^^^^^^^
 NekROM input files
