@@ -13,22 +13,25 @@ If you don’t mind using a development version of NumPy, you can use an existin
 ```sh
 conda create -n nekrom-docs
 conda activate nekrom-docs
+conda install pip
 ```
 
 ### 2. Install Dependencies
 
-#### Install Dependencies for Building NumPy
-```sh
-conda install pip cython compilers openblas meson-python pkg-config
-```
-
 #### Install Documentation Dependencies
 ```sh
-pip install sphinx sphinx-fortran six sphinx-mathjax-offline sphinx-book-theme myst-parser
+pip install sphinx sphinx-fortran six sphinx-mathjax-offline sphinx-book-theme myst-parser "numpy>=2.2.5"
 ```
 
-### 3. Install Development Version of NumPy
-Clone and build development version of NumPy (has Fortran parsing bugfix):
+#### Install Development Version of NumPy
+Note: This is no longer required after the release of NumPy version 2.2.5.
+
+##### Install Dependencies for Building NumPy
+```sh
+conda install cython compilers openblas meson-python pkg-config
+```
+
+Clone and build development version of NumPy:
 ```sh
 git clone https://github.com/numpy/numpy.git
 cd numpy
@@ -37,7 +40,7 @@ pip install . --no-build-isolation
 ```
 Refer to [NumPy's build instructions](https://numpy.org/doc/stable//building/index.html#building-from-source-to-use-numpy) for more details.
 
-### 4. Build the NekROM Documentation
+### 3. Build the NekROM Documentation
 Clone NekROM and build the HTML documentation:
 ```sh
 git clone https://github.com/Nek5000/NekROM.git
@@ -45,7 +48,7 @@ cd NekROM/doc
 make html
 ```
 
-### 5. View the Documentation
+### 4. View the Documentation
 To view the generated documentation, navigate to the build directory and open `index.html` in your browser:
 ```sh
 cd NekROM/doc/build
