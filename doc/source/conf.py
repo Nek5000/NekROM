@@ -47,6 +47,7 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx-mathjax-offline',
               'myst_parser',
              ]
+
 # Enable some latex in myst markdown
 myst_enable_extensions = ["dollarmath", "amsmath"]
 
