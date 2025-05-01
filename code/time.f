@@ -418,7 +418,8 @@ c-----------------------------------------------------------------------
          call mxm(cintp,n,uu,n+1,cu,1)
       else
          call rzero(cu,nb)
-         write (6,*) 'chk_1'
+         write (6,*) 'chk_1, cfloc',cfloc
+         write (6,*) '(kc2-kc1),(jc2-jc1)',kc2-kc1,jc2-jc1
          if (ncloc.ne.0) then
             if ((kc2-kc1).lt.64.and.(jc2-jc1).lt.64
      $          .and.cfloc.eq.'NONE') then
