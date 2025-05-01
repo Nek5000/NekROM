@@ -47,6 +47,8 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx-mathjax-offline',
               'myst_parser',
              ]
+# Enable some latex in myst markdown
+myst_enable_extensions = ["dollarmath", "amsmath"]
 
 #fortran_src = [os.path.abspath(code_dir)]
 fortran_src = [os.path.abspath(temp_code_dir)]

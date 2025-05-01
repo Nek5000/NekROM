@@ -84,7 +84,7 @@ data lift and drag data from the log file of the ROM simulation.
 :language: shell
 ```
 
-### NekROM output files
+### NekROM output files for the cylinder case
 
 Executing NekROM generates several different kinds of files.
 
@@ -92,15 +92,22 @@ Executing NekROM generates several different kinds of files.
 
 `bascyl0.*`: Snapshots of the POD modes. The mode number is indicated in the file extension.
 
-`avgcyl0.*`: The average modes. These files include the average of the snapshots and the reconstructed average.
+`avgcyl0.f00001`: The average of the snapshots
+
+`avgcyl0.f00002`: The reconstructed average with `mb` modes
 
 `uiccyl0.*`: Initial conditions
 
 `tkecyl0.*`: Turbulent kinetic energy
 
-`lapcyl0.*`:
+`lapcyl0.*`: Laplace operator operating on a field (specific to the cylinder case)
 
-`tmncyl0.*`:
+`tmncyl0.*`: $<u'T'>$ RMS field where $u'$ and $T'$ are the fluctuated velocity and temperature.
+The first tmn is calculated from the snaphots. The second is reconstructed from the reduced basis functions.
+
+`rom.dragx.dat`: Data file containing the drag in the $x$ direction at output time steps
+
+`rom.dragy.dat`: Data file containing the drag in the $y$ direction at output time steps
 
 ### NekROM input files
 
