@@ -15,12 +15,6 @@ author = 'NekROM contributors'
 release = '1.0.0'
 html_last_updated_fmt='%b %d, %Y'
 
-# -- Allow including the README in the documentation
-import sys
-
-sys.path.insert(0, os.path.abspath('../../'))
-
-
 # -- Preprocessing ------------------------------------------------------
 
 # Strip out the include statements for the docs
