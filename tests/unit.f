@@ -338,7 +338,7 @@ c-----------------------------------------------------------------------
       param(173) = 0.
 
       call rom_setup
-      call c0_unit_helper(cul)
+      call c0_unit_helper(cul,iflag)
 
       return
       end
