@@ -578,6 +578,7 @@ c-----------------------------------------------------------------------
 
                if (mp.eq.1) then
                   call rzero(cu_ref,mb)
+                  write (6,*) 'chk2.1'
                   call evalc(cu_ref,tmp,c_ref,u_ref,u_ref)
                endif
                write (6,*) 'chk2'
