@@ -17,6 +17,7 @@ Guides
 
   quickstart
 
+  conventions
 
 API
 ===

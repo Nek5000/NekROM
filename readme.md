@@ -52,7 +52,7 @@ run-time parameters can be found in `$case.mor`.
 
 # Contribution
 
-Our procedure for updating the code is exclusively through pull requests (no pushing). Please submit issues and PR to [https://github.com/Nek5000/NekROM](https://github.com/Nek5000/NekROM). PRs should be the smallest coherent change to the code-base. Issue titles should describe the issue e.g., 'Error in x', 'Missing x', etc. PR titles should describe the modification made e.g., 'Fixed x', 'Improved x, etc. See conventions.txt for the coding style of this project when contributing.
+Our procedure for updating the code is exclusively through pull requests (no pushing). Please submit issues and PR to [https://github.com/Nek5000/NekROM](https://github.com/Nek5000/NekROM). PRs should be the smallest coherent change to the code-base. Issue titles should describe the issue e.g., 'Error in x', 'Missing x', etc. PR titles should describe the modification made e.g., 'Fixed x', 'Improved x, etc. See the documentation for the coding style of this project when contributing.
 
 # Parameter File Support
 
