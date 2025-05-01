@@ -16,6 +16,7 @@ Guides
   :maxdepth: 1
 
   quickstart
+  stabilization_methods
 
 
 API
