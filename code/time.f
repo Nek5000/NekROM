@@ -453,7 +453,8 @@ c-----------------------------------------------------------------------
                do k=kc1,kc2
                do j=jc1,jc2
                do i=ic1,ic2
-                  cu(i)=cu(i)+cl(i,j,k)*tt(j)*ucft(k)
+c                 cu(i)=cu(i)+cl(i,j,k)*tt(j)*ucft(k)
+                  cu(i)=ucft(k)
                   write (6,*) 'chk_new3',i,j,k
                enddo
                enddo
