@@ -548,11 +548,9 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       parameter (llb=100)
-      common /scrtest_evalc/ cu(llb),wk(llb),u_ref(llb+1),cu_ref(llb)
-c    $   c_ref(llb*(llb+1)**2),u_ref(llb+1),cu_ref(llb),
-c    $   tmp(llb*(llb+1)),c(llb*(llb+1)**2)
-      common /scrtest_evalc_new/ c_ref(llb*(llb+1)**2)
-      common /scrtest/ tmp(llb*(llb+1)),c(llb*(llb+1)**2)
+      common /scrtest_evalc/ cu(llb),wk(llb),
+     $   c_ref(llb*(llb+1)**2),u_ref(llb+1),cu_ref(llb),
+     $   tmp(llb*(llb+1)),c(llb*(llb+1)**2)
 
       call srand(123)
 
@@ -572,22 +570,17 @@ c    $   tmp(llb*(llb+1)),c(llb*(llb+1)**2)
 
       cfloc = 'NONE'
 
-      do mb=62,llb
+      do mb=1,llb
          nb=mb
          do mp=1,32
             call rzero(cu,mb)
             do ip=1,mp
                call cpart(kc1,kc2,jc1,jc2,ic1,ic2,ncloc,mb,mp,ip)
-               write (6,*) 'chk1', ncloc
-               write (6,*) 'kc1,kc2,jc1,jc2',kc1,kc2,jc1,jc2
-               write (6,*) 'ic1,ic2',ic1,ic2
 
                if (mp.eq.1) then
                   call rzero(cu_ref,mb)
-                  write (6,*) 'chk2.1'
                   call evalc(cu_ref,tmp,c_ref,u_ref,u_ref)
                endif
-               write (6,*) 'chk2'
 
                do k=0,nb
                do j=0,mb
@@ -597,27 +590,19 @@ c    $   tmp(llb*(llb+1)),c(llb*(llb+1)**2)
                enddo
                enddo
                enddo
-               write (6,*) 'chk3'
-               write (6,*) 'mb',mb
 
                call rzero(wk,mb)
-               write (6,*) 'chk4'
                call evalc(wk,tmp,c,u_ref,u_ref)
-               write (6,*) 'chk5'
 
                call add2(cu,wk,mb)
-               write (6,*) 'chk6'
             enddo
             call sub2(cu,cu_ref,mb)
-            write (6,*) 'chk7'
             dl2=sqrt(vlsc2(cu,cu,mb))
             cl2=sqrt(vlsc2(cu_ref,cu_ref,mb))
             el2=dl2/cl2
-            write (6,*) 'chk8'
             cl2max=max(cl2,cl2max)
             dl2max=max(dl2,dl2max)
             el2max=max(el2,el2max)
-            write (6,*) 'chk9'
             write (6,*) mb,mp,dl2,cl2,el2,'error'
          enddo
       enddo

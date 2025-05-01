@@ -407,11 +407,6 @@ c-----------------------------------------------------------------------
       save    icalld
       data    icalld /0/
 
-      write (6,*) 'inside evalc'
-      write (6,*) 'lb',lb
-      write (6,*) 'kc1,kc2,jc1,jc2',kc1,kc2,jc1,jc2
-      write (6,*) 'ic1,ic2',ic1,ic2
-
       if (icalld.eq.0) then
          evalc_time=0.
          icalld=1
@@ -423,19 +418,14 @@ c-----------------------------------------------------------------------
          call mxm(cintp,n,uu,n+1,cu,1)
       else
          call rzero(cu,nb)
-         write (6,*) 'chk_1, cfloc',cfloc
-         write (6,*) '(kc2-kc1),(jc2-jc1)',kc2-kc1,jc2-jc1
          if (ncloc.ne.0) then
             if ((kc2-kc1).lt.64.and.(jc2-jc1).lt.64
      $          .and.cfloc.eq.'NONE') then
                call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),
      $                  uu(kc1),(kc2-kc1+1),cm,1)
-               write (6,*) 'chk_3'
                call mxm(cm,(ic2-ic1+1),tt(jc1),(jc2-jc1+1),cu(ic1),1)
-               write (6,*) 'chk_4'
             else
                call copy(ucft,uu,nb+1)
-               write (6,*) 'chk_new1'
 
                if (cfloc.eq.'CONV') then
                if (cftype.eq.'TFUN') then
@@ -444,7 +434,6 @@ c-----------------------------------------------------------------------
                   call pod_df(ucft(1))
                endif
                endif
-               write (6,*) 'chk_new2'
 
 
                do k=kc1,kc2
