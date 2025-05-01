@@ -43,7 +43,7 @@ run-time parameters can be found in `$case.mor`.
     - `field`, v = velocity, t = temperature, vt = velocity + temperature
     - `nb`, number of POD modes (must be less than lb, default == lb)
 - [pod], header for pod parameters
-    - `type`, l2 = L^2 POD modes, h10, H^1_0 POD modes
+    - `type`, l2 = $L^2$ POD modes, h10, $H^1_0$ POD modes
     - `mode0`, avg = average 0th mode, state = user-defined in ub,vb,wb,tb
     - `augment`, 0 = no ABM, 1 = 0th interactions, 2 = diagonals, 3 = 1 + 2
 - [qoi], header for qoi parameters
