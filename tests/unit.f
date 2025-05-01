@@ -574,7 +574,9 @@ c-----------------------------------------------------------------------
             call rzero(cu,mb)
             do ip=1,mp
                call cpart(kc1,kc2,jc1,jc2,ic1,ic2,ncloc,mb,mp,ip)
-               write (6,*) 'chk1, ncloc', ncloc
+               write (6,*) 'chk1', ncloc
+               write (6,*) 'kc1,kc2,jc1,jc2,ic1,ic2',kc1,kc2,jc1,jc2,ic1,
+     $          ic2 
 
                if (mp.eq.1) then
                   call rzero(cu_ref,mb)
