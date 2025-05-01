@@ -5,7 +5,7 @@ cd t
 $MOR_DIR/bin/linkm
 
 sed -e 's/(ltr=.*)/(ltr=80)/g' LMOR > LMOR.tmp
-if [ "TEST" = "EVALC" ]; then
+if [ "$TEST" = "EVALC" ]; then
 sed -i 's/(lb=.*)/(lb=100)/g' LMOR.tmp
 fi
 mv LMOR.tmp LMOR
