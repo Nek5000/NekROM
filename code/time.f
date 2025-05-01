@@ -396,10 +396,6 @@ c-----------------------------------------------------------------------
 
       common /evalctmp/ ucft(0:lb)
 
-      write (6,*) 'inside evalc'
-      write (6,*) 'kc1,kc2,jc1,jc2',kc1,kc2,jc1,jc2
-      write (6,*) 'ic1,ic2',ic1,ic2
-
       real cu(nb)
       real uu(0:nb),tt(0:nb)
       real cl(ic1:ic2,jc1:jc2,kc1:kc2)
@@ -410,6 +406,10 @@ c-----------------------------------------------------------------------
       integer icalld
       save    icalld
       data    icalld /0/
+
+      write (6,*) 'inside evalc'
+      write (6,*) 'kc1,kc2,jc1,jc2',kc1,kc2,jc1,jc2
+      write (6,*) 'ic1,ic2',ic1,ic2
 
       if (icalld.eq.0) then
          evalc_time=0.
