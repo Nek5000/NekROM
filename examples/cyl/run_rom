@@ -1,6 +1,8 @@
 #!/bin/bash
 
 makerom cyl_rom
+
+echo 'running NekROM calculation...'
 neklmpi cyl 1
 
 logfile=cyl.log.1
