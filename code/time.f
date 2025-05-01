@@ -408,6 +408,7 @@ c-----------------------------------------------------------------------
       data    icalld /0/
 
       write (6,*) 'inside evalc'
+      write (6,*) 'lb',lb
       write (6,*) 'kc1,kc2,jc1,jc2',kc1,kc2,jc1,jc2
       write (6,*) 'ic1,ic2',ic1,ic2
 
@@ -427,10 +428,6 @@ c-----------------------------------------------------------------------
          if (ncloc.ne.0) then
             if ((kc2-kc1).lt.64.and.(jc2-jc1).lt.64
      $          .and.cfloc.eq.'NONE') then
-               write (6,*) '(kc2-kc1),(jc2-jc1)chk_2',kc2-kc1,jc2-jc1
-               write (6,*) '(ic2-ic1+1),',ic2-ic1+1
-               write (6,*) '(jc2-jc1+1),',jc2-jc1+1
-               write (6,*) 'kc1, uu(kc1)',kc1, uu(kc1)
                call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),
      $                  uu(kc1),(kc2-kc1+1),cm,1)
                write (6,*) 'chk_3'
@@ -453,9 +450,7 @@ c-----------------------------------------------------------------------
                do k=kc1,kc2
                do j=jc1,jc2
                do i=ic1,ic2
-c                 cu(i)=cu(i)+cl(i,j,k)*tt(j)*ucft(k)
-                  cu(i)=ucft(k)
-                  write (6,*) 'chk_new3',i,j,k
+                  cu(i)=cu(i)+cl(i,j,k)*tt(j)*ucft(k)
                enddo
                enddo
                enddo
