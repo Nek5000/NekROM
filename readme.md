@@ -18,7 +18,7 @@ export PATH="$MOR_DIR/bin:$PATH"
 Required files in NekROM case directory:
 
 - Nek5000 case files e.g., .rea, .map, SIZE
-- $caserom.usr, .usr file specific for NekROM cases (see `$MOR_DIR/examples`)
+- \$caserom.usr, .usr file specific for NekROM cases (see `$MOR_DIR/examples`)
 - LMOR,      specifies compile-time parameters
 - $case.mor, specifies run-time parameters
 - file.list, contains list of paths to the snapshots (relative path)
