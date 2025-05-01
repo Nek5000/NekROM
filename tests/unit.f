@@ -574,11 +574,13 @@ c-----------------------------------------------------------------------
             call rzero(cu,mb)
             do ip=1,mp
                call cpart(kc1,kc2,jc1,jc2,ic1,ic2,ncloc,mb,mp,ip)
+               write (6,*) 'chk1'
 
                if (mp.eq.1) then
                   call rzero(cu_ref,mb)
                   call evalc(cu_ref,tmp,c_ref,u_ref,u_ref)
                endif
+               write (6,*) 'chk2'
 
                do k=0,nb
                do j=0,mb
@@ -588,19 +590,26 @@ c-----------------------------------------------------------------------
                enddo
                enddo
                enddo
+               write (6,*) 'chk3'
 
                call rzero(wk,mb)
+               write (6,*) 'chk4'
                call evalc(wk,tmp,c,u_ref,u_ref)
+               write (6,*) 'chk5'
 
                call add2(cu,wk,mb)
+               write (6,*) 'chk6'
             enddo
             call sub2(cu,cu_ref,mb)
+            write (6,*) 'chk7'
             dl2=sqrt(vlsc2(cu,cu,mb))
             cl2=sqrt(vlsc2(cu_ref,cu_ref,mb))
             el2=dl2/cl2
+            write (6,*) 'chk8'
             cl2max=max(cl2,cl2max)
             dl2max=max(dl2,dl2max)
             el2max=max(el2,el2max)
+            write (6,*) 'chk9'
             write (6,*) mb,mp,dl2,cl2,el2,'error'
          enddo
       enddo
