@@ -434,6 +434,7 @@ c-----------------------------------------------------------------------
                write (6,*) 'chk_4'
             else
                call copy(ucft,uu,nb+1)
+               write (6,*) 'chk_new1'
 
                if (cfloc.eq.'CONV') then
                if (cftype.eq.'TFUN') then
@@ -442,11 +443,14 @@ c-----------------------------------------------------------------------
                   call pod_df(ucft(1))
                endif
                endif
+               write (6,*) 'chk_new2'
+
 
                do k=kc1,kc2
                do j=jc1,jc2
                do i=ic1,ic2
                   cu(i)=cu(i)+cl(i,j,k)*tt(j)*ucft(k)
+                  write (6,*) 'chk_new3',i,j,k
                enddo
                enddo
                enddo
