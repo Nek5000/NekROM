@@ -418,12 +418,16 @@ c-----------------------------------------------------------------------
          call mxm(cintp,n,uu,n+1,cu,1)
       else
          call rzero(cu,nb)
+         write (6,*) 'chk_1'
          if (ncloc.ne.0) then
             if ((kc2-kc1).lt.64.and.(jc2-jc1).lt.64
      $          .and.cfloc.eq.'NONE') then
+               write (6,*) 'chk_2'
                call mxm(cl,(ic2-ic1+1)*(jc2-jc1+1),
      $                  uu(kc1),(kc2-kc1+1),cm,1)
+               write (6,*) 'chk_3'
                call mxm(cm,(ic2-ic1+1),tt(jc1),(jc2-jc1+1),cu(ic1),1)
+               write (6,*) 'chk_4'
             else
                call copy(ucft,uu,nb+1)
 
