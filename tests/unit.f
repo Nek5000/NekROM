@@ -548,8 +548,10 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       parameter (llb=100)
-      common /scrtest_evalc/ cu(llb),wk(llb),
-     $   c_ref(llb*(llb+1)**2),u_ref(llb+1),cu_ref(llb),
+      common /scrtest_evalc/ cu(llb),wk(llb),u_ref(llb+1),cu_ref(llb)
+c    $   c_ref(llb*(llb+1)**2),u_ref(llb+1),cu_ref(llb),
+c    $   tmp(llb*(llb+1)),c(llb*(llb+1)**2)
+      common /scrtest_evalc_new/ c_ref(llb*(llb+1)**2),
      $   tmp(llb*(llb+1)),c(llb*(llb+1)**2)
 
       call srand(123)
