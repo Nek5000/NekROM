@@ -568,13 +568,13 @@ c-----------------------------------------------------------------------
 
       iexit=0.
 
-      do mb=62,llb
+      do mb=63,llb
          nb=mb
          do mp=1,32
             call rzero(cu,mb)
             do ip=1,mp
                call cpart(kc1,kc2,jc1,jc2,ic1,ic2,ncloc,mb,mp,ip)
-               write (6,*) 'chk1'
+               write (6,*) 'chk1, ncloc', ncloc
 
                if (mp.eq.1) then
                   call rzero(cu_ref,mb)
