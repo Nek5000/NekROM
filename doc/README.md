@@ -15,7 +15,7 @@ conda install pip
 
 #### Install Documentation Dependencies
 ```sh
-pip install sphinx sphinx-fortran six sphinx-mathjax-offline sphinx-book-theme myst-parser "numpy>=2.2.5"
+pip install sphinx sphinx-fortran six sphinx-mathjax-offline sphinx-book-theme myst-parser sphinxcontrib-bibtex "numpy>=2.2.5"
 ```
 
 ### 2. Build the NekROM Documentation

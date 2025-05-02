@@ -26,6 +26,8 @@ Welcome to NekROM's documentation!
 
   doc_readme_link
 
+  references
+
 .. toctree::
   :maxdepth: 1
   :caption: API:
