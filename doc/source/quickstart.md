@@ -71,7 +71,7 @@ The `run_fom` script,
 shown below, builds the Nek5000 case for the FOM, gnerates the mesh, and runs the Nek5000 simulation.
 After the simulation completes, the script copies the output snapshots to the `snaps` directory
 and creates `file.list` to tell NekROM which snapshots to use. Finally, the script
-extracts some drag and lift data from the log file. The detail computation of drag in the ROM can be found in {cite:p}`K2022`.
+extracts some drag and lift data from the log file. The details of the computation of the drag in the ROM can be found in {cite:p}`K2022`.
 
 ```{literalinclude} ../../examples/cyl/run_fom
 :language: shell
