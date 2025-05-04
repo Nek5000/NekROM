@@ -13,6 +13,7 @@ project = 'NekROM'
 copyright = '2025, NekROM contributors'
 author = 'NekROM contributors'
 release = '1.0.0'
+html_last_updated_fmt='%b %d, %Y'
 
 # -- Preprocessing ------------------------------------------------------
 
@@ -43,7 +44,11 @@ extensions = ['sphinx.ext.autodoc',
               'sphinxfortran.fortran_domain',
               'sphinxfortran.fortran_autodoc', 
               'sphinx.ext.mathjax', 
-              'sphinx-mathjax-offline']
+              'sphinx-mathjax-offline',
+              'myst_parser',
+             ]
+# Enable some latex in myst markdown
+myst_enable_extensions = ["dollarmath", "amsmath"]
 
 #fortran_src = [os.path.abspath(code_dir)]
 fortran_src = [os.path.abspath(temp_code_dir)]
@@ -59,5 +64,29 @@ language = 'en'
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = 'sphinx_rtd_theme'#'alabaster'
+html_theme = "sphinx_book_theme"#'sphinx_rtd_theme'#'alabaster'
 html_static_path = ['_static']
+html_title = "NekROM Documentation"
+
+# Options for sphinx_book_theme
+html_theme_options = {
+    "repository_url": "https://github.com/Nek5000/NekROM",
+    "path_to_docs": "doc/source/",
+    "repository_branch": "master",
+    "use_repository_button": True,
+    "use_issues_button": True,
+    "use_download_button": True,
+    "use_fullscreen_button": True,
+    "use_source_button": True,
+    "home_page_in_toc": True,
+    "use_edit_page_button": True,
+}
+
+# For rtd theme
+#html_context = {
+#    "display_github": True, # Integrate GitHub
+#    "github_user": "Nek5000", # Username
+#    "github_repo": "NekROM", # Repo name
+#    "github_version": "master", # Version
+#    "conf_py_path": "/doc/source/", # Path in the checkout to the docs root
+#}

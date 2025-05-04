@@ -18,7 +18,7 @@ export PATH="$MOR_DIR/bin:$PATH"
 Required files in NekROM case directory:
 
 - Nek5000 case files e.g., .rea, .map, SIZE
-- $caserom.usr, .usr file specific for NekROM cases (see `$MOR_DIR/examples`)
+- \$caserom.usr, .usr file specific for NekROM cases (see `$MOR_DIR/examples`)
 - LMOR,      specifies compile-time parameters
 - $case.mor, specifies run-time parameters
 - file.list, contains list of paths to the snapshots (relative path)
@@ -43,7 +43,7 @@ run-time parameters can be found in `$case.mor`.
     - `field`, v = velocity, t = temperature, vt = velocity + temperature
     - `nb`, number of POD modes (must be less than lb, default == lb)
 - [pod], header for pod parameters
-    - `type`, l2 = L^2 POD modes, h10, H^1_0 POD modes
+    - `type`, l2 = $L^2$ POD modes, h10, $H^1_0$ POD modes
     - `mode0`, avg = average 0th mode, state = user-defined in ub,vb,wb,tb
     - `augment`, 0 = no ABM, 1 = 0th interactions, 2 = diagonals, 3 = 1 + 2
 - [qoi], header for qoi parameters
@@ -52,7 +52,7 @@ run-time parameters can be found in `$case.mor`.
 
 # Contribution
 
-Our procedure for updating the code is exclusively through pull requests (no pushing). Please submit issues and PR to [https://github.com/Nek5000/NekROM](https://github.com/Nek5000/NekROM). PRs should be the smallest coherent change to the code-base. Issue titles should describe the issue e.g., 'Error in x', 'Missing x', etc. PR titles should describe the modification made e.g., 'Fixed x', 'Improved x, etc. See conventions.txt for the coding style of this project when contributing.
+Our procedure for updating the code is exclusively through pull requests (no pushing). Please submit issues and PR to [https://github.com/Nek5000/NekROM](https://github.com/Nek5000/NekROM). PRs should be the smallest coherent change to the code-base. Issue titles should describe the issue e.g., 'Error in x', 'Missing x', etc. PR titles should describe the modification made e.g., 'Fixed x', 'Improved x, etc. See the documentation for the coding style of this project when contributing.
 
 # Parameter File Support
 

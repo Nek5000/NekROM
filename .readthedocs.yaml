@@ -9,9 +9,6 @@ build:
   os: "ubuntu-lts-latest"
   tools:
     python: "mambaforge-latest"
-  jobs:
-    post_create_environment:
-      - bash ./doc/scripts/build_numpy.sh
 
 # Specify location of environment.yml
 conda:

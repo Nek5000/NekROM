@@ -1,43 +1,24 @@
 # Building Documentation for NekROM
 
-## Useful Resources
-- [Using Sphinx with Fortran](https://ostueker.github.io/Example_Fortran/UsingSphinxFortran.html)
-- [Example Fortran Repository](https://github.com/ostueker/Example_Fortran)
-- [Sphinx-Fortran Documentation](https://sphinx-fortran.readthedocs.io/en/latest/user.autodoc.html)
-- [VACUMM Sphinx-Fortran](https://github.com/VACUMM/sphinx-fortran/tree/master)
-
 ## Instructions to Build Documentation
 
-### 1. Set Up a Conda Environment
+### 1. Install Dependencies
+
+#### Set Up a Conda Environment (Optional)
+
 If you don’t mind using a development version of NumPy, you can use an existing Conda environment. Otherwise, create and activate a new environment:
 ```sh
 conda create -n nekrom-docs
 conda activate nekrom-docs
-```
-
-### 2. Install Dependencies
-
-#### Install Dependencies for Building NumPy
-```sh
-conda install pip cython compilers openblas meson-python pkg-config
+conda install pip
 ```
 
 #### Install Documentation Dependencies
 ```sh
-pip install sphinx sphinx-fortran six sphinx-mathjax-offline sphinx-rtd-theme
+pip install sphinx sphinx-fortran six sphinx-mathjax-offline sphinx-book-theme myst-parser "numpy>=2.2.5"
 ```
 
-### 3. Install Development Version of NumPy
-Clone and build development version of NumPy (has Fortran parsing bugfix):
-```sh
-git clone https://github.com/numpy/numpy.git
-cd numpy
-git submodule update --init
-pip install . --no-build-isolation
-```
-Refer to [NumPy's build instructions](https://numpy.org/doc/stable//building/index.html#building-from-source-to-use-numpy) for more details.
-
-### 4. Build the NekROM Documentation
+### 2. Build the NekROM Documentation
 Clone NekROM and build the HTML documentation:
 ```sh
 git clone https://github.com/Nek5000/NekROM.git
@@ -45,12 +26,18 @@ cd NekROM/doc
 make html
 ```
 
-### 5. View the Documentation
+### 3. View the Documentation
 To view the generated documentation, navigate to the build directory and open `index.html` in your browser:
 ```sh
 cd NekROM/doc/build
 open index.html
 ```
+
+## Useful Resources
+- [Using Sphinx with Fortran](https://ostueker.github.io/Example_Fortran/UsingSphinxFortran.html)
+- [Example Fortran Repository](https://github.com/ostueker/Example_Fortran)
+- [Sphinx-Fortran Documentation](https://sphinx-fortran.readthedocs.io/en/latest/user.autodoc.html)
+- [VACUMM Sphinx-Fortran](https://github.com/VACUMM/sphinx-fortran/tree/master)
 
 ## Refactoring Fortran Code for Documentation
 Follow [this guide](https://ostueker.github.io/Example_Fortran/RefactoringFortranForSphinx.html) to refactor source code so that data appears correctly in the documentation.
