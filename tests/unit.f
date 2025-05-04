@@ -338,7 +338,7 @@ c-----------------------------------------------------------------------
       param(173) = 0.
 
       call rom_setup
-      call c0_unit_helper(cul)
+      call c0_unit_helper(cul,iflag)
 
       return
       end
@@ -567,6 +567,8 @@ c-----------------------------------------------------------------------
       el2max=0.
 
       iexit=0.
+
+      cfloc = 'NONE'
 
       do mb=1,llb
          nb=mb
