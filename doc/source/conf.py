@@ -50,8 +50,6 @@ extensions = ['sphinx.ext.autodoc',
              ]
 
 bibtex_bibfiles = ['references.bib']
-# Enable some latex in myst markdown
-myst_enable_extensions = ["dollarmath", "amsmath"]
 
 # Enable some latex in myst markdown
 myst_enable_extensions = ["dollarmath", "amsmath"]
