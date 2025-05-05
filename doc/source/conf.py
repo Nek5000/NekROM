@@ -46,7 +46,11 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx.ext.mathjax', 
               'sphinx-mathjax-offline',
               'myst_parser',
+              'sphinxcontrib.bibtex',
              ]
+
+bibtex_bibfiles = ['references.bib']
+
 # Enable some latex in myst markdown
 myst_enable_extensions = ["dollarmath", "amsmath"]
 
