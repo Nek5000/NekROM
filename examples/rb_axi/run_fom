@@ -1,14 +1,13 @@
 #!/bin/bash
 
-np=4;
+np=1;
 eps0=1.6;
 eps1=2.6;
 deps=0.25;
 
 echo "run_fom start"
 
-wget https://uofi.box.com/shared/static/b5bfmz2hi5g5jykxl1phgu6ewdg2tfzj.f00001
-mv b5bfmz2hi5g5jykxl1phgu6ewdg2tfzj.f00001 r0.f00001
+wget --no-check-certificate https://uofi.box.com/shared/static/b5bfmz2hi5g5jykxl1phgu6ewdg2tfzj.f00001 -O r0.f00001
 
 genmap << Z
 rb
