@@ -11,3 +11,7 @@ dependencies:
         - sphinx-fortran
         - six
         - sphinx-mathjax-offline
+        - sphinx-book-theme
+        - myst-parser
+        - numpy>=2.2.5
+        - sphinxcontrib-bibtex
