@@ -47,6 +47,8 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx-mathjax-offline',
               'myst_parser',
               'sphinxcontrib.bibtex',
+              'sphinx.ext.napoleon',
+              'sphinxcontrib.matlab'
              ]
 
 bibtex_bibfiles = ['references.bib']
@@ -54,15 +56,19 @@ bibtex_bibfiles = ['references.bib']
 # Enable some latex in myst markdown
 myst_enable_extensions = ["dollarmath", "amsmath"]
 
+# Fortran configuration
 #fortran_src = [os.path.abspath(code_dir)]
 fortran_src = [os.path.abspath(temp_code_dir)]
-
 fortran_ext = ["f"]
 
+# MATLAB configuration
+matlab_src_dir = os.path.abspath("../../drive/matlab/")
+matlab_short_links = True
+matlab_auto_link = "basic"
+
+# General configuration
 templates_path = ['_templates']
-
 exclude_patterns = []
-
 language = 'en'
 
 # -- Options for HTML output -------------------------------------------------
