@@ -38,6 +38,8 @@ Welcome to NekROM's documentation!
 
   batch
  
+  conv
+
   const
 
   dump
