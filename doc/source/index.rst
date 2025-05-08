@@ -29,54 +29,25 @@ Welcome to NekROM's documentation!
   references
 
 .. toctree::
-  :maxdepth: 1
-  :caption: API:
+   :maxdepth: 2
+   :caption: Fortran API:
 
-  ana
+   fortran/index
 
-  aux
 
-  batch
- 
-  conv
+.. toctree::
+   :maxdepth: 2
+   :caption: MATLAB/Octave API:
 
-  const
+   matlab/index
 
-  dump
- 
-  ei
 
-  exp
+.. toctree::
+   :maxdepth: 2
+   :caption: Julia API:
 
-  filter
+   julia/index
 
-  ip
-
-  lapack
-
-  lap
-
-  legacy
-
-  mpar
-
-  part
-
-  pod
-
-  qoi
-
-  read
-
-  riesz
-
-  rk
-
-  rom
-
-  tensor
-
-  time
 
 Indices and tables
 ==================
