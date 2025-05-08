@@ -76,7 +76,7 @@ function [out_coef] = conv_deim(ucoef, pod_u, pod_v, x, y, nl_snaps_obj, ndeim_p
 %           [P, inds] = calc_qdeim_proj_mat(nl_snaps);
             if strcmp(ps_alg, 'sopt')
                 % Can oversample if desired.
-                inds = s_opt_generator(nl_bas, ndeim_pts + n_os_points, []);
+                inds = s_opt(nl_bas, ndeim_pts + n_os_points, []);
                 inds = inds';
             elseif strcmp(ps_alg, 'gpode') || strcmp(ps_alg, 'qdeim')
                 inds = gpode(nl_bas, ndeim_pts + n_os_points);
@@ -189,6 +189,7 @@ function [out_coef] = conv_deim(ucoef, pod_u, pod_v, x, y, nl_snaps_obj, ndeim_p
         conv_v_deim = ((u_deimv(:,2:end)*ucoef(2:end)).*(vx_deimv(:,2:end)*ucoef(2:end)) + (v_deimv(:,2:end)*ucoef(2:end)).*(vy_deimv(:,2:end)*ucoef(2:end))); 
         out_coef = proj_mat*inv_p_nl*[conv_u_deim; conv_v_deim];
     else
+        % Needs to be de-aliased!
         conv_deim = ((u_deim_stack(:,2:end)*ucoef(2:end)).*(ux_deim_stack(:,2:end)*ucoef(2:end)) + (v_deim_stack(:,2:end)*ucoef(2:end)).*(uy_deim_stack(:,2:end)*ucoef(2:end)));
         out_coef = inv_p_nl*conv_deim;
         if clsdeim;

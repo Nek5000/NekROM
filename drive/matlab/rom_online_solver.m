@@ -37,14 +37,14 @@ clear all; close all;
 % Add any important scripts to path
 addpath('./point_generators');
 
-%path='../../examples/ldc/';
-%casename='ldc';
+path='../../examples/ldc/';
+casename='ldc';
 
 %path='../../examples/conv/';
 %casename='cyl';
 
-path='../../examples/shear4/';
-casename='shear4';%'thin';
+%path='../../examples/shear4/';
+%casename='shear4';%'thin';
 
 % Should just use the values from the .rea file by default
 % allowing for overrides
@@ -55,9 +55,9 @@ if contains(path, 'ldc')
     nu     = 1./15000;%0.01;
     nb     = 20;
 elseif contains(path,'conv')
-    nsteps = 1.25000E+05;%20000; 
+    nsteps = 10*1.25000E+05;%20000; 
     dt     = 4.000000E-03;%0.001;
-    iostep = 100;%250;%500;%10;
+    iostep = 5000;%250;%500;%10;
     nu     = 0.01;
     nb     = 20;
 elseif contains(path,'shear4')
@@ -72,10 +72,10 @@ else
 end;
 
 % Whether or not to plot on an iostep
-bool_plot = true;
+bool_plot = false;
 
 % ROM stabilization strategies
-ifcopt  = false;
+ifcopt  = true;
 ifleray = false;
 ifefr   = false;
 iftr    = false;
@@ -107,20 +107,20 @@ end
 
 %deims= [50];%[170];%[2,4,8,16,20 40 80 100 200 400 800 1000]
 %% Point selection algorithm
-ps_alg='sopt';
-%ps_alg ='gpode';
+%ps_alg='sopt';
+ps_alg ='gpode';
 %ps_alg = 'gappy_pod';
 %ps_alg = 'gnat';
 
 %% Hyperreduction algorithms
 hr_alg="clsdeim";
+clsdeim = false;
 
 % number of deim points
 %for j=1:length(deims)
-ndeim_pts = 175;%deims(j);
+ndeim_pts = 256;%deims(j);
 os_multiplier = 2;
 n_os_points=os_multiplier*ndeim_pts;
-clsdeim = true;
 
 [au_full, bu_full, cu_full, u0_full, uk_full, mb, ns] = load_full_ops(strcat(path,'ops'));
 [au, a0, bu, cu, c0, c1, c2, c3, u0, uk, ukmin, ukmax] = get_r_dim_ops(au_full, bu_full, cu_full, u0_full, uk_full, nb);
@@ -301,77 +301,6 @@ fclose(fileID);
 %
 %#####################################
 
-function [a0_full, b0_full, c0_full, u0_full, uk_full, mb, ms] =  load_full_ops(path)
-% load_full_ops function loads the full ROM operators stored in the specified path
-% specified by input variable path.
-%
-% Output:
-% a0_full : Full stiffness matrix of size mb+1 x mb+1 (The +1 comes from the zeroth mode)
-% b-1_full : Full   mass    matrix of size mb+1 x mb+1
-% cu_full : Full advection tensor of size mb x mb+1 x mb+1
-% u0_full : Vector of size mb+1, which contains the ROM coefficients of the
-%           projection of initial conditons onto mb-reduced space
-% uk_full : Matrix of size mb+1 x ns. Each column contains the ROM coefficients
-%           of the projection of the snapshot onto mb-reduced space
-% mb : total number of modes
-% ns : nubmer of snapshots used to create those operators
-% 
-% This function can take times to load operators with nb >= 300.
-
-   fprintf('Loading ROM operators and vectors... \n');
-   fprintf('Currently only support velocity... \n');
-
-   mb=dlmread(fullfile(path,"nb"));
-
-   % load stiffness matrix
-   a0_full = dlmread(fullfile(path,"au"));
-   %size(a0_full)
-   %mb+1
-   %(mb+1)*(mb+1)
-   a0_full = reshape(a0_full,mb+1,mb+1);
-
-   % load mass matrix
-   b0_full = dlmread(fullfile(path,"bu"));
-   b0_full = reshape(b0_full,mb+1,mb+1);
-
-   % load advection tensor
-   c0_full = dlmread(fullfile(path,"cu"));
-   c0_full = reshape(c0_full,mb,mb+1,mb+1);
-
-   u0_full = dlmread(fullfile(path,"u0"));
-
-   ms = dlmread(fullfile(path,"ns"));
-   uk_full = dlmread(fullfile(path,"uk"));
-   uk_full = reshape(uk_full,mb+1,ms);
-
-   fprintf("done loading ... \n");
-   
-end
-
-function [a, a0, b, c, c0, c1, c2, c3, u0, uk, ukmin, ukmax] =  get_r_dim_ops(au_full, bu_full, cu_full, u0_full, uk_full, nb)
-   index  = [1:nb+1];
-   index1 = [1:nb];
-   index2 = [2:nb+1];
-   a      = au_full(index2,index2);
-   a0     = au_full(index2,1);
-   b      = bu_full(index2,index2);
-
-   cutmp  = cu_full(index1,index,index);
-   c0      = reshape(cutmp,nb*(nb+1),nb+1);
-   c1 = cutmp(:,1,1);                                                       
-   c2 = reshape(cutmp(:,1,:),nb,nb+1);                                      
-   c3 = reshape(cutmp(:,:,1),nb,nb+1); 
-
-   c      = cu_full(index1,index2,index2);
-   c      = reshape(c,nb*(nb),nb);
-
-   u0      = u0_full(index);
-
-   uk = uk_full(index,:);
-   ukmin = min(uk,[],2);
-   ukmax = max(uk,[],2);
-end
-
 function [hfac] = set_df(a,b,dfRadius,dfOrder,hfac)
 % Construct the mth order differential filter (df) 
 % I + (\delta^2 B^{-1}A)^m
@@ -426,37 +355,4 @@ function F = rom_residual(x,a,b,diff,betas,dt,ito,rhs)
    F1 = h*x-rhs;
    F = norm(F1);
 end
-
-
-
-%{
-function[P,indices] = calc_qdeim_proj_mat(U_nl)
-    [A,B,P] = qr(U_nl');
-    P = P(:,1:size(U_nl,2));
-    indices = [];
-    for col=1:size(P,2);
-        [val, ind] = max(P(:,col));
-        indices = [indices, ind];
-    end;
-end
-
-function[P,indices] = calc_deim_proj_mat(U_nl)
-    [maxval, ind] = max(abs(U_nl(:,1)), [], 1);
-    [n,m] = size(U_nl);
-    P = zeros(n,m);
-    indices = zeros(1,m);
-    P(ind,1) = 1;
-    indices(1,1) = ind;
-    for i=2:m;
-    % These two ways of calculating c should give the same result
-        %c = (P(:,1:i-1)'*U_nl(:,1:i-1)) \ P(:,1:i-1)'*U_nl(:,i)
-        c = U_nl(indices(1:i-1),1:i-1) \ U_nl(indices(1:i-1),i);
-    r = U_nl(:,i) - U_nl(:,1:i-1)*c;
-    [maxval, ind] = max(abs(r), [], 1);
-    indices(1,i) = ind;
-    P(ind,i) = 1;
-    end;
-end
-%}
-
 
