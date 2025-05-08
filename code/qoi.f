@@ -236,8 +236,8 @@ c-----------------------------------------------------------------------
             pdy3=pdy3/ad_re
             dx=pdx1+pdx2+pdx3+vdx
             dy=pdy1+pdy2+pdy3+vdy
-            if (nio.eq.0) write (6,2) time,vdx,pdx3,dx,'dragx'
-            if (nio.eq.0) write (6,2) time,vdy,pdy3,dy,'dragy'
+            if (nio.eq.0) write (6,2) ad_step,time,dx,pdx3,vdx,'dragx'
+            if (nio.eq.0) write (6,2) ad_step,time,dy,pdy3,vdy,'dragy'
             if (ldim.eq.3) then
                dz=vlsc2(rdgz,u,nb+1)/ad_re
                write (6,*) ad_step*dt,vdz,'dragz'
@@ -245,8 +245,7 @@ c-----------------------------------------------------------------------
          endif
       endif
 
-    1 format (1p6e16.8,2x,a)
-    2 format (1p4e16.8,2x,a)
+    2 format (i8,1p4e16.8,2x,a)
 
       return
       end
