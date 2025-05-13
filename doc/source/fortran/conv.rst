@@ -1,9 +1,9 @@
-.. _const_section_tag:
+.. _conv_section_tag:
 
-const.f
+conv.f
 =======
 
-These are the subroutines in const.f.
+These are the subroutines in conv.f.
 
-.. f:autosrcfile:: const.f
+.. f:autosrcfile:: conv.f
 

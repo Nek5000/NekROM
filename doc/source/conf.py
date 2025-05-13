@@ -48,7 +48,7 @@ extensions = ['sphinx.ext.autodoc',
               'myst_parser',
               'sphinxcontrib.bibtex',
               'sphinx.ext.napoleon',
-              'sphinxcontrib.matlab'
+              'sphinxcontrib.matlab',
              ]
 
 bibtex_bibfiles = ['references.bib']
@@ -62,7 +62,7 @@ fortran_src = [os.path.abspath(temp_code_dir)]
 fortran_ext = ["f"]
 
 # MATLAB configuration
-matlab_src_dir = os.path.abspath("../../drive/matlab/")
+matlab_src_dir = os.path.abspath("../../drive/")
 matlab_short_links = True
 matlab_auto_link = "basic"
 
