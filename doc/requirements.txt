@@ -6,3 +6,4 @@ sphinx-book-theme
 myst-parser
 numpy >= 2.2.5
 sphinxcontrib-bibtex
+sphinxcontrib-matlabdomain
