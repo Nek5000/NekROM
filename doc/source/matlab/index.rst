@@ -6,14 +6,25 @@
 
 .. _matlab_driver_section_tag:
 
-MATLAB Driver
-=============
+MATLAB/Octave Driver
+====================
 
 The main driver script is `rom_online_solver.m.`, which loads the basis functions 
 and runs the ROM in MATLAB/Octave using a BDF3/EXT3 time-stepper. Supporting
 functions are defined in separate files and documented below.
 
 .. _matlab_convection_operators_section_tag:
+
+Plotting
+--------
+
+The Matlab/Octave driver uses the NekToolKit for plotting of 2D fields. To enable this,
+clone the NekToolKit repository and either append it to the `MATLABPATH` environment
+variable (for MATLAB) or call `addpath` within `octaverc` (for Octave).
+
+.. code-block:: bash
+   git clone https://github.com/kent0/NekToolKit
+   export MATLABPATH=$(pwd)/NekToolKit/matlab
 
 Convection operators
 --------------------

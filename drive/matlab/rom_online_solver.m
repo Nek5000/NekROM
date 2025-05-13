@@ -8,6 +8,7 @@
 %
 %#######################################################
 
+%TODO: Move user parameters to separate file.
 
 %% User Parameters
 % Problem parmeters:
@@ -36,6 +37,9 @@ clear all; close all;
 
 % Add any important scripts to path
 addpath('./point_generators');
+addpath('./io');
+
+%% Specify the case path and case name
 
 path='../../examples/ldc/';
 casename='ldc';
@@ -46,7 +50,7 @@ casename='ldc';
 %path='../../examples/shear4/';
 %casename='shear4';%'thin';
 
-% Should just use the values from the .rea file by default
+% Should just use the values from the .rea or MOR file by default
 % allowing for overrides
 if contains(path, 'ldc')
     nsteps = 10*1e5;%80000;%1.25000E+05;%20000; 
@@ -72,10 +76,10 @@ else
 end;
 
 % Whether or not to plot on an iostep
-bool_plot = false;
+bool_plot = true;
 
 % ROM stabilization strategies
-ifcopt  = true;
+ifcopt  = false;
 ifleray = false;
 ifefr   = false;
 iftr    = false;
