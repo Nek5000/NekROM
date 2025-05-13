@@ -22,9 +22,11 @@ The Matlab/Octave driver uses the NekToolKit for plotting of 2D fields. To enabl
 clone the NekToolKit repository and either append it to the `MATLABPATH` environment
 variable (for MATLAB) or call `addpath` within `octaverc` (for Octave).
 
-.. code-block:: bash
+.. code-block:: shell
+
    git clone https://github.com/kent0/NekToolKit
    export MATLABPATH=$(pwd)/NekToolKit/matlab
+
 
 Convection operators
 --------------------
