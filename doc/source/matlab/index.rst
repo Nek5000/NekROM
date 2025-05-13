@@ -9,7 +9,7 @@
 MATLAB/Octave Driver
 ====================
 
-The main driver script is `rom_online_solver.m.`, which loads the basis functions 
+The main driver script is `drive/matlab/rom_online_solver.m`, which loads the basis functions 
 and runs the ROM in MATLAB/Octave using a BDF3/EXT3 time-stepper. Supporting
 functions are defined in separate files and documented below.
 
