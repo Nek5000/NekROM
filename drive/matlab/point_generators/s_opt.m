@@ -1,22 +1,19 @@
 function [ index ] = s_opt( Vo, M, index, outfile )
+% Generates S-optimal indices of a matrix
 %
-% s_opt_generator.m - Generating S-optimal Points indices of a matrix
-%
-% Syntax     s_opt_generator( Vo, M, index, outfile )
-%
-% Input:     Vo      = Candidate Matrix
-%            M       = the number of S-optimal points to be computed,
-%            number of rows basically
-%            idx     = if there is a previous index set, put it in. `If not, just put [].
-%            outfile = put 'filename', then 'filename' will be created with
-%            the information of index.
+% Parameters: 
+%   Vo:      Candidate Matrix
+%   M:       The number of S-optimal points to be computed, number of rows basically
+%   idx:     If there is a previous index set, put it in. `If not, just put [].
+%   outfile: Put 'filename', then 'filename' will be created with the information of index.
 % 
-% Output:    index = S-optimal points index set, of size (M x 1)
+% Returns:    
+%   S-optimal points index set, of size (M x 1)
 %
 % This implementation is adapted from 
 % `this version <https://github.com/LLNL/libROM/blob/d8cc32ce02f981fd5bf12ab32ef8d4c3445eab18/unit_tests/matlab/s_opt_generator.m>`_
 % written by Yeonjong Shin for LibROM.
-%--------------------------------------------------------------------------
+%
 [N_Bm, N] = size(Vo);
 nVo = Vo.*Vo;
 
