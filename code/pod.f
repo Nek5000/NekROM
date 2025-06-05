@@ -1,8 +1,8 @@
 c-----------------------------------------------------------------------
       subroutine setbases
-
-      ! set ub,vb,wb,tb in /morbasis/ with pod basis
-
+      !
+      ! set `ub`, `vb`, `wb`, `tb` in `/morbasis/` with pod basis
+      !
       include 'SIZE'
       include 'MOR'
       include 'SOLN'
@@ -1293,15 +1293,13 @@ c     total=vlsum(val,ls)
       end
 c-----------------------------------------------------------------------
       subroutine cenpm(val,fname,ifld)
-
-      ! compute the percentage that each POD mode represents in the
+      ! Compute the percentage that each POD mode represents in the
       ! total averaged energy. The energy is defined based on the
       ! inner-product set by ips
-
+      !
       ! val   := eigenvalues based on the generated Gramians
       ! fname := filename that will be created
       ! ifld  := field number
-
       include 'SIZE'
       include 'TSTEP'
       include 'MOR'
@@ -1352,22 +1350,21 @@ c       if (nio.eq.0) write(6,*)i,enr(i),'Nmax for field',ifld
       end
 c-----------------------------------------------------------------------
       subroutine pod(basis,eval,gram,snaps,mdim,cips,nb,ns,ifpod,cop,
-     $   nbat)
-
+     $ nbat)
       ! return pod basis created from snapshots
-
-      ! basis := POD basis generated from snaps
-      ! eval  := e-values to be set in genevec
-      ! gram  := Gramian set in gengram
-      ! snaps := snapshots of solution field
-      ! mdim  := dimension of vector in snaps fields
-      ! cips  := inner-product space used from Gramian
-      ! nb    := number of desired POD basis
-      ! ns    := number of snapshots
-      ! ifpod := apply POD procedure
-      ! cop   := Gramian dump target
-      ! nbat  := number of inner-products in batch
-
+      !
+      ! basis := output, POD basis generated from snaps
+      ! eval  := output, e-values to be set in genevec
+      ! gram  := output, Gramian to be set in gengram
+      ! snaps := input, snapshots of solution field
+      ! mdim  := input, dimension of vector in snaps fields
+      ! cips  := input, inner-product space used from Gramian
+      ! nb    := input, number of desired POD basis
+      ! ns    := input, number of snapshots
+      ! ifpod := input, apply POD procedure
+      ! cop   := input, Gramian dump target
+      ! nbat  := input, number of inner-products in batch
+      !
       include 'SIZE'
 
       parameter (lt=lx1*ly1*lz1*lelt)
