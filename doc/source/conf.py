@@ -17,25 +17,26 @@ html_last_updated_fmt='%b %d, %Y'
 
 # -- Preprocessing ------------------------------------------------------
 
-# Strip out the include statements for the docs
+# Strip out the common blocks for the docs
 temp_code_dir = '/tmp/rom_code_for_docs/'
 code_dir = '../../code/'
 os.makedirs(temp_code_dir, exist_ok=True)
 for filename in os.listdir(code_dir):
-    f = open(code_dir + filename, mode='rt')
-    tmpfile = open(temp_code_dir + filename, mode='wt')
-    skip_if_continued = False
-    for line in f:
-        if ' common ' in line:
-            skip_if_continued = True
-        elif skip_if_continued == True and len(line) >= 6 and line[5] != ' ':
-            pass # The skipped common block is continued onto the next line
-        else:
-            skip_if_continued = False
-            tmpfile.write(line)
+    if filename.endswith('.f'):
+        f = open(code_dir + filename, mode='rt')
+        tmpfile = open(temp_code_dir + filename, mode='wt')
+        skip_if_continued = False
+        for line in f:
+            if ' common ' in line:
+                skip_if_continued = True
+            elif skip_if_continued == True and len(line) >= 6 and line[5] != ' ':
+                pass # The skipped common block is continued onto the next line
+            else:
+                skip_if_continued = False
+                tmpfile.write(line)
 
-    f.close()
-    tmpfile.close()
+        f.close()
+        tmpfile.close()
 
 # -- General configuration ---------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#general-configuration
@@ -47,6 +48,8 @@ extensions = ['sphinx.ext.autodoc',
               'sphinx-mathjax-offline',
               'myst_parser',
               'sphinxcontrib.bibtex',
+              'sphinx.ext.napoleon',
+              'sphinxcontrib.matlab',
              ]
 
 bibtex_bibfiles = ['references.bib']
@@ -54,15 +57,19 @@ bibtex_bibfiles = ['references.bib']
 # Enable some latex in myst markdown
 myst_enable_extensions = ["dollarmath", "amsmath"]
 
+# Fortran configuration
 #fortran_src = [os.path.abspath(code_dir)]
 fortran_src = [os.path.abspath(temp_code_dir)]
-
 fortran_ext = ["f"]
 
+# MATLAB configuration
+matlab_src_dir = os.path.abspath("../../drive/")
+matlab_short_links = True
+matlab_auto_link = "basic"
+
+# General configuration
 templates_path = ['_templates']
-
 exclude_patterns = []
-
 language = 'en'
 
 # -- Options for HTML output -------------------------------------------------
