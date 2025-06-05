@@ -38,25 +38,29 @@ clear all; close all;
 % Add any important scripts to path
 addpath('./point_generators');
 addpath('./io');
+addpath('./operators')
 
 %% Specify the case path and case name
 
-path='../../examples/ldc/';
-casename='ldc';
+%path='../../examples/ldc/';
+%casename='ldc';
 
 %path='../../examples/conv/';
 %casename='cyl';
 
-%path='../../examples/shear4/';
-%casename='shear4';%'thin';
+path='../../examples/shear4/';
+casename='nick'%'shear4';%'thin';
+
+%path='../../examples/t2d/';
+%casename='t2d';
 
 % Should just use the values from the .rea or MOR file by default
 % allowing for overrides
 if contains(path, 'ldc')
     nsteps = 10*1e5;%80000;%1.25000E+05;%20000; 
     dt     = 1.000000E-03;%0.001;
-    iostep = 5*1000;%500;%250;%500;%10;
-    nu     = 1./15000;%0.01;
+    iostep = 500;%5*1000;%500;%250;%500;%10;
+    nu     = 0.001;%1./15000;%0.01;
     nb     = 20;
 elseif contains(path,'conv')
     nsteps = 10*1.25000E+05;%20000; 
@@ -65,11 +69,17 @@ elseif contains(path,'conv')
     nu     = 0.01;
     nb     = 20;
 elseif contains(path,'shear4')
-    nsteps = 2*40000;
-    dt     = 1e-4;
-    iostep = 100;
-    nu     = 1/40000;
-    nb     = 30;    
+    nsteps = 8000;
+    dt     = 1e-3;
+    iostep = 50;
+    nu     = 1/1000;
+    nb     = 30; 
+elseif contains(path, 't2d')
+    nsteps=800000;
+    dt=0.002;
+    iostep=100;
+    nu=0.0001;
+    nb=3;  
 else
   disp('Error: unrecognized case');
   exit;
@@ -117,17 +127,22 @@ ps_alg ='gpode';
 %ps_alg = 'gnat';
 
 %% Hyperreduction algorithms
-hr_alg="clsdeim";
-clsdeim = false;
+%hr_alg="clsdeim";
+clsdeim = true;
 
 % number of deim points
 %for j=1:length(deims)
-ndeim_pts = 256;%deims(j);
+ndeim_pts = 0;%400;%10;%800;%400;%deims(j);
 os_multiplier = 2;
 n_os_points=os_multiplier*ndeim_pts;
 
 [au_full, bu_full, cu_full, u0_full, uk_full, mb, ns] = load_full_ops(strcat(path,'ops'));
 [au, a0, bu, cu, c0, c1, c2, c3, u0, uk, ukmin, ukmax] = get_r_dim_ops(au_full, bu_full, cu_full, u0_full, uk_full, nb);
+
+%cu_full
+%exit;
+%cu
+%exit;
 
 % Initialize variables
 time   = 0.;
@@ -188,6 +203,8 @@ for istep=1:nsteps
    if ndeim_pts == 0;
     c_coef = (reshape(c0*utmp(:,1),nb,nb+1)*u(:,1));
     %c_coef' %ext(:,1)=ext(:,1)-reshape(cu*utmp(:,1),nb,nb+1)*u(:,1);
+    %c_coef
+    %exit;
 
     % Pseudo ROM version
     % This should be identical to the above.
@@ -199,6 +216,7 @@ for istep=1:nsteps
 
     c_coef = conv_deim(u(:,1), pod_u, pod_v, x_fom, y_fom, nl_snaps,ndeim_pts,istep,clsdeim,n_os_points,ps_alg);
     c_coef = c_coef - c1+c2*utmp(:,1)+c3*utmp(:,1);
+    c_coef
    end;
 
    %norm(pod_u(:,1:nb+1)*c_coef)
@@ -261,15 +279,21 @@ for istep=1:nsteps
       ucoef(istep/iostep,:)=u(:,1);
       u(:,1)
 
-      if bool_plot;      
-      u_proj = pod_u(:,1:nb+1)*u(1:end,1);
-      v_proj = pod_v(:,1:nb+1)*u(1:end,1);
-     
-      u_abs = sqrt(u_proj.^2 + v_proj.^2);
-      %norm(u_abs)
-      hold off;
-      patch_plot(x_fom,y_fom, reshape(u_abs,size(x_fom)), [], 'PlotType', 'surface');
-      pause(0.01);
+      plot_vel_mag = false;
+      plot_vort = true;
+      if bool_plot;
+        u_proj = pod_u(:,1:nb+1)*u(1:end,1);
+        v_proj = pod_v(:,1:nb+1)*u(1:end,1);
+        if plot_vel_mag      
+            u_abs = sqrt(u_proj.^2 + v_proj.^2);
+            plot_field = reshape(u_abs, size(x_fom));
+        elseif plot_vort;
+            plot_field = lcurl(reshape(u_proj,size(x_fom)), reshape(v_proj,size(x_fom)), x_fom, y_fom);%vx-uy;
+        end;
+        %norm(u_abs)
+        hold off;
+        patch_plot(x_fom,y_fom, reshape(plot_field,size(x_fom)), [], 'PlotType', 'surface');
+        pause(0.01);
      end;
    end
 

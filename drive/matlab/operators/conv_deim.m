@@ -7,6 +7,7 @@ function [out_coef] = conv_deim(ucoef, pod_u, pod_v, x, y, nl_snaps_obj, ndeim_p
   
 %   if isempty(proj_mat)
     if istep == 1
+        disp("STARTING NL POD");
         % Stuff to be precomputed
 
         % Read in the snapshots.     
@@ -20,7 +21,8 @@ function [out_coef] = conv_deim(ucoef, pod_u, pod_v, x, y, nl_snaps_obj, ndeim_p
         [zi, w] = zwgll(nx1-1);
         d = deriv_mat(zi);
         [xr,yr,xs,ys,rx,ry,sx,sy,jac,jaci,d] = deriv_geo(x,y,d);
-        lgrad=@(u,mode) grad(u,rx,ry,sx,sy,jaci,d,mode);
+        my_lgrad=@(u,mode) grad(u,rx,ry,sx,sy,jaci,d,mode);
+
         nL = prod(size(x));
         Me = reshape(jac.*(w*w'),nL,1);
 
@@ -101,6 +103,7 @@ function [out_coef] = conv_deim(ucoef, pod_u, pod_v, x, y, nl_snaps_obj, ndeim_p
             %nl_u_inds
             %exit
             %inds = [nl_u_inds, nl_v_inds];
+            disp("ENDING NL POD");
         end;
         inds = inds(:,1:ndeim_pts);
 
@@ -111,8 +114,8 @@ function [out_coef] = conv_deim(ucoef, pod_u, pod_v, x, y, nl_snaps_obj, ndeim_p
         vx_pods = [];
         vy_pods = [];
         for i = 1:size(pod_u,2);
-            [ux_pod, uy_pod] = lgrad(reshape(pod_u(:,i),size(x)),0);
-            [vx_pod, vy_pod] = lgrad(reshape(pod_v(:,i),size(x)),0);
+            [ux_pod, uy_pod] = my_lgrad(reshape(pod_u(:,i),size(x)),0);
+            [vx_pod, vy_pod] = my_lgrad(reshape(pod_v(:,i),size(x)),0);
             ux_pods = [ux_pods, reshape(ux_pod, nL,1)];
             uy_pods = [uy_pods, reshape(uy_pod, nL,1)];
             vx_pods = [vx_pods, reshape(vx_pod, nL,1)];

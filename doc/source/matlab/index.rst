@@ -18,7 +18,7 @@ functions are defined in separate files and documented below.
 Plotting
 --------
 
-The Matlab/Octave driver uses the NekToolKit for plotting of 2D fields. To enable this,
+The Matlab/Octave driver uses NekToolKit for plotting of 2D fields. To enable this,
 clone the NekToolKit repository and either append it to the `MATLABPATH` environment
 variable (for MATLAB) or call `addpath` within `octaverc` (for Octave).
 
@@ -28,17 +28,20 @@ variable (for MATLAB) or call `addpath` within `octaverc` (for Octave).
    export MATLABPATH=$(pwd)/NekToolKit/matlab
 
 
-Convection operators
+Operators
 --------------------
 
-.. mat:automodule:: matlab
+.. mat:automodule:: matlab.operators
 
 .. mat:autofunction:: conv_fom
 
 .. mat:autofunction:: conv_deim
 
+.. mat:autofunction:: lgrad
 
-.. _matlab_io_section_tag:
+.. mat:autofunction:: lcurl
+
+.. _matlab_operators_section_tag:
 
 Input and Output
 ----------------
@@ -68,4 +71,3 @@ DEIM Point Generators
 .. mat:autofunction:: gnat
 
 .. mat:autofunction:: gappy_pod
-
