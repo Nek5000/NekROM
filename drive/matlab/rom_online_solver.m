@@ -49,6 +49,7 @@ addpath('./operators')
 %casename='cyl';
 
 path='../../examples/shear4/';
+snaps_path=strcat(path,'snaps/');
 casename='nick'%'shear4';%'thin';
 
 %path='../../examples/t2d/';
@@ -71,7 +72,7 @@ elseif contains(path,'conv')
 elseif contains(path,'shear4')
     nsteps = 8000;
     dt     = 1e-3;
-    iostep = 50;
+    iostep = 500;
     nu     = 1/1000;
     nb     = 30; 
 elseif contains(path, 't2d')
@@ -89,7 +90,7 @@ end;
 bool_plot = true;
 
 % ROM stabilization strategies
-ifcopt  = false;
+ifcopt  = true;
 ifleray = false;
 ifefr   = false;
 iftr    = false;
@@ -128,7 +129,7 @@ ps_alg ='gpode';
 
 %% Hyperreduction algorithms
 %hr_alg="clsdeim";
-clsdeim = true;
+clsdeim = false;
 
 % number of deim points
 %for j=1:length(deims)
@@ -136,13 +137,39 @@ ndeim_pts = 0;%400;%10;%800;%400;%deims(j);
 os_multiplier = 2;
 n_os_points=os_multiplier*ndeim_pts;
 
-[au_full, bu_full, cu_full, u0_full, uk_full, mb, ns] = load_full_ops(strcat(path,'ops'));
-[au, a0, bu, cu, c0, c1, c2, c3, u0, uk, ukmin, ukmax] = get_r_dim_ops(au_full, bu_full, cu_full, u0_full, uk_full, nb);
 
-%cu_full
+%% Get the grid and POD bases for plotting purposes
+cname=strcat(snaps_path,strcat('bas',casename));
+%avg_cname='../avgcyl';
+bas_snaps = NekSnaps(cname);
+[pod_u, pod_v] = get_snaps(bas_snaps);
+[x_fom, y_fom] = get_grid(bas_snaps);
+
+
+%% Get the non-linear snapshots and calculate the DEIM points
+if ndeim_pts > 0;
+    nl_cname = strcat(snaps_path,strcat('csn',casename));
+    nl_snaps = NekSnaps(nl_cname);
+end;
+
+
+[au_full, bu_full, cu_full, u0_full, uk_full, mb, ns] = load_full_ops(strcat(path,'ops'));
+
+% Generate the operator with matlab instead
+au = gen_Au(pod_u,pod_v,bas_snaps);
+%Au_ml = gen_Au(pod_u,pod_v,bas_snaps);
+
+%Au_ml
+%au_full
+
+
+%Au_ml*u
+%au_full*u
+
+%(Au_ml*u)./(au_full*u)
 %exit;
-%cu
-%exit;
+
+[au, a0, bu, cu, c0, c1, c2, c3, u0, uk, ukmin, ukmax] = get_r_dim_ops(au_full, bu_full, cu_full, u0_full, uk_full, nb);
 
 % Initialize variables
 time   = 0.;
@@ -155,18 +182,9 @@ if (ifleray) || (ifefr) || (iftr)
    [dfHfac] = set_df(au, bu, radius, 1, dfHfac);
 end
 
-%% Get the grid and POD bases for plotting purposes
-cname=strcat(path,strcat('bas',casename));
-%avg_cname='../avgcyl';
-bas_snaps = NekSnaps(cname);
-[pod_u, pod_v] = get_snaps(bas_snaps);
-[x_fom, y_fom] = get_grid(bas_snaps);
 
-%% Get the non-linear snapshots and calculate the DEIM points
-if ndeim_pts > 0;
-    nl_cname = strcat(path,strcat('csn',casename));
-    nl_snaps = NekSnaps(nl_cname);
-end;
+
+
 %h=bu*betas(1,ito)/dt+au*nu;
 
 
@@ -174,6 +192,7 @@ end;
 u     = zeros(nb+1,3); % vectors for BDF3/EXT3
 u(:,1)=u0;
 [alphas, betas] = setcoef();
+
 
 
 for istep=1:nsteps
