@@ -72,7 +72,7 @@ elseif contains(path,'conv')
 elseif contains(path,'shear4')
     nsteps = 8000;
     dt     = 1e-3;
-    iostep = 500;
+    iostep = 100;
     nu     = 1/1000;
     nb     = 30; 
 elseif contains(path, 't2d')
@@ -90,7 +90,7 @@ end;
 bool_plot = true;
 
 % ROM stabilization strategies
-ifcopt  = true;
+ifcopt  = false;
 ifleray = false;
 ifefr   = false;
 iftr    = false;
@@ -129,13 +129,13 @@ ps_alg ='gpode';
 
 %% Hyperreduction algorithms
 %hr_alg="clsdeim";
-clsdeim = false;
+clsdeim = true;
 
 % number of deim points
 %for j=1:length(deims)
-ndeim_pts = 0;%400;%10;%800;%400;%deims(j);
+ndeim_pts = 100;%400;%10;%800;%400;%deims(j);
 os_multiplier = 2;
-n_os_points=os_multiplier*ndeim_pts;
+n_os_points=ceil(os_multiplier*ndeim_pts);
 
 
 %% Get the grid and POD bases for plotting purposes
@@ -146,30 +146,126 @@ bas_snaps = NekSnaps(cname);
 [x_fom, y_fom] = get_grid(bas_snaps);
 
 
+
 %% Get the non-linear snapshots and calculate the DEIM points
 if ndeim_pts > 0;
     nl_cname = strcat(snaps_path,strcat('csn',casename));
-    nl_snaps = NekSnaps(nl_cname);
+    nl_snaps_obj = NekSnaps(nl_cname); 
+    [nl_snaps_u, nl_snaps_v] = get_snaps(nl_snaps_obj);
+    nl_snaps = [nl_snaps_u; nl_snaps_v];
+end;
+
+[au_full, bu_full, cu_full, u0_full, uk_full, mb, ns] = load_full_ops(strcat(path,'ops'));
+%u0_full
+%exit;
+
+%size(au_full)
+
+% Create new POD basis
+if 1
+subtract_mean = 1;
+conserve_momentum = 0;
+reorder = 1;
+snaps_obj = NekSnaps(strcat(snaps_path,casename)); % Should the snaps object have reordering capability?
+[pod_ml, u0_full_ml, uk_full_ml] = get_pod_basis(snaps_obj,nb,reorder,subtract_mean,conserve_momentum);
+
+pod_u_ml = pod_ml(1:size(pod_ml,1)/2,1:nb+1);
+pod_v_ml = pod_ml(size(pod_ml,1)/2 + 1:end,1:nb+1);
+end;
+
+if 0; % Test B-orthogonality
+Me = get_Me(bas_snaps);
+Me = sparse(diag([Me;Me]));
+%iMe = inv(Me);
+
+size(Me)
+pod = [pod_u; pod_v];
+size(pod)
+pod'*Me*pod
+pod_ml'*Me*pod_ml
+%norm(abs(pod) - abs(pod_ml))
+%exit
+
+for i = 1:nb+1;
+    a = norm(pod(:,i) - pod_ml(:,i))
+    b = norm(pod(:,i) + pod_ml(:,i))
+    %norm(pod(:,i))
+    %norm(pod_ml(:,i))
 end;
 
 
-[au_full, bu_full, cu_full, u0_full, uk_full, mb, ns] = load_full_ops(strcat(path,'ops'));
+norm(pod_ml - pod_ml*(inv(pod_ml'*(Me*pod_ml))*pod_ml'*(Me*pod_ml)))/norm(pod_ml)
+norm(pod - pod*(inv(pod'*(Me*pod))*pod'*(Me*pod)))/norm(pod)
+norm(pod_ml - pod*(inv(pod'*(Me*pod))*pod'*(Me*pod_ml)))/norm(pod_ml)
+norm(pod - pod_ml*(inv(pod_ml'*(Me*pod_ml))*pod_ml'*(Me*pod)))/norm(pod)
+end;
 
-% Generate the operator with matlab instead
-au = gen_Au(pod_u,pod_v,bas_snaps);
-%Au_ml = gen_Au(pod_u,pod_v,bas_snaps);
+% Use all of the matlab defined basis functions
+if 1;
+    % Note that the non-linear evaluations are dumped on the same
+    % grid as the NekROM basis coordinates. Not necessarily the
+    % coordinates from the snapshots (these two coordinates are not necessarily the same
+    % apparently)
 
-%Au_ml
-%au_full
+    %[x_fom_ml, y_fom_ml] = get_grid(snaps_obj, 1);
+    %change_basis = [pod_u_ml; pod_v_ml]'*[pod_u;pod_v]; 
+    pod_orig = [pod_u;pod_v];
+    pod_u = pod_u_ml(:,1:nb+1);
+    pod_v = pod_v_ml(:,1:nb+1);
+    uk_full = uk_full_ml;
+    u0_full = u0_full_ml;
+    %u0_full = change_basis*u0_full;
+    %get_sort_order(x_fom, y_fom)
+    %get_sort_order(x_fom_ml, y_fom_ml)
 
+    %exit;
+    %x_fom = x_fom_ml;
+    %y_fom = y_fom_ml;
+    size(pod_u)
+    size(pod_u_ml)
 
-%Au_ml*u
-%au_full*u
-
-%(Au_ml*u)./(au_full*u)
+    [au_full, bu_full] = gen_Au(pod_u,pod_v,bas_snaps);
+end;
+%u0_full_orig = u0_full
+%u0_full = change_basis*u0_full;
+%u0_full
+%pod_ml*u0_full
+%pod_orig*u0_full_orig
+%norm([pod_u_new; pod_v_new]*u0_full - pod_orig*u0_full_orig)/norm(pod_orig*u0_full_orig)
 %exit;
 
+%u0_full_roundtrip = change_basis'*u0_full
+
+if 0; % Test out reconstructing the snapshots
+[u_snaps, v_snaps] = get_snaps(snaps_obj, 1);
+for i=1:size(uk_full,2);
+    i
+    u = uk_full(:,i);
+    %u_proj = u_snaps(:,i);
+    %v_proj = v_snaps(:,i);
+    u_proj = pod_u(:,1:nb+1)*u(1:end,1);
+    v_proj = pod_v(:,1:nb+1)*u(1:end,1);
+    %u_proj = nl_snaps_u(:,i);
+    %v_proj = nl_snaps_v(:,i);
+    plot_vort = true;
+    plot_vel_mag = false;
+
+    if plot_vel_mag      
+        u_abs = sqrt(u_proj.^2 + v_proj.^2);
+        plot_field = reshape(u_abs, size(x_fom));
+    elseif plot_vort;
+        plot_field = lcurl(reshape(u_proj,size(x_fom)), reshape(v_proj,size(x_fom)), x_fom, y_fom);%vx-uy;
+    end;
+    %norm(u_abs)
+    hold off;
+    patch_plot(x_fom,y_fom, reshape(plot_field,size(x_fom)), [], 'PlotType', 'surface');
+    pause(0.01);
+end;
+exit;
+end;
+
 [au, a0, bu, cu, c0, c1, c2, c3, u0, uk, ukmin, ukmax] = get_r_dim_ops(au_full, bu_full, cu_full, u0_full, uk_full, nb);
+
 
 % Initialize variables
 time   = 0.;
@@ -182,9 +278,6 @@ if (ifleray) || (ifefr) || (iftr)
    [dfHfac] = set_df(au, bu, radius, 1, dfHfac);
 end
 
-
-
-
 %h=bu*betas(1,ito)/dt+au*nu;
 
 
@@ -194,6 +287,16 @@ u(:,1)=u0;
 [alphas, betas] = setcoef();
 
 
+%Au_ml
+%au_full
+
+
+%Au_ml*u
+%au_full*u
+
+%(au_full_ml*u)./(au_full*u)
+%(bu_full_ml*u)./(bu_full*u)
+%exit;
 
 for istep=1:nsteps
    istep
@@ -218,28 +321,34 @@ for istep=1:nsteps
 
    %% Compare the NL evaluation results.
 
-   % ROM convection tensor version
    if ndeim_pts == 0;
-    c_coef = (reshape(c0*utmp(:,1),nb,nb+1)*u(:,1));
-    %c_coef' %ext(:,1)=ext(:,1)-reshape(cu*utmp(:,1),nb,nb+1)*u(:,1);
-    %c_coef
-    %exit;
-
-    % Pseudo ROM version
-    % This should be identical to the above.
-    %  c_coef = (conv_fom(u(:,1), pod_u, pod_v, bas_snaps))
-    %norm(pod_u(:,1:nb+1)*c_coef)
+    if 0;
+        % ROM convection tensor version
+        c_coef = (reshape(c0*utmp(:,1),nb,nb+1)*u(:,1));
+        %c_coef' %ext(:,1)=ext(:,1)-reshape(cu*utmp(:,1),nb,nb+1)*u(:,1);
+        %c_coef
+        %exit;
+    else
+        % Pseudo ROM version
+        % This should be identical to the above.
+        c_coef = (conv_fom(u(:,1), pod_u, pod_v, bas_snaps));
+        %norm(c_coef - c_coef1)/norm(c_coef)
+        %exit;
+        %norm(pod_u(:,1:nb+1)*c_coef)
+    end;
    else;
     % DEIM version
     % Should be close, but not identical to, the above
 
     c_coef = conv_deim(u(:,1), pod_u, pod_v, x_fom, y_fom, nl_snaps,ndeim_pts,istep,clsdeim,n_os_points,ps_alg);
-    c_coef = c_coef - c1+c2*utmp(:,1)+c3*utmp(:,1);
+    c_coef = c_coef - c1+c2*utmp(:,1)+c3*utmp(:,1); % Remind me why this is needed: NJC
     c_coef
    end;
 
    %norm(pod_u(:,1:nb+1)*c_coef)
    ext(:,1)=ext(:,1)-c_coef;
+
+   %ext(:,1)=ext(:,1)-0*c_coef; % Try turning off convection
 
    %% End result comparison
 
@@ -297,10 +406,13 @@ for istep=1:nsteps
    if (mod(istep,iostep) == 0);
       ucoef(istep/iostep,:)=u(:,1);
       u(:,1)
+      u(2,1)
+      u(3,1)
 
-      plot_vel_mag = false;
-      plot_vort = true;
       if bool_plot;
+        plot_vel_mag = false;
+        plot_vort = true;
+
         u_proj = pod_u(:,1:nb+1)*u(1:end,1);
         v_proj = pod_v(:,1:nb+1)*u(1:end,1);
         if plot_vel_mag      

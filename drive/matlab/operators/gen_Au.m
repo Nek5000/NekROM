@@ -1,6 +1,7 @@
 % ROM diffusion operator.
 % This should have the same action as the Au operator from the Fortran code
-function[Au] = gen_Au(pod_u, pod_v, snaps)
+% Should probably add convection tensor calculation as well.
+function[Au, Bu, u0] = gen_Au(pod_u, pod_v, snaps)
     x=snaps.flds{1}.x;
     y=snaps.flds{1}.y;
     nx1 = size(x,1);
@@ -37,4 +38,7 @@ function[Au] = gen_Au(pod_u, pod_v, snaps)
     end;
     Au = [ur_pods;us_pods]'* [diag(Grr)*ur_pods + diag(Grs)*us_pods; diag(Grs)*ur_pods + diag(Gss)*us_pods] + [vr_pods;vs_pods]'* [diag(Grr)*vr_pods + diag(Grs)*vs_pods; diag(Grs)*vr_pods + diag(Gss)*vs_pods]; 
 
+    Me = reshape(jac.*(w*w'),nL,1);
+    bas = [pod_u;pod_v];
+    Bu = bas'*sparse(diag([Me;Me]))*bas; 
 end

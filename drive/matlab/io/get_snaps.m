@@ -1,30 +1,29 @@
-function[u, v] = get_snaps(snaps)
+function[u, v] = get_snaps(snaps, reorder)
+  if nargin < 2;
+    reorder = 0;
+  end
+
+  if reorder;
+    Ie = get_sort_order(snaps.flds{1}.x, snaps.flds{1}.y);
+  end
+
   u = snaps.flds{1}.u;
-  %y_fom = snaps.flds{1}.y;
-
-  %[nr, ns, nE] = size(u);
   nL = prod(size(u),"all");%nr*ns*nE;
-  [nbasis, nbasis1] = size(snaps.flds)
-  u = [];
-  v = [];
+  disp('Field size');
+  size(snaps.flds)
+  [nbasis, nbasis1] = size(snaps.flds);
+  u = zeros(nL,nbasis);
+  v = zeros(nL,nbasis);
+
   for i=1:nbasis;
-    %u_snap = snaps.flds{i}.u;
-    u = [u, reshape(snaps.flds{i}.u, nL,1)];
-    v = [v, reshape(snaps.flds{i}.v,nL,1)];
+    if reorder
+        u(:,i) = reshape(snaps.flds{i}.u(:,:,Ie),nL,1);
+        v(:,i) = reshape(snaps.flds{i}.u(:,:,Ie),nL,1);
+    else
+        u(:,i) = reshape(snaps.flds{i}.u, nL,1);
+        v(:,i) = reshape(snaps.flds{i}.v,nL,1);
+    end;
   end;
-
-
-  % The bases are not 
-  %[u;v]'*[u;v]
-  %exit;
-
-  %avg_snaps = NekSnaps(avg_cname);
-  %u_avg = reshape(avg_snaps.flds{1}.u,nL,1);
-  %v_avg = reshape(avg_snaps.flds{1}.v,nL,1);
-  %% Technically not the POD anymore
-  %exit;
-  %u(:,1) = u_avg(:,1);
-  %v(:,1) = v_avg(:,1);
 end
 
 

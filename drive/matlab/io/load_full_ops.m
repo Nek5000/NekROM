@@ -4,7 +4,7 @@ function [a0_full, b0_full, c0_full, u0_full, uk_full, mb, ms] =  load_full_ops(
 %
 % Output:
 % a0_full : Full stiffness matrix of size mb+1 x mb+1 (The +1 comes from the zeroth mode)
-% b-1_full : Full   mass    matrix of size mb+1 x mb+1
+% b0_full : Full   mass    matrix of size mb+1 x mb+1
 % cu_full : Full advection tensor of size mb x mb+1 x mb+1
 % u0_full : Vector of size mb+1, which contains the ROM coefficients of the
 %           projection of initial conditons onto mb-reduced space

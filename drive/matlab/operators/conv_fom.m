@@ -1,5 +1,10 @@
+% Pseudo-ROM convection operator
+% (pseudo because the work still scales
+% with the size of the original problem)
 % This needs to do the same thing as
 % reshape(cu*utmp(:,1),nb,nb+1)*u(:,1);
+%
+% Note: Dealiasing is not currently implemented. Is it needed?
 function [out_coef] = conv_fom(ucoef, pod_u, pod_v, snaps)
     x=snaps.flds{1}.x;
     y=snaps.flds{1}.y;

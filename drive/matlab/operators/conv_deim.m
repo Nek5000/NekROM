@@ -1,5 +1,5 @@
 % Convection operator that uses DEIM points
-function [out_coef] = conv_deim(ucoef, pod_u, pod_v, x, y, nl_snaps_obj, ndeim_pts,istep,clsdeim,n_os_points,ps_alg)
+function [out_coef] = conv_deim(ucoef, pod_u, pod_v, x, y, nl_snaps, ndeim_pts,istep,clsdeim,n_os_points,ps_alg)
 
     persistent proj_mat Ainv inv_p_nl u_deimu v_deimu u_deimv v_deimv ux_deimu uy_deimu vx_deimv vy_deimv;
     persistent u_deim_stack v_deim_stack ux_deim_stack uy_deim_stack tau mu A_tau_inv alpha nl_bas_inds% nl_max_coef nl_min_coef;
@@ -11,21 +11,23 @@ function [out_coef] = conv_deim(ucoef, pod_u, pod_v, x, y, nl_snaps_obj, ndeim_p
         % Stuff to be precomputed
 
         % Read in the snapshots.     
-        [nl_u_snaps, nl_v_snaps] = get_snaps(nl_snaps_obj);
-        nl_snaps = [nl_u_snaps; nl_v_snaps];
+        %[nl_u_snaps, nl_v_snaps] = get_snaps(nl_snaps_obj);
+        %nl_snaps = [nl_u_snaps; nl_v_snaps];
 
         % Calculate mass matrix with Jacobian
         %x=nl_snaps_obj.flds{1}.x;
         %y=nl_snaps_obj.flds{1}.y;
+
+        % Should probably make all of these functions persistent
         nx1 = size(x,1);
         [zi, w] = zwgll(nx1-1);
         d = deriv_mat(zi);
         [xr,yr,xs,ys,rx,ry,sx,sy,jac,jaci,d] = deriv_geo(x,y,d);
         my_lgrad=@(u,mode) grad(u,rx,ry,sx,sy,jaci,d,mode);
-
         nL = prod(size(x));
-        Me = reshape(jac.*(w*w'),nL,1);
 
+        Me = reshape(jac.*(w*w'),nL,1);
+        %{
         %% Calculate the POD of the NL snapshots
         gramian = nl_snaps'*diag([Me;Me])*nl_snaps;
         gramian = 0.5*(gramian + gramian');
@@ -39,17 +41,18 @@ function [out_coef] = conv_deim(ucoef, pod_u, pod_v, x, y, nl_snaps_obj, ndeim_p
         nl_bas = nl_bas(:,1:ndeim_pts);
         % Maybe 500 snapshots is not enough?
         nl_bas = orth(nl_bas,1e-16); % Use all of the snapshots for now.
-
+        %}
+        [nl_bas, ~, ~] = get_pod_basis_from_arrays(nl_snaps, x, y, ndeim_pts, 0, 0);
         % For use with Constrained DEIM
         %nl_snapshot_proj = nl_bas'*nl_snaps;
         %nl_max_coef = max(nl_snapshot_proj,[],2);
         %nl_min_coef = min(nl_snapshot_proj,[],2); 
+    
 
-
-        nl_bas_u = nl_bas(1:nL,:);
-        nl_bas_v = nl_bas(nL+1:end,:);
-        nl_bas_u = orth(nl_bas_u,1e-16); % Use all of the snapshots for now.
-        nl_bas_v = orth(nl_bas_v,1e-16); % Use all of the snapshots for now.
+        %nl_bas_u = nl_bas(1:nL,:);
+        %nl_bas_v = nl_bas(nL+1:end,:);
+        %nl_bas_u = orth(nl_bas_u,1e-16); % Use all of the snapshots for now.
+        %nl_bas_v = orth(nl_bas_v,1e-16); % Use all of the snapshots for now.
         %nl_bas = orth(nl_bas(:,1:500),1e-16);
         %for i = 1:size(nl_bas,2)
         %    nl_bas(:,i) = nl_bas(:,i)/norm(nl_bas(:,i));
@@ -192,7 +195,7 @@ function [out_coef] = conv_deim(ucoef, pod_u, pod_v, x, y, nl_snaps_obj, ndeim_p
         conv_v_deim = ((u_deimv(:,2:end)*ucoef(2:end)).*(vx_deimv(:,2:end)*ucoef(2:end)) + (v_deimv(:,2:end)*ucoef(2:end)).*(vy_deimv(:,2:end)*ucoef(2:end))); 
         out_coef = proj_mat*inv_p_nl*[conv_u_deim; conv_v_deim];
     else
-        % Needs to be de-aliased!
+        % Needs to be de-aliased! The snapshots should already be dealiased
         conv_deim = ((u_deim_stack(:,2:end)*ucoef(2:end)).*(ux_deim_stack(:,2:end)*ucoef(2:end)) + (v_deim_stack(:,2:end)*ucoef(2:end)).*(uy_deim_stack(:,2:end)*ucoef(2:end)));
         out_coef = inv_p_nl*conv_deim;
         if clsdeim;
