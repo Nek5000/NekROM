@@ -1,5 +1,5 @@
 % Convection operator that uses DEIM points
-function [out_coef] = conv_deim(ucoef, pod_u, pod_v, x, y, nl_snaps, ndeim_pts,istep,clsdeim,n_os_points,ps_alg)
+function [out_coef] = conv_deim(ucoef, pod_u, pod_v, x, y, nl_snaps_u, nl_snaps_v, ndeim_pts,istep,clsdeim,n_os_points,ps_alg)
 
     persistent proj_mat Ainv inv_p_nl u_deimu v_deimu u_deimv v_deimv ux_deimu uy_deimu vx_deimv vy_deimv;
     persistent u_deim_stack v_deim_stack ux_deim_stack uy_deim_stack tau mu A_tau_inv alpha nl_bas_inds% nl_max_coef nl_min_coef;
@@ -42,7 +42,7 @@ function [out_coef] = conv_deim(ucoef, pod_u, pod_v, x, y, nl_snaps, ndeim_pts,i
         % Maybe 500 snapshots is not enough?
         nl_bas = orth(nl_bas,1e-16); % Use all of the snapshots for now.
         %}
-        [nl_bas, ~, ~] = get_pod_basis_from_arrays(nl_snaps, x, y, ndeim_pts, 0, 0);
+        [nl_bas, ~, ~] = get_pod_basis_from_arrays(nl_snaps_u, nl_snaps_v, x, y, ndeim_pts, 0, 0);
         % For use with Constrained DEIM
         %nl_snapshot_proj = nl_bas'*nl_snaps;
         %nl_max_coef = max(nl_snapshot_proj,[],2);
@@ -177,7 +177,7 @@ function [out_coef] = conv_deim(ucoef, pod_u, pod_v, x, y, nl_snaps, ndeim_pts,i
         Ainv = inv(nl_bas(inds,:)'*nl_bas(inds,:));
 
         % Matrices for MCLSDEIM
-        nl_snapshot_proj = nl_bas'*nl_snaps;
+        nl_snapshot_proj = nl_bas'*[nl_snaps_u; nl_snaps_v];
         tau = inv(cov(nl_snapshot_proj'));
         size(nl_snapshot_proj)
         size(tau)

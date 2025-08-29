@@ -133,7 +133,7 @@ clsdeim = true;
 
 % number of deim points
 %for j=1:length(deims)
-ndeim_pts = 100;%400;%10;%800;%400;%deims(j);
+ndeim_pts = 0;%100;%400;%10;%800;%400;%deims(j);
 os_multiplier = 2;
 n_os_points=ceil(os_multiplier*ndeim_pts);
 
@@ -169,22 +169,46 @@ reorder = 1;
 snaps_obj = NekSnaps(strcat(snaps_path,casename)); % Should the snaps object have reordering capability?
 [pod_ml, u0_full_ml, uk_full_ml] = get_pod_basis(snaps_obj,nb,reorder,subtract_mean,conserve_momentum);
 
+%norm(uk_full - uk_full_ml)/norm(uk_full)
+%exit
+
 pod_u_ml = pod_ml(1:size(pod_ml,1)/2,1:nb+1);
 pod_v_ml = pod_ml(size(pod_ml,1)/2 + 1:end,1:nb+1);
 end;
 
-if 0; % Test B-orthogonality
 Me = get_Me(bas_snaps);
-Me = sparse(diag([Me;Me]));
-%iMe = inv(Me);
+npf = size(Me, 1);
+Me_vec = spdiags([Me;Me], 0, 2*npf,2*npf);
 
-size(Me)
+if 0; % Test B-orthogonality
+%iMe = inv(Me_vec);
+
+size(Me_vec)
+%disp("NekROM POD modes");
 pod = [pod_u; pod_v];
-size(pod)
-pod'*Me*pod
-pod_ml'*Me*pod_ml
+%disp("Matlab POD modes");
+%pod_ml
+
+%size(pod)
+disp("NekROM B-orthogonality");
+pod'*(Me_vec*pod)
+disp("NekROM mass matrix");
+bu_full
+disp("Matlab B-orthogonality");
+full((pod_ml'*(Me_vec*pod_ml)))
 %norm(abs(pod) - abs(pod_ml))
-%exit
+
+figure(1);
+patch_plot(x_fom,y_fom, reshape(pod_v(:,1), size(x_fom)), [], 'PlotType', 'surface');
+title("NekROM U-POD avg");
+figure(2);
+patch_plot(x_fom,y_fom, reshape(pod_v_ml(:,1), size(x_fom)), [], 'PlotType', 'surface');
+title("Matlab U-POD avg");
+'Pause'
+pause()
+pause()
+pause()
+
 
 for i = 1:nb+1;
     a = norm(pod(:,i) - pod_ml(:,i))
@@ -194,13 +218,15 @@ for i = 1:nb+1;
 end;
 
 
-norm(pod_ml - pod_ml*(inv(pod_ml'*(Me*pod_ml))*pod_ml'*(Me*pod_ml)))/norm(pod_ml)
-norm(pod - pod*(inv(pod'*(Me*pod))*pod'*(Me*pod)))/norm(pod)
-norm(pod_ml - pod*(inv(pod'*(Me*pod))*pod'*(Me*pod_ml)))/norm(pod_ml)
-norm(pod - pod_ml*(inv(pod_ml'*(Me*pod_ml))*pod_ml'*(Me*pod)))/norm(pod)
+norm(pod_ml - pod_ml*(inv(pod_ml'*(Me_vec*pod_ml))*pod_ml'*(Me_vec*pod_ml)))/norm(pod_ml)
+norm(pod - pod*(inv(pod'*(Me_vec*pod))*pod'*(Me_vec*pod)))/norm(pod)
+norm(pod_ml - pod*(inv(pod'*(Me_vec*pod))*pod'*(Me_vec*pod_ml)))/norm(pod_ml)
+norm(pod - pod_ml*(inv(pod_ml'*(Me_vec*pod_ml))*pod_ml'*(Me_vec*pod)))/norm(pod)
+%exit()
 end;
 
 % Use all of the matlab defined basis functions
+
 if 1;
     % Note that the non-linear evaluations are dumped on the same
     % grid as the NekROM basis coordinates. Not necessarily the
@@ -224,8 +250,14 @@ if 1;
     size(pod_u)
     size(pod_u_ml)
 
-    [au_full, bu_full] = gen_Au(pod_u,pod_v,bas_snaps);
+    au_full_nr = au_full;
+    bu_full_nr = bu_full;
+    [au_full_ml, bu_full_ml] = gen_Au(pod_u,pod_v,bas_snaps);
 end;
+
+disp("paused")
+pause()
+
 %u0_full_orig = u0_full
 %u0_full = change_basis*u0_full;
 %u0_full
@@ -261,10 +293,11 @@ for i=1:size(uk_full,2);
     patch_plot(x_fom,y_fom, reshape(plot_field,size(x_fom)), [], 'PlotType', 'surface');
     pause(0.01);
 end;
-exit;
+%exit;
 end;
 
 [au, a0, bu, cu, c0, c1, c2, c3, u0, uk, ukmin, ukmax] = get_r_dim_ops(au_full, bu_full, cu_full, u0_full, uk_full, nb);
+
 
 
 % Initialize variables
@@ -286,6 +319,8 @@ u     = zeros(nb+1,3); % vectors for BDF3/EXT3
 u(:,1)=u0;
 [alphas, betas] = setcoef();
 
+kes = [];
+momentums = [];
 
 %Au_ml
 %au_full
@@ -297,6 +332,8 @@ u(:,1)=u0;
 %(au_full_ml*u)./(au_full*u)
 %(bu_full_ml*u)./(bu_full*u)
 %exit;
+video = VideoWriter("movie.avi");
+open(video);
 
 for istep=1:nsteps
    istep
@@ -322,7 +359,7 @@ for istep=1:nsteps
    %% Compare the NL evaluation results.
 
    if ndeim_pts == 0;
-    if 0;
+    if 1;
         % ROM convection tensor version
         c_coef = (reshape(c0*utmp(:,1),nb,nb+1)*u(:,1));
         %c_coef' %ext(:,1)=ext(:,1)-reshape(cu*utmp(:,1),nb,nb+1)*u(:,1);
@@ -340,9 +377,10 @@ for istep=1:nsteps
     % DEIM version
     % Should be close, but not identical to, the above
 
-    c_coef = conv_deim(u(:,1), pod_u, pod_v, x_fom, y_fom, nl_snaps,ndeim_pts,istep,clsdeim,n_os_points,ps_alg);
-    c_coef = c_coef - c1+c2*utmp(:,1)+c3*utmp(:,1); % Remind me why this is needed: NJC
-    c_coef
+    c_coef = conv_deim(u(:,1), pod_u, pod_v, x_fom, y_fom, nl_snaps_u, nl_snaps_v, ndeim_pts,istep,clsdeim,n_os_points,ps_alg);
+    %c_coef = c_coef - c1+c2*utmp(:,1)+c3*utmp(:,1); % Remind me why this is needed: NJC 
+    % (Ping-Hsuan added that, seems to do something with the zeroth modes.)
+    %c_coef
    end;
 
    %norm(pod_u(:,1:nb+1)*c_coef)
@@ -409,12 +447,19 @@ for istep=1:nsteps
       u(2,1)
       u(3,1)
 
+      u_proj = pod_u(:,1:nb+1)*u(1:end,1);
+      v_proj = pod_v(:,1:nb+1)*u(1:end,1);
+      ke = 0.5*[u_proj; v_proj]'*Me_vec*[u_proj; v_proj]
+      kes = [kes; ke];
+      momentum = [sum(Me.*u_proj), sum(Me.*v_proj)]
+      momentums = [momentums;momentum];
+      
       if bool_plot;
         plot_vel_mag = false;
         plot_vort = true;
 
-        u_proj = pod_u(:,1:nb+1)*u(1:end,1);
-        v_proj = pod_v(:,1:nb+1)*u(1:end,1);
+        
+        
         if plot_vel_mag      
             u_abs = sqrt(u_proj.^2 + v_proj.^2);
             plot_field = reshape(u_abs, size(x_fom));
@@ -424,11 +469,19 @@ for istep=1:nsteps
         %norm(u_abs)
         hold off;
         patch_plot(x_fom,y_fom, reshape(plot_field,size(x_fom)), [], 'PlotType', 'surface');
+        %if istep <= iostep;
+        set(gca,"NextPlot","replacechildren");
+        %end;
+        writeVideo(video,getframe(gcf));
         pause(0.01);
      end;
    end
-
 end
+
+if bool_plot;
+    close(video);
+end;
+
 
 % Output results
 if ndeim_pts > 0;
@@ -447,6 +500,26 @@ mkdir(casedir);
 fileID = fopen(casedir+"/ucoef",'w');
 fprintf(fileID,"%24.15e\n",ucoef);
 fclose(fileID);
+figure(2);
+plot(kes)
+xlabel("Time")
+ylabel("Kinetic energy")
+title("Momentum and Energy Conserving")
+ax = gca;
+exportgraphics(ax, "ke.pdf", 'ContentType', 'vector');
+figure(3)
+plot(momentums(:,1)); hold on;
+plot(momentums(:,2))
+xlabel("Time")
+ylabel("Momentum components")
+title("Momentum and Energy Conserving");
+ax = gca;
+exportgraphics(ax, "momentum.pdf", 'ContentType', 'vector');
+disp("Paused")
+disp("Paused2");
+pause()
+pause()
+pause()
 
 %end
 

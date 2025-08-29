@@ -1,4 +1,4 @@
-function [bas, u0, uk] = get_pod_basis(snaps, x, y, nb, subtract_mean, conserve_momentum)
+function [bas, u0, uk] = get_pod_basis(u_snaps, v_snaps, x, y, nb, subtract_mean, conserve_momentum)
         % Currently only supports the H10 inner product 
         % Returns the average as the first column followed by nb basis vectors
 
@@ -13,16 +13,17 @@ function [bas, u0, uk] = get_pod_basis(snaps, x, y, nb, subtract_mean, conserve_
         [xr,yr,xs,ys,rx,ry,sx,sy,jac,jaci,d] = deriv_geo(x,y,d);
         nL = prod(size(x));
         Me = reshape(jac.*(w*w'),nL,1);
-        Me_arr = sparse(diag([Me;Me]));
-        iMe_arr = sparse(diag(1./[Me;Me]));
+        Me_arr = spdiags([Me;Me], 0, 2*nL, 2*nL);
+        %Me_arr = sparse(diag([Me;Me]));
         %Me_arr = sparse(diag([Me;Me]*0 + 1));
 
         % Subtract off the average
+        snaps = [u_snaps; v_snaps];
         avg_snaps = mean(snaps, 2);        
         %bnorm_avg = sqrt(avg_snaps'*Me*avg_snaps);
         %avg_snaps = avg_snaps / bnorm_avg;
         %snaps = snaps / bnorm_avg;
-        snaps_orig = snaps;
+        %snaps_orig = snaps;
         if subtract_mean;
             snaps = (snaps - avg_snaps);
         end
@@ -41,6 +42,7 @@ function [bas, u0, uk] = get_pod_basis(snaps, x, y, nb, subtract_mean, conserve_
             %E
             pod_snaps = (eye(size(snaps,1)) - E*(E'*Me_arr))*snaps;
             %E'*snaps
+            %iMe_arr = sparse(diag(1./[Me;Me]));
             %pod_snaps = snaps - iMe_arr*(E*(E'*(Me_arr*snaps)));
             %pod_snaps = snaps - E*(E'*(snaps));
             norm(snaps - pod_snaps)/norm(snaps)
@@ -52,6 +54,7 @@ function [bas, u0, uk] = get_pod_basis(snaps, x, y, nb, subtract_mean, conserve_
             gramian = 0.5*(gramian + gramian');
             %[eigvecs, eigvals] = eig(gramian);
             [eigvecs, eigvals] = eigs(gramian, nb, 'largestabs', 'Tolerance', 1e-16);
+            % May need to orthogonalize these?
             [eigvals_sorted, sort_inds] = sort(diag(abs(eigvals)),'descend');
             eigvecs = eigvecs(:,sort_inds);
             bas = pod_snaps*eigvecs(:,1:nb); % Using all of the modes
@@ -59,7 +62,7 @@ function [bas, u0, uk] = get_pod_basis(snaps, x, y, nb, subtract_mean, conserve_
             bas = bsxfun(@rdivide, bas, sqrt(dot(bas, Me_arr*bas)));
             %exit;
         else % SVD version
-            L = sparse(diag(sqrt([Me;Me]))); 
+            L = sqrt(Me_arr);
             %L = sparse(diag(sqrt([Me;Me])*0 + 1)); 
             [bas,S,V] = svds(L*pod_snaps, nb, 'largest');
             bas = inv(L)*bas;

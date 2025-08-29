@@ -1,4 +1,5 @@
 function[u, v] = get_snaps(snaps, reorder)
+  % Ask Kento and Ping-Hsuan about ordering
   if nargin < 2;
     reorder = 0;
   end
@@ -18,7 +19,7 @@ function[u, v] = get_snaps(snaps, reorder)
   for i=1:nbasis;
     if reorder
         u(:,i) = reshape(snaps.flds{i}.u(:,:,Ie),nL,1);
-        v(:,i) = reshape(snaps.flds{i}.u(:,:,Ie),nL,1);
+        v(:,i) = reshape(snaps.flds{i}.v(:,:,Ie),nL,1);
     else
         u(:,i) = reshape(snaps.flds{i}.u, nL,1);
         v(:,i) = reshape(snaps.flds{i}.v,nL,1);

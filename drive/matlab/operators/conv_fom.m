@@ -21,17 +21,17 @@ function [out_coef] = conv_fom(ucoef, pod_u, pod_v, snaps)
         [vx_fom, vy_fom] = lgrad(v_fom, 0);
     else
         % Kento's ROM approach. Calculate the gradients of the POD modes
-        ux_pods = [];
-        uy_pods = [];
-        vx_pods = [];
-        vy_pods = [];
+        ux_pods = zeros(nL,size(pod_u,2));
+        uy_pods = zeros(nL,size(pod_u,2));
+        vx_pods = zeros(nL,size(pod_u,2));
+        vy_pods = zeros(nL,size(pod_u,2));
         for i = 1:size(pod_u,2);
             [ux_pod, uy_pod] = lgrad(reshape(pod_u(:,i),size(x)),0);
             [vx_pod, vy_pod] = lgrad(reshape(pod_v(:,i),size(x)),0);
-            ux_pods = [ux_pods, reshape(ux_pod, nL,1)];
-            uy_pods = [uy_pods, reshape(uy_pod, nL,1)];
-            vx_pods = [vx_pods, reshape(vx_pod, nL,1)];
-            vy_pods = [vy_pods, reshape(vy_pod, nL,1)];
+            ux_pods(:,i) = reshape(ux_pod, nL,1);
+            uy_pods(:,i) = reshape(uy_pod, nL,1);
+            vx_pods(:,i) = reshape(vx_pod, nL,1);
+            vy_pods(:,i) = reshape(vy_pod, nL,1);
         end;
         ux_fom = reshape(ux_pods*ucoef, size(x));
         uy_fom = reshape(uy_pods*ucoef, size(x));
@@ -39,8 +39,8 @@ function [out_coef] = conv_fom(ucoef, pod_u, pod_v, snaps)
         vy_fom = reshape(vy_pods*ucoef, size(x));
     end
 
-    u_fom = reshape(Me.*pod_u*ucoef, size(x));
-    v_fom = reshape(Me.*pod_v*ucoef, size(x));
+    u_fom = reshape(Me.*(pod_u*ucoef), size(x));
+    v_fom = reshape(Me.*(pod_v*ucoef), size(x));
 
     conv_u_fom = reshape(u_fom.*ux_fom + v_fom.*uy_fom, nL,1);
     conv_v_fom = reshape(u_fom.*vx_fom + v_fom.*vy_fom, nL,1);

@@ -36,9 +36,9 @@ function[Au, Bu, u0] = gen_Au(pod_u, pod_v, snaps)
         %vs_pods = [vs_pods, reshape(tensorprod(pod_v_vec, Dht,[2],[1]), nL,1)];
 
     end;
-    Au = [ur_pods;us_pods]'* [diag(Grr)*ur_pods + diag(Grs)*us_pods; diag(Grs)*ur_pods + diag(Gss)*us_pods] + [vr_pods;vs_pods]'* [diag(Grr)*vr_pods + diag(Grs)*vs_pods; diag(Grs)*vr_pods + diag(Gss)*vs_pods]; 
+    Au = [ur_pods;us_pods]'* ([Grr.*ur_pods + Grs.*us_pods; Grs.*ur_pods + Gss.*us_pods]) + [vr_pods;vs_pods]'* ([Grr.*vr_pods + Grs.*vs_pods; Grs.*vr_pods + Gss.*vs_pods]); 
 
     Me = reshape(jac.*(w*w'),nL,1);
     bas = [pod_u;pod_v];
-    Bu = bas'*sparse(diag([Me;Me]))*bas; 
+    Bu = bas'*(spdiags([Me;Me],0, 2*nL,2*nL)*bas); 
 end
