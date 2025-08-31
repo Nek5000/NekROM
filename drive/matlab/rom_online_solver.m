@@ -176,11 +176,11 @@ pod_u_ml = pod_ml(1:size(pod_ml,1)/2,1:nb+1);
 pod_v_ml = pod_ml(size(pod_ml,1)/2 + 1:end,1:nb+1);
 end;
 
-Me = get_Me(bas_snaps);
+Me = get_Me(x_fom, y_fom);
 npf = size(Me, 1);
 Me_vec = spdiags([Me;Me], 0, 2*npf,2*npf);
 
-if 0; % Test B-orthogonality
+if 1; % Test that the basis vectors are the same (B-orthogonality_
 %iMe = inv(Me_vec);
 
 size(Me_vec)
@@ -190,43 +190,37 @@ pod = [pod_u; pod_v];
 %pod_ml
 
 %size(pod)
-disp("NekROM B-orthogonality");
-pod'*(Me_vec*pod)
-disp("NekROM mass matrix");
-bu_full
-disp("Matlab B-orthogonality");
-full((pod_ml'*(Me_vec*pod_ml)))
-%norm(abs(pod) - abs(pod_ml))
-
-figure(1);
-patch_plot(x_fom,y_fom, reshape(pod_v(:,1), size(x_fom)), [], 'PlotType', 'surface');
-title("NekROM U-POD avg");
-figure(2);
-patch_plot(x_fom,y_fom, reshape(pod_v_ml(:,1), size(x_fom)), [], 'PlotType', 'surface');
-title("Matlab U-POD avg");
-'Pause'
-pause()
-pause()
-pause()
-
-
-for i = 1:nb+1;
-    a = norm(pod(:,i) - pod_ml(:,i))
-    b = norm(pod(:,i) + pod_ml(:,i))
-    %norm(pod(:,i))
-    %norm(pod_ml(:,i))
+%disp("NekROM B-orthogonality");
+%pod'*(Me_vec*pod)
+%disp("NekROM mass matrix");
+%bu_full
+%disp("Matlab B-orthogonality");
+%full((pod_ml'*(Me_vec*pod_ml)));
+assert(norm(abs(pod) - abs(pod_ml))/norm(abs(pod)) < 1e-5);
+%figure(1);
+%patch_plot(x_fom,y_fom, reshape(pod_v(:,1), size(x_fom)), [], 'PlotType', 'surface');
+%title("NekROM U-POD avg");
+%figure(2);
+%patch_plot(x_fom,y_fom, reshape(pod_v_ml(:,1), size(x_fom)), [], 'PlotType', 'surface');
+%title("Matlab U-POD avg");
+%'Pause'
+%pause()
+%pause()
+%pause()
 end;
 
+[au_full_ml, bu_full_ml] = gen_Au(pod_u_ml, pod_v_ml,x_fom, y_fom);
 
-norm(pod_ml - pod_ml*(inv(pod_ml'*(Me_vec*pod_ml))*pod_ml'*(Me_vec*pod_ml)))/norm(pod_ml)
-norm(pod - pod*(inv(pod'*(Me_vec*pod))*pod'*(Me_vec*pod)))/norm(pod)
-norm(pod_ml - pod*(inv(pod'*(Me_vec*pod))*pod'*(Me_vec*pod_ml)))/norm(pod_ml)
-norm(pod - pod_ml*(inv(pod_ml'*(Me_vec*pod_ml))*pod_ml'*(Me_vec*pod)))/norm(pod)
-%exit()
+% Check Au and Bu operators
+if 1;
+    %bu_full
+    %bu_full_ml
+    %abs(bu_full - bu_full_ml
+    assert(norm(abs(bu_full) - abs(bu_full_ml))/norm(abs(bu_full)) < 1e-5);
+    assert(norm(abs(au_full) - abs(au_full_ml))/norm(abs(au_full)) < 1e-5)
 end;
 
 % Use all of the matlab defined basis functions
-
 if 1;
     % Note that the non-linear evaluations are dumped on the same
     % grid as the NekROM basis coordinates. Not necessarily the
@@ -250,13 +244,12 @@ if 1;
     size(pod_u)
     size(pod_u_ml)
 
-    au_full_nr = au_full;
-    bu_full_nr = bu_full;
-    [au_full_ml, bu_full_ml] = gen_Au(pod_u,pod_v,bas_snaps);
+    au_full_orig = au_full;
+    bu_full_orig = bu_full;
+    au_full = au_full_ml;
+    bu_full = bu_full_ml;
 end;
 
-disp("paused")
-pause()
 
 %u0_full_orig = u0_full
 %u0_full = change_basis*u0_full;
@@ -359,8 +352,10 @@ for istep=1:nsteps
    %% Compare the NL evaluation results.
 
    if ndeim_pts == 0;
-    if 1;
+    if 0;
         % ROM convection tensor version
+        % NOTE: ONLY USE THIS WITH THE NEKROM OPERATORS
+        % THE MATLAB CONVECTION TENSOR IS NOT YET IMPLEMENTED
         c_coef = (reshape(c0*utmp(:,1),nb,nb+1)*u(:,1));
         %c_coef' %ext(:,1)=ext(:,1)-reshape(cu*utmp(:,1),nb,nb+1)*u(:,1);
         %c_coef
@@ -368,7 +363,7 @@ for istep=1:nsteps
     else
         % Pseudo ROM version
         % This should be identical to the above.
-        c_coef = (conv_fom(u(:,1), pod_u, pod_v, bas_snaps));
+        c_coef = (conv_fom(u(:,1), pod_u, pod_v, x_fom, y_fom));
         %norm(c_coef - c_coef1)/norm(c_coef)
         %exit;
         %norm(pod_u(:,1:nb+1)*c_coef)
