@@ -40,7 +40,7 @@ function [bas, u0, uk] = get_pod_basis(u_snaps, v_snaps, x, y, nb, subtract_mean
 
             % Remove contributions of these basis vectors from snapshots
             %E
-            pod_snaps = (eye(size(snaps,1)) - E*(E'*Me_arr))*snaps;
+            pod_snaps = snaps - E*((E'*Me_arr)*snaps);
             %E'*snaps
             %iMe_arr = sparse(diag(1./[Me;Me]));
             %pod_snaps = snaps - iMe_arr*(E*(E'*(Me_arr*snaps)));
