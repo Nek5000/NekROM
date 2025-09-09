@@ -375,8 +375,40 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine dump_misc
+      subroutine dump_cbas
+      ! dump the basis of the convection snapshots
 
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      ! Try compute convection field in snapt
+      ! (Weak form or strong form?)
+      call evalcflds(snapt,us0,us0,ldim,ns,.false.)
+
+      ! Dump the convection snapshots
+      ! Maybe add a flag to save this or not
+      do i=1,ns
+         call outpost(snapt(1,1,i),snapt(1,2,i),snapt(1,ldim,i),
+     $                pr,t,'csn')
+      enddo
+
+      call pod(uvwbtmp,eval2,ug,snapt,ldim,ips,nb,ns,ifpb,
+     $         'ops/guc  ',nbat)
+
+      ! Dump the convection basis
+      ! Should i start at 0 (like above) or 1?
+      do i=0,nb
+         ! The temperature field isn't correct, but doesn't matter right now 
+         ! since temperature and pressure are not supported.
+         call outpost(uvwbtmp(1,1,i),uvwbtmp(1,2,i),uvwbtmp(1,ldim,i),
+     $                pb(1,i),tb(1,i,1),'cba')
+      enddo
+      
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine dump_misc
       ! dump miscellaneous items
 
       include 'SIZE'
