@@ -971,28 +971,32 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine vnorm_(uvwbb)
+      subroutine vnorm_(uvwbb,ifnrm0)
+      ! Normalizes the vector field `uvwbb`.
       !
-      ! normalizes vector field
+      ! uvwbb := The vector field of shape (lt,ldim,nb)
+      ! ifnrm0 := input, if .true. then the 0th vector will be
+      !   normalized
       !
-      ! uub,vvb,wwb := x,y,z components of vector field
-
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
+      logical ifnrm0
       real uvwbb(lt,ldim,0:nb)
 
       jfield=ifield
       ifield=1
       nio=-1
-      do i=1,nb
-         p=vip(uvwbb(1,1,i),uvwbb(1,2,i),uvwbb(1,ldim,i),
-     $         uvwbb(1,1,i),uvwbb(1,2,i),uvwbb(1,ldim,i))
-         s=1./sqrt(p)
-         call opcmult(uvwbb(1,1,i),uvwbb(1,2,i),uvwbb(1,3,i),s)
+      do i=0,nb
+         if (ifnrm0.or.(i.gt.0)) then
+            p=vip(uvwbb(1,1,i),uvwbb(1,2,i),uvwbb(1,ldim,i),
+     $            uvwbb(1,1,i),uvwbb(1,2,i),uvwbb(1,ldim,i))
+            s=1./sqrt(p)
+            call opcmult(uvwbb(1,1,i),uvwbb(1,2,i),uvwbb(1,ldim,i),s)
+         endif
       enddo
       nio=nid
       ifield=jfield
@@ -1351,7 +1355,7 @@ c       if (nio.eq.0) write(6,*)i,enr(i),'Nmax for field',ifld
 c-----------------------------------------------------------------------
       subroutine pod(basis,eval,gram,snaps,mdim,cips,nb,ns,ifpod,cop,
      $ nbat)
-      ! return pod basis created from snapshots
+      ! Return the POD basis created from the snapshots.
       !
       ! basis := output, POD basis generated from snaps
       ! eval  := output, e-values to be set in genevec

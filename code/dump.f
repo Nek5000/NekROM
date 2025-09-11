@@ -376,14 +376,13 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine dump_cbas
-      ! dump the basis of the convection snapshots
-
+      ! Calculates and dumps the POD basis of the convection snapshots
+      !
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
 
-      ! Try compute convection field in snapt
-      ! (Weak form or strong form?)
+      ! Compute convection field in and store in snapt
       call evalcflds(snapt,us0,us0,ldim,ns,.false.)
 
       ! Dump the convection snapshots
@@ -393,24 +392,25 @@ c-----------------------------------------------------------------------
      $                pr,t,'csn')
       enddo
 
-      call pod(uvwbtmp,eval2,ug,snapt,ldim,ips,nb,ns,ifpb,
+      ! We want the zeroth mode normalized, so nb+1
+      call pod(uvwbtmp,eval2,ug,snapt,ldim,ips,nb+1,ns,ifpb,
      $         'ops/guc  ',nbat)
+ 
+      call vnorm_(uvwbtmp,.true.)
 
       ! Dump the convection basis
-      ! Should i start at 0 (like above) or 1?
       do i=0,nb
          ! The temperature field isn't correct, but doesn't matter right now 
          ! since temperature and pressure are not supported.
-         call outpost(uvwbtmp(1,1,i),uvwbtmp(1,2,i),uvwbtmp(1,ldim,i),
-     $                pb(1,i),tb(1,i,1),'cba')
+         call outpost2(uvwbtmp(1,1,i),uvwbtmp(1,2,i),uvwbtmp(1,ldim,i),
+     $                pb(1,i),tb(1,i,1),ldimt,'cba')
       enddo
       
       return
       end
 c-----------------------------------------------------------------------
       subroutine dump_misc
-      ! dump miscellaneous items
-
+      ! Dump miscellaneous items
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
