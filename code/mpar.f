@@ -623,6 +623,8 @@ c-----------------------------------------------------------------------
       call bcast(ifquad,lsize)
       call bcast(ifedvs,lsize)
 
+      call bcast(ifdumpnls,lsize)
+
       return
       END
 c-----------------------------------------------------------------------

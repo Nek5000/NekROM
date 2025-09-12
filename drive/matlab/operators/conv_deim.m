@@ -1,5 +1,5 @@
 % Convection operator that uses DEIM points
-function [out_coef] = conv_deim(ucoef, pod_u, pod_v, x, y, nl_snaps_u, nl_snaps_v, ndeim_pts,istep,clsdeim,n_os_points,ps_alg)
+function [out_coef] = conv_deim(ucoef, pod_u, pod_v, x, y, nl_snaps_u, nl_snaps_v, ndeim_pts,istep,clsdeim,n_os_points,ps_alg, nl_bas_nr)
 
     persistent proj_mat Ainv inv_p_nl u_deimu v_deimu u_deimv v_deimv ux_deimu uy_deimu vx_deimv vy_deimv;
     persistent u_deim_stack v_deim_stack ux_deim_stack uy_deim_stack tau mu A_tau_inv alpha nl_bas_inds% nl_max_coef nl_min_coef;
@@ -43,6 +43,16 @@ function [out_coef] = conv_deim(ucoef, pod_u, pod_v, x, y, nl_snaps_u, nl_snaps_
         nl_bas = orth(nl_bas,1e-16); % Use all of the snapshots for now.
         %}
         [nl_bas, ~, ~] = get_pod_basis_from_arrays(nl_snaps_u, nl_snaps_v, x, y, ndeim_pts, 0, 0);
+        %%{
+        size(nl_bas)
+        size(nl_bas_nr)
+        nl_bas'*([Me;Me].*nl_bas)
+        nl_bas_nr'*([Me;Me].*nl_bas_nr)
+        
+        mean(abs(nl_bas),1)
+        mean(abs(nl_bas_nr),1)
+        exit;
+        %%}
         % For use with Constrained DEIM
         %nl_snapshot_proj = nl_bas'*nl_snaps;
         %nl_max_coef = max(nl_snapshot_proj,[],2);
@@ -91,7 +101,7 @@ function [out_coef] = conv_deim(ucoef, pod_u, pod_v, x, y, nl_snaps_u, nl_snaps_
             elseif strcmp(ps_alg, 'gnat')
                 inds = gnat(nl_bas, ndeim_pts, ndeim_pts + n_os_points);
             else
-                throw(Mexception('Unknown point selection algorithm %s', ps_alg));
+                throw(MException('Unknown point selection algorithm %s', ps_alg));
             end;
 
             if false;
