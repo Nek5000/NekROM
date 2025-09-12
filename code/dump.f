@@ -382,29 +382,38 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
-      ! Compute convection field in and store in snapt
+      ! Compute convection field for each snapshot and store in snapt
       call evalcflds(snapt,us0,us0,ldim,ns,.false.)
 
       ! Dump the convection snapshots
       ! Maybe add a flag to save this or not
-      do i=1,ns
-         call outpost(snapt(1,1,i),snapt(1,2,i),snapt(1,ldim,i),
-     $                pr,t,'csn')
-      enddo
+      if(ifdumpnls) then
+        do i=1,ns
+          call outpost(snapt(1,1,i),snapt(1,2,i),snapt(1,ldim,i),
+     $                 pr,t,'csn')
+        enddo
+      endif
 
-      ! We want the zeroth mode normalized, so nb+1
-      call pod(uvwbtmp,eval2,ug,snapt,ldim,ips,nb+1,ns,ifpb,
+      call pod(uvwbnl,eval2,ug,snapt,ldim,ips,nbnl,ns,ifpb,
      $         'ops/guc  ',nbat)
- 
-      call vnorm_(uvwbtmp,.true.)
+
+      ! B-normalize the POD basis
+      ! Could modify vnorm_ to handle this, but do it manually for now 
+      do i=1,nbnl
+        p=vip(uvwbnl(1,1,i),uvwbnl(1,2,i),uvwbnl(1,ldim,i),
+     $        uvwbnl(1,1,i),uvwbnl(1,2,i),uvwbnl(1,ldim,i))
+        s=1./sqrt(p)
+        call opcmult(uvwbnl(1,1,i),uvwbnl(1,2,i),uvwbnl(1,ldim,i),s)
+      enddo
 
       ! Dump the convection basis
-      do i=0,nb
+      do i=1,nbnl
          ! The temperature field isn't correct, but doesn't matter right now 
          ! since temperature and pressure are not supported.
-         call outpost2(uvwbtmp(1,1,i),uvwbtmp(1,2,i),uvwbtmp(1,ldim,i),
-     $                pb(1,i),tb(1,i,1),ldimt,'cba')
+         call outpost2(uvwbnl(1,1,i),uvwbnl(1,2,i),uvwbnl(1,ldim,i),
+     $                pb(1,0),tb(1,0,1),ldimt,'cba')
       enddo
+
       
       return
       end

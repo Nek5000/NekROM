@@ -14,6 +14,11 @@ c     parameters and common blocks for MOR
      $                  pb(lx2*ly2*lz2*lelm,0:lpb),
      $                  tb(lx1*ly1*lz1*lelm,0:ltb,ldimt)
 
+      common /mordeimbasis/ uvwbnl(lx1*ly1*lz1*lelm,ldim,lbnl)
+
+      logical ifdumpnls
+      common /mordeimflags/ ifdumpnls
+
       common /moric/ uic(lx1*ly1*lz1*lelm),
      $               vic(lx1*ly1*lz1*lelm),
      $               wic(lx1*ly1*lz1*lelm),
@@ -119,9 +124,9 @@ c     parameters and common blocks for MOR
       common /morpar/ ad_dt,ad_re,ad_pe,ad_alpha(3,3),ad_beta(4,3),
      $                tbeta,ad_ra,rktol,ad_mu,podrat
 
-      integer ad_nsteps,ad_iostep,ad_step,ad_qstep
+      integer ad_nsteps,ad_iostep,ad_step,ad_qstep,nbnl
       common /moripar/ ad_nsteps,ad_iostep,ad_step,ad_qstep,inus,
-     $                 navg_step,mb,nb,nbo,nplay,nintp,iaug,nbat
+     $                 navg_step,mb,nb,nbo,nplay,nintp,iaug,nbat,nbnl
 
       common /morivars/ i0,j0,k0,i1,j1,k1,nns,ns,nskip,navg,ncloc,npr,
      $                  npart,isolve,ic1,ic2,jc1,jc2,kc1,kc2,idirf

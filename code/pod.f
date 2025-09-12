@@ -971,12 +971,10 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine vnorm_(uvwbb,ifnrm0)
+      subroutine vnorm_(uvwbb)
       ! Normalizes the vector field `uvwbb`.
       !
       ! uvwbb := The vector field of shape (lt,ldim,nb)
-      ! ifnrm0 := input, if .true. then the 0th vector will be
-      !   normalized
       !
       include 'SIZE'
       include 'TOTAL'
@@ -984,19 +982,16 @@ c-----------------------------------------------------------------------
 
       parameter (lt=lx1*ly1*lz1*lelt)
 
-      logical ifnrm0
       real uvwbb(lt,ldim,0:nb)
 
       jfield=ifield
       ifield=1
       nio=-1
-      do i=0,nb
-         if (ifnrm0.or.(i.gt.0)) then
-            p=vip(uvwbb(1,1,i),uvwbb(1,2,i),uvwbb(1,ldim,i),
-     $            uvwbb(1,1,i),uvwbb(1,2,i),uvwbb(1,ldim,i))
-            s=1./sqrt(p)
-            call opcmult(uvwbb(1,1,i),uvwbb(1,2,i),uvwbb(1,ldim,i),s)
-         endif
+      do i=1,nb
+        p=vip(uvwbb(1,1,i),uvwbb(1,2,i),uvwbb(1,ldim,i),
+     $        uvwbb(1,1,i),uvwbb(1,2,i),uvwbb(1,ldim,i))
+        s=1./sqrt(p)
+        call opcmult(uvwbb(1,1,i),uvwbb(1,2,i),uvwbb(1,ldim,i),s)
       enddo
       nio=nid
       ifield=jfield
