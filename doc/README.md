@@ -6,7 +6,7 @@
 
 #### Set Up a Conda Environment (Optional)
 
-If you don’t mind using a development version of NumPy, you can use an existing Conda environment. Otherwise, create and activate a new environment:
+You may use an existing Conda environment, but we recommend creating and activate a new environment:
 ```sh
 conda create -n nekrom-docs
 conda activate nekrom-docs
