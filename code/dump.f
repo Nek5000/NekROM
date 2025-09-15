@@ -382,8 +382,16 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
+      logical iftmp,iftmp2
+
       ! Compute convection field for each snapshot and store in snapt
       call evalcflds(snapt,us0,us0,ldim,ns,.false.)
+
+      iftmp=ifxyo
+      iftmp2=ifpo
+
+      ifxyo=.true.
+      ifpo=.false.
 
       ! Dump the convection snapshots
       ! Maybe add a flag to save this or not
@@ -414,6 +422,8 @@ c-----------------------------------------------------------------------
      $                pb(1,0),tb(1,0,1),ldimt,'cba')
       enddo
 
+      ifxyo=iftmp
+      ifpo=iftmp2
       
       return
       end
