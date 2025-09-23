@@ -57,3 +57,4 @@ function [out_coef] = conv_fom(ucoef, pod_u, pod_v, x, y)
     conv_v_fom = reshape(u_fom.*vx_fom + v_fom.*vy_fom, nL,1);
     
     out_coef = [pod_u(:,2:end); pod_v(:,2:end)]'*[conv_u_fom; conv_v_fom];
+end
