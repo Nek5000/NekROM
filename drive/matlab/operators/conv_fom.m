@@ -9,7 +9,7 @@ function [out_coef] = conv_fom(ucoef, pod_u, pod_v, x, y)
     %x=snaps.flds{1}.x;
     %y=snaps.flds{1}.y;
     %persistent Me rx ry sx sy jaci d lgrad nL
-    persistent Me ux_pods uy_pods vx_pods vy_pods
+    persistent Me ux_pods uy_pods vx_pods vy_pods pod_uv
     if isempty(Me)
         nx1 = size(x,1);
         [zi, w] = zwgll(nx1-1);
@@ -32,6 +32,7 @@ function [out_coef] = conv_fom(ucoef, pod_u, pod_v, x, y)
             vx_pods(:,i) = reshape(vx_pod, nL,1);
             vy_pods(:,i) = reshape(vy_pod, nL,1);
         end;
+        pod_uv = [Me.*pod_u(:,2:end);Me.*pod_v(:,2:end)];
     end;
 
     u_fom = pod_u*ucoef;
@@ -75,5 +76,5 @@ function [out_coef] = conv_fom(ucoef, pod_u, pod_v, x, y)
     conv_u_fom = u_fom.*ux_fom + v_fom.*uy_fom;
     conv_v_fom = u_fom.*vx_fom + v_fom.*vy_fom;
     
-    out_coef = [pod_u(:,2:end); pod_v(:,2:end)]'*[Me.*conv_u_fom; Me.*conv_v_fom];
+    out_coef = pod_uv'*[conv_u_fom; conv_v_fom];
 end
