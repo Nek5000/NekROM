@@ -1,5 +1,5 @@
 % Convection operator that uses DEIM points
-function [out_coef] = conv_deim(ucoef, pod_u, pod_v, x, y, nl_snaps_u, nl_snaps_v, ndeim_pts,istep,clsdeim,n_os_points,ps_alg, nl_bas_nr)
+function [out_coef] = conv_deim(ucoef, pod_u, pod_v, x, y, nl_snaps_u, nl_snaps_v, ndeim_pts,istep,clsdeim,n_os_points,ps_alg, nl_bas_nr, Me_in)
 
     persistent proj_mat Ainv inv_p_nl u_deimu v_deimu u_deimv v_deimv ux_deimu uy_deimu vx_deimv vy_deimv;
     persistent u_deim_stack v_deim_stack ux_deim_stack uy_deim_stack tau mu A_tau_inv alpha nl_bas_inds% nl_max_coef nl_min_coef;
@@ -27,23 +27,18 @@ function [out_coef] = conv_deim(ucoef, pod_u, pod_v, x, y, nl_snaps_u, nl_snaps_
         nL = prod(size(x));
 
         Me = reshape(jac.*(w*w'),nL,1);
+        if 0;
+            [nl_bas, ~, ~] = get_pod_basis_from_arrays(nl_snaps_u, nl_snaps_v, x, y, ndeim_pts, 0, 0);
+            %size(nl_bas)
+            %size(nl_bas_nr)
+            %norm(nl_bas_nr(:,1:31) - nl_bas)/norm(nl_bas)
+            %exit;
+        else;
+            nl_bas = nl_bas_nr;
+            Me = Me_in;
+        end;
+        %nl_bas = nl_bas_nr
         %{
-        %% Calculate the POD of the NL snapshots
-        gramian = nl_snaps'*diag([Me;Me])*nl_snaps;
-        gramian = 0.5*(gramian + gramian');
-        [nl_eigvecs, nl_eigvals] = eig(gramian);
-        [nl_eigvals_sorted, sort_inds] = sort(diag(abs(nl_eigvals)),'descend');
-        fileID = fopen('nl_eigvals_sorted.txt', 'w');
-        fprintf(fileID, '%24.15e\n', nl_eigvals_sorted);
-        fclose(fileID);
-        nl_eigvecs = nl_eigvecs(:,sort_inds);
-        nl_bas = nl_snaps*nl_eigvecs; % Using all of the modes 
-        nl_bas = nl_bas(:,1:ndeim_pts);
-        % Maybe 500 snapshots is not enough?
-        nl_bas = orth(nl_bas,1e-16); % Use all of the snapshots for now.
-        %}
-        [nl_bas, ~, ~] = get_pod_basis_from_arrays(nl_snaps_u, nl_snaps_v, x, y, ndeim_pts, 0, 0);
-        %%{
         size(nl_bas)
         size(nl_bas_nr)
         nl_bas'*([Me;Me].*nl_bas)
@@ -52,7 +47,7 @@ function [out_coef] = conv_deim(ucoef, pod_u, pod_v, x, y, nl_snaps_u, nl_snaps_
         mean(abs(nl_bas),1)
         mean(abs(nl_bas_nr),1)
         exit;
-        %%}
+        %}
         % For use with Constrained DEIM
         %nl_snapshot_proj = nl_bas'*nl_snaps;
         %nl_max_coef = max(nl_snapshot_proj,[],2);
@@ -71,18 +66,8 @@ function [out_coef] = conv_deim(ucoef, pod_u, pod_v, x, y, nl_snaps_u, nl_snaps_
         separate=false
 
         if separate % Calculate the QDEIM points separately for u and v
-            % This probably won't work.
-%           [P_u, nl_u_inds] = calc_qdeim_proj_mat(nl_u_snaps);
-%           [P_v, nl_v_inds] = calc_qdeim_proj_mat(nl_v_snaps);
-            [P_u, nl_u_inds] = calc_qdeim_proj_mat(nl_bas_u);
-            [P_v, nl_v_inds] = calc_qdeim_proj_mat(nl_bas_v); % not sure why the separate approach is not working
-            % maybe because this will not satisfiyes divergence-free constraints...
-            n_deim_points_u = ceil(size(nl_bas,2)/2);
-            n_deim_points_v = floor(size(nl_bas,2)/2);
-            nl_u_inds = nl_u_inds(1,1:n_deim_points_u); 
-            nl_v_inds = nl_v_inds(1,1:n_deim_points_v); 
-
-            inds = [nl_u_inds, nl_v_inds + size(nl_u_snaps,1)];
+        % Delete this
+        exit;
         else % Use the same QDEIM points for u and v.
             % Maybe this isn't right for vector quantities.
             % Will this satisfy the divergence-free constraints?
@@ -137,22 +122,14 @@ function [out_coef] = conv_deim(ucoef, pod_u, pod_v, x, y, nl_snaps_u, nl_snaps_
 
       
         % Is this problematic? What does it mean to integrate on the DEIM points?
-        u_deim = Me.*pod_u;
-        v_deim = Me.*pod_v;
+        u_deim = pod_u;
+        v_deim = pod_v;
 %       u_deim = pod_u;
 %       v_deim = pod_v;
     
         if separate
-            u_deimu = u_deim(nl_u_inds,:);
-            v_deimu = v_deim(nl_v_inds,:);
-            u_deimv = u_deim(nl_u_inds,:);
-            v_deimv = v_deim(nl_v_inds,:);
-
-            ux_deimu = ux_pods(nl_u_inds,:);
-            uy_deimu = uy_pods(nl_u_inds,:);
-            vx_deimv = vx_pods(nl_v_inds,:);
-            vy_deimv = vy_pods(nl_v_inds,:);
-%           proj_mat = [pod_u(:,2:end); pod_v(:,2:end)]'*[nl_bas_u; nl_bas_v]*inv([nl_bas_u(nl_u_inds,:); nl_bas_v(nl_v_inds,:)]); 
+        % Delete this
+        exit;
         else
             u_deim_stack = [u_deim; u_deim];
             u_deim_stack = u_deim_stack(inds,:);
@@ -167,7 +144,7 @@ function [out_coef] = conv_deim(ucoef, pod_u, pod_v, x, y, nl_snaps_u, nl_snaps_
 %           proj_mat = [pod_u(:,2:end); pod_v(:,2:end)]'*nl_bas*inv(nl_bas(inds,:)); 
         end;
 
-        proj_mat = [pod_u(:,2:end); pod_v(:,2:end)]'*nl_bas;
+        proj_mat = [Me.*pod_u(:,2:end); Me.*pod_v(:,2:end)]'*nl_bas;
 
         nl_bas_inds = nl_bas(inds,:);
         if size(nl_bas,2) == size(inds,1);   
@@ -195,19 +172,29 @@ function [out_coef] = conv_deim(ucoef, pod_u, pod_v, x, y, nl_snaps_u, nl_snaps_
         mu = mean(nl_snapshot_proj,2);
         alpha = 1e-14;
         A_tau_inv = inv(nl_bas(inds,:)'*nl_bas(inds,:) + alpha*tau); 
+
+        
+
     end;
 
-    separate=false;
     mclsdeim = false;
+    separate=false;
 
     if separate
-        conv_u_deim = ((u_deimu(:,2:end)*ucoef(2:end)).*(ux_deimu(:,2:end)*ucoef(2:end)) + (v_deimu(:,2:end)*ucoef(2:end)).*(uy_deimu(:,2:end)*ucoef(2:end)));
-        conv_v_deim = ((u_deimv(:,2:end)*ucoef(2:end)).*(vx_deimv(:,2:end)*ucoef(2:end)) + (v_deimv(:,2:end)*ucoef(2:end)).*(vy_deimv(:,2:end)*ucoef(2:end))); 
-        out_coef = proj_mat*inv_p_nl*[conv_u_deim; conv_v_deim];
+    % Delete this
+    exit;
     else
-        % Needs to be de-aliased! The snapshots should already be dealiased
-        conv_deim = ((u_deim_stack(:,2:end)*ucoef(2:end)).*(ux_deim_stack(:,2:end)*ucoef(2:end)) + (v_deim_stack(:,2:end)*ucoef(2:end)).*(uy_deim_stack(:,2:end)*ucoef(2:end)));
+        % Needs to be de-aliased! The snapshots should already be dealiased actually
+        %conv_deim = ((u_deim_stack(:,2:end)*ucoef(2:end)).*(ux_deim_stack(:,2:end)*ucoef(2:end)) + 
+        %             (v_deim_stack(:,2:end)*ucoef(2:end)).*(uy_deim_stack(:,2:end)*ucoef(2:end)));
+
+        conv_deim = ((u_deim_stack(:,2:end)*ucoef(2:end)).*(ux_deim_stack(:,2:end)*ucoef(2:end)) + ...
+                     (v_deim_stack(:,2:end)*ucoef(2:end)).*(uy_deim_stack(:,2:end)*ucoef(2:end)));
+
+        
+
         out_coef = inv_p_nl*conv_deim;
+
         if clsdeim;
             b = proj_mat'*ucoef(2:end);
             out_coef = out_coef - ((b'*out_coef)/(b'*Ainv*b))*(Ainv*b);
