@@ -6,11 +6,15 @@
 %
 % Note: Dealiasing is not currently implemented. Is it needed?
 % Wrong, the snapshots are already dealiased.
+
+% C computes Phi.T*(u.grad(u)) = Phi.T*((Phi*u_coef).(grad(Phi)*u_coef))
+% By forming the convection tensor.
 function [out_coef] = conv_tensor_reduced(ucoef, pod_u, pod_v, x, y, tensor_size)
-    %x=snaps.flds{1}.x;
-    %y=snaps.flds{1}.y;
-    persistent Me rx ry sx sy jaci d lgrad nL nb tensor nb_i nb_j nb_k
-    if isempty(lgrad)
+
+    %persistent Me rx ry sx sy jaci d lgrad nL nb tensor nb_i nb_j nb_k
+    persistent tensor nb nb_i nb_j nb_k
+
+    if isempty(tensor)
         nx1 = size(x,1);
         [zi, w] = zwgll(nx1-1);
         d = deriv_mat(zi);
@@ -20,26 +24,32 @@ function [out_coef] = conv_tensor_reduced(ucoef, pod_u, pod_v, x, y, tensor_size
         nb = size(pod_u,2)
         Me = reshape(jac.*(w*w'),nL,1);
 
-        nb_i = tensor_size(1);
-        nb_j = tensor_size(2);
-        nb_k = tensor_size(3);
+        if nargin < 6
+            % Default to full tensor if dimensions are excluded
+            nb_i = nb;
+            nb_j = nb;
+            nb_k = nb - 1;
+        else
+            nb_i = tensor_size(1); % Number of gradients of pod bases calculated (The grad(Phi) contribution to the tensor
+            nb_j = tensor_size(2); % Number of stacked matrices (The Phi in Phi*u_coef)
+            nb_k = tensor_size(3); % Number of output coefficients
 
-        %nb_j=8;
-        %nb_i=8;
-        %nb_k=8;
-
-        nb_j = min([nb_j,nb]);%nb - 1; % Number of gradients of pod bases calculated
-        nb_i = min([nb_i,nb]);%nb - 1; % Number of stacked matrices
-        nb_k = min([nb_k,nb-1]); % Number of output coefficients 
-
+            % Rescue the user or throw an error?
+            assert(nb_i <= nb);
+            assert(nb_j <= nb);
+            assert(nb_k <= nb-1);
+        end
 
 
     if false; % Normal way of calculating the gradient
+        % Should just get rid of this
         [ux_fom, uy_fom] = lgrad(u_fom, 0);
         [vx_fom, vy_fom] = lgrad(v_fom, 0);
     else
         % Kento's ROM approach. Calculate the gradients of the POD modes
-
+        assert(nb_i <= nb);
+        assert(nb_j <= nb);
+        assert(nb_k < nb);
 
         ux_pods = zeros([nL,nb_j]);
         uy_pods = zeros(size(ux_pods));
