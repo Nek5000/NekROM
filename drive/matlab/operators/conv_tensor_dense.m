@@ -6,9 +6,15 @@
 %
 % Note: Dealiasing is not currently implemented. Is it needed?
 % Wrong, the snapshots are already dealiased.
-function [out_coef] = conv_tensor(ucoef, pod_u, pod_v, x, y)
-    persistent Me rx ry sx sy jaci d lgrad nL nb tensor
-    %persistent tensor
+
+% C computes Phi.T*(u.grad(u)) = Phi.T*((Phi*u_coef).(grad(Phi)*u_coef))
+% By forming the convection tensor.
+% Can specify the size of the tensor or default to computing the entire tensor
+% Add option to enforce skew-symmetry?
+function [out_coef] = conv_tensor_dense(ucoef, pod_u, pod_v, x, y, tensor_size)
+
+    %persistent Me rx ry sx sy jaci d lgrad nL nb tensor nb_i nb_j nb_k
+    persistent tensor nb nb_i nb_j nb_k
 
     if isempty(tensor)
         nx1 = size(x,1);
@@ -20,15 +26,38 @@ function [out_coef] = conv_tensor(ucoef, pod_u, pod_v, x, y)
         nb = size(pod_u,2)
         Me = reshape(jac.*(w*w'),nL,1);
 
+
+        if nargin < 6
+            % Default to full tensor if dimensions are excluded
+            nb_i = nb;
+            nb_j = nb;
+            nb_k = nb - 1;
+        else
+            nb_i = tensor_size(1); % Number of gradients of pod bases calculated (The grad(Phi) contribution to the tensor
+            nb_j = tensor_size(2); % Number of stacked matrices (The Phi in Phi*u_coef)
+            nb_k = tensor_size(3); % Number of output coefficients
+
+            % Rescue the user or throw an error?
+            assert(nb_i <= nb);
+            assert(nb_j <= nb);
+            assert(nb_k <= nb-1);
+        end
+
+
     if false; % Normal way of calculating the gradient
+        % Should just get rid of this
         [ux_fom, uy_fom] = lgrad(u_fom, 0);
         [vx_fom, vy_fom] = lgrad(v_fom, 0);
     else
         % Kento's ROM approach. Calculate the gradients of the POD modes
-        ux_pods = zeros(size(pod_u));
-        uy_pods = zeros(size(pod_u));
-        vx_pods = zeros(size(pod_u));
-        vy_pods = zeros(size(pod_u));
+        assert(nb_i <= nb);
+        assert(nb_j <= nb);
+        assert(nb_k < nb);
+
+        ux_pods = zeros([nL,nb_j]);
+        uy_pods = zeros(size(ux_pods));
+        vx_pods = zeros(size(ux_pods));
+        vy_pods = zeros(size(ux_pods));
         
         % For Pseudo-FOM version
         %{
@@ -37,9 +66,10 @@ function [out_coef] = conv_tensor(ucoef, pod_u, pod_v, x, y)
         vx_fom = zeros(size(x));
         vy_fom = zeros(size(x));
         %}
-        for i = 1:size(pod_u,2);
-            [ux_pod, uy_pod] = lgrad(reshape(pod_u(:,i),size(x)),0);
-            [vx_pod, vy_pod] = lgrad(reshape(pod_v(:,i),size(x)),0);
+
+        for j = 1:nb_j;
+            [ux_pod, uy_pod] = lgrad(reshape(pod_u(:,j),size(x)),0);
+            [vx_pod, vy_pod] = lgrad(reshape(pod_v(:,j),size(x)),0);
            
             %{
             % For Pseudo-FOM version 
@@ -49,10 +79,10 @@ function [out_coef] = conv_tensor(ucoef, pod_u, pod_v, x, y)
             vy_fom = vy_fom + vy_pod*ucoef(i);
             %}
 
-            ux_pods(:,i) = reshape(ux_pod, nL,1);
-            uy_pods(:,i) = reshape(uy_pod, nL,1);
-            vx_pods(:,i) = reshape(vx_pod, nL,1);
-            vy_pods(:,i) = reshape(vy_pod, nL,1);
+            ux_pods(:,j) = reshape(ux_pod, nL,1);
+            uy_pods(:,j) = reshape(uy_pod, nL,1);
+            vx_pods(:,j) = reshape(vx_pod, nL,1);
+            vy_pods(:,j) = reshape(vy_pod, nL,1);
         end;
         %ux_fom = reshape(ux_pods*ucoef, size(x));
         %uy_fom = reshape(uy_pods*ucoef, size(x));
@@ -64,9 +94,10 @@ function [out_coef] = conv_tensor(ucoef, pod_u, pod_v, x, y)
 
         % Could also apply Me to pod_u and pod_v inside the loop instead
         % but this seems more efficient.
-        pod_weak = [Me.*pod_u(:,2:nb);Me.*pod_v(:,2:nb)];
-        tensor = zeros(nb,nb,nb-1);
-        for i=1:nb;
+        pod_weak = [Me.*pod_u(:,2:nb_k+1);Me.*pod_v(:,2:nb_k+1)];
+        tensor = zeros(nb_i,nb_j,nb_k);
+        
+        for i=1:nb_i;
             %pod_u_weak = Me.*pod_u(:,i);
             %pod_v_weak = Me.*pod_v(:,i); 
             %tensor(i,:,:) = [pod_u_weak.*ux_pods + pod_v_weak.*uy_pods;
@@ -102,8 +133,10 @@ function [out_coef] = conv_tensor(ucoef, pod_u, pod_v, x, y)
     out_coef = [pod_u(:,2:end); pod_v(:,2:end)]'*[conv_u_fom; conv_v_fom]
     %}     
 
-    outprod = tensorprod(tensor, ucoef, 1,1);
-    out_coef = tensorprod(outprod,ucoef,1,1);
+    out_coef = zeros([nb-1,1]);
+    outprod = tensorprod(tensor, ucoef(1:nb_i), 1,1);
+    out_coef(1:nb_k,1) = tensorprod(outprod,ucoef(1:nb_j),1,1);
+    out_coef 
     %out_coef
     %exit;
 end

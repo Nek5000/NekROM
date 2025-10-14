@@ -1,9 +1,9 @@
 % Convection operator that uses DEIM points
-function [out_coef] = conv_deim(ucoef, pod_u, pod_v, x, y, nl_snaps_u, nl_snaps_v, ndeim_pts,istep,clsdeim,n_os_points,ps_alg, nl_bas_nr, Me_in)
+function [out_coef] = conv_deim(ucoef, pod_u, pod_v, nl_bas, nl_snaps_u, nl_snaps_v, x, y, ndeim_pts,istep,clsdeim,n_os_points,ps_alg, Me_in)
 
-    persistent proj_mat Ainv inv_p_nl u_deimu v_deimu u_deimv v_deimv ux_deimu uy_deimu vx_deimv vy_deimv;
+    persistent proj_mat Ainv interp_mat u_deimu v_deimu u_deimv v_deimv ux_deimu uy_deimu vx_deimv vy_deimv nb;
     persistent u_deim_stack v_deim_stack ux_deim_stack uy_deim_stack tau mu A_tau_inv alpha nl_bas_inds% nl_max_coef nl_min_coef;
-    persistent inds;
+    persistent inds proj_and_interp_mat zeroth_mode_contribution validator
   
 %   if isempty(proj_mat)
     if istep == 1
@@ -25,18 +25,21 @@ function [out_coef] = conv_deim(ucoef, pod_u, pod_v, x, y, nl_snaps_u, nl_snaps_
         [xr,yr,xs,ys,rx,ry,sx,sy,jac,jaci,d] = deriv_geo(x,y,d);
         my_lgrad=@(u,mode) grad(u,rx,ry,sx,sy,jaci,d,mode);
         nL = prod(size(x));
+        nb = size(pod_u,2);
+
+        validator = @(i,j,k) i == 1 || j == 1;
 
         Me = reshape(jac.*(w*w'),nL,1);
-        if 0;
-            [nl_bas, ~, ~] = get_pod_basis_from_arrays(nl_snaps_u, nl_snaps_v, x, y, ndeim_pts, 0, 0);
+        %if 0;
+            %[nl_bas, ~, ~] = get_pod_basis_from_arrays(nl_snaps_u, nl_snaps_v, x, y, ndeim_pts, 0, 0);
             %size(nl_bas)
             %size(nl_bas_nr)
             %norm(nl_bas_nr(:,1:31) - nl_bas)/norm(nl_bas)
             %exit;
-        else;
-            nl_bas = nl_bas_nr;
-            Me = Me_in;
-        end;
+        %else;
+            %nl_bas = nl_bas_nr;
+            %Me = Me_in;
+        %end;
         %nl_bas = nl_bas_nr
         %{
         size(nl_bas)
@@ -46,7 +49,7 @@ function [out_coef] = conv_deim(ucoef, pod_u, pod_v, x, y, nl_snaps_u, nl_snaps_
         
         mean(abs(nl_bas),1)
         mean(abs(nl_bas_nr),1)
-        exit;
+        %exit;
         %}
         % For use with Constrained DEIM
         %nl_snapshot_proj = nl_bas'*nl_snaps;
@@ -111,7 +114,7 @@ function [out_coef] = conv_deim(ucoef, pod_u, pod_v, x, y, nl_snaps_u, nl_snaps_
         uy_pods = [];
         vx_pods = [];
         vy_pods = [];
-        for i = 1:size(pod_u,2);
+        for i = 1:nb;
             [ux_pod, uy_pod] = my_lgrad(reshape(pod_u(:,i),size(x)),0);
             [vx_pod, vy_pod] = my_lgrad(reshape(pod_v(:,i),size(x)),0);
             ux_pods = [ux_pods, reshape(ux_pod, nL,1)];
@@ -144,20 +147,38 @@ function [out_coef] = conv_deim(ucoef, pod_u, pod_v, x, y, nl_snaps_u, nl_snaps_
 %           proj_mat = [pod_u(:,2:end); pod_v(:,2:end)]'*nl_bas*inv(nl_bas(inds,:)); 
         end;
 
-        proj_mat = [Me.*pod_u(:,2:end); Me.*pod_v(:,2:end)]'*nl_bas;
+        Me_pod = [Me.*pod_u(:,2:end); Me.*pod_v(:,2:end)]; 
+        proj_mat = Me_pod'*nl_bas;
+        
+        % This is equivalent to c1
+        %c1 = Me_pod'*([pod_u(:,1);pod_u(:,1)].*[ux_pods(:,1);vx_pods(:,1)] + ...
+        %                                    [pod_v(:,1);pod_v(:,1)].*[uy_pods(:,1);vy_pods(:,1)]);
 
+        c2 = Me_pod'*([pod_u;pod_u].*[ux_pods(:,1);vx_pods(:,1)] + ...
+                      [pod_v;pod_v].*[uy_pods(:,1);vy_pods(:,1)]);
+
+        c3 = Me_pod'*([pod_u(:,1);pod_u(:,1)].*[ux_pods;vx_pods] + ...
+                      [pod_v(:,1);pod_v(:,1)].*[uy_pods;vy_pods]);
+
+
+        zeroth_mode_contribution = c2 + c3;
+        % The first row was counted twice.
+        zeroth_mode_contribution(:,1) = zeroth_mode_contribution(:,1)/2;
+        
+        
+        %zeroth_mode_contribution
         nl_bas_inds = nl_bas(inds,:);
         if size(nl_bas,2) == size(inds,1);   
-            inv_p_nl = inv(nl_bas(inds,:));
+            interp_mat = inv(nl_bas(inds,:));
         else;
-            inv_p_nl = pinv(nl_bas(inds,:));
+            interp_mat = pinv(nl_bas(inds,:));
         end;
          
 %       proj_mat = [pod_u(:,2:end); pod_v(:,2:end)]'*nl_bas*inv(nl_bas);
 %       proj_mat = [pod_u(:,2:end); pod_v(:,2:end)]'*([Me;Me].*nl_bas)*inv(nl_bas(inds,:)); 
         % For testing
         %proj_mat = [pod_u(:,2:end); pod_v(:,2:end)]';
-  
+
         % Matrices for CLSDEIM
         % Doesn't seem like the 2 should be necessary
         %Ainv = inv(2*nl_bas(inds,:)'*nl_bas(inds,:));
@@ -174,7 +195,9 @@ function [out_coef] = conv_deim(ucoef, pod_u, pod_v, x, y, nl_snaps_u, nl_snaps_
         A_tau_inv = inv(nl_bas(inds,:)'*nl_bas(inds,:) + alpha*tau); 
 
         
+        proj_and_interp_mat = proj_mat*interp_mat;
 
+        
     end;
 
     mclsdeim = false;
@@ -184,33 +207,46 @@ function [out_coef] = conv_deim(ucoef, pod_u, pod_v, x, y, nl_snaps_u, nl_snaps_
     % Delete this
     exit;
     else
-        % Needs to be de-aliased! The snapshots should already be dealiased actually
-        %conv_deim = ((u_deim_stack(:,2:end)*ucoef(2:end)).*(ux_deim_stack(:,2:end)*ucoef(2:end)) + 
-        %             (v_deim_stack(:,2:end)*ucoef(2:end)).*(uy_deim_stack(:,2:end)*ucoef(2:end)));
+        % Note that this does not seem to work. Need to explicitly include the zeroth
+        % mode interactions apparently
+        %conv_deim = ((u_deim_stack(:,1:end)*ucoef(1:end)).*(ux_deim_stack(:,1:end)*ucoef(1:end)) + ... 
+        %             (v_deim_stack(:,1:end)*ucoef(1:end)).*(uy_deim_stack(:,1:end)*ucoef(1:end)));
 
         conv_deim = ((u_deim_stack(:,2:end)*ucoef(2:end)).*(ux_deim_stack(:,2:end)*ucoef(2:end)) + ...
                      (v_deim_stack(:,2:end)*ucoef(2:end)).*(uy_deim_stack(:,2:end)*ucoef(2:end)));
 
-        
-
-        out_coef = inv_p_nl*conv_deim;
+        %out_coef = interp_mat*conv_deim;
 
         if clsdeim;
+            out_coef = interp_mat*conv_deim;
             b = proj_mat'*ucoef(2:end);
             out_coef = out_coef - ((b'*out_coef)/(b'*Ainv*b))*(Ainv*b);
+            out_coef = proj_mat*out_coef;
         elseif mclsdeim;
             %disp('here');
+
+            out_coef = interp_mat*conv_deim;
             b = proj_mat'*ucoef(2:end);
             out_coef = A_tau_inv*(nl_bas_inds'*conv_deim + alpha*tau*mu); 
             out_coef = out_coef - ((b'*out_coef)/(b'*A_tau_inv*b))*(A_tau_inv*b);
-
+            out_coef = proj_mat*out_coef;
+    
         %    This does not work. It keeps the problem from blowing up for longer, but it still eventually blows up.
         %    disp('HERE');
         %    options = optimoptions('fmincon','Algorithm','interior-point','Display','off');
         %    cmin_func = @(x) inv_p_nl@x;
         %    [out_coef,fval,exitflag,output] = fmincon(cmin_func,conv_deim,[],[],[],[],nl_max_coef,nl_min_coef,[],options);
+        else 
+            % Standard DEIM
+            out_coef = proj_and_interp_mat*conv_deim;
         end;
-        out_coef = proj_mat*out_coef;
+
+        %zeroth_mode_contribution = conv_tensor_reduced(ucoef, pod_u, pod_v, x, y, [1, nb, nb-1])
+        out_coef = out_coef + zeroth_mode_contribution*ucoef;%c2*ucoef(1:end) + c3*ucoef(1:end) - c1;
+    
+        % This does the same thing as the above, but the above is likely faster
+        %out_coef = out_coef + conv_tensor_sparse(ucoef, pod_u, pod_v, x, y, validator);
+
     end;
 end
 
