@@ -3,9 +3,10 @@
 % This might not be worthwhile since deriv_geo doesn't support 3D currently
 % Whatever, might be worth it just to support 2D.
 
-function [] = write_field(filename, inde, x, y, u, v, time, iostep)
+function [] = write_field(basename, inde, x, y, u, v, time, iostep)
 
     % Open file for writing
+    filename = sprintf('%s0.f%05d', basename, iostep + 1);
     [fileID, msg] = fopen(filename, 'w', 'native', 'US-ASCII');
     assert(prod(size(msg)) == 0, msg);
 
