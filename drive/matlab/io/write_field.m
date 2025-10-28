@@ -5,21 +5,22 @@
 
 function [] = write_field(basename, inde, x, y, u, v, time, iostep)
 
+    %TODO: Support 3D
+
     % Open file for writing
     filename = sprintf('%s0.f%05d', basename, iostep + 1);
     [fileID, msg] = fopen(filename, 'w', 'native', 'US-ASCII');
     assert(prod(size(msg)) == 0, msg);
 
-    % Header
-    % Velocity field should be
-    wdsize = 8;
+    wdsize = 4; % For visualization, we probably don't need double precision.
+    %wdsize = 8;
     if wdsize == 8;
         precision = 'double';
     elseif wdsize == 4;
-        precision = 'single'
+        precision = 'single';
     else
         print("Invalid wdsize");
-        exit;sprintf
+        exit;
     end;
     sz = size(x); 
     % Expand this to support 3D?
@@ -31,7 +32,12 @@ function [] = write_field(basename, inde, x, y, u, v, time, iostep)
     nelgt = nelt;
     fid = 0;
     nfileoo = 1;
-    rdcode='XU'; 
+    
+    if iostep == 0
+        rdcode='XU';
+    else
+        rdcode = 'U';
+    end;
 
     ndim = 2;
     
@@ -54,29 +60,33 @@ function [] = write_field(basename, inde, x, y, u, v, time, iostep)
     tempv = zeros(nxyz,ndim,nelt, precision);
 
     % Write coordinates
-    
-    % Incorrect
-    %fwrite(fileID, x, precision);
-    %fwrite(fileID, y, precision);
-
-    % Correct
-    tempv(:,1,:) = reshape(x, [nxyz,nelt]);
-    tempv(:,2,:) = reshape(y, [nxyz,nelt]);
-    fwrite(fileID, tempv, precision);
+    if contains(rdcode, 'X');
+        % Correct
+        tempv(:,1,:) = reshape(x, [nxyz,nelt]);
+        tempv(:,2,:) = reshape(y, [nxyz,nelt]);
+        fwrite(fileID, tempv, precision);
+        % Incorrect
+        %fwrite(fileID, x, precision);
+        %fwrite(fileID, y, precision);
+    end;
 
     % Write velocity
-    tempv(:,1,:) = reshape(u, [nxyz,nelt]);
-    tempv(:,2,:) = reshape(v, [nxyz,nelt]);
-    fwrite(fileID, tempv, precision); 
+    if contains(rdcode, 'U');
+        tempv(:,1,:) = reshape(u, [nxyz,nelt]);
+        tempv(:,2,:) = reshape(v, [nxyz,nelt]);
+        fwrite(fileID, tempv, precision); 
+    end;
 
     % Write pressure
+    % TODO
 
     % Write temperature
+    % TODO
 
     % Passive scalars
+    % TODO
 
     % Close file
     fclose(fileID);
-
 end
 
