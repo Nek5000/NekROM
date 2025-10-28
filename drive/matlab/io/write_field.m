@@ -3,13 +3,18 @@
 % This might not be worthwhile since deriv_geo doesn't support 3D currently
 % Whatever, might be worth it just to support 2D.
 
-function [] = write_field(basename, inde, x, y, u, v, time, iostep)
+function [] = write_field(basepath, inde, data, sz, time, iostep)
 
     %TODO: Support 3D
 
+    [path, basename, ~] = fileparts(basepath);
+    if prod(size(path)) > 0;
+        mkdir(path);
+    end;
+
     % Open file for writing
-    filename = sprintf('%s0.f%05d', basename, iostep + 1);
-    [fileID, msg] = fopen(filename, 'w', 'native', 'US-ASCII');
+    filename = sprintf('%s0.f%05d', basepath, iostep + 1);
+    [fileID, msg] = fopen(filename, 'W', 'native', 'US-ASCII');
     assert(prod(size(msg)) == 0, msg);
 
     wdsize = 4; % For visualization, we probably don't need double precision.
@@ -22,21 +27,29 @@ function [] = write_field(basename, inde, x, y, u, v, time, iostep)
         print("Invalid wdsize");
         exit;
     end;
-    sz = size(x); 
+    %fldnames = fieldnames(data);
+    %first_field = fldnames{1}
+    %sz = size(data.(first_field)); 
     % Expand this to support 3D?
     nx = sz(1); 
     ny = sz(2);
     nz = 1;
     nxyz = nx*ny*nz;
-    nelt = sz(3);
+    nelt = size(inde,1);
     nelgt = nelt;
     fid = 0;
     nfileoo = 1;
     
-    if iostep == 0
-        rdcode='XU';
-    else
-        rdcode = 'U';
+    % For now, look at the fields and iostep to see what to write.
+    rdcode = '';
+    if isfield(data, 'x');
+        rdcode='X';
+    end;
+    if isfield(data, 'u');
+        rdcode = append(rdcode, 'U');
+    end;
+    if isfield(data, 't');
+        rdcode = append(rdcode, 'T');
     end;
 
     ndim = 2;
@@ -62,8 +75,8 @@ function [] = write_field(basename, inde, x, y, u, v, time, iostep)
     % Write coordinates
     if contains(rdcode, 'X');
         % Correct
-        tempv(:,1,:) = reshape(x, [nxyz,nelt]);
-        tempv(:,2,:) = reshape(y, [nxyz,nelt]);
+        tempv(:,1,:) = reshape(data.x, [nxyz,nelt]);
+        tempv(:,2,:) = reshape(data.y, [nxyz,nelt]);
         fwrite(fileID, tempv, precision);
         % Incorrect
         %fwrite(fileID, x, precision);
@@ -72,8 +85,8 @@ function [] = write_field(basename, inde, x, y, u, v, time, iostep)
 
     % Write velocity
     if contains(rdcode, 'U');
-        tempv(:,1,:) = reshape(u, [nxyz,nelt]);
-        tempv(:,2,:) = reshape(v, [nxyz,nelt]);
+        tempv(:,1,:) = reshape(data.u, [nxyz,nelt]);
+        tempv(:,2,:) = reshape(data.v, [nxyz,nelt]);
         fwrite(fileID, tempv, precision); 
     end;
 
@@ -81,7 +94,11 @@ function [] = write_field(basename, inde, x, y, u, v, time, iostep)
     % TODO
 
     % Write temperature
-    % TODO
+    if contains(rdcode, 'T');
+        fwrite(fileID, data.t, precision);
+        %tempv(:,1,:) = reshape(data.t, [nxyz,nelt]);
+        %fwrite(fileID,tempv(:,1,:)
+    end;
 
     % Passive scalars
     % TODO

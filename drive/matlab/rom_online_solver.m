@@ -42,13 +42,13 @@ addpath('./operators')
 
 %% Specify the case path and case name
 
-path='../../examples/ldc_v2/';
-snaps_path=strcat(path,'snaps/');
-casename='ldc';
-
-%path='../../examples/cyl/';
+%path='../../examples/ldc_v2/';
 %snaps_path=strcat(path,'snaps/');
-%casename='cyl';
+%casename='ldc';
+
+path='../../examples/cyl/';
+snaps_path=strcat(path,'snaps/');
+casename='cyl';
 
 %path='../../examples/shear4/';
 %snaps_path=strcat(path,'snaps/');
@@ -60,15 +60,15 @@ casename='ldc';
 % Should just use the values from the .rea or MOR file by default
 % allowing for overrides
 if contains(path, 'ldc')
-    nsteps = 2*1e5;%80000;%1.25000E+05;%20000; 
+    nsteps = 10*1e5;%80000;%1.25000E+05;%20000; 
     dt     = 1.000000E-03;%0.001;
     iostep = 1000;%5*1000;%500;%250;%500;%10;
-    nu     = 5*1e-5;%1./15000;%0.01;
+    nu     = 1./15000;%0.01;
     nb     = 30;
 elseif contains(path,'cyl')
     nsteps = 10*1.25000E+05;%20000; 
     dt     = 4.000000E-03;%0.001;
-    iostep = 10000;%250;%500;%10;
+    iostep = 500;%250;%500;%10;
     nu     = 0.01;
     nb     = 20;
 elseif contains(path,'shear4')
@@ -132,11 +132,11 @@ ps_alg='sopt';
 
 %% Hyperreduction algorithms
 %hr_alg="clsdeim";
-clsdeim = false;
+clsdeim = true;
 
 % number of deim points
 %for j=1:length(deims)
-ndeim_pts = 256;%100;%100;%400;%10;%800;%400;%deims(j);
+ndeim_pts = 512;%100;%100;%400;%10;%800;%400;%deims(j);
 os_multiplier = 2;
 n_os_points=ceil(os_multiplier*ndeim_pts);
 
@@ -149,13 +149,19 @@ cname=strcat(snaps_path,strcat('bas',casename));
 bas_snaps = NekSnaps(cname);
 [pod_u, pod_v] = get_snaps(bas_snaps,0);
 [x_fom, y_fom] = get_grid(bas_snaps,0);
+inde = bas_snaps.flds{1}.inde;
 
+%basepath = sprintf('%s_rom_snaps_full_tensor/%s',casename,casename);
+basepath = sprintf('%s_rom_snaps_clsdeim_%i/%s',casename,ndeim_pts,casename);
 
+%write_field(sprintf('%s_rom_/%s',casename,casename), inde, x_fom, y_fom, pod_u(:,1), pod_v(:,1), 0.0, 0)
+%exit; 
 
 %% Get the non-linear snapshots and calculate the DEIM points
 if ndeim_pts > 0;
         nl_cname = strcat(snaps_path,strcat('csn',casename));
-        nl_snaps_obj = NekSnaps(nl_cname); 
+        nl_snaps_obj = NekSnaps(nl_cname);
+        
         [nl_snaps_u, nl_snaps_v] = get_snaps(nl_snaps_obj,reorder);
         nl_snaps = [nl_snaps_u; nl_snaps_v];
     if 0
@@ -187,6 +193,7 @@ subtract_mean = 1;
 conserve_momentum = 0;
 snaps_obj = NekSnaps(strcat(snaps_path,casename)); % Should the snaps object have reordering capability?
 [pod_ml, u0_full_ml, uk_full_ml] = get_pod_basis(snaps_obj,nb,reorder,subtract_mean,conserve_momentum);
+
 
 %norm(uk_full - uk_full_ml)/norm(uk_full)
 %exit
@@ -349,8 +356,12 @@ momentums = [];
 %(au_full_ml*u)./(au_full*u)
 %(bu_full_ml*u)./(bu_full*u)
 %exit;
-video = VideoWriter("movie.avi");
+video = VideoWriter("movie_ldc_deim.avi");
 open(video);
+
+u_proj = pod_u(:,1:nb+1)*u(1:end,1);
+v_proj = pod_v(:,1:nb+1)*u(1:end,1);
+write_field(basepath, inde, struct('x', x_fom, 'y', y_fom, 'u', u_proj, 'v', v_proj), size(x_fom), 0.0, 0);
 
 for istep=1:nsteps
    istep
@@ -390,8 +401,8 @@ for istep=1:nsteps
         %c_coef = conv_tensor(u(:,1), pod_u, pod_v, x_fom, y_fom);
 
 
-        %c_coef = conv_tensor_dense(u(:,1), pod_u, pod_v, x_fom, y_fom);
-        c_coef = conv_tensor_dense(u(:,1), pod_u, pod_v, x_fom, y_fom, [nb/2,nb/2,nb/2]);
+        c_coef = conv_tensor_dense(u(:,1), pod_u, pod_v, x_fom, y_fom);
+        %c_coef = conv_tensor_dense(u(:,1), pod_u, pod_v, x_fom, y_fom, [nb/2,nb/2,nb/2]);
         %c_coef = conv_tensor_reduced(u(:,1), pod_u, pod_v, x_fom, y_fom);
 
         %c_coef = (conv_fom(u(:,1), pod_u, pod_v, x_fom, y_fom));
@@ -471,7 +482,7 @@ for istep=1:nsteps
    end
         
    u = shift(u,u_new,3);
-   time = time+dt;
+   time = istep*dt;
 
    if any(isnan(u(:,1)));
       break;
@@ -495,7 +506,7 @@ for istep=1:nsteps
         plot_vort = false;
 
         
-        
+        %{ 
         if plot_vel_mag      
             u_abs = sqrt(u_proj.^2 + v_proj.^2);
             plot_field = reshape(u_abs, size(x_fom));
@@ -510,7 +521,10 @@ for istep=1:nsteps
         set(gca,"NextPlot","replacechildren");
         %end;
         writeVideo(video,getframe(gcf));
-        pause(0.01);
+        %}
+        disp(sprintf('Writing output %i', istep));
+        write_field(basepath, inde, struct('u', u_proj, 'v', v_proj),size(x_fom), time, istep/iostep);
+        %pause(0.01);
      end;
    end
 end
