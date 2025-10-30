@@ -70,14 +70,22 @@ function [] = write_field(basepath, inde, data, sz, time, iostep)
     fwrite(fileID, inde, 'int32');
 
     % Temporary array to hold data
-    tempv = zeros(nxyz,ndim,nelt, precision);
+    %tempv = zeros(nxyz,ndim,nelt, precision);
 
     % Write coordinates
     if contains(rdcode, 'X');
         % Correct
-        tempv(:,1,:) = reshape(data.x, [nxyz,nelt]);
-        tempv(:,2,:) = reshape(data.y, [nxyz,nelt]);
-        fwrite(fileID, tempv, precision);
+        %tempv(:,1,:) = reshape(data.x, [nxyz,nelt]);
+        %tempv(:,2,:) = reshape(data.y, [nxyz,nelt]);
+        %fwrite(fileID, tempv, precision);
+
+        % Matlab is copy-on-write so reshaping should be fast
+        X = reshape(data.x, [nxyz,nelt]);
+        Y = reshape(data.y, [nxyz,nelt]);
+        for i=1:nelt;
+            fwrite(fileID, X(:,i), precision);
+            fwrite(fileID, Y(:,i), precision);
+        end;
         % Incorrect
         %fwrite(fileID, x, precision);
         %fwrite(fileID, y, precision);
@@ -85,9 +93,17 @@ function [] = write_field(basepath, inde, data, sz, time, iostep)
 
     % Write velocity
     if contains(rdcode, 'U');
-        tempv(:,1,:) = reshape(data.u, [nxyz,nelt]);
-        tempv(:,2,:) = reshape(data.v, [nxyz,nelt]);
-        fwrite(fileID, tempv, precision); 
+        %tempv(:,1,:) = reshape(data.u, [nxyz,nelt]);
+        %tempv(:,2,:) = reshape(data.v, [nxyz,nelt]);
+        %fwrite(fileID, tempv, precision); 
+
+        U = reshape(data.u, [nxyz,nelt]);
+        V = reshape(data.v, [nxyz,nelt]);
+        for i=1:nelt;
+            fwrite(fileID, U(:,i), precision);
+            fwrite(fileID, V(:,i), precision);
+        end;
+
     end;
 
     % Write pressure
