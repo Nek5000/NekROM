@@ -390,13 +390,14 @@ c-----------------------------------------------------------------------
       iftmp=ifxyo
       iftmp2=ifpo
 
-      ifxyo=.true.
+c      ifxyo=.true.
       ifpo=.false.
 
       ! Dump the convection snapshots
       ! Maybe add a flag to save this or not
       if(ifdumpnls) then
         do i=1,ns
+          ifxyo=(i.eq.1)
           call outpost(snapt(1,1,i),snapt(1,2,i),snapt(1,ldim,i),
      $                 pr,t,'csn')
         enddo
@@ -418,6 +419,7 @@ c-----------------------------------------------------------------------
       do i=1,nbnl
          ! The temperature field isn't correct, but doesn't matter right now 
          ! since temperature and pressure are not supported.
+         ifxyo=(i.eq.1)
          call outpost2(uvwbnl(1,1,i),uvwbnl(1,2,i),uvwbnl(1,ldim,i),
      $                pb(1,0),tb(1,0,1),ldimt,'cba')
       enddo
@@ -426,6 +428,25 @@ c-----------------------------------------------------------------------
       ifpo=iftmp2
       
       return
+      end
+c-----------------------------------------------------------------------
+      subroutine zmode_conv_interactions
+      ! Needs to do the equivalent of this:
+      ! c2 = Me_pod'*([pod_u;pod_u].*[ux_pods(:,1);vx_pods(:,1)] + ...
+      !              [pod_v;pod_v].*[uy_pods(:,1);vy_pods(:,1)]);
+      ! c3 = Me_pod'*([pod_u(:,1);pod_u(:,1)].*[ux_pods;vx_pods] + ...
+      !                [pod_v(:,1);pod_v(:,1)].*[uy_pods;vy_pods]);
+      ! zeroth_mode_contribution = c2 + c3;
+      !  % The first row was counted twice.
+      !  zeroth_mode_contribution(:,1) = zeroth_mode_contribution(:,1)/2;
+
+      
+
+      end
+c-----------------------------------------------------------------------
+      subroutine gpode
+      ! Eventually implement the full gpode algorithm. For now, just use
+      ! pivoted qr only
       end
 c-----------------------------------------------------------------------
       subroutine dump_misc
