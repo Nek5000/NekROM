@@ -96,6 +96,8 @@ end
 
 % Whether or not to plot on an iostep
 bool_plot = true;
+% Plot the vorticity, otherwise only calculates the velocity magnitude
+plot_vort = true;
 
 %% ROM stabilization strategies
 ifcopt  = false;
@@ -154,7 +156,6 @@ reorder = 1;
 
 % Load the grid and the snapshots 
 cname=strcat(snaps_path,strcat('bas',casename));
-%avg_cname='../avgcyl';
 bas_snaps = NekSnaps(cname);
 [pod_u, pod_v] = get_snaps(bas_snaps,0);
 [x_fom, y_fom] = get_grid(bas_snaps,0);
@@ -172,6 +173,8 @@ basepath = sprintf('%s_rom_snaps_copt_deim_%i/%s',casename,ndeim_pts,casename);
 if ndeim_pts > 0;
 
     % Needed for CLSDEIM and computing POD basis in MATLAB
+    % Seems like a flaw in CLSDEIM to require loading all of
+    % the snapshots. Is there another way to do this?
     nl_cname = strcat(snaps_path,strcat('csn',casename));
     nl_snaps_obj = NekSnaps(nl_cname);        
     [nl_snaps_u, nl_snaps_v] = get_snaps(nl_snaps_obj,reorder);
@@ -202,9 +205,12 @@ if 0
     pod_v_ml = pod_ml(size(pod_ml,1)/2 + 1:end,1:nb+1);
 end;
 
+% Isn't this the same as bu_full? We can probably avoid calling this.
 Me = get_Me(x_fom, y_fom);
 npf = size(Me, 1);
 Me_vec = spdiags([Me;Me], 0, 2*npf,2*npf);
+
+% Maybe define some unit test and move these tests to them?
 
 %% Test that the basis vectors are the same, modulo sign differences
 if 0;
@@ -284,8 +290,6 @@ for i=1:size(uk_full,2);
     %v_proj = pod_v(:,1:nb+1)*u(1:end,1);
     %u_proj = nl_snaps_u(:,i);
     %v_proj = nl_snaps_v(:,i);
-    plot_vort = false;
-    plot_vel_mag = true;
 
     if plot_vel_mag      
         u_abs = sqrt(u_proj.^2 + v_proj.^2);
@@ -295,7 +299,7 @@ for i=1:size(uk_full,2);
     end;
     %norm(u_abs)
     hold off;
-    % Can plot surface or contour
+    % Can plot surface or contour, contour not currently available in main branch though
     patch_plot(x_fom,y_fom, reshape(plot_field,size(x_fom)), [], 'PlotType', 'contour');
     pause(0.01);
 end;
@@ -338,8 +342,6 @@ momentums = [];
 %(au_full_ml*u)./(au_full*u)
 %(bu_full_ml*u)./(bu_full*u)
 %exit;
-video = VideoWriter("movie_ldc_deim.avi");
-open(video);
 
 u_proj = pod_u(:,1:nb+1)*u(1:end,1);
 v_proj = pod_v(:,1:nb+1)*u(1:end,1);
@@ -477,6 +479,7 @@ for istep=1:nsteps
       u(2,1)
       u(3,1)
 
+      % Calculate quantities of interest
       u_proj = pod_u(:,1:nb+1)*u(1:end,1);
       v_proj = pod_v(:,1:nb+1)*u(1:end,1);
       ke = 0.5*[u_proj; v_proj]'*Me_vec*[u_proj; v_proj]
@@ -485,35 +488,29 @@ for istep=1:nsteps
       momentums = [momentums;momentum];
       
       if bool_plot;
-        plot_vel_mag = false;
-        plot_vort = true;
-
-        
+ 
         data = struct('u', u_proj, 'v', v_proj);
-        if plot_vel_mag      
-            u_abs = sqrt(u_proj.^2 + v_proj.^2);
-            plot_field = reshape(u_abs, size(x_fom));
-        elseif plot_vort;
-            vort = lcurl(reshape(u_proj,size(x_fom)), reshape(v_proj,size(x_fom)), x_fom, y_fom);%vx-uy;
-            plot_field = vort;
-            data.t = vort;
+        if plot_vort;
+            data.t = lcurl(reshape(u_proj,size(x_fom)), reshape(v_proj,size(x_fom)), x_fom, y_fom);%vx-uy;
         end;
 
-        if 0;
-            % Plot in MATLAB
+        if 0; % Set to 1 to enable plotting in MATLAB. This slows the code considerably though.
             hold off;
-            % Surface or contour
-            patch_plot(x_fom,y_fom, reshape(plot_field,size(x_fom)), [], 'PlotType', 'surface');
+            % Surface or contour. Note that contours are not supported on the main branch of NekToolkit
+            if plot_vort
+                patch_plot(x_fom,y_fom, reshape(data.t,size(x_fom)), [], 'PlotType', 'surface');
+            else
+                patch_plot(x_fom,y_fom, reshape(u_proj.^2 + v_proj.^2),size(x_fom)), [], 'PlotType', 'surface');
+            end;
         end;
 
         disp(sprintf('Writing output %i', istep));
         write_field(basepath, inde, data, size(x_fom), time, istep/iostep);
-        %pause(0.01);
      end;
    end
 end
 
-% Output results
+%% Output results
 if ndeim_pts > 0;
     if clsdeim
         clsdeimstr='clsdeim';
@@ -530,6 +527,10 @@ mkdir(casedir);
 fileID = fopen(casedir+"/ucoef",'w');
 fprintf(fileID,"%24.15e\n",ucoef);
 fclose(fileID);
+
+% Plot quantities of interest (here momentum and KE)
+% Does the FOM even conserve these? It would depend
+% on the time-stepper right?
 figure(2);
 plot(kes)
 xlabel("Time")
@@ -537,6 +538,7 @@ ylabel("Kinetic energy")
 title("Momentum and Energy Conserving")
 ax = gca;
 exportgraphics(ax, "ke.pdf", 'ContentType', 'vector');
+
 figure(3)
 plot(momentums(:,1)); hold on;
 plot(momentums(:,2))
@@ -545,8 +547,8 @@ ylabel("Momentum components")
 title("Momentum and Energy Conserving");
 ax = gca;
 exportgraphics(ax, "momentum.pdf", 'ContentType', 'vector');
+
 disp("Paused")
-disp("Paused2");
 pause()
 pause()
 pause()
