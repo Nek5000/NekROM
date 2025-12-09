@@ -33,6 +33,7 @@
 %   iftr : bool 
 %     Set to true if you want to use time-relaxataion ROM (TR-ROM)
 
+% Clear memory
 clear all; close all;
 
 % Add any important scripts to path
@@ -42,57 +43,61 @@ addpath('./operators')
 
 %% Specify the case path and case name
 
-%path='../../examples/ldc_v2/';
-%snaps_path=strcat(path,'snaps/');
-%casename='ldc';
+% Use one of the pre-existing cases or add your own
+cases = ['ldc', 'cyl', 'shear', 't2d'];
+thiscase = cases(2);
 
-path='../../examples/cyl/';
-snaps_path=strcat(path,'snaps/');
-casename='cyl';
+% TODO: Should just use the values from the .rea or MOR file by default
+switch thiscase
+    case 'ldc'
+        path='../../examples/ldc_v2/';
+        snaps_path=strcat(path,'snaps/');
+        casename='ldc';
 
-%path='../../examples/shear4/';
-%snaps_path=strcat(path,'snaps/');
-%casename='nick'%'shear4';%'thin';
+        nsteps = 10*1e5;%80000;%1.25000E+05;%20000; 
+        dt     = 1.000000E-03;%0.001;
+        iostep = 1000;%5*1000;%500;%250;%500;%10;
+        nu     = 1./15000;%0.01;
+        nb     = 30;
+    case 'cyl'
+        path='../../examples/cyl/';
+        snaps_path=strcat(path,'snaps/');
+        casename='cyl';
 
-%path='../../examples/t2d/';
-%casename='t2d';
+        nsteps = 10*1.25000E+05;%20000; 
+        dt     = 4.000000E-03;%0.001;
+        iostep = 500;%250;%500;%10;
+        nu     = 0.01;
+        nb     = 20;
+    case 'shear'
+        path='../../examples/shear4/';
+        snaps_path=strcat(path,'snaps/');
+        casename='nick'%'shear4';%'thin';
 
-% Should just use the values from the .rea or MOR file by default
-% allowing for overrides
-if contains(path, 'ldc')
-    nsteps = 10*1e5;%80000;%1.25000E+05;%20000; 
-    dt     = 1.000000E-03;%0.001;
-    iostep = 1000;%5*1000;%500;%250;%500;%10;
-    nu     = 1./15000;%0.01;
-    nb     = 30;
-elseif contains(path,'cyl')
-    nsteps = 10*1.25000E+05;%20000; 
-    dt     = 4.000000E-03;%0.001;
-    iostep = 500;%250;%500;%10;
-    nu     = 0.01;
-    nb     = 20;
-elseif contains(path,'shear4')
-    %nsteps = 4000; %Reconstruction
-    nsteps = 8000; % Extrapolation
-    dt     = 1e-3;
-    iostep = 100;
-    nu     = 1/1000;
-    nb     = 30; 
-elseif contains(path, 't2d')
-    nsteps=800000;
-    dt=0.002;
-    iostep=100;
-    nu=0.0001;
-    nb=3;  
-else
-  disp('Error: unrecognized case');
-  exit;
-end;
+        %nsteps = 4000; %Reconstruction
+        %nsteps = 8000; % Extrapolation
+        nsteps = 10*4000;
+        dt     = 1e-3;
+        iostep = 100;
+        nu     = 1/1000;
+        nb     = 30; 
+    case 'td2'
+        path='../../examples/t2d/';
+        casename='t2d';
+
+        nsteps=800000;
+        dt=0.002;
+        iostep=100;
+        nu=0.0001;
+        nb=3;  
+    otherwise
+        error("unhandled case name");
+end
 
 % Whether or not to plot on an iostep
 bool_plot = true;
 
-% ROM stabilization strategies
+%% ROM stabilization strategies
 ifcopt  = false;
 ifleray = false;
 ifefr   = false;
@@ -123,27 +128,31 @@ elseif (ifefr) || (iftr)
    end
 end
 
-%deims= [50];%[170];%[2,4,8,16,20 40 80 100 200 400 800 1000]
 %% Point selection algorithm
-ps_alg='sopt';
-%ps_alg ='gpode';
-%ps_alg = 'gappy_pod';
-%ps_alg = 'gnat';
+ps_algs = ['sopt', 'gpode', 'gappy_pod', 'gnat'];
+ps_alg = ps_algs(1);
 
 %% Hyperreduction algorithms
+%TODO support multiple hyperreduction algorithms using a string
 %hr_alg="clsdeim";
-clsdeim = true;
+clsdeim = false;
 
 % number of deim points
-%for j=1:length(deims)
-ndeim_pts = 512;%100;%100;%400;%10;%800;%400;%deims(j);
+ndeim_pts = 128;%100;%100;%400;%10;%800;%400;
+% number of oversample points
 os_multiplier = 2;
 n_os_points=ceil(os_multiplier*ndeim_pts);
 
 
 %% Get the grid and POD bases for plotting purposes
-reorder = 1;
+% NekROM may re-arrange the elements of the basis vectors 
+% so if comparing basis vectors from MATLAB and Fortran
+% this may be necessary. It sorts puts the elements in
+% lexicographical order.
+% TODO: Support re-arranging elements based on an inde array
+reorder = 1; 
 
+% Load the grid and the snapshots 
 cname=strcat(snaps_path,strcat('bas',casename));
 %avg_cname='../avgcyl';
 bas_snaps = NekSnaps(cname);
@@ -151,96 +160,70 @@ bas_snaps = NekSnaps(cname);
 [x_fom, y_fom] = get_grid(bas_snaps,0);
 inde = bas_snaps.flds{1}.inde;
 
-%basepath = sprintf('%s_rom_snaps_full_tensor/%s',casename,casename);
-basepath = sprintf('%s_rom_snaps_clsdeim_%i/%s',casename,ndeim_pts,casename);
+%% Define path to dump output in
+%basepath = sprintf('%s_rom_snaps_reduced_tensor/%s',casename,casename);
+basepath = sprintf('%s_rom_snaps_copt_deim_%i/%s',casename,ndeim_pts,casename);
 
+%% Test writing field
 %write_field(sprintf('%s_rom_/%s',casename,casename), inde, x_fom, y_fom, pod_u(:,1), pod_v(:,1), 0.0, 0)
 %exit; 
 
 %% Get the non-linear snapshots and calculate the DEIM points
 if ndeim_pts > 0;
-        nl_cname = strcat(snaps_path,strcat('csn',casename));
-        nl_snaps_obj = NekSnaps(nl_cname);
-        
-        [nl_snaps_u, nl_snaps_v] = get_snaps(nl_snaps_obj,reorder);
-        nl_snaps = [nl_snaps_u; nl_snaps_v];
+
+    % Needed for CLSDEIM and computing POD basis in MATLAB
+    nl_cname = strcat(snaps_path,strcat('csn',casename));
+    nl_snaps_obj = NekSnaps(nl_cname);        
+    [nl_snaps_u, nl_snaps_v] = get_snaps(nl_snaps_obj,reorder);
+    nl_snaps = [nl_snaps_u; nl_snaps_v];
+    
     if 0
+        % Set to 1 to generate non-linear POD basis in MATLAB
         [nl_bas, ~, ~] = get_pod_basis_from_arrays(nl_snaps_u, nl_snaps_v, x_fom, y_fom, ndeim_pts, 0, 0);
     else
+        % Get the NekROM non-linear POD basis
         nl_bas_cname = strcat(snaps_path, strcat('cba',casename));
         nl_bas_obj_nr = NekSnaps(nl_bas_cname);
-        %nl_bas_obj_nr.flds{1}.inde % Are these in the same order as the NekROM bases?
-        %exit
         [nl_bas_u_nr, nl_bas_v_nr] = get_snaps(nl_bas_obj_nr,reorder);
-        %sort_order = get_sort_order(x_fom, y_fom)
-    
         nl_bas = [nl_bas_u_nr; nl_bas_v_nr];
     end;
 end;
 
 [au_full, bu_full, cu_full, u0_full, uk_full, mb, ns] = load_full_ops(strcat(path,'ops'));
 
-%size(cu_full)
-%exit;
-%u0_full
-%exit;
+%% Create POD in MATLAB if desired
+if 0
+    subtract_mean = 1;
+    conserve_momentum = 0;
+    snaps_obj = NekSnaps(strcat(snaps_path,casename)); % Should the snaps object have reordering capability?
+    [pod_ml, u0_full_ml, uk_full_ml] = get_pod_basis(snaps_obj,nb,reorder,subtract_mean,conserve_momentum);
 
-%size(au_full)
-
-% Create new POD basis
-if 1
-subtract_mean = 1;
-conserve_momentum = 0;
-snaps_obj = NekSnaps(strcat(snaps_path,casename)); % Should the snaps object have reordering capability?
-[pod_ml, u0_full_ml, uk_full_ml] = get_pod_basis(snaps_obj,nb,reorder,subtract_mean,conserve_momentum);
-
-
-%norm(uk_full - uk_full_ml)/norm(uk_full)
-%exit
-
-pod_u_ml = pod_ml(1:size(pod_ml,1)/2,1:nb+1);
-pod_v_ml = pod_ml(size(pod_ml,1)/2 + 1:end,1:nb+1);
+    pod_u_ml = pod_ml(1:size(pod_ml,1)/2,1:nb+1);
+    pod_v_ml = pod_ml(size(pod_ml,1)/2 + 1:end,1:nb+1);
 end;
 
 Me = get_Me(x_fom, y_fom);
 npf = size(Me, 1);
 Me_vec = spdiags([Me;Me], 0, 2*npf,2*npf);
 
-if 0; % Test that the basis vectors are the same (B-orthogonality_
-%iMe = inv(Me_vec);
+%% Test that the basis vectors are the same, modulo sign differences
+if 0;
+    pod = [pod_u; pod_v];
 
-size(Me_vec)
-%disp("NekROM POD modes");
-pod = [pod_u; pod_v];
-%disp("Matlab POD modes");
-%pod_ml
+    % Make sure momentum conservation is off
+    assert(norm(abs(pod) - abs(pod_ml))/norm(abs(pod)) < 1e-5);
 
-%size(pod)
-%disp("NekROM B-orthogonality");
-%pod'*(Me_vec*pod)
-%disp("NekROM mass matrix");
-%bu_full
-%disp("Matlab B-orthogonality");
-%full((pod_ml'*(Me_vec*pod_ml)));
-
-% Make sure momentum conservation is off
-assert(norm(abs(pod) - abs(pod_ml))/norm(abs(pod)) < 1e-5);
-
-%figure(1);
-%patch_plot(x_fom,y_fom, reshape(pod_v(:,1), size(x_fom)), [], 'PlotType', 'surface');
-%title("NekROM U-POD avg");
-%figure(2);
-%patch_plot(x_fom,y_fom, reshape(pod_v_ml(:,1), size(x_fom)), [], 'PlotType', 'surface');
-%title("Matlab U-POD avg");
-%'Pause'
-%pause()
-%pause()
-%pause()
+    %figure(1);
+    %patch_plot(x_fom,y_fom, reshape(pod_v(:,1), size(x_fom)), [], 'PlotType', 'surface');
+    %title("NekROM U-POD avg");
+    %figure(2);
+    %patch_plot(x_fom,y_fom, reshape(pod_v_ml(:,1), size(x_fom)), [], 'PlotType', 'surface');
+    %title("Matlab U-POD avg");
 end;
 
 [au_full_ml, bu_full_ml] = gen_Au(pod_u_ml, pod_v_ml,x_fom, y_fom);
 
-% Check Au and Bu operators
+%% Check that MATLAB and Fortran Au and Bu operators are the same
 if 0;
     %bu_full
     %bu_full_ml
@@ -319,10 +302,9 @@ end;
 exit;
 end;
 
+
 % Note that these are in the original ordering
 [au, a0, bu, cu, c0, c1, c2, c3, u0, uk, ukmin, ukmax] = get_r_dim_ops(au_full, bu_full, cu_full, u0_full, uk_full, nb);
-
-
 
 % Initialize variables
 time   = 0.;
@@ -361,7 +343,8 @@ open(video);
 
 u_proj = pod_u(:,1:nb+1)*u(1:end,1);
 v_proj = pod_v(:,1:nb+1)*u(1:end,1);
-write_field(basepath, inde, struct('x', x_fom, 'y', y_fom, 'u', u_proj, 'v', v_proj), size(x_fom), 0.0, 0);
+vort   = lcurl(reshape(u_proj,size(x_fom)), reshape(v_proj,size(x_fom)), x_fom, y_fom);
+write_field(basepath, inde, struct('x', x_fom, 'y', y_fom, 'u', u_proj, 'v', v_proj, 't', vort), size(x_fom), 0.0, 0);
 
 for istep=1:nsteps
    istep
@@ -401,8 +384,8 @@ for istep=1:nsteps
         %c_coef = conv_tensor(u(:,1), pod_u, pod_v, x_fom, y_fom);
 
 
-        c_coef = conv_tensor_dense(u(:,1), pod_u, pod_v, x_fom, y_fom);
-        %c_coef = conv_tensor_dense(u(:,1), pod_u, pod_v, x_fom, y_fom, [nb/2,nb/2,nb/2]);
+        %c_coef = conv_tensor_dense(u(:,1), pod_u, pod_v, x_fom, y_fom);
+        c_coef = conv_tensor_dense(u(:,1), pod_u, pod_v, x_fom, y_fom, [nb/2,nb/2,nb]);
         %c_coef = conv_tensor_reduced(u(:,1), pod_u, pod_v, x_fom, y_fom);
 
         %c_coef = (conv_fom(u(:,1), pod_u, pod_v, x_fom, y_fom));
@@ -502,37 +485,33 @@ for istep=1:nsteps
       momentums = [momentums;momentum];
       
       if bool_plot;
-        plot_vel_mag = true;
-        plot_vort = false;
+        plot_vel_mag = false;
+        plot_vort = true;
 
         
-        %{ 
+        data = struct('u', u_proj, 'v', v_proj);
         if plot_vel_mag      
             u_abs = sqrt(u_proj.^2 + v_proj.^2);
             plot_field = reshape(u_abs, size(x_fom));
         elseif plot_vort;
-            plot_field = lcurl(reshape(u_proj,size(x_fom)), reshape(v_proj,size(x_fom)), x_fom, y_fom);%vx-uy;
+            vort = lcurl(reshape(u_proj,size(x_fom)), reshape(v_proj,size(x_fom)), x_fom, y_fom);%vx-uy;
+            plot_field = vort;
+            data.t = vort;
         end;
-        %norm(u_abs)
-        hold off;
-        % Surface or contour
-        patch_plot(x_fom,y_fom, reshape(plot_field,size(x_fom)), [], 'PlotType', 'surface');
-        %if istep <= iostep;
-        set(gca,"NextPlot","replacechildren");
-        %end;
-        writeVideo(video,getframe(gcf));
-        %}
+
+        if 0;
+            % Plot in MATLAB
+            hold off;
+            % Surface or contour
+            patch_plot(x_fom,y_fom, reshape(plot_field,size(x_fom)), [], 'PlotType', 'surface');
+        end;
+
         disp(sprintf('Writing output %i', istep));
-        write_field(basepath, inde, struct('u', u_proj, 'v', v_proj),size(x_fom), time, istep/iostep);
+        write_field(basepath, inde, data, size(x_fom), time, istep/iostep);
         %pause(0.01);
      end;
    end
 end
-
-if bool_plot;
-    close(video);
-end;
-
 
 % Output results
 if ndeim_pts > 0;
