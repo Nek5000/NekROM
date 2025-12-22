@@ -1,7 +1,9 @@
-% ROM diffusion operator.
-% This should have the same action as the Au operator from the Fortran code
-% Should probably add convection tensor calculation as well.
 function[Au, Bu, u0] = gen_Au(pod_u, pod_v, x, y)
+
+    % ROM diffusion operator.
+    % This should have the same action as the Au operator from the Fortran code
+    % Should probably add convection tensor calculation as well.
+
     %x=snaps.flds{1}.x;
     %y=snaps.flds{1}.y;
     nx1 = size(x,1);

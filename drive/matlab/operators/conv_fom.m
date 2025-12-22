@@ -1,13 +1,14 @@
-% Pseudo-ROM convection operator
-% (pseudo because the work still scales
-% with the size of the original problem)
-% This needs to do the same thing as
-% reshape(cu*utmp(:,1),nb,nb+1)*u(:,1);
-%
-% Note: Dealiasing is not currently implemented. Is it needed?
 function [out_coef] = conv_fom(ucoef, pod_u, pod_v, x, y)
 
-    %persistent Me rx ry sx sy jaci d lgrad nL
+    % Pseudo-ROM convection operator
+    % (pseudo because the work still scales
+    % with the size of the original problem)
+    % This needs to do the same thing as
+    % reshape(cu*utmp(:,1),nb,nb+1)*u(:,1);
+    %
+    % Note: Dealiasing is not currently implemented. Is it needed?
+    % No, the snapshots are already de-aliased
+
     persistent ux_pods uy_pods vx_pods vy_pods pod_uv
 
     if isempty(pod_uv)

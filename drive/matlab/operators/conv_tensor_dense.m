@@ -1,19 +1,10 @@
-% Pseudo-ROM convection operator
-% (pseudo because the work still scales
-% with the size of the original problem)
-% This needs to do the same thing as
-% reshape(cu*utmp(:,1),nb,nb+1)*u(:,1);
-%
-% Note: Dealiasing is not currently implemented. Is it needed?
-% Wrong, the snapshots are already dealiased.
-
-% C computes Phi.T*(u.grad(u)) = Phi.T*((Phi*u_coef).(grad(Phi)*u_coef))
-% By forming the convection tensor.
-% Can specify the size of the tensor or default to computing the entire tensor
-% Add option to enforce skew-symmetry?
 function [out_coef] = conv_tensor_dense(ucoef, pod_u, pod_v, x, y, tensor_size)
 
-    %persistent Me rx ry sx sy jaci d lgrad nL nb tensor nb_i nb_j nb_k
+    % C computes Phi.T*(u.grad(u)) = Phi.T*((Phi*u_coef).(grad(Phi)*u_coef))
+    % By forming the convection tensor.
+    % Can specify the size of the tensor or default to computing the entire tensor
+    % Add option to enforce skew-symmetry?
+
     persistent tensor nb nb_i nb_j nb_k
 
     if isempty(tensor)

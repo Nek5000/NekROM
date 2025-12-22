@@ -1,4 +1,5 @@
 function[ux, uy] = lgrad(u,x,y,mode)
+
     persistent rx ry sx sy jaci d my_lgrad
     if isempty(rx);
         nx1 = size(x,1);

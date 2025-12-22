@@ -1,6 +1,7 @@
-% Convection operator that uses DEIM points
-% TODO: Separate DEIM and clsdeim stuff. Just have the CLS DEIM function call the DEIM function
 function [out_coef] = conv_deim(ucoef, pod_u, pod_v, nl_bas, nl_snaps_u, nl_snaps_v, x, y, ndeim_pts,istep,clsdeim,n_os_points,ps_alg)
+
+    % Convection operator that uses DEIM points
+    % TODO: Separate DEIM and clsdeim stuff. Just have the CLS DEIM function call the DEIM function
 
     persistent proj_mat Ainv interp_mat u_deimu v_deimu u_deimv v_deimv ux_deimu uy_deimu vx_deimv vy_deimv nb;
     persistent u_deim_stack v_deim_stack ux_deim_stack uy_deim_stack tau mu A_tau_inv alpha nl_bas_inds% nl_max_coef nl_min_coef;

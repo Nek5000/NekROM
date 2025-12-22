@@ -1,12 +1,8 @@
-% Pseudo-ROM convection operator
-% (pseudo because the work still scales
-% with the size of the original problem)
-% This needs to do the same thing as
-% reshape(cu*utmp(:,1),nb,nb+1)*u(:,1);
-%
-% Note: Dealiasing is not currently implemented. Is it needed?
-% Wrong, the snapshots are already dealiased.
 function [out_coef] = conv_tensor(ucoef, pod_u, pod_v, x, y)
+
+    % Compute the full convection tensor
+    % Mostly replaced by conv_tensor_dense
+
     persistent Me rx ry sx sy jaci d lgrad nL nb tensor
     %persistent tensor
 

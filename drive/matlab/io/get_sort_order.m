@@ -1,4 +1,5 @@
 function [sort_order] = get_sort_order(x, y)
+
     indices = [];
     phys_co = []; % Physical coordinates of elements
     for ie = 1:size(x,3)

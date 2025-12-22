@@ -1,5 +1,5 @@
 function[u, v] = get_snaps(snaps, reorder)
-  % Ask Kento and Ping-Hsuan about ordering
+
   if nargin < 2;
     reorder = 0;
   end

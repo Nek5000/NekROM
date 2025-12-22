@@ -1,7 +1,10 @@
-% Depends on Tensor Toolbox, add it to your MATLABPATH
-% Define a validator function to determine which interactions to include in the
-% sparse tensor.
 function [out_coef] = conv_tensor_sparse(ucoef, pod_u, pod_v, x, y,validator)
+
+    % Create a sparse tensor with arbitary non-zero entries to approximate the
+    % convection tensor.
+    % Depends on Tensor Toolbox, add it to your MATLABPATH
+    % Define a validator function to determine which interactions to include in the
+    % sparse tensor.
 
     persistent tensor
 
