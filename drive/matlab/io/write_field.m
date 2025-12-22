@@ -3,12 +3,15 @@
 % This might not be worthwhile since deriv_geo doesn't support 3D currently
 % Whatever, might be worth it just to support 2D.
 
-function [] = write_field(basepath, inde, data, sz, time, iostep)
+function [] = write_field(basepath, data)
 
     %TODO: Support 3D
 
+    time = data.time;
+    iostep = data.iostep;
     [path, basename, ~] = fileparts(basepath);
-    if prod(size(path)) > 0;
+
+    if prod(size(path)) > 0 & ~exist(path);
         mkdir(path);
     end;
 
@@ -27,6 +30,7 @@ function [] = write_field(basepath, inde, data, sz, time, iostep)
         print("Invalid wdsize");
         exit;
     end;
+    sz = data.size;
     %fldnames = fieldnames(data);
     %first_field = fldnames{1}
     %sz = size(data.(first_field)); 
@@ -35,7 +39,7 @@ function [] = write_field(basepath, inde, data, sz, time, iostep)
     ny = sz(2);
     nz = 1;
     nxyz = nx*ny*nz;
-    nelt = size(inde,1);
+    nelt = size(data.inde,1);
     nelgt = nelt;
     fid = 0;
     nfileoo = 1;
@@ -67,7 +71,7 @@ function [] = write_field(basepath, inde, data, sz, time, iostep)
     assert(ftell(fileID) == 136);
 
     % Write global element ids
-    fwrite(fileID, inde, 'int32');
+    fwrite(fileID, data.inde, 'int32');
 
     % Temporary array to hold data
     %tempv = zeros(nxyz,ndim,nelt, precision);

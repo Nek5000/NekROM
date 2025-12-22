@@ -134,9 +134,12 @@ function [out_coef] = conv_tensor_dense(ucoef, pod_u, pod_v, x, y, tensor_size)
     %}     
 
     out_coef = zeros([nb-1,1]);
-    outprod = tensorprod(tensor, ucoef(1:nb_i), 1,1);
-    out_coef(1:nb_k,1) = tensorprod(outprod,ucoef(1:nb_j),1,1);
-    out_coef 
+    if 1
+        outprod = tensorprod(tensor, ucoef(1:nb_i), 1,1);
+        out_coef(1:nb_k,1) = tensorprod(outprod,ucoef(1:nb_j),1,1);
+    else
+        out_coef(1:nb_k,1) = reshape((reshape(tensor, nb_i, nb_j*nb_k)*ucoef(1:nb_i)), nb_k, nb_j)*ucoef(1:nb_j)
+    end;
     %out_coef
     %exit;
 end

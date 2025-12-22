@@ -44,7 +44,8 @@ addpath('./operators')
 %% Specify the case path and case name
 
 % Use one of the pre-existing cases or add your own
-cases = ['ldc', 'cyl', 'shear', 't2d'];
+% Needs to be string, not a character array.
+cases = ["ldc", "cyl", "shear", "t2d"];
 thiscase = cases(2);
 
 % TODO: Should just use the values from the .rea or MOR file by default
@@ -94,10 +95,10 @@ switch thiscase
         error("unhandled case name");
 end
 
-% Whether or not to plot on an iostep
-bool_plot = true;
-% Plot the vorticity, otherwise only calculates the velocity magnitude
-plot_vort = true;
+%% IO parameters
+ifvort = true; % Whether or not to calculate the vorticity on an IO step and store as temperature
+ifwrite = true; % Whether or not to write field files on an IO step
+ifvis = false; % Whether or not to visualize a 2D field in Matlab on an IO step
 
 %% ROM stabilization strategies
 ifcopt  = false;
@@ -130,27 +131,45 @@ elseif (ifefr) || (iftr)
    end
 end
 
-%% Point selection algorithm
-ps_algs = ['sopt', 'gpode', 'gappy_pod', 'gnat'];
+%% Point selection algorithm for DEIM
+ps_algs = ["sopt", "gpode", "gappy_pod", "gnat"];
 ps_alg = ps_algs(1);
 
-%% Hyperreduction algorithms
-%TODO support multiple hyperreduction algorithms using a string
-%hr_alg="clsdeim";
-clsdeim = false;
+conv_approaches = ["fom", "ftensor", "rtensor", "deim", "clsdeim"];
+conv_approach = conv_approaches(5);
 
-% number of deim points
-ndeim_pts = 128;%100;%100;%400;%10;%800;%400;
-% number of oversample points
-os_multiplier = 2;
-n_os_points=ceil(os_multiplier*ndeim_pts);
+switch conv_approach
+    case 'fom'
 
+    case 'ftensor'
+
+    case 'rtensor'
+        ts1 = idivide(nb,int32(2));
+        tensor_size = [ts1, ts1, ts1]; 
+    case {'deim', 'clsdeim'}
+        clsdeim = false;
+        if conv_approach == 'clsdeim';
+            % TODO: Make this a string rather than a boolean
+            % to handle multiple methods
+            clsdeim = true;
+        end;
+        ndeim_pts = 200;
+        assert(ndeim_pts > 0);
+        os_multiplier = 2;
+        % Number of oversample points
+        n_os_points=ceil(os_multiplier*ndeim_pts);
+    otherwise
+        error("Unrecogized convection operator approach");
+end
 
 %% Get the grid and POD bases for plotting purposes
-% NekROM may re-arrange the elements of the basis vectors 
+% Nek5000 doesn't guarantee the elements are in lexicographical
+% order, 
 % so if comparing basis vectors from MATLAB and Fortran
 % this may be necessary. It sorts puts the elements in
 % lexicographical order.
+% Note: Perhaps the inde array the NekToolKit produces could
+% help with this.
 % TODO: Support re-arranging elements based on an inde array
 reorder = 1; 
 
@@ -162,25 +181,51 @@ bas_snaps = NekSnaps(cname);
 inde = bas_snaps.flds{1}.inde;
 
 %% Define path to dump output in
-%basepath = sprintf('%s_rom_snaps_reduced_tensor/%s',casename,casename);
-basepath = sprintf('%s_rom_snaps_copt_deim_%i/%s',casename,ndeim_pts,casename);
+%% Output results
+%if ndeim_pts > 0;
+%    if clsdeim
+%        clsdeimstr='clsdeim';
+%    else
+%        clsdeimstr='';
+%    end;
+%    casedir= sprintf('%s_nb%d_results_ndeim_pts%d_%s_%s',casename,nb,ndeim_pts,clsdeimstr,reg_str)
+%else
+%    casedir= sprintf('%s_nb%d_results_%s',casename,nb,reg_str)
+
+%end;
+
+
+casedir = sprintf('%s_%s', casename, datestr(now, 'yyyy-mm-dd-HH-MM-SS/'));
+mkdir(casedir);
+basepath = strcat(casedir, 'fields/', casename);
+%logfile = fopen(strcat(casedir,'logfile', 'wt'));
+
+%fprintf(logfile, 'nb = %d', nb);
+
 
 %% Test writing field
 %write_field(sprintf('%s_rom_/%s',casename,casename), inde, x_fom, y_fom, pod_u(:,1), pod_v(:,1), 0.0, 0)
 %exit; 
 
 %% Get the non-linear snapshots and calculate the DEIM points
-if ndeim_pts > 0;
+if conv_approach == "deim" || conv_approach == "clsdeim";
 
+    matlab_pod_basis = 0;
     % Needed for CLSDEIM and computing POD basis in MATLAB
     % Seems like a flaw in CLSDEIM to require loading all of
     % the snapshots. Is there another way to do this?
-    nl_cname = strcat(snaps_path,strcat('csn',casename));
-    nl_snaps_obj = NekSnaps(nl_cname);        
-    [nl_snaps_u, nl_snaps_v] = get_snaps(nl_snaps_obj,reorder);
-    nl_snaps = [nl_snaps_u; nl_snaps_v];
+
+    if matlab_pod_basis || conv_approach == "clsdeim"
+        nl_cname = strcat(snaps_path,strcat('csn',casename));
+        nl_snaps_obj = NekSnaps(nl_cname);        
+        [nl_snaps_u, nl_snaps_v] = get_snaps(nl_snaps_obj,reorder);
+        %nl_snaps = [nl_snaps_u; nl_snaps_v];
+    else
+        nl_snaps_u = [];
+        nl_snaps_v = [];
+    end;
     
-    if 0
+    if matlab_pod_basis
         % Set to 1 to generate non-linear POD basis in MATLAB
         [nl_bas, ~, ~] = get_pod_basis_from_arrays(nl_snaps_u, nl_snaps_v, x_fom, y_fom, ndeim_pts, 0, 0);
     else
@@ -194,120 +239,14 @@ end;
 
 [au_full, bu_full, cu_full, u0_full, uk_full, mb, ns] = load_full_ops(strcat(path,'ops'));
 
-%% Create POD in MATLAB if desired
-if 0
-    subtract_mean = 1;
-    conserve_momentum = 0;
-    snaps_obj = NekSnaps(strcat(snaps_path,casename)); % Should the snaps object have reordering capability?
-    [pod_ml, u0_full_ml, uk_full_ml] = get_pod_basis(snaps_obj,nb,reorder,subtract_mean,conserve_momentum);
-
-    pod_u_ml = pod_ml(1:size(pod_ml,1)/2,1:nb+1);
-    pod_v_ml = pod_ml(size(pod_ml,1)/2 + 1:end,1:nb+1);
-end;
-
-% Isn't this the same as bu_full? We can probably avoid calling this.
+%% Generate the FOM mass matrix.
+% Used to calculate the energy
 Me = get_Me(x_fom, y_fom);
-npf = size(Me, 1);
-Me_vec = spdiags([Me;Me], 0, 2*npf,2*npf);
 
-% Maybe define some unit test and move these tests to them?
+%% Can call tests here if desired
+% tests
 
-%% Test that the basis vectors are the same, modulo sign differences
-if 0;
-    pod = [pod_u; pod_v];
-
-    % Make sure momentum conservation is off
-    assert(norm(abs(pod) - abs(pod_ml))/norm(abs(pod)) < 1e-5);
-
-    %figure(1);
-    %patch_plot(x_fom,y_fom, reshape(pod_v(:,1), size(x_fom)), [], 'PlotType', 'surface');
-    %title("NekROM U-POD avg");
-    %figure(2);
-    %patch_plot(x_fom,y_fom, reshape(pod_v_ml(:,1), size(x_fom)), [], 'PlotType', 'surface');
-    %title("Matlab U-POD avg");
-end;
-
-[au_full_ml, bu_full_ml] = gen_Au(pod_u_ml, pod_v_ml,x_fom, y_fom);
-
-%% Check that MATLAB and Fortran Au and Bu operators are the same
-if 0;
-    %bu_full
-    %bu_full_ml
-    %abs(bu_full - bu_full_ml
-    assert(norm(abs(bu_full) - abs(bu_full_ml))/norm(abs(bu_full)) < 1e-5);
-    assert(norm(abs(au_full) - abs(au_full_ml))/norm(abs(au_full)) < 1e-5)
-end;
-
-% Use all of the matlab defined basis functions
-if 0;
-    % Note that the non-linear evaluations are dumped on the same
-    % grid as the NekROM basis coordinates. Not necessarily the
-    % coordinates from the snapshots (these two coordinates are not necessarily the same
-    % apparently)
-
-    %[x_fom_ml, y_fom_ml] = get_grid(snaps_obj, 1);
-    %change_basis = [pod_u_ml; pod_v_ml]'*[pod_u;pod_v]; 
-    pod_orig = [pod_u;pod_v];
-    pod_u = pod_u_ml(:,1:nb+1);
-    pod_v = pod_v_ml(:,1:nb+1);
-    uk_full = uk_full_ml;
-    u0_full = u0_full_ml;
-    %u0_full = change_basis*u0_full;
-    %get_sort_order(x_fom, y_fom)
-    %get_sort_order(x_fom_ml, y_fom_ml)
-
-    %exit;
-    %x_fom = x_fom_ml;
-    %y_fom = y_fom_ml;
-    size(pod_u)
-    size(pod_u_ml)
-
-    au_full_orig = au_full;
-    bu_full_orig = bu_full;
-    au_full = au_full_ml;
-    bu_full = bu_full_ml;
-end;
-
-
-%u0_full_orig = u0_full
-%u0_full = change_basis*u0_full;
-%u0_full
-%pod_ml*u0_full
-%pod_orig*u0_full_orig
-%norm([pod_u_new; pod_v_new]*u0_full - pod_orig*u0_full_orig)/norm(pod_orig*u0_full_orig)
-%exit;
-
-%u0_full_roundtrip = change_basis'*u0_full
-
-if 0; % Test out reconstructing the snapshots
-[u_snaps, v_snaps] = get_snaps(snaps_obj, 1);
-for i=1:size(uk_full,2);
-    i
-    u = uk_full(:,i);
-    u_proj = u_snaps(:,i);
-    v_proj = v_snaps(:,i);
-    %u_proj = pod_u(:,1:nb+1)*u(1:end,1);
-    %v_proj = pod_v(:,1:nb+1)*u(1:end,1);
-    %u_proj = nl_snaps_u(:,i);
-    %v_proj = nl_snaps_v(:,i);
-
-    if plot_vel_mag      
-        u_abs = sqrt(u_proj.^2 + v_proj.^2);
-        plot_field = reshape(u_abs, size(x_fom));
-    elseif plot_vort;
-        plot_field = lcurl(reshape(u_proj,size(x_fom)), reshape(v_proj,size(x_fom)), x_fom, y_fom);%vx-uy;
-    end;
-    %norm(u_abs)
-    hold off;
-    % Can plot surface or contour, contour not currently available in main branch though
-    patch_plot(x_fom,y_fom, reshape(plot_field,size(x_fom)), [], 'PlotType', 'contour');
-    pause(0.01);
-end;
-exit;
-end;
-
-
-% Note that these are in the original ordering
+% Note that these are in the original ordering from the Nek5000 simulation
 [au, a0, bu, cu, c0, c1, c2, c3, u0, uk, ukmin, ukmax] = get_r_dim_ops(au_full, bu_full, cu_full, u0_full, uk_full, nb);
 
 % Initialize variables
@@ -324,7 +263,7 @@ end
 %h=bu*betas(1,ito)/dt+au*nu;
 
 
-% Begin integrate ROM with BDFk/EXTk
+%% Begin integrate ROM with BDFk/EXTk
 u     = zeros(nb+1,3); % vectors for BDF3/EXT3
 u(:,1)=u0;
 [alphas, betas] = setcoef();
@@ -345,11 +284,18 @@ momentums = [];
 
 u_proj = pod_u(:,1:nb+1)*u(1:end,1);
 v_proj = pod_v(:,1:nb+1)*u(1:end,1);
-vort   = lcurl(reshape(u_proj,size(x_fom)), reshape(v_proj,size(x_fom)), x_fom, y_fom);
-write_field(basepath, inde, struct('x', x_fom, 'y', y_fom, 'u', u_proj, 'v', v_proj, 't', vort), size(x_fom), 0.0, 0);
+%vort   = lcurl(reshape(u_proj,size(x_fom)), reshape(v_proj,size(x_fom)), x_fom, y_fom);
 
-for istep=1:nsteps
-   istep
+field_data = struct('u', u_proj, 'v', v_proj, 'x', x_fom, 'y', y_fom, 'inde', inde, 'size', size(x_fom), 'time', 0.0, 'iostep', 0);
+
+output_fields(basepath, field_data, ifvort, ifwrite, ifvis); 
+
+%write_field(basepath, inde, struct('x', x_fom, 'y', y_fom, 'u', u_proj, 'v', v_proj, 't', vort), size(x_fom), 0.0, 0);
+
+for istep=int32(1:nsteps);
+   %disp(istep)
+   time = istep*dt;
+
    ito=min(istep,3);
    if istep<= 3
       hufac = [];
@@ -371,11 +317,24 @@ for istep=1:nsteps
 
    %% Compare the NL evaluation results.
 
+    switch conv_approach 
+        case 'fom'
+            c_coef = conv_fom(u(:,1), pod_u, pod_v, x_fom, y_fom);
+        case 'ftensor'
+            c_coef = (reshape(c0*utmp(:,1),nb,nb+1)*u(:,1));
+            %c_coef' %ext(:,1)=ext(:,1)-reshape(cu*utmp(:,1),nb,nb+1)*u(:,1);
+        case 'rtensor'
+            c_coef = conv_tensor_dense(u(:,1), pod_u, pod_v, x_fom, y_fom, tensor_size);
+        case {'deim', 'clsdeim'}
+            c_coef = conv_deim(u(:,1), pod_u, pod_v, nl_bas, nl_snaps_u, nl_snaps_v, x_fom, y_fom,  ndeim_pts,istep,clsdeim,n_os_points,ps_alg);
+        otherwise
+            error('Unrecognized conv_approach');
+    end;
+
+    %{
    if ndeim_pts == 0;
     if 0;
         % NekROM convection tensor version
-        c_coef = (reshape(c0*utmp(:,1),nb,nb+1)*u(:,1));
-        %c_coef' %ext(:,1)=ext(:,1)-reshape(cu*utmp(:,1),nb,nb+1)*u(:,1);
         %c_coef
         %exit;
     else
@@ -387,7 +346,6 @@ for istep=1:nsteps
 
 
         %c_coef = conv_tensor_dense(u(:,1), pod_u, pod_v, x_fom, y_fom);
-        c_coef = conv_tensor_dense(u(:,1), pod_u, pod_v, x_fom, y_fom, [nb/2,nb/2,nb]);
         %c_coef = conv_tensor_reduced(u(:,1), pod_u, pod_v, x_fom, y_fom);
 
         %c_coef = (conv_fom(u(:,1), pod_u, pod_v, x_fom, y_fom));
@@ -400,7 +358,6 @@ for istep=1:nsteps
     % DEIM version
     % Should be close, but not identical to, the above
 
-    c_coef = conv_deim(u(:,1), pod_u, pod_v, nl_bas, nl_snaps_u, nl_snaps_v, x_fom, y_fom,  ndeim_pts,istep,clsdeim,n_os_points,ps_alg, Me);
     
     % Note that c1, c2, c3 need to be reordered or need to use original order for everything.
     %c_coef = c_coef - c1+c2*utmp(:,1)+c3*utmp(:,1); % Remind me why this is needed? 
@@ -414,8 +371,10 @@ for istep=1:nsteps
     % (Ping-Hsuan added that, seems to do something with the zeroth modes.)
     %c_coef
    end;
+    %}
 
    %norm(pod_u(:,1:nb+1)*c_coef)
+   % Isn't ext(:,1) zero at this point?
    ext(:,1)=ext(:,1)-c_coef;
 
    %ext(:,1)=ext(:,1)-0*c_coef; % Try turning off convection
@@ -467,66 +426,48 @@ for istep=1:nsteps
    end
         
    u = shift(u,u_new,3);
-   time = istep*dt;
 
    if any(isnan(u(:,1)));
       break;
    end;
 
    if (mod(istep,iostep) == 0);
+      disp(sprintf('IOSTEP = %d\n', istep)); 
       ucoef(istep/iostep,:)=u(:,1);
-      u(:,1)
-      u(2,1)
-      u(3,1)
+      %u(:,1)
+      %u(2,1)
+      %u(3,1)
 
       % Calculate quantities of interest
       u_proj = pod_u(:,1:nb+1)*u(1:end,1);
       v_proj = pod_v(:,1:nb+1)*u(1:end,1);
-      ke = 0.5*[u_proj; v_proj]'*Me_vec*[u_proj; v_proj]
+      data = struct('u', u_proj, 'v', v_proj);
+
+      %ke = 0.5*[u_proj; v_proj]'*([Me;Me].*[u_proj; v_proj]) 
+      ke = 0.5*(u_proj'*(Me.*u_proj) + v_proj'*(Me.*v_proj));
       kes = [kes; ke];
+
       momentum = [sum(Me.*u_proj), sum(Me.*v_proj)]
       momentums = [momentums;momentum];
-      
-      if bool_plot;
- 
-        data = struct('u', u_proj, 'v', v_proj);
-        if plot_vort;
-            data.t = lcurl(reshape(u_proj,size(x_fom)), reshape(v_proj,size(x_fom)), x_fom, y_fom);%vx-uy;
-        end;
 
-        if 0; % Set to 1 to enable plotting in MATLAB. This slows the code considerably though.
-            hold off;
-            % Surface or contour. Note that contours are not supported on the main branch of NekToolkit
-            if plot_vort
-                patch_plot(x_fom,y_fom, reshape(data.t,size(x_fom)), [], 'PlotType', 'surface');
-            else
-                patch_plot(x_fom,y_fom, reshape(u_proj.^2 + v_proj.^2),size(x_fom)), [], 'PlotType', 'surface');
-            end;
-        end;
+      % Update the field struct and write it out
+      field_data.u = u_proj;
+      field_data.v = v_proj;
+      field_data.time = time;
+      field_data.iostep = idivide(istep,iostep);
 
-        disp(sprintf('Writing output %i', istep));
-        write_field(basepath, inde, data, size(x_fom), time, istep/iostep);
-     end;
+      output_fields(basepath, field_data, ifvort, ifwrite, ifvis);
+
    end
 end
 
-%% Output results
-if ndeim_pts > 0;
-    if clsdeim
-        clsdeimstr='clsdeim';
-    else
-        clsdeimstr='';
-    end;
-    casedir= sprintf('%s_nb%d_results_ndeim_pts%d_%s_%s',casename,nb,ndeim_pts,clsdeimstr,reg_str)
-else
-    casedir= sprintf('%s_nb%d_results_%s',casename,nb,reg_str)
-end;
-mkdir(casedir);
+
 
 % Dump out ucoef in casedir
 fileID = fopen(casedir+"/ucoef",'w');
 fprintf(fileID,"%24.15e\n",ucoef);
 fclose(fileID);
+%fclose(logfile);
 
 % Plot quantities of interest (here momentum and KE)
 % Does the FOM even conserve these? It would depend
@@ -537,16 +478,16 @@ xlabel("Time")
 ylabel("Kinetic energy")
 title("Momentum and Energy Conserving")
 ax = gca;
-exportgraphics(ax, "ke.pdf", 'ContentType', 'vector');
+exportgraphics(ax, strcat(casedir, "ke.pdf"), 'ContentType', 'vector');
 
 figure(3)
 plot(momentums(:,1)); hold on;
 plot(momentums(:,2))
 xlabel("Time")
 ylabel("Momentum components")
-title("Momentum and Energy Conserving");
+title("Momentum and Energy Conservation");
 ax = gca;
-exportgraphics(ax, "momentum.pdf", 'ContentType', 'vector');
+exportgraphics(ax, strcat(casedir, "momentum.pdf"), 'ContentType', 'vector');
 
 disp("Paused")
 pause()

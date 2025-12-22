@@ -16,11 +16,12 @@ function [out_coef] = conv_fom(ucoef, pod_u, pod_v, x, y)
         d = deriv_mat(zi);
         [xr,yr,xs,ys,rx,ry,sx,sy,jac,jaci,d] = deriv_geo(x,y,d);
         lgrad=@(u,mode) grad(u,rx,ry,sx,sy,jaci,d,mode);
+        nL = prod(size(x));
         Me = reshape(jac.*(w*w'),nL,1);
 
         nL = prod(size(x));
         % Assume the geometry is not moving
-        % and pre-calcuate the pod derivatives
+        % and pre-calculate the pod derivatives
         ux_pods = zeros(size(pod_u));
         uy_pods = zeros(size(pod_u));
         vx_pods = zeros(size(pod_u));

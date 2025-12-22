@@ -1,5 +1,6 @@
 % Convection operator that uses DEIM points
-function [out_coef] = conv_deim(ucoef, pod_u, pod_v, nl_bas, nl_snaps_u, nl_snaps_v, x, y, ndeim_pts,istep,clsdeim,n_os_points,ps_alg, Me_in)
+% TODO: Separate DEIM and clsdeim stuff. Just have the CLS DEIM function call the DEIM function
+function [out_coef] = conv_deim(ucoef, pod_u, pod_v, nl_bas, nl_snaps_u, nl_snaps_v, x, y, ndeim_pts,istep,clsdeim,n_os_points,ps_alg)
 
     persistent proj_mat Ainv interp_mat u_deimu v_deimu u_deimv v_deimv ux_deimu uy_deimu vx_deimv vy_deimv nb;
     persistent u_deim_stack v_deim_stack ux_deim_stack uy_deim_stack tau mu A_tau_inv alpha nl_bas_inds% nl_max_coef nl_min_coef;
@@ -173,7 +174,9 @@ function [out_coef] = conv_deim(ucoef, pod_u, pod_v, nl_bas, nl_snaps_u, nl_snap
         else;
             interp_mat = pinv(nl_bas(inds,:));
         end;
-         
+       
+        proj_and_interp_mat = proj_mat*interp_mat;
+  
 %       proj_mat = [pod_u(:,2:end); pod_v(:,2:end)]'*nl_bas*inv(nl_bas);
 %       proj_mat = [pod_u(:,2:end); pod_v(:,2:end)]'*([Me;Me].*nl_bas)*inv(nl_bas(inds,:)); 
         % For testing
@@ -182,22 +185,20 @@ function [out_coef] = conv_deim(ucoef, pod_u, pod_v, nl_bas, nl_snaps_u, nl_snap
         % Matrices for CLSDEIM
         % Doesn't seem like the 2 should be necessary
         %Ainv = inv(2*nl_bas(inds,:)'*nl_bas(inds,:));
-        Ainv = inv(nl_bas(inds,:)'*nl_bas(inds,:));
+        if clsdeim
+            Ainv = inv(nl_bas(inds,:)'*nl_bas(inds,:));
 
-        % Matrices for MCLSDEIM
-        nl_snapshot_proj = nl_bas'*[nl_snaps_u; nl_snaps_v];
-        tau = inv(cov(nl_snapshot_proj'));
-        size(nl_snapshot_proj)
-        size(tau)
-        size(nl_bas_inds)
-        mu = mean(nl_snapshot_proj,2);
-        alpha = 1e-14;
-        A_tau_inv = inv(nl_bas(inds,:)'*nl_bas(inds,:) + alpha*tau); 
-
-        
-        proj_and_interp_mat = proj_mat*interp_mat;
-
-        
+            % Matrices for MCLSDEIM
+            nl_snapshot_proj = nl_bas'*[nl_snaps_u; nl_snaps_v];
+            tau = inv(cov(nl_snapshot_proj'));
+            size(nl_snapshot_proj)
+            size(tau)
+            size(nl_bas_inds)
+            mu = mean(nl_snapshot_proj,2);
+            alpha = 1e-14;
+            A_tau_inv = inv(nl_bas(inds,:)'*nl_bas(inds,:) + alpha*tau); 
+        end;
+         
     end;
 
     mclsdeim = false;
