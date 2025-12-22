@@ -1,4 +1,4 @@
-function [bas, u0, uk] = get_pod_basis(u_snaps, v_snaps, x, y, nb, subtract_mean, conserve_momentum)
+function [bas, u0, uk] = get_pod_basis_from_arrays(u_snaps, v_snaps, x, y, nb, subtract_mean, conserve_momentum)
         % Currently only supports the H10 inner product 
         % Returns the average as the first column followed by nb basis vectors
 
