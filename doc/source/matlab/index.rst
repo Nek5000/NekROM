@@ -33,9 +33,19 @@ Operators
 
 .. mat:automodule:: matlab.operators
 
+.. mat:autofunction:: conv_deim
+
 .. mat:autofunction:: conv_fom
 
-.. mat:autofunction:: conv_deim
+.. mat:autofunction:: conv_tensor_dense
+
+.. mat:autofunction:: conv_tensor
+
+.. mat:autofunction:: conv_tensor_sparse
+
+.. mat:autofunction:: gen_Au
+
+.. mat:autofunction:: get_Me
 
 .. mat:autofunction:: lgrad
 
@@ -48,14 +58,23 @@ Input and Output
 
 .. mat:automodule:: matlab.io
 
-.. mat:autofunction:: load_full_ops
+.. mat:autofunction:: get_grid
+
+.. mat:autofunction:: get_pod_basis_from_arrays
+
+.. mat:autofunction:: get_pod_basis
 
 .. mat:autofunction:: get_r_dim_ops
 
-.. mat:autofunction:: get_grid
-
 .. mat:autofunction:: get_snaps
 
+.. mat:autofunction:: get_sort_order
+
+.. mat:autofunction:: load_full_ops
+
+.. mat:autofunction:: output_fields
+
+.. mat:autofunction:: write_field
 
 .. _matlab_point_generator_section_tag:
 
