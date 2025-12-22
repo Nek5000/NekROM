@@ -430,25 +430,6 @@ c      ifxyo=.true.
       return
       end
 c-----------------------------------------------------------------------
-      subroutine zmode_conv_interactions
-      ! Needs to do the equivalent of this:
-      ! c2 = Me_pod'*([pod_u;pod_u].*[ux_pods(:,1);vx_pods(:,1)] + ...
-      !              [pod_v;pod_v].*[uy_pods(:,1);vy_pods(:,1)]);
-      ! c3 = Me_pod'*([pod_u(:,1);pod_u(:,1)].*[ux_pods;vx_pods] + ...
-      !                [pod_v(:,1);pod_v(:,1)].*[uy_pods;vy_pods]);
-      ! zeroth_mode_contribution = c2 + c3;
-      !  % The first row was counted twice.
-      !  zeroth_mode_contribution(:,1) = zeroth_mode_contribution(:,1)/2;
-
-      
-
-      end
-c-----------------------------------------------------------------------
-      subroutine gpode
-      ! Eventually implement the full gpode algorithm. For now, just use
-      ! pivoted qr only
-      end
-c-----------------------------------------------------------------------
       subroutine dump_misc
       ! Dump miscellaneous items
       include 'SIZE'
