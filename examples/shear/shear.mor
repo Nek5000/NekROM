@@ -10,7 +10,7 @@ mode0    = avg # 0th mode of the POD basis (avg=mean(snaps),state=vx,vy,vz,t)
 [QOI]
 freq = 10 # frequency of qoi dump (<1 -> iostep)
 tke  = no # turbulence kinetic energy
-drag = yes # drag based on OBJ data
+drag = no # drag based on OBJ data
 nu   = 0  # nusselt number based on problem type (1-3)
 
 [DEIM]
