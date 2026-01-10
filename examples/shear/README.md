@@ -1,5 +1,10 @@
 # Double shear-layer rol-up
 
+The below is the README text from the Nek5000 case
+on which this example is based.
+
+-----------------------------------------------------
+
 Thin and thick shear layer cases are considered.
 
 Also, these cases illustrate transport of multiple passive scalars.

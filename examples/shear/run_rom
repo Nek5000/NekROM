@@ -1,0 +1,12 @@
+#!/bin/bash
+
+casename="shear"
+usr_file="${casename}_rom"
+
+makerom $usr_file
+nekmpi ${casename} 1
+
+logfile=${casename}_rom.log.1
+
+snaps_dir="snaps"
+mv *${casename}0.f* $snaps_dir
