@@ -1,0 +1,131 @@
+c-----------------------------------------------------------------------
+      subroutine uservp(i,j,k,eg) ! set variable properties
+
+      integer e,eg,f
+     
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+c     e = gllel(eg)
+
+      udiff  = 0.0
+      utrans = 0.0
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine userf(i,j,k,eg) ! set acceleration term
+c
+c     Note: this is an acceleration term, NOT a force!
+c     Thus, ffx will subsequently be multiplied by rho(x,t).
+c
+      integer e,eg,f
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+c     e = gllel(eg)
+
+      ffx = 0.0
+      ffy = 0.0
+      ffz = 0.0
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine userq(i,j,k,eg) ! set source term
+
+      integer e,eg,f
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+c     e = gllel(eg)
+
+      qvol   = 0.0
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine userbc(i,j,k,f,eg) ! set up boundary conditions
+c
+c     NOTE ::: This subroutine MAY NOT be called by every process
+c
+      integer e,eg,f
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+c     if (cbc(iside,gllel(eg),ifield).eq.'v01')
+
+      ux   = 0.0
+      uy   = 0.0
+      uz   = 0.0
+      temp = 0.0
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine useric(i,j,k,eg) ! set up initial conditions
+
+      integer e,eg,f
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+      ux   =  sin(pi*x)*cos(pi*y)
+      uy   = -cos(pi*x)*sin(pi*y)
+      uz   = 0.0
+      temp = 0.0
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine userchk
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine userqtl ! Set thermal divergence
+
+      call userqtl_scig 
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine usrdat   ! This routine to modify element vertices
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine usrdat3
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine usrdat2
+      include 'SIZE'
+      include 'TOTAL'
+
+      common /irefine/ ncut
+
+      integer e,eg,f
+
+      x0 = -1.0
+      x1 =  1.0
+      call rescale_x(xm1,x0,x1)
+      call rescale_x(ym1,x0,x1)
+
+      return
+      end
+c-----------------------------------------------------------------------
