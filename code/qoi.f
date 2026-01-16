@@ -236,6 +236,54 @@ c-----------------------------------------------------------------------
             pdy3=pdy3/ad_re
             dx=pdx1+pdx2+pdx3+vdx
             dy=pdy1+pdy2+pdy3+vdy
+            if (nio.eq.0) write (6,2) time,vdx,pdx3,dx,'dragx'
+            if (nio.eq.0) write (6,2) time,vdy,pdy3,dy,'dragy'
+            if (ldim.eq.3) then
+               dz=vlsc2(rdgz,u,nb+1)/ad_re
+               write (6,*) ad_step*dt,vdz,'dragz'
+            endif
+         endif
+      endif
+
+    1 format (1p6e16.8,2x,a)
+    2 format (1p4e16.8,2x,a)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine cdrag_new
+
+      include 'SIZE'
+      include 'TSTEP'
+      include 'MOR'
+
+      real tmp(0:nb)
+
+      if (ifcdrag) then
+         if (nio.eq.0) then
+            vdx=vlsc2(rdgx,u,nb+1)/ad_re
+            vdy=vlsc2(rdgy,u,nb+1)/ad_re
+            pdx1=0.
+            pdx2=0.
+            pdx3=0.
+            pdy1=0.
+            pdy2=0.
+            pdy3=0.
+            call mxm(u,nb+1,ad_beta(2,count),3,tmp,1)
+            do j=0,nb
+               pdx1=pdx1+fd1(1+ldim*j)*tmp(j)
+               pdy1=pdy1+fd1(2+ldim*j)*tmp(j)
+               do i=0,nb
+                  pdx2=pdx2+fd2(1+ldim*i+ldim*(nb+1)*j)*u(j)*u(i)
+                  pdy2=pdy2+fd2(2+ldim*i+ldim*(nb+1)*j)*u(j)*u(i)
+               enddo
+               pdx3=pdx3+fd3(1+ldim*j)*u(j)
+               pdy3=pdy3+fd3(2+ldim*j)*u(j)
+            enddo
+            pdx3=pdx3/ad_re
+            pdy3=pdy3/ad_re
+            dx=pdx1+pdx2+pdx3+vdx
+            dy=pdy1+pdy2+pdy3+vdy
             if (nio.eq.0) write (6,2) ad_step,time,dx,pdx3,vdx,'dragx'
             if (nio.eq.0) write (6,2) ad_step,time,dy,pdy3,vdy,'dragy'
             if (ldim.eq.3) then
