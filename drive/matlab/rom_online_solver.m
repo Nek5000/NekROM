@@ -51,7 +51,7 @@ thiscase = cases(2);
 % TODO: Should just use the values from the .rea or MOR file by default
 switch thiscase
     case 'ldc'
-        path='../../examples/ldc_v2/';
+        path='../../examples/ldc/';
         snaps_path=strcat(path,'snaps/');
         casename='ldc';
 
@@ -71,7 +71,7 @@ switch thiscase
         nu     = 0.01;
         nb     = 20;
     case 'shear'
-        path='../../examples/shear4/';
+        path='../../examples/shear/';
         snaps_path=strcat(path,'snaps/');
         casename='nick'%'shear4';%'thin';
 
