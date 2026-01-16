@@ -1,0 +1,11 @@
+#!/bin/bash
+
+casename="ldc"
+np=2
+makerom ${casename}_rom
+nekmpi ${casename} ${np}
+
+logfile=${casename}.log.${np}
+
+snaps_dir="snaps"
+mv *${casename}0.f* $snaps_dir
