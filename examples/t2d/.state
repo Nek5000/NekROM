@@ -1,9 +1,0 @@
-NEK_SOURCE_ROOT=/home/fischerp/Nek5000
-FC=mpif77
-FFLAGS=
-FCPP=-cpp
-FR8=-fdefault-real-8 -fdefault-double-8
-FF77=-w -std=legacy
-CC=mpicc
-CFLAGS=
-PPLIST= MPI UNDERSCORE TIMER
