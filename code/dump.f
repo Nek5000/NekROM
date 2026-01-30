@@ -384,6 +384,9 @@ c-----------------------------------------------------------------------
 
       logical iftmp,iftmp2
 
+      integer pind(1)
+      integer pmat(1,1) 
+
       ! Compute convection field for each snapshot and store in snapt
       call evalcflds(snapt,us0,us0,ldim,ns,.false.)
 
@@ -393,8 +396,7 @@ c-----------------------------------------------------------------------
 c      ifxyo=.true.
       ifpo=.false.
 
-      ! Dump the convection snapshots
-      ! Maybe add a flag to save this or not
+      ! Dump the convection snapshots if enabled
       if(ifdumpnls) then
         do i=1,ns
           ifxyo=(i.eq.1)
@@ -426,7 +428,10 @@ c      ifxyo=.true.
 
       ifxyo=iftmp
       ifpo=iftmp2
-      
+
+      !deim_build(M,K,U,PIND,P)
+      call deim_build(1,1,uvwbnl(1,1,1),pind,pmat)      
+
       return
       end
 c-----------------------------------------------------------------------
