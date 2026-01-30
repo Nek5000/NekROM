@@ -429,9 +429,6 @@ c      ifxyo=.true.
       ifxyo=iftmp
       ifpo=iftmp2
 
-      !deim_build(M,K,U,PIND,P)
-      call deim_build(1,1,uvwbnl(1,1,1),pind,pmat)      
-
       return
       end
 c-----------------------------------------------------------------------
