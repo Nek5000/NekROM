@@ -393,7 +393,6 @@ c-----------------------------------------------------------------------
       iftmp=ifxyo
       iftmp2=ifpo
 
-c      ifxyo=.true.
       ifpo=.false.
 
       ! Dump the convection snapshots if enabled
