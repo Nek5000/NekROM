@@ -2,6 +2,7 @@ function [index] = s_opt(Vo, M, index, outfile)
 % S_OPT Generates S-optimal indices of a matrix
 %   Optimized implementation focusing on vectorization and memory efficiency.
 %   Obtained by querying Gemini for improvements to the original algorithm.
+%   Original code in the `extra` folder.  
 %
 %   Parameters:
 %       Vo      : Candidate Matrix (N_Bm x N)
@@ -38,7 +39,6 @@ function [index] = s_opt(Vo, M, index, outfile)
             atA0 = V_curr_col' * V_prev;
             ata = sum(V_curr_col.^2);
             
-            % FIXED: Corrected vertical concatenation [atA0; Vo']
             % bbb results in (i-1) x (1 + N_Bm)
             bbb = (V_prev' * V_prev) \ [atA0; Vo(:, 1:i-1)]';
             
