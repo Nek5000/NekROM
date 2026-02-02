@@ -22,6 +22,8 @@ function [indices] = gappy_pod_fast(U_nl, n, method)
     
     if strcmp(method, 'synced')
         % Paper logic: nested loops to sync samples to specific modes
+        % For the oversampled case, this spends more of the budget when
+        % fewer basis vectors are present.
         n_iter = ceil((n - 1) / (p - 1));
         curr = 1;
         for i = 2:p
@@ -46,6 +48,8 @@ function [indices] = gappy_pod_fast(U_nl, n, method)
         end
     else
         % Spread logic: single loop, distributing modes gradually
+        % For the oversampled case, this spends more of the budget
+        % after all basis vectors are present.
         for j = 2:n
             col_idx = min(p, ceil(j * p / n));
             U_sub = U_nl(:, 1:col_idx-1);
