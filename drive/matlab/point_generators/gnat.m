@@ -1,79 +1,37 @@
-% https://github.com/LLNL/libROM/blob/master/unit_tests/matlab/gnat.m
-%function [inv_Q] = gnat(Q, m_used, nsr)
-function [phi_sort_order] = gnat(Q, m_used, nsr)
-% Input:      Q: n by m matrix with orthonormal columns
-%        m_used: number of basis_vectors to use
-%           nsr: number of samples required
+%% --- Optimized Implementation ---
+% Fed libROM implementation into Gemini
+function [phi] = gnat_optimized(Q, m_used, nsr)
+    [n, total_m] = size(Q);
+    m = min(m_used, total_m);
+    ns = iif(nsr > 0, nsr, m);
 
-    phi = [];
-    used = [];
-    U = Q(:,1);
-    Q_sampled = [];
-    m = min(m_used, size(Q,2));
-    if nsr > 0
-        ns = nsr;
-    else
-        ns = m;
-    end
-    n = size(Q,1);
-    ns_mod_nr = mod(ns,m);
-    if 0 < ns_mod_nr
-        nsi = idivide(int32(ns), int32(m), 'floor') + 1;
-    else
-        nsi = idivide(int32(ns), int32(m), 'floor');
-    end
-    P = [];
-    for i = 1:nsi
-        s_row = -1;
-        s_row_val = Inf;
-        for j = 1:n
-            if ~any(used(:) == j)
-                if s_row == -1 || s_row_val < abs(Q(j,1))
-                    s_row = j;
-                    s_row_val = abs(Q(j,1));
-                end
-            end
-        end
-        used(end + 1) = s_row;
-        phi(end + 1) = s_row;
-        newPcol = zeros(n,1);
-        newPcol(phi(end)) = 1;
-        P = [P newPcol];
-        Q_sampled = [Q_sampled;Q(phi(end),:)];
-    end
-    for l = 2:m
-        M = transpose(P)*U;
-        inv_M = pinv(M);
-        RHS = transpose(P) * Q(:, l);
-        c = inv_M * RHS;
-        r = Q(:,l) - U*c;
-        U = [U Q(:,l)];
-        if l - 1 < ns_mod_nr
-            nsi = idivide(int32(ns), int32(m), 'floor') + 1;
+    phi = zeros(1, ns);
+    is_used = false(n, 1);
+    base_nsi = floor(ns / m);
+    ns_mod_nr = mod(ns, m);
+    U = [];
+    curr_phi_idx = 0;
+
+    for l = 1:m
+        if l == 1
+            r = Q(:, 1);
         else
-            nsi = idivide(int32(ns), int32(m), 'floor');
+            % Vectorized sampling indexing instead of P matrix multiplication
+            sampled_indices = phi(1:curr_phi_idx);
+            c = U(sampled_indices, :) \ Q(sampled_indices, l);
+            r = Q(:, l) - U * c;
         end
+        U = [U, Q(:, l)];
+        nsi = base_nsi + (l <= ns_mod_nr);
         for i = 1:nsi
-            s_row = -1;
-            s_row_val = Inf;
-            for j = 1:n
-                if ~any(used(:) == j)
-                    if s_row == -1 || s_row_val < abs(r(j,1))
-                        s_row = j;
-                        s_row_val = abs(r(j,1));
-                    end
-                end
-            end
-            used(end + 1) = s_row;
-            phi(end + 1) = s_row;
-            newPcol = zeros(n,1);
-            newPcol(phi(end)) = 1;
-            P = [P newPcol];
-            Q_sampled = [Q_sampled;Q(phi(end),:)];
+            temp_r = abs(r);
+            temp_r(is_used) = -1;
+            [~, s_row] = max(temp_r);
+            curr_phi_idx = curr_phi_idx + 1;
+            phi(curr_phi_idx) = s_row;
+            is_used(s_row) = true;
         end
     end
-    [~, phi_sort_order] = sort(phi);
-    Q_sampled = Q_sampled(phi_sort_order,:);
-    inv_Q = transpose(pinv(Q_sampled));
 end
 
+function val = iif(cond, t, f), if cond, val = t; else, val = f; end, end
