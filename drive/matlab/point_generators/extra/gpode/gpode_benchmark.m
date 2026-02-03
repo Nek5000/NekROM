@@ -16,7 +16,7 @@ fprintf('Original Version:    %.4f seconds\n', t_orig);
 
 % Time Incremental Version
 tic;
-p_incr = gpode_incremental(U, M);
+p_incr = gpode_adaptive(U, M);
 t_incr = toc;
 fprintf('Incremental Version: %.4f seconds\n', t_incr);
 
@@ -34,7 +34,10 @@ fprintf('Improved Speedup: %.2fx\n', t_imp / t_incr);
 % Verification: Check if the selected indices match
 if isequal(p_orig, p_incr)
     fprintf('Results: Identical ✅\n');
-elseif isequal(p_orig, p_imp)
+else
+    fprintf('Results: Different (Numerical noise or logic divergence) ⚠️\n');
+end
+if isequal(p_orig, p_imp)
     fprintf('Results: Identical ✅\n');
 else
     fprintf('Results: Different (Numerical noise or logic divergence) ⚠️\n');

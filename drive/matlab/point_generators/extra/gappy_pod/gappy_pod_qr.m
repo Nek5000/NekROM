@@ -1,8 +1,8 @@
-function [indices] = gappy_pod(U_nl, n, method, tol)
+function [indices] = gappy_pod_qr(U_nl, n, method, tol)
 % GAPPY_POD_QR Optimized Gappy POD / DEIM with oversampling.
 %
 % USAGE:
-%    [indices] = gappy_pod(U_nl, n, 'synced', 1e-10)
+%    [indices] = gappy_pod_qr(U_nl, n, 'synced', 1e-10)
 %
 % INPUTS:
 %    U_nl   - Basis matrix (N x p), usually POD modes.
