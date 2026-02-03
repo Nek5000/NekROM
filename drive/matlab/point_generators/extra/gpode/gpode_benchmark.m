@@ -14,31 +14,32 @@ p_orig = gpode_original(U, M);
 t_orig = toc;
 fprintf('Original Version:    %.4f seconds\n', t_orig);
 
-% Time Incremental Version
+% Time Adaptive Version
 tic;
-p_incr = gpode_adaptive(U, M);
+p_incr = qdeim_adaptive(U, M);
 t_incr = toc;
-fprintf('Incremental Version: %.4f seconds\n', t_incr);
+fprintf('Adaptive Version: %.4f seconds\n', t_incr);
+
 
 % Time Improved Version
 tic;
 p_imp = gpode_improved(U, M);
 t_imp = toc;
-fprintf('Original Version:    %.4f seconds\n', t_imp);
+
+fprintf('Improved Version:    %.4f seconds\n', t_imp);
 
 
-
-fprintf('Incremental Speedup: %.2fx\n', t_orig / t_incr);
-fprintf('Improved Speedup: %.2fx\n', t_imp / t_incr);
+fprintf('Adaptive Speedup: %.2fx\n', t_orig / t_incr);
+fprintf('Improved Speedup: %.2fx\n', t_orig / t_imp);
 
 % Verification: Check if the selected indices match
 if isequal(p_orig, p_incr)
-    fprintf('Results: Identical ✅\n');
+    fprintf('Results: Adaptive Identical ✅\n');
 else
     fprintf('Results: Different (Numerical noise or logic divergence) ⚠️\n');
 end
 if isequal(p_orig, p_imp)
-    fprintf('Results: Identical ✅\n');
+    fprintf('Results: Improved Identical ✅\n');
 else
     fprintf('Results: Different (Numerical noise or logic divergence) ⚠️\n');
 end
