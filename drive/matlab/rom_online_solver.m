@@ -46,7 +46,7 @@ addpath('./operators')
 % Use one of the pre-existing cases or add your own
 % Needs to be string, not a character array.
 cases = ["ldc", "cyl", "shear", "t2d"];
-thiscase = cases(2);
+thiscase = cases(3);
 
 % TODO: Should just use the values from the .rea or MOR file by default
 switch thiscase
@@ -73,7 +73,7 @@ switch thiscase
     case 'shear'
         path='../../examples/shear/';
         snaps_path=strcat(path,'snaps/');
-        casename='nick'%'shear4';%'thin';
+        casename='shear'%'shear4';%'thin';
 
         %nsteps = 4000; %Reconstruction
         %nsteps = 8000; % Extrapolation
@@ -81,7 +81,7 @@ switch thiscase
         dt     = 1e-3;
         iostep = 100;
         nu     = 1/1000;
-        nb     = 30; 
+        nb     = 20; 
     case 'td2'
         path='../../examples/t2d/';
         casename='t2d';
@@ -136,7 +136,7 @@ ps_algs = ["sopt", "gpode", "gappy_pod", "gnat"];
 ps_alg = ps_algs(1);
 
 conv_approaches = ["fom", "ftensor", "rtensor", "deim", "clsdeim"];
-conv_approach = conv_approaches(5);
+conv_approach = conv_approaches(2);
 
 switch conv_approach
     case 'fom'
@@ -175,7 +175,7 @@ reorder = 1;
 
 % Load the grid and the snapshots 
 cname=strcat(snaps_path,strcat('bas',casename));
-bas_snaps = NekSnaps(cname);
+bas_snaps = NekSnaps(cname); 
 [pod_u, pod_v] = get_snaps(bas_snaps,0);
 [x_fom, y_fom] = get_grid(bas_snaps,0);
 inde = bas_snaps.flds{1}.inde;
@@ -194,8 +194,8 @@ inde = bas_snaps.flds{1}.inde;
 
 %end;
 
-
-casedir = sprintf('%s_%s', casename, datestr(now, 'yyyy-mm-dd-HH-MM-SS/'));
+mkdir('output');
+casedir = sprintf('output/%s_%s', casename, datestr(now, 'yyyy-mm-dd-HH-MM-SS/'));
 mkdir(casedir);
 basepath = strcat(casedir, 'fields/', casename);
 %logfile = fopen(strcat(casedir,'logfile', 'wt'));
@@ -244,7 +244,8 @@ end;
 Me = get_Me(x_fom, y_fom);
 
 %% Can call tests here if desired
-% tests
+%tests
+%exit;
 
 % Note that these are in the original ordering from the Nek5000 simulation
 [au, a0, bu, cu, c0, c1, c2, c3, u0, uk, ukmin, ukmax] = get_r_dim_ops(au_full, bu_full, cu_full, u0_full, uk_full, nb);

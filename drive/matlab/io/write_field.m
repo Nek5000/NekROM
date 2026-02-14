@@ -1,129 +1,86 @@
-% See https://nek5000.github.io/NekDoc/problem_setup/case_files.html#restart-output-files-f
-% Just handle writing out the coordinates and the velocity field for now.
-% This might not be worthwhile since deriv_geo doesn't support 3D currently
-% Whatever, might be worth it just to support 2D.
-
-function [] = write_field(basepath, data)
-
-    %TODO: Support 3D
-
-    time = data.time;
-    iostep = data.iostep;
-    [path, basename, ~] = fileparts(basepath);
-
-    if prod(size(path)) > 0 & ~exist(path);
-        mkdir(path);
-    end;
-
-    % Open file for writing
-    filename = sprintf('%s0.f%05d', basepath, iostep + 1);
-    [fileID, msg] = fopen(filename, 'W', 'native', 'US-ASCII');
-    assert(prod(size(msg)) == 0, msg);
-
-    wdsize = 4; % For visualization, we probably don't need double precision.
-    %wdsize = 8;
-    if wdsize == 8;
-        precision = 'double';
-    elseif wdsize == 4;
-        precision = 'single';
-    else
-        print("Invalid wdsize");
-        exit;
-    end;
-    sz = data.size;
-    %fldnames = fieldnames(data);
-    %first_field = fldnames{1}
-    %sz = size(data.(first_field)); 
-    % Expand this to support 3D?
-    nx = sz(1); 
-    ny = sz(2);
-    nz = 1;
-    nxyz = nx*ny*nz;
-    nelt = size(data.inde,1);
-    nelgt = nelt;
-    fid = 0;
-    nfileoo = 1;
+function [] = write_field(basepath, data, wdsize)
+    % Determined Dimensions
+    sz = size(data.x); 
+    ndim = 2; 
+    if isfield(data, 'z') || (numel(sz) == 4), ndim = 3; end
     
-    % For now, look at the fields and iostep to see what to write.
+    nx = sz(1); ny = sz(2);
+    nz = 1; if ndim == 3, nz = sz(3); end
+    nxyz = nx * ny * nz;
+
+    % 1. Robust Metadata Extraction
+    if isfield(data, 'nel'),        nelt = data.nel;
+    elseif isfield(data, 'inde'),   nelt = size(data.inde, 1);
+    else,                           nelt = sz(end); 
+    end
+
+    if isfield(data, 'istep'),      istep_val = data.istep;
+    elseif isfield(data, 'iostep'), istep_val = data.iostep;
+    else,                           istep_val = 0; 
+    end
+
+    if isfield(data, 'time'),       time_val = data.time;
+    else,                           time_val = 0.0; 
+    end
+
+    % 2. Setup Precision
+    if nargin < 3 || isempty(wdsize)
+        wdsize = 4; % Default to single for viz speed
+        if isa(data.x, 'double'), wdsize = 8; end
+    end
+    precision = 'single'; if wdsize == 8, precision = 'double'; end
+
+    % 3. Build rdcode
     rdcode = '';
-    if isfield(data, 'x');
-        rdcode='X';
-    end;
-    if isfield(data, 'u');
-        rdcode = append(rdcode, 'U');
-    end;
-    if isfield(data, 't');
-        rdcode = append(rdcode, 'T');
-    end;
-
-    ndim = 2;
+    if isfield(data, 'x'), rdcode = [rdcode 'X']; end
+    if isfield(data, 'u'), rdcode = [rdcode 'U']; end
+    if isfield(data, 'p'), rdcode = [rdcode 'P']; end
+    if isfield(data, 't'), rdcode = [rdcode 'T']; end
     
-    p0th = 1.0;
-    if_press_mesh = 'F';
+    npsc = 0;
+    while isfield(data, sprintf('s%d', npsc + 1)), npsc = npsc + 1; end
+    if npsc > 0, rdcode = [rdcode 'S' num2str(npsc)]; end
 
-    % Write the header
-    % The specification doesn't mention it, but for visit to read the field files, the
-    % numbers need to be right justified and the strings need to be left justified.
-    fprintf(fileID, ...
-        '#std %1d %2d %2d %2d %10d %10d %20.13E %9d %6d %6d %-10s %15.7E %-22s', ...
-        wdsize,nx,ny,nz,nelt,nelgt,time,iostep,fid,nfileoo,rdcode,p0th,if_press_mesh); 
-    fwrite(fileID, 6.54321, 'float32');
-    assert(ftell(fileID) == 136);
+    % 4. File I/O
+    [path, ~, ~] = fileparts(basepath);
+    if ~isempty(path) && ~exist(path, 'dir'), mkdir(path); end
 
-    % Write global element ids
+    filename = sprintf('%s0.f%05d', basepath, istep_val + 1);
+    [fileID, msg] = fopen(filename, 'wb', 'ieee-le'); 
+    assert(isempty(msg), msg);
+
+    % Header (Fixed 132-byte width)
+    header = sprintf('#std %1d %2d %2d %2d %10d %10d %20.13E %9d %6d %6d %-10s %15.7E %-22s', ...
+        wdsize, nx, ny, nz, nelt, nelt, time_val, istep_val, 0, 1, rdcode, 1.0, 'F');
+    header = [header repmat(' ', 1, 132 - length(header))];
+    fwrite(fileID, header, 'char');
+    fwrite(fileID, 6.54321, 'float32'); % Endian tag
+
+    % 5. Data Blocks
     fwrite(fileID, data.inde, 'int32');
 
-    % Temporary array to hold data
-    %tempv = zeros(nxyz,ndim,nelt, precision);
+    if isfield(data, 'x')
+        xyz = zeros(nxyz, ndim, nelt, precision);
+        xyz(:,1,:) = reshape(data.x, [nxyz, 1, nelt]);
+        xyz(:,2,:) = reshape(data.y, [nxyz, 1, nelt]);
+        if ndim == 3, xyz(:,3,:) = reshape(data.z, [nxyz, 1, nelt]); end
+        fwrite(fileID, xyz, precision);
+    end
 
-    % Write coordinates
-    if contains(rdcode, 'X');
-        % Correct
-        %tempv(:,1,:) = reshape(data.x, [nxyz,nelt]);
-        %tempv(:,2,:) = reshape(data.y, [nxyz,nelt]);
-        %fwrite(fileID, tempv, precision);
+    if isfield(data, 'u')
+        uvw = zeros(nxyz, ndim, nelt, precision);
+        uvw(:,1,:) = reshape(data.u, [nxyz, 1, nelt]);
+        uvw(:,2,:) = reshape(data.v, [nxyz, 1, nelt]);
+        if ndim == 3, uvw(:,3,:) = reshape(data.w, [nxyz, 1, nelt]); end
+        fwrite(fileID, uvw, precision);
+    end
 
-        % Matlab is copy-on-write so reshaping should be fast
-        X = reshape(data.x, [nxyz,nelt]);
-        Y = reshape(data.y, [nxyz,nelt]);
-        for i=1:nelt;
-            fwrite(fileID, X(:,i), precision);
-            fwrite(fileID, Y(:,i), precision);
-        end;
-        % Incorrect
-        %fwrite(fileID, x, precision);
-        %fwrite(fileID, y, precision);
-    end;
+    if isfield(data, 'p'), fwrite(fileID, cast(data.p, precision), precision); end
+    if isfield(data, 't'), fwrite(fileID, cast(data.t, precision), precision); end
 
-    % Write velocity
-    if contains(rdcode, 'U');
-        %tempv(:,1,:) = reshape(data.u, [nxyz,nelt]);
-        %tempv(:,2,:) = reshape(data.v, [nxyz,nelt]);
-        %fwrite(fileID, tempv, precision); 
+    for i = 1:npsc
+        fwrite(fileID, cast(data.(sprintf('s%d', i)), precision), precision);
+    end
 
-        U = reshape(data.u, [nxyz,nelt]);
-        V = reshape(data.v, [nxyz,nelt]);
-        for i=1:nelt;
-            fwrite(fileID, U(:,i), precision);
-            fwrite(fileID, V(:,i), precision);
-        end;
-
-    end;
-
-    % Write pressure
-    % TODO
-
-    % Write temperature
-    if contains(rdcode, 'T');
-        fwrite(fileID, data.t, precision);
-        %tempv(:,1,:) = reshape(data.t, [nxyz,nelt]);
-        %fwrite(fileID,tempv(:,1,:)
-    end;
-
-    % Passive scalars
-    % TODO
-
-    % Close file
     fclose(fileID);
 end
-
