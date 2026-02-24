@@ -1,11 +1,26 @@
-function [Me] = get_Me(x,y)
+function [Me] = get_Me(x, y)
+    persistent cached_x cached_y cached_Me
+    
+    % Check if we've already computed this for the current x and y
+    if isequal(x, cached_x) && isequal(y, cached_y)
+        Me = cached_Me;
+        return;
+    end
 
-    %x=snaps.flds{1}.x;
-    %y=snaps.flds{1}.y;
-    nx1 = size(x,1);
+    % --- Original Logic ---
+    nx1 = size(x, 1);
     [zi, w] = zwgll(nx1-1);
     d = deriv_mat(zi);
-    [xr,yr,xs,ys,rx,ry,sx,sy,jac,jaci,d] = deriv_geo(x,y,d);
-    nL = prod(size(x));
-    Me = reshape(jac.*(w*w'),nL,1);
+    
+    % Optimization: Only extract 'jac' if the other outputs aren't used
+    [~, ~, ~, ~, ~, ~, ~, ~, jac, ~, ~] = deriv_geo(x, y, d);
+    
+    % Vectorized weight multiplication
+    % Using (w * w') is an outer product; ensure w is a column vector
+    Me = reshape(jac .* (w * w'), [], 1); 
+
+    % Update Cache
+    cached_x = x;
+    cached_y = y;
+    cached_Me = Me;
 end
