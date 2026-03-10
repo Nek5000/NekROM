@@ -135,8 +135,8 @@ end
 ps_algs = ["sopt", "gpode", "gappy_pod", "gnat"];
 ps_alg = ps_algs(1);
 
-conv_approaches = ["fom", "ftensor", "rtensor", "deim", "clsdeim"];
-conv_approach = conv_approaches(2);
+conv_approaches = ["fom", "ftensor", "rtensor", "deim", "clsdeim", "mclsdeim"];
+conv_approach = conv_approaches(4);
 
 switch conv_approach
     case 'fom'
@@ -146,13 +146,8 @@ switch conv_approach
     case 'rtensor'
         ts1 = idivide(nb,int32(2));
         tensor_size = [ts1, ts1, ts1]; 
-    case {'deim', 'clsdeim'}
+    case {'deim', 'clsdeim', 'mclsdeim'}
         clsdeim = false;
-        if conv_approach == 'clsdeim';
-            % TODO: Make this a string rather than a boolean
-            % to handle multiple methods
-            clsdeim = true;
-        end;
         ndeim_pts = 200;
         assert(ndeim_pts > 0);
         os_multiplier = 2;
@@ -208,14 +203,14 @@ basepath = strcat(casedir, 'fields/', casename);
 %exit; 
 
 %% Get the non-linear snapshots and calculate the DEIM points
-if conv_approach == "deim" || conv_approach == "clsdeim";
+if conv_approach == "deim" || conv_approach == "clsdeim" || conv_approach == "mclsdeim";
 
     matlab_pod_basis = 0;
-    % Needed for CLSDEIM and computing POD basis in MATLAB
-    % Seems like a flaw in CLSDEIM to require loading all of
+    % Needed for MCLSDEIM and computing POD basis in MATLAB
+    % Seems like a flaw in MCLSDEIM to require loading all of
     % the snapshots. Is there another way to do this?
 
-    if matlab_pod_basis || conv_approach == "clsdeim"
+    if matlab_pod_basis || conv_approach == "mclsdeim"
         nl_cname = strcat(snaps_path,strcat('csn',casename));
         nl_snaps_obj = NekSnaps(nl_cname);        
         [nl_snaps_u, nl_snaps_v] = get_snaps(nl_snaps_obj,reorder);
@@ -235,6 +230,8 @@ if conv_approach == "deim" || conv_approach == "clsdeim";
         [nl_bas_u_nr, nl_bas_v_nr] = get_snaps(nl_bas_obj_nr,reorder);
         nl_bas = [nl_bas_u_nr; nl_bas_v_nr];
     end;
+
+    deim_data = setup_conv_deim(pod_u, pod_v, nl_bas, nl_snaps_u, nl_snaps_v, x_fom, y_fom, ndeim_pts, n_os_points, ps_alg);
 end;
 
 [au_full, bu_full, cu_full, u0_full, uk_full, mb, ns] = load_full_ops(strcat(path,'ops'));
@@ -320,14 +317,49 @@ for istep=int32(1:nsteps);
 
     switch conv_approach 
         case 'fom'
-            c_coef = conv_fom(u(:,1), pod_u, pod_v, x_fom, y_fom);
+            dealias=true;
+            c_coef = conv_fom(u(:,1), pod_u, pod_v, x_fom, y_fom,dealias);
+
+            %c_coef2 = conv_fom(u(:,1), pod_u, pod_v, x_fom, y_fom,false);
+
+            %disp("Difference")
+            %norm(c_coef - c_coef2)/norm(c_coef)
+
+            % Should be very close to zero for inviscid cases
+            %size(u(:,1))
+            %size(c_coef)
+            %exit;
+            %energy_check = c_coef' * u(2:end,1);
+            %disp(['Inviscid energy growth: ', num2str(energy_check)]);
         case 'ftensor'
+            % Why doesn't this give the same result as rtensor?
             c_coef = (reshape(c0*utmp(:,1),nb,nb+1)*u(:,1));
+
+            %c_coef = (reshape(c0*u(:,1),nb,nb+1)*u(:,1));
             %c_coef' %ext(:,1)=ext(:,1)-reshape(cu*utmp(:,1),nb,nb+1)*u(:,1);
+
+            %[c_coef2, T_mat] = conv_tensor_dealiased(u(:,1), pod_u, pod_v, x_fom, y_fom);
+
+            c_coef2 = conv_fom(u(:,1), pod_u, pod_v, x_fom, y_fom,1);
+            %size(c0)
+            %size(T_mat)
+            %c0(1:2,1:2)
+            %T_mat(1:2,1:2)
+            %exit;
+
+            disp("Tensor difference")
+            %norm(c0(:) - T_mat(:))/norm(c0)
+            disp("Difference");
+            diff = (c_coef - c_coef2)
+            disp("Absolute difference");
+            adiff = norm(diff)
+            disp("Relative difference");
+            rdiff = norm(adiff) / norm(c_coef)
         case 'rtensor'
             c_coef = conv_tensor_dense(u(:,1), pod_u, pod_v, x_fom, y_fom, tensor_size);
         case {'deim', 'clsdeim'}
-            c_coef = conv_deim(u(:,1), pod_u, pod_v, nl_bas, nl_snaps_u, nl_snaps_v, x_fom, y_fom,  ndeim_pts,istep,clsdeim,n_os_points,ps_alg);
+            %c_coef = conv_deim(u(:,1), pod_u, pod_v, nl_bas, nl_snaps_u, nl_snaps_v, x_fom, y_fom,  ndeim_pts,istep,clsdeim,n_os_points,ps_alg);
+            c_coef = conv_deim_new(u(:,1), deim_data, conv_approach)
         otherwise
             error('Unrecognized conv_approach');
     end;
