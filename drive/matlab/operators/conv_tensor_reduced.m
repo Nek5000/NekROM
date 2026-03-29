@@ -9,9 +9,7 @@
 
 % C computes Phi.T*(u.grad(u)) = Phi.T*((Phi*u_coef).(grad(Phi)*u_coef))
 % By forming the convection tensor.
-% Can specify the size of the tensor or default to computing the entire tensor
-% Add option to enforce skew-symmetry?
-function [out_coef] = conv_tensor_dense(ucoef, pod_u, pod_v, x, y, tensor_size)
+function [out_coef] = conv_tensor_reduced(ucoef, pod_u, pod_v, x, y, tensor_size)
 
     %persistent Me rx ry sx sy jaci d lgrad nL nb tensor nb_i nb_j nb_k
     persistent tensor nb nb_i nb_j nb_k
@@ -25,7 +23,6 @@ function [out_coef] = conv_tensor_dense(ucoef, pod_u, pod_v, x, y, tensor_size)
         nL = prod(size(x));
         nb = size(pod_u,2)
         Me = reshape(jac.*(w*w'),nL,1);
-
 
         if nargin < 6
             % Default to full tensor if dimensions are excluded
@@ -133,8 +130,8 @@ function [out_coef] = conv_tensor_dense(ucoef, pod_u, pod_v, x, y, tensor_size)
     out_coef = [pod_u(:,2:end); pod_v(:,2:end)]'*[conv_u_fom; conv_v_fom]
     %}     
 
-    out_coef = zeros([nb-1,1]);
     outprod = tensorprod(tensor, ucoef(1:nb_i), 1,1);
+    out_coef = zeros([nb-1,1]);
     out_coef(1:nb_k,1) = tensorprod(outprod,ucoef(1:nb_j),1,1);
     out_coef 
     %out_coef
