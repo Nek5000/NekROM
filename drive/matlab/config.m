@@ -1,10 +1,11 @@
 % config.m - Configuration for Galerkin-based reduced order model 
-% Refactored: 2024-09-05
+% Refactored for Octave Compatibility: 2026
 
-%% Case Selection
-cases = ["ldc", "cyl", "shear", "t2d"];
-thiscase = cases(3); % Select "shear"
-casename = char(thiscase);
+%% Case Selections 
+% Use Cell Arrays {} instead of String Arrays [] for Octave compatibility
+cases = {'ldc', 'cyl', 'shear', 't2d'};
+thiscase = cases{3}; % Use curly braces {} to extract string from cell
+casename = thiscase; 
 
 switch thiscase
     case 'ldc'
@@ -12,7 +13,7 @@ switch thiscase
         nsteps = 10 * 1e5; 
         dt     = 1.0e-03;
         iostep = 1000;
-        nu     = 1./15000;
+        nu     = 1/15000;
         nb     = 30;
     case 'cyl'
         path = '../../examples/cyl/';
@@ -36,10 +37,11 @@ switch thiscase
         nu     = 0.0001;
         nb     = 3;  
     otherwise
-        error("Unhandled case name: %s", thiscase);
+        % Octave error() uses standard formatting
+        error(['Unhandled case name: ', thiscase]);
 end
 
-snaps_path = strcat(path, 'snaps/');
+snaps_path = [path, 'snaps/']; % Standard concatenation
 
 %% IO & Physics Flags
 ifvort  = true;  
@@ -70,15 +72,17 @@ radius = 0.01;
 relax = dt; 
 
 %% Convection & DEIM Settings
-ps_algs = ["sopt", "gpode", "gappy_pod", "gnat"];
-ps_alg = ps_algs(1);
+% Converted to cell arrays
+ps_algs = {'sopt', 'gpode', 'gappy_pod', 'gnat'};
+ps_alg = ps_algs{1};
 
-conv_approaches = ["fom", "ftensor", "rtensor", "deim", "clsdeim", "mclsdeim"];
-conv_approach = conv_approaches(6);
+conv_approaches = {'fom', 'ftensor', 'rtensor', 'deim', 'clsdeim', 'mclsdeim'};
+conv_approach = conv_approaches{6};
 
 switch conv_approach
     case 'rtensor'
-        ts1 = idivide(int32(nb), int32(2));
+        % Replaced idivide with floor for generic compatibility
+        ts1 = floor(nb / 2);
         tensor_size = [ts1, ts1, ts1]; 
     case {'deim', 'clsdeim', 'mclsdeim'}
         ndeim_pts = 200;

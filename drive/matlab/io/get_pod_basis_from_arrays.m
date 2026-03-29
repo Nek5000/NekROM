@@ -1,93 +1,105 @@
-function [bas, u0, uk] = get_pod_basis(u_snaps, v_snaps, x, y, nb, subtract_mean, conserve_momentum)
-        % Currently only supports the H10 inner product 
-        % Returns the average as the first column followed by nb basis vectors
+function [bas, u0, uk] = get_pod_basis_from_arrays(u_snaps, v_snaps, x, y, nb, ...
+                                                    subtract_mean, conserve_momentum, method, inner_product)
+    % GET_POD_BASIS_FROM_ARRAYS Performs POD with mass-matrix or diffusion weighting
+    % Updated for Octave/MATLAB compatibility (2026)
+    
+    if nargin < 6; subtract_mean = true; end
+    if nargin < 7; conserve_momentum = false; end
+    if nargin < 8; method = 'snapshots'; end
+    if nargin < 9; inner_product = 'L2'; end
 
-        if nargin < 6
-            % Off by default
-            conserve_momentum = 0;
-        end
+    % --- Mesh and Quadrature Setup ---
+    nx1 = size(x,1);
+    [~, w] = zwgll(nx1-1);
+    d_mat = deriv_mat(zwgll(nx1-1)); 
+    [~,~,~,~,~,~,~,~,jac,~,~] = deriv_geo(x, y, d_mat);
+    
+    nL = numel(x);
+    W_diag = [reshape(jac.*(w*w'), nL, 1); reshape(jac.*(w*w'), nL, 1)];
+    
+    % --- Snapshot Prep ---
+    snaps = [u_snaps; v_snaps];
+    avg_snaps = mean(snaps, 2);
+    pod_snaps = snaps - (subtract_mean * avg_snaps);
 
-        nx1 = size(x,1);
-        [zi, w] = zwgll(nx1-1);
-        d = deriv_mat(zi);
-        [xr,yr,xs,ys,rx,ry,sx,sy,jac,jaci,d] = deriv_geo(x,y,d);
-        nL = prod(size(x));
-        Me = reshape(jac.*(w*w'),nL,1);
-        Me_arr = spdiags([Me;Me], 0, 2*nL, 2*nL);
-        %Me_arr = sparse(diag([Me;Me]));
-        %Me_arr = sparse(diag([Me;Me]*0 + 1));
+    % --- Momentum Conservation ---
+    if conserve_momentum
+        eu = [ones(nL, 1); zeros(nL, 1)];
+        ev = [zeros(nL, 1); ones(nL, 1)];
+        E = [eu, ev];
+        E_norm = sqrt(sum(E .* (W_diag .* E), 1));
+        E = E ./ E_norm;
+        pod_snaps = pod_snaps - E * (E' * (W_diag .* pod_snaps));
+    end
 
-        % Subtract off the average
-        snaps = [u_snaps; v_snaps];
-        avg_snaps = mean(snaps, 2);        
-        %bnorm_avg = sqrt(avg_snaps'*Me*avg_snaps);
-        %avg_snaps = avg_snaps / bnorm_avg;
-        %snaps = snaps / bnorm_avg;
-        %snaps_orig = snaps;
-        if subtract_mean;
-            snaps = (snaps - avg_snaps);
-        end
-        pod_snaps = snaps;
-        %snaps = avg_snaps - snaps;
+    % --- Core POD Calculation ---
+    if strcmpi(inner_product, 'H10') && strcmpi(method, 'svd')
+        warning('Direct SVD is computationally prohibitive for H10. Falling back to ''snapshots''.');
+        method = 'snapshots';
+    end
 
-        if conserve_momentum
-            % Momentum conserving basis vectors (for periodic domain at least)
-            % Only support 2D for the moment.
-            eu = [ones(size(u_snaps(:,1))); zeros(size(v_snaps(:,1)))];
-            ev = [zeros(size(u_snaps(:,1))); ones(size(v_snaps(:,1)))]; 
-            E = [eu,ev];
-            E = bsxfun(@rdivide, E, sqrt(dot(E, Me_arr*E)));
-
-            % Remove contributions of these basis vectors from snapshots
-            %E
-            pod_snaps = snaps - E*((E'*Me_arr)*snaps);
-            %E'*snaps
-            %iMe_arr = sparse(diag(1./[Me;Me]));
-            %pod_snaps = snaps - iMe_arr*(E*(E'*(Me_arr*snaps)));
-            %pod_snaps = snaps - E*(E'*(snaps));
-            norm(snaps - pod_snaps)/norm(snaps)
-        end;
-
-        %% Calculate the POD of the snapshots
-        if 0; % Correlation matrix version
-            gramian = pod_snaps'*(Me_arr*pod_snaps);
-            gramian = 0.5*(gramian + gramian');
-            %[eigvecs, eigvals] = eig(gramian);
-            [eigvecs, eigvals] = eigs(gramian, nb, 'largestabs', 'Tolerance', 1e-16);
-            % May need to orthogonalize these?
-            [eigvals_sorted, sort_inds] = sort(diag(abs(eigvals)),'descend');
-            eigvecs = eigvecs(:,sort_inds);
-            bas = pod_snaps*eigvecs(:,1:nb); % Using all of the modes
-            %bas = orth(bas(:,1:nb), 1e-12);
-            bas = bsxfun(@rdivide, bas, sqrt(dot(bas, Me_arr*bas)));
-            %exit;
-        else % SVD version
-            L = sqrt(Me_arr);
-            %L = sparse(diag(sqrt([Me;Me])*0 + 1)); 
-            [bas,S,V] = svds(L*pod_snaps, nb, 'largest');
-            bas = inv(L)*bas;
-        end
-
-        if conserve_momentum; 
-            bas = [E,bas(:,1:end-2)];
-        end;
-
-        %bas'*bas
-        %exit
-
-        %fileID = fopen('eigvals_sorted.txt', 'w');
-        %fprintf(fileID, '%24.15e\n', eigvals_sorted);
-        %fclose(fileID);
+    if strcmpi(method, 'svd')
+        % Direct SVD approach
+        W_sqrt = sqrt(W_diag);
+        % Octave/MATLAB compatible sigma: 'lm' for Largest Magnitude
+        [U, ~, ~] = svds(W_sqrt .* pod_snaps, nb, 'lm');
+        bas = U ./ W_sqrt; 
         
-        % Calculate the coefficients for each time step.
-        uk = bas'*Me_arr*snaps; 
-        % Check that the basis is orthonormal in the mass matrix inner product
-        %nrm = bas'*(Me_arr*bas)
+    else
+        % Method of Snapshots (Gramian)
+        if strcmpi(inner_product, 'H10')
+            Gramian = gen_Au(pod_snaps(1:nL, :), pod_snaps(nL+1:end, :), x, y);
+        else
+            Gramian = pod_snaps' * (W_diag .* pod_snaps);
+        end
+        
+        Gramian = 0.5 * (Gramian + Gramian'); % Ensure symmetry
+        
+        % FIX: Use 'lm' (Largest Magnitude) instead of 'largestabs' for Octave
+        [eigvecs, eigvals] = eigs(Gramian, nb, 'lm');
+        
+        % Projected modes: bas = X * eigvecs
+        bas = pod_snaps * eigvecs;
+        
+        % Normalize basis
+        if strcmpi(inner_product, 'H10')
+            bas_A = gen_Au(bas(1:nL, :), bas(nL+1:end, :), x, y);
+            bas_norm = sqrt(diag(bas_A))'; 
+        else
+            bas_norm = sqrt(sum(bas .* (W_diag .* bas), 1));
+        end
+        bas = bas ./ bas_norm;
+    end
 
-        % Add the average mode to the basis
-        if subtract_mean;
-            bas = [avg_snaps, bas];
-        end;
-        uk = [ones(1,size(snaps,2)); uk];
-        u0 = uk(:,1); % Hopefully the initial condition is included in the snapshots
+    % --- Post-processing ---
+    if conserve_momentum
+        bas = [E, bas(:, 1:end-2)];
+    end
+
+    % --- Calculate Coefficients ---
+    if strcmpi(inner_product, 'H10')
+        % Handle potential matrix/vector eigvals differences
+        if isvector(eigvals)
+            S2 = diag(eigvals);
+        else
+            S2 = eigvals;
+        end
+        uk_fluc = diag(1 ./ bas_norm) * S2 * eigvecs';
+    else
+        % Standard L2 projection
+        if subtract_mean
+            uk_fluc = bas' * (W_diag .* (snaps - avg_snaps));
+        else
+            uk_fluc = bas' * (W_diag .* snaps);
+        end
+    end
+
+    if subtract_mean
+        bas = [avg_snaps, bas];
+        uk = [ones(1, size(snaps, 2)); uk_fluc];
+    else
+        uk = uk_fluc;
+    end
+
+    u0 = uk(:, 1);
 end

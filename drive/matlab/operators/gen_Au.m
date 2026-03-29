@@ -1,44 +1,93 @@
-% ROM diffusion operator.
-% This should have the same action as the Au operator from the Fortran code
-% Should probably add convection tensor calculation as well.
-function[Au, Bu, u0] = gen_Au(pod_u, pod_v, x, y)
-    %x=snaps.flds{1}.x;
-    %y=snaps.flds{1}.y;
-    nx1 = size(x,1);
-    [zi, w] = zwgll(nx1-1);
-    Dh = deriv_mat(zi);
-    Dht = Dh';
-    [xr,yr,xs,ys,rx,ry,sx,sy,jac,jaci,d] = deriv_geo(x,y,Dh);
-    nL = prod(size(x));
-    % The rx etc. arrays aren't multiplied by jaci. Assigning Me = massmatrix / Jac does the same thing.
-    Me = jaci.*(w*w');
+function [Au, Bu] = gen_Au(pod_u, pod_v, x, y)
+% GEN_AU  SEM-consistent ROM diffusion and mass operators
+% Compatible with MATLAB and GNU Octave
 
-    % Calculate geometric factors
-    Grr = reshape(Me.*(rx.*rx + ry.*ry),nL,1);
-    Grs = reshape(Me.*(rx.*sx + ry.*sy),nL,1);
-    Gss = reshape(Me.*(sx.*sx + sy.*sy),nL,1);
+%% Grid sizes
+nx1 = size(x,1);
+ne  = size(x,3);
+nPOD = size(pod_u,2);
+nL = nx1*nx1*ne;
 
-    % Kento's ROM approach. Calculate the derivatives of the POD modes
-    ur_pods = [];
-    us_pods = [];
-    vr_pods = [];
-    vs_pods = [];
-    for i = 1:size(pod_u,2);
-        pod_u_vec = reshape(pod_u(:,i),size(x));
-        pod_v_vec = reshape(pod_v(:,i),size(x));
-        ur_pods = [ur_pods, reshape(pagemtimes(Dh,pod_u_vec), nL,1)];
-        us_pods = [us_pods, reshape(pagemtimes(pod_u_vec,Dht), nL,1)];
-        vr_pods = [vr_pods, reshape(pagemtimes(Dh,pod_v_vec), nL,1)];
-        vs_pods = [vs_pods, reshape(pagemtimes(pod_v_vec,Dht), nL,1)];
-        %ur_pods = [ur_pods, reshape(tensorprod(Dh, pod_u_vec, [2],[1]), nL,1)];
-        %us_pods = [us_pods, reshape(tensorprod(pod_u_vec, Dht,[2],[1]), nL,1)];
-        %vr_pods = [vr_pods, reshape(tensorprod(Dh, pod_v_vec, [2],[1]), nL,1)];
-        %vs_pods = [vs_pods, reshape(tensorprod(pod_v_vec, Dht,[2],[1]), nL,1)];
+use_pagemtimes = (exist('pagemtimes','builtin') == 5);
 
-    end;
-    Au = [ur_pods;us_pods]'* ([Grr.*ur_pods + Grs.*us_pods; Grs.*ur_pods + Gss.*us_pods]) + [vr_pods;vs_pods]'* ([Grr.*vr_pods + Grs.*vs_pods; Grs.*vr_pods + Gss.*vs_pods]); 
+%% SEM operators
+[zi,w] = zwgll(nx1-1);
+Dh  = deriv_mat(zi);
+Dht = Dh';
 
-    Me = reshape(jac.*(w*w'),nL,1);
-    bas = [pod_u;pod_v];
-    Bu = bas'*(spdiags([Me;Me],0, 2*nL,2*nL)*bas); 
+W = w*w';
+
+%% Geometry
+[~,~,~,~,rx,ry,sx,sy,jac,jaci,~] = deriv_geo(x,y,Dh);
+
+%% Geometric coefficients
+Me_inv = jaci .* W;
+
+Grr = reshape(Me_inv .* (rx.^2 + ry.^2), nL, 1);
+Grs = reshape(Me_inv .* (rx.*sx + ry.*sy), nL, 1);
+Gss = reshape(Me_inv .* (sx.^2 + sy.^2), nL, 1);
+
+%% Reshape POD modes to SEM layout
+u = reshape(pod_u, nx1, nx1, ne, nPOD);
+v = reshape(pod_v, nx1, nx1, ne, nPOD);
+
+%% Allocate derivatives
+ur = zeros(nx1,nx1,ne,nPOD);
+us = ur;
+vr = ur;
+vs = ur;
+
+%% Compute derivatives
+
+if use_pagemtimes
+
+    % MATLAB fast path
+    for e = 1:ne
+        ur(:,:,e,:) = pagemtimes(Dh,  u(:,:,e,:));
+        us(:,:,e,:) = pagemtimes(u(:,:,e,:),  Dht);
+
+        vr(:,:,e,:) = pagemtimes(Dh,  v(:,:,e,:));
+        vs(:,:,e,:) = pagemtimes(v(:,:,e,:),  Dht);
+    end
+
+else
+
+    % Octave fallback
+    for e = 1:ne
+        for k = 1:nPOD
+
+            u_mode = u(:,:,e,k);
+            v_mode = v(:,:,e,k);
+
+            ur(:,:,e,k) = Dh * u_mode;
+            us(:,:,e,k) = u_mode * Dht;
+
+            vr(:,:,e,k) = Dh * v_mode;
+            vs(:,:,e,k) = v_mode * Dht;
+
+        end
+    end
+
+end
+
+%% Flatten derivatives
+ur = reshape(ur,nL,nPOD);
+us = reshape(us,nL,nPOD);
+vr = reshape(vr,nL,nPOD);
+vs = reshape(vs,nL,nPOD);
+
+%% Diffusion operator
+Au = ...
+    (ur' * (Grr .* ur + Grs .* us) + ...
+     us' * (Grs .* ur + Gss .* us)) ...
+  + ...
+    (vr' * (Grr .* vr + Grs .* vs) + ...
+     vs' * (Grs .* vr + Gss .* vs));
+
+%% Mass matrix
+Me_vec = reshape(jac .* W, nL, 1);
+
+Bu = pod_u' * (Me_vec .* pod_u) ...
+   + pod_v' * (Me_vec .* pod_v);
+
 end

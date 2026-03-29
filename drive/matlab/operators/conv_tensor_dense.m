@@ -1,142 +1,96 @@
-% Pseudo-ROM convection operator
-% (pseudo because the work still scales
-% with the size of the original problem)
-% This needs to do the same thing as
-% reshape(cu*utmp(:,1),nb,nb+1)*u(:,1);
-%
-% Note: Dealiasing is not currently implemented. Is it needed?
-% Wrong, the snapshots are already dealiased.
-
-% C computes Phi.T*(u.grad(u)) = Phi.T*((Phi*u_coef).(grad(Phi)*u_coef))
-% By forming the convection tensor.
-% Can specify the size of the tensor or default to computing the entire tensor
-% Add option to enforce skew-symmetry?
 function [out_coef] = conv_tensor_dense(ucoef, pod_u, pod_v, x, y, tensor_size)
-
-    %persistent Me rx ry sx sy jaci d lgrad nL nb tensor nb_i nb_j nb_k
-    persistent tensor nb nb_i nb_j nb_k
+    % C_ijk = < phi_k , (phi_i . grad) phi_j >
+    
+    persistent tensor nb_i nb_j nb_k
+    force_skew = true; 
 
     if isempty(tensor)
-        nx1 = size(x,1);
-        [zi, w] = zwgll(nx1-1);
-        d = deriv_mat(zi);
-        [xr,yr,xs,ys,rx,ry,sx,sy,jac,jaci,d] = deriv_geo(x,y,d);
-        lgrad=@(u,mode) grad(u,rx,ry,sx,sy,jaci,d,mode);
-        nL = prod(size(x));
-        nb = size(pod_u,2)
-        Me = reshape(jac.*(w*w'),nL,1);
-
-
+        % --- 1. Grid & Size Setup ---
+        [nx1, ny1, n_elem] = size(x);
+        nb = size(pod_u, 2);
+        
         if nargin < 6
-            % Default to full tensor if dimensions are excluded
-            nb_i = nb;
-            nb_j = nb;
-            nb_k = nb - 1;
+            nb_i = nb; nb_j = nb; nb_k = nb - 1;
         else
-            nb_i = tensor_size(1); % Number of gradients of pod bases calculated (The grad(Phi) contribution to the tensor
-            nb_j = tensor_size(2); % Number of stacked matrices (The Phi in Phi*u_coef)
-            nb_k = tensor_size(3); % Number of output coefficients
-
-            % Rescue the user or throw an error?
-            assert(nb_i <= nb);
-            assert(nb_j <= nb);
-            assert(nb_k <= nb-1);
+            nb_i = tensor_size(1); nb_j = tensor_size(2); nb_k = tensor_size(3);
         end
 
+        % --- 2. De-aliasing Operators (3/2 Rule) ---
+        nx_f = ceil(1.5 * nx1);
+        nL_f_total = nx_f * nx_f * n_elem;
+        [zi, ~] = zwgll(nx1-1);
+        [zi_f, w_f] = zwgll(nx_f-1);
+        d_f = deriv_mat(zi_f);
+        Interp = interp_mat(zi_f, zi);
 
-    if false; % Normal way of calculating the gradient
-        % Should just get rid of this
-        [ux_fom, uy_fom] = lgrad(u_fom, 0);
-        [vx_fom, vy_fom] = lgrad(v_fom, 0);
-    else
-        % Kento's ROM approach. Calculate the gradients of the POD modes
-        assert(nb_i <= nb);
-        assert(nb_j <= nb);
-        assert(nb_k < nb);
+        % --- 3. Interpolate Geometry & Setup Weights ---
+        W2D = w_f * w_f';
+        Me_f = zeros(nx_f, nx_f, n_elem);
+        for ie = 1:n_elem
+            xf_e = Interp * x(:,:,ie) * Interp';
+            yf_e = Interp * y(:,:,ie) * Interp';
+            [~,~,~,~,rx,ry,sx,sy,jac,jaci,~] = deriv_geo(xf_e, yf_e, d_f);
+            Me_f((ie-1)*nx_f^2+1 : ie*nx_f^2) = jac(:) .* W2D(:);
+            % Store geometric factors for grad (simplified for this block)
+            RX(:,:,ie) = rx; RY(:,:,ie) = ry; SX(:,:,ie) = sx; SY(:,:,ie) = sy; JACI(:,:,ie) = jaci;
+        end
+        Me_f = Me_f(:);
 
-        ux_pods = zeros([nL,nb_j]);
-        uy_pods = zeros(size(ux_pods));
-        vx_pods = zeros(size(ux_pods));
-        vy_pods = zeros(size(ux_pods));
+        % --- 4. Interpolate POD Modes ---
+        max_mode = max([nb_i, nb_j, nb_k + 1]);
+        pod_u_f = zeros(nL_f_total, max_mode);
+        pod_v_f = zeros(nL_f_total, max_mode);
         
-        % For Pseudo-FOM version
-        %{
-        ux_fom = zeros(size(x));
-        uy_fom = zeros(size(x));
-        vx_fom = zeros(size(x));
-        vy_fom = zeros(size(x));
-        %}
+        for m = 1:max_mode
+            for ie = 1:n_elem
+                idx_c = (ie-1)*nx1^2+1 : ie*nx1^2;
+                idx_f = (ie-1)*nx_f^2+1 : ie*nx_f^2;
+                pod_u_f(idx_f, m) = reshape(Interp * reshape(pod_u(idx_c, m), nx1, nx1) * Interp', [], 1);
+                pod_v_f(idx_f, m) = reshape(Interp * reshape(pod_v(idx_c, m), nx1, nx1) * Interp', [], 1);
+            end
+        end
 
-        for j = 1:nb_j;
-            [ux_pod, uy_pod] = lgrad(reshape(pod_u(:,j),size(x)),0);
-            [vx_pod, vy_pod] = lgrad(reshape(pod_v(:,j),size(x)),0);
-           
-            %{
-            % For Pseudo-FOM version 
-            ux_fom = ux_fom + ux_pod*ucoef(i);
-            uy_fom = uy_fom + uy_pod*ucoef(i);
-            vx_fom = vx_fom + vx_pod*ucoef(i);
-            vy_fom = vy_fom + vy_pod*ucoef(i);
-            %}
+        % --- 5. Gradient Computation & Assembly ---
+        tensor = zeros(nb_i, nb_j, nb_k);
+        % Test functions are modes 2 to nb_k+1
+        pod_test_f = [bsxfun(@times, Me_f, pod_u_f(:, 2:nb_k+1)); ...
+                      bsxfun(@times, Me_f, pod_v_f(:, 2:nb_k+1))];
 
-            ux_pods(:,j) = reshape(ux_pod, nL,1);
-            uy_pods(:,j) = reshape(uy_pod, nL,1);
-            vx_pods(:,j) = reshape(vx_pod, nL,1);
-            vy_pods(:,j) = reshape(vy_pod, nL,1);
-        end;
-        %ux_fom = reshape(ux_pods*ucoef, size(x));
-        %uy_fom = reshape(uy_pods*ucoef, size(x));
-        %vx_fom = reshape(vx_pods*ucoef, size(x));
-        %vy_fom = reshape(vy_pods*ucoef, size(x));
+        for i = 1:nb_i
+            % Gradient of all j-modes
+            [ux_f, uy_f] = grad(reshape(pod_u_f(:,1:nb_j), nx_f, nx_f, n_elem * nb_j), ...
+                                repmat(RX, [1,1,nb_j]), repmat(RY, [1,1,nb_j]), ...
+                                repmat(SX, [1,1,nb_j]), repmat(SY, [1,1,nb_j]), ...
+                                repmat(JACI, [1,1,nb_j]), d_f, 0);
+            [vx_f, vy_f] = grad(reshape(pod_v_f(:,1:nb_j), nx_f, nx_f, n_elem * nb_j), ...
+                                repmat(RX, [1,1,nb_j]), repmat(RY, [1,1,nb_j]), ...
+                                repmat(SX, [1,1,nb_j]), repmat(SY, [1,1,nb_j]), ...
+                                repmat(JACI, [1,1,nb_j]), d_f, 0);
 
-        %pod_u_weak = Me.*pod_u;
-        %pod_v_weak = Me.*pod_v;
+            conv_j = [bsxfun(@times, pod_u_f(:,i), reshape(ux_f, nL_f_total, nb_j)) + ...
+                      bsxfun(@times, pod_v_f(:,i), reshape(uy_f, nL_f_total, nb_j)); ...
+                      bsxfun(@times, pod_u_f(:,i), reshape(vx_f, nL_f_total, nb_j)) + ...
+                      bsxfun(@times, pod_v_f(:,i), reshape(vy_f, nL_f_total, nb_j))];
 
-        % Could also apply Me to pod_u and pod_v inside the loop instead
-        % but this seems more efficient.
-        pod_weak = [Me.*pod_u(:,2:nb_k+1);Me.*pod_v(:,2:nb_k+1)];
-        tensor = zeros(nb_i,nb_j,nb_k);
-        
-        for i=1:nb_i;
-            %pod_u_weak = Me.*pod_u(:,i);
-            %pod_v_weak = Me.*pod_v(:,i); 
-            %tensor(i,:,:) = [pod_u_weak.*ux_pods + pod_v_weak.*uy_pods;
-            %                 pod_u_weak.*vx_pods + pod_v_weak.*vy_pods]'*pod(:,2:nb);
-            tensor(i,:,:) = [pod_u(:,i).*ux_pods + pod_v(:,i).*uy_pods;
-                             pod_u(:,i).*vx_pods + pod_v(:,i).*vy_pods]'*pod_weak;
+            % C_slice size: [nb_j, nb_k]
+            C_slice = conv_j' * pod_test_f;
 
-            %{
-            % More readable version
-            for j=1:nb;
-                % Calculate pencil
-                [i,j]
-                tensor(i,j,:) = pod_weak'*[pod_u(:,i).*ux_pods(:,j) + pod_v(:,i).*uy_pods(:,j); 
-                                              pod_u(:,i).*vx_pods(:,j) + pod_v(:,i).*vy_pods(:,j)];
-                % Reduce pencil
-                %ijk = pod(:,2:nb)'*ij;
-                %tensor(i,j,:) = ijk;
-            end;
-            %}
+            if force_skew
+                % Skew-symmetry is only valid for the overlapping fluctuating modes.
+                % Trial modes j (starting from 2) must match Test modes k.
+                % Since k=1 is mode 2, k=2 is mode 3... we look at C_slice(2:end, :)
+                n_overlap = min(nb_j - 1, nb_k);
+                sub_slice = C_slice(2:n_overlap+1, 1:n_overlap);
+                C_slice(2:n_overlap+1, 1:n_overlap) = 0.5 * (sub_slice - sub_slice');
+            end
+            
+            tensor(i, :, :) = C_slice;
         end
     end
-        
-    end; 
-    % End of if block to persist the tensor. Note, if comparing against the conv_fom approach
-    % this will need to be moved back up
 
-    %{
-    % For Pseudo-FOM version
-    u_fom = reshape(Me.*(pod_u*ucoef), size(x));
-    v_fom = reshape(Me.*(pod_v*ucoef), size(x));
-    conv_u_fom = reshape(u_fom.*ux_fom + v_fom.*uy_fom, nL,1);
-    conv_v_fom = reshape(u_fom.*vx_fom + v_fom.*vy_fom, nL,1);    
-    out_coef = [pod_u(:,2:end); pod_v(:,2:end)]'*[conv_u_fom; conv_v_fom]
-    %}     
-
-    out_coef = zeros([nb-1,1]);
-    outprod = tensorprod(tensor, ucoef(1:nb_i), 1,1);
-    out_coef(1:nb_k,1) = tensorprod(outprod,ucoef(1:nb_j),1,1);
-    out_coef 
-    %out_coef
-    %exit;
+    % --- 6. Online Stage (Optimized MatVec) ---
+    out_coef = zeros([size(pod_u,2)-1, 1]);
+    T_mat_i = reshape(tensor, nb_i, nb_j * nb_k);
+    temp_jk = reshape(ucoef(1:nb_i)' * T_mat_i, nb_j, nb_k);
+    out_coef(1:nb_k) = temp_jk' * ucoef(1:nb_j);
 end
