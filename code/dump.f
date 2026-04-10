@@ -381,22 +381,14 @@ c-----------------------------------------------------------------------
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
-      include 'SCRCV'
 
       logical iftmp,iftmp2
 
       integer pind(1)
       integer pmat(1,1) 
 
-      ! call exitt0
-
       ! Compute convection field for each snapshot and store in snapt
       call evalcflds(snapt,us0,us0,ldim,ns,.false.)
-
-      do i=1,ltd
-        write(*,*) uf(i) 
-      enddo
-      call exitt0
 
       iftmp=ifxyo
       iftmp2=ifpo
