@@ -1,0 +1,227 @@
+c-----------------------------------------------------------------------
+      subroutine uservp (ix,iy,iz,eg)
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+      integer e,f,eg
+c     e = gllel(eg)
+
+      udiff =0.
+      utrans=0.
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine userf  (ix,iy,iz,eg)
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+      integer e,f,eg
+c     e = gllel(eg)
+
+c     Note: this is an acceleration term, NOT a force!
+c     Thus, ffx will subsequently be multiplied by rho(x,t).
+
+      ffx = 0.0
+      ffy = 0.0
+      ffz = 0.0
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine userq  (ix,iy,iz,eg)
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+      integer e,f,eg
+c     e = gllel(eg)
+
+      qvol   = 0.0
+      source = 0.0
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine userchk
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      param(170) = -1
+
+      call rom_update
+
+c      call exitt0
+
+
+c     n    = nx1*ny1*nz1*nelv
+
+c     call copy(ub(1,0),vx,n)
+c     call copy(vb(1,0),vy,n)
+c     ifpod(2) = .false.
+c     ifrom(2) = .false.
+      call rom_update
+
+c      do i=1,ns
+c         call evalcflds(uvwb,us0(1,1,i),us0(1,1,i),ldim,1,.true.)
+c         call opcopy(us0(1,1,i),us0(1,2,i),us0(1,ldim,i),
+c     $               uvwb(1,1,0),uvwb(1,2,0),uvwb(1,ldim,0))
+c         call outpost(uvwb(1,1,0),uvwb(1,2,0),uvwb(1,ldim,0),
+c     $                pr,t,'csn')
+c      enddo
+      call exitt0
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine userbc (ix,iy,iz,iside,ieg)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+      ux=0.0
+      uy=0.0
+      uz=0.0
+      temp=0.0
+
+      eps = 1.e-5
+      y0 = 1.
+
+      if (y.gt.(y0-eps)) ux = (1.-x*x)**2
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine useric (ix,iy,iz,ieg)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+      common /ldcpar/ dxmin
+
+      ux=0.0
+      uy=0.0
+      uz=0.0
+      temp=0.0
+
+      eps = 1.e-5
+      y0 = 1.
+
+      if (y.gt.(y0-eps)) ux = (1.-x*x)**2
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine usrdat
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      xmin= 10000.
+      xmax=-10000.
+      ymin= 10000.
+      ymax=-10000.
+
+      one=1.
+      pi=4.*atan(one)
+
+      n1d=nint(sqrt(1.*nelgt))
+
+      do ie=1,nelt
+      do ic=1,4
+c     do ic=1,2**(ldim) ! generalized in dimension
+         x=xc(ic,ie)
+         y=yc(ic,ie)
+         if (x.lt.xmin) xmin=x
+         if (x.gt.xmax) xmax=x
+         if (y.lt.ymin) ymin=y
+         if (y.gt.ymax) ymax=y
+      enddo
+      enddo
+
+      xmin=glmin(xmin,1)
+      xmax=glmax(xmax,1)
+
+      ymin=glmin(ymin,1)
+      ymax=glmax(ymax,1)
+
+      dxi=1./(xmax-xmin)
+      dyi=1./(ymax-ymin)
+
+      eps=.001
+
+      do ie=1,nelt
+      do ic=1,4
+         x=xc(ic,ie)
+         y=yc(ic,ie)
+         nx=nint(n1d*(x-xmin)*dxi)
+         ny=nint(n1d*(y-ymin)*dyi)
+         x=-1.*cos(nx*pi/n1d)
+         y=-1.*cos(ny*pi/n1d)
+         xc(ic,ie)=x
+         yc(ic,ie)=y
+      enddo
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine usrdat2
+
+      include 'SIZE'
+      include 'GEOM'
+
+      call rescale_x(xm1,-1.,1.)
+      call rescale_x(ym1,-1.,1.)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine usrdat3
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine rom_userchk
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine rom_userbases
+
+c     include 'SIZE'
+c     include 'MOR'
+c     include 'SOLN'
+c     include 'MASS'
+c     include 'TSTEP'
+c     include 'INPUT'
+
+c     call pod(uvwb(1,1,1),eval,ug,us0,ldim,'L2 ',10,ns,
+c    $         ifpb,'ops/gul2 ')
+c     do ib=1,10
+c        call opcopy(ub(1,ib),vb(1,ib),wb(1,ib),
+c    $        uvwb(1,1,ib),uvwb(1,2,ib),uvwb(1,ldim,ib))
+c     enddo
+
+c     call pod(uvwb(1,1,11),eval,ug,us0,ldim,'H10',10,ns,
+c    $         ifpb,'ops/guh10 ')
+
+c     do ib=11,20
+c        call opcopy(ub(1,ib),vb(1,ib),wb(1,ib),
+c    $        uvwb(1,1,ib),uvwb(1,2,ib),uvwb(1,ldim,ib))
+c     enddo
+c     if (.not.ifcomb.and.ifpb) call vnorm(ub,vb,wb)
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine rom_userfop
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine rom_userrhs
+      return
+      end
+c-----------------------------------------------------------------------

@@ -375,10 +375,64 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine dump_cbas
+      ! Calculates and dumps the POD basis of the convection snapshots
+      !
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      logical iftmp,iftmp2
+
+      integer pind(1)
+      integer pmat(1,1) 
+
+      ! Compute convection field for each snapshot and store in snapt
+      call evalcflds(snapt,us0,us0,ldim,ns,.false.)
+
+      iftmp=ifxyo
+      iftmp2=ifpo
+
+      ifpo=.false.
+
+      ! Dump the convection snapshots if enabled
+      if(ifdumpnls) then
+        do i=1,ns
+          ifxyo=(i.eq.1)
+          call outpost(snapt(1,1,i),snapt(1,2,i),snapt(1,ldim,i),
+     $                 pr,t,'csn')
+        enddo
+      endif
+
+      call pod(uvwbnl,eval2,ug,snapt,ldim,ips,nbnl,ns,ifpb,
+     $         'ops/guc  ',nbat)
+
+      ! B-normalize the POD basis
+      ! Could modify vnorm_ to handle this, but do it manually for now 
+      do i=1,nbnl
+        p=vip(uvwbnl(1,1,i),uvwbnl(1,2,i),uvwbnl(1,ldim,i),
+     $        uvwbnl(1,1,i),uvwbnl(1,2,i),uvwbnl(1,ldim,i))
+        s=1./sqrt(p)
+        call opcmult(uvwbnl(1,1,i),uvwbnl(1,2,i),uvwbnl(1,ldim,i),s)
+      enddo
+
+      ! Dump the convection basis
+      do i=1,nbnl
+         ! The temperature field isn't correct, but doesn't matter right now 
+         ! since temperature and pressure are not supported.
+         ifxyo=(i.eq.1)
+         call outpost2(uvwbnl(1,1,i),uvwbnl(1,2,i),uvwbnl(1,ldim,i),
+     $                pb(1,0),tb(1,0,1),ldimt,'cba')
+      enddo
+
+      ifxyo=iftmp
+      ifpo=iftmp2
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine dump_misc
-
-      ! dump miscellaneous items
-
+      ! Dump miscellaneous items
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'

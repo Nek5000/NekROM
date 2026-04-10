@@ -21,6 +21,8 @@
 
       parameter (lbavg=1+0*(lb-1)) ! size of average field allocation
 
+      parameter (lbnl=0) ! max number of run-time non-linear POD bases, including 0th mode
+
       ! Auxiliary
 
       parameter (lsu=(lcs-1)*lmu+1) ! size of velocity snapshots allocation

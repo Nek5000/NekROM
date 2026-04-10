@@ -1,0 +1,218 @@
+c-----------------------------------------------------------------------
+      subroutine uservp (ix,iy,iz,iel)
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+      udiff =0.
+      utrans=0.
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine userf  (ix,iy,iz,iel)
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+      ffx = 0.0
+      ffy = 0.0
+      ffz = 0.0
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine userq  (ix,iy,iz,iel)
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+      qvol   = 0.0
+      source = 0.0
+
+      return
+      end
+c-----------------------------------------------------------------------
+       subroutine userchk
+       include 'SIZE'
+       include 'TOTAL'
+
+       param(170) = -1
+
+       call rom_update
+
+       call exitt0
+
+
+c       parameter(lt=lx1*ly1*lz1*lelv)
+c       real vort(lt,3),work1(lt),work2(lt)
+c
+c       ntot = nx1*ny1*nz1*nelv
+c       umax = glamax(vx,ntot)
+c       if (umax.gt.8.) then
+c          write(6,*) nid,' umax:',umax,ntot
+c          call emerxit
+c       endif
+c
+c       call comp_vort3(vort,work1,work2,vx,vy,vz)
+c       vmax = glamax(vort,ntot)
+c       if (nid.eq.0) write(6,1) istep, time, vmax
+c    1  format(i9,1p2e14.6,' peak vorticity')
+c
+c       ifto = .true.
+c       call copy(t,vort,ntot)  ! Dump vorticity in place of Temperature
+
+       return
+       end
+c-----------------------------------------------------------------------
+      subroutine userbc (ix,iy,iz,iside,iel)
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+      ux=0.0
+      uy=0.0
+      uz=0.0
+      temp=0.0
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine useric (ix,iy,iz,iel)
+      include 'SIZE'
+      include 'TSTEP'
+      include 'NEKUSE'
+
+      integer icalld
+      save    icalld
+      data    icalld  /0/
+
+      real rhol,delta
+      save rhol,delta
+
+      ux=0.0
+      uy=0.0
+      uz=0.0
+      TEMP=0
+c
+c
+c     Shu's double shear layer (p.65, 1997 ICASE Rep.)
+c
+c     Also,
+c
+c         Bell, Collela, & Glaz, JCP [85],  p257 (1989)
+c         Brown and Minion,      JCP [122], p165 (1995)
+c         Tadmor                 1997, Italy
+c
+c
+c     THIS SETUP FOLLOWS R.B. Klein and B. Sanderse, 2024 JCP, p.14
+
+      delta = pi/15
+      epsln = 0.05
+
+      if (icalld.eq.0) then
+         icalld = 1
+         if (nid.eq.0) write(6,*) 'Shear layer delta:',delta
+         if (nid.eq.0) write(6,*) 'Shear layer epsln:',epsln
+      endif
+
+      arg = (y-pi/2)/delta
+      if (y.gt.pi) arg = (1.5*pi-y)/delta
+
+      ux = tanh(arg)
+      uy = epsln*sin(x)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine usrdat3
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine usrdat2
+      include 'SIZE'
+      include 'TOTAL'
+
+      x0=0
+      x1=2*pi
+      call rescale_x(xm1,x0,x1)  ! 0 to 2pi in both directions
+      call rescale_x(ym1,x0,x1)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine usrdat
+      include 'SIZE'
+      include 'TOTAL'
+
+c     THIS SETUP FOLLOWS R.B. Klein and B. Sanderse, 2024 JCP, p.15
+
+      density   = 1.0
+      viscosity = .001 
+
+      param(1)   = density
+      param(2)   = viscosity
+
+      cpfld(1,1) = viscosity  ! Constant property field values
+      cpfld(1,2) = density    ! must also be set :/
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine rom_userchk
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine rom_userbases ! set user-defined ROM basis
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+c     do i=1,nb
+c        call call incomprn(uvwb(1,1,i),uvwb(1,2,i),uvwb(1,ldim,i),pb)
+c     enddo
+
+c     call orthonormb(uvwb,ldim,nb)
+c     call orthonormb(tb,1,nb)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine rom_userrhs(urhs) ! set right hand size for ROM evolution
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      real urhs(nb)
+
+      if (ifield.eq.1) then
+c        call cadd(urhs,1.0,nb)
+      else if (ifield.eq.2) then
+c        call cadd(urhs,1.0,nb)
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine rom_userfop ! set forward operator for ROM evolution
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      if (ifield.eq.1) then
+c        call seth(hlm(1,1),au,bu,1./ad_re)
+c        call invmat(hinv,hlu,hlm,ihlu,ihlu2,nb)
+      else if (ifield.eq.2) then
+c        call seth(hlm(1,2),at,bt,1./ad_pe)
+c        call invmat(hinv,hlu(1,2),hlm(1,2),ihlu(1,2),ihlu2(1,2),nb)
+      endif
+
+c     call update_k(uk,ukp,tk,tkp)
+
+      return
+      end
+c-----------------------------------------------------------------------

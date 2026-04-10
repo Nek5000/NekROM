@@ -1,0 +1,26 @@
+#!/bin/bash
+
+# generate mesh connectivity information
+genmap << EOF
+ldc
+0.1
+EOF
+
+np=$1 # number of processors to use for FOM calculation
+casename="ldc"
+usr_file="${casename}_fom"
+makenek $usr_file  # `makerom` can be replaced with `makenek`
+
+echo 'running Nek5000 FOM calculation...'
+#neklmpi $casename $np
+nekmpi $casename $np
+
+logfile="${casename}.log.${np}"
+snaps_dir="snaps"
+mkdir $snaps_dir
+mv *${casename}0.f* $snaps_dir
+mv ${casename}0.f*  $snaps_dir
+mv $logfile $snaps_dir
+ls ${snaps_dir}/${casename}0.f* > file.list
+
+echo 'done with FOM, exiting...'
