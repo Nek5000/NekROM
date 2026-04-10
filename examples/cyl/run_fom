@@ -1,7 +1,7 @@
 #!/bin/bash
 
-np=8 # number of processors to use for FOM calculation
-makerom cyl_fom # `makerom` can be replaced with `makenek`
+np=$1 # number of processors to use for FOM calculation
+makerom cyl_fom # Could also use makenek, but makerom needs to be executed for the MOR include statement
 
 # generate mesh connectivity information
 genmap << EOF
@@ -12,7 +12,9 @@ EOF
 echo 'running Nek5000 FOM calculation...'
 neklmpi cyl $np
 logfile=cyl.log.$np
-mkdir snaps && mv *cyl0.f* $logfile snaps && ls -r snaps/cyl0.f* > file.list
+mkdir snaps
+mv *cyl0.f* cyl0.f* $logfile snaps 
+ls -r snaps/cyl0.f* > file.list
 
 # For the current case, we have Re=100. The drag and lift coefficients are also computed by calls in userchk. The following lines extract the data to .dat files
 grep dragx snaps/$logfile | sed 's/1dragx//g' > fom.dragx.dat

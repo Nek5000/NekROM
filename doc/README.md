@@ -6,7 +6,7 @@
 
 #### Set Up a Conda Environment (Optional)
 
-If you don’t mind using a development version of NumPy, you can use an existing Conda environment. Otherwise, create and activate a new environment:
+You may use an existing Conda environment, but we recommend creating and activate a new environment:
 ```sh
 conda create -n nekrom-docs
 conda activate nekrom-docs
@@ -15,7 +15,7 @@ conda install pip
 
 #### Install Documentation Dependencies
 ```sh
-pip install sphinx sphinx-fortran six sphinx-mathjax-offline sphinx-book-theme myst-parser sphinxcontrib-bibtex "numpy>=2.2.5"
+pip install sphinx sphinx-fortran six sphinx-mathjax-offline sphinx-book-theme myst-parser sphinxcontrib-bibtex sphinxcontrib-matlabdomain "numpy>=2.2.5"
 ```
 
 ### 2. Build the NekROM Documentation

@@ -1,9 +1,13 @@
 #!/bin/bash
 
-makerom cyl_rom
-neklmpi cyl 1
+casename="cyl"
+makerom ${casename}_rom
+neklmpi ${casename} 1
 
-logfile=cyl.log.1
+logfile=${casename}_rom.log.1
+
+snaps_dir="snaps"
+mv *${casename}0.f* $snaps_dir
 
 # The detail computation of drag in the ROM is in Kento Kaneko An Augmented Basis Method for Reduced Order Models of Turbulent Flow. Ph.D. thesis (2022).
 grep dragx $logfile | sed 's/dragx//' > rom.dragx.dat

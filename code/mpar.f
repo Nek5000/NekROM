@@ -517,6 +517,16 @@ c-----------------------------------------------------------------------
          endif
       endif
 
+      ! DEIM
+
+      nbnl = 0
+      call finiparser_getdbl(d_out,'deim:nbnl',ifnd)
+      if (ifnd.eq.1) nbnl=min(min(nint(d_out),ns),lbnl)
+
+      ifdumpnls = .false.
+      call finiparser_getbool(i_out,'deim:dumpnls',ifnd)
+      if (ifnd.eq.1) ifdumpnls = i_out
+
       if (ierr.eq.0) call finiparser_dump()
 
       return
@@ -560,6 +570,7 @@ c-----------------------------------------------------------------------
       call bcast(nintp,isize)
       call bcast(iaug,isize)
       call bcast(nbat,isize)
+      call bcast(nbnl,isize)
 
       ! reals
 
@@ -611,6 +622,8 @@ c-----------------------------------------------------------------------
       call bcast(ifcore,lsize)
       call bcast(ifquad,lsize)
       call bcast(ifedvs,lsize)
+
+      call bcast(ifdumpnls,lsize)
 
       return
       END

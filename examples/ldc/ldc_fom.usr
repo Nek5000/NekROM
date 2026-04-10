@@ -1,0 +1,302 @@
+c-----------------------------------------------------------------------
+      subroutine uservp (ix,iy,iz,eg)
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+      integer e,f,eg
+c     e = gllel(eg)
+
+      udiff =0.
+      utrans=0.
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine userf  (ix,iy,iz,eg)
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+      integer e,f,eg
+c     e = gllel(eg)
+
+c     Note: this is an acceleration term, NOT a force!
+c     Thus, ffx will subsequently be multiplied by rho(x,t).
+
+      ffx = 0.0
+      ffy = 0.0
+      ffz = 0.0
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine userq  (ix,iy,iz,eg)
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+      integer e,f,eg
+c     e = gllel(eg)
+
+      qvol   = 0.0
+      source = 0.0
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine userchk
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+      common /scrns/ t_x(lx1,ly1,lz1,lelt)
+     $              ,t_y(lx1,ly1,lz1,lelt)
+     $              ,t_z(lx1,ly1,lz1,lelt)
+      common /scrsnap/ tmp1(lx1,ly1,lz1,lelt)
+     $                ,tmp2(lx1,ly1,lz1,lelt)
+     $                ,tmp3(lx1,ly1,lz1,lelt)
+     $                ,tmp4(lx1,ly1,lz1,lelt)
+
+      common /myv/ ud(lt),vd(lx1,ly1,lz1,lelt),wd(lt),td(lt)
+
+      real intke
+
+c     ifxyo=.true.
+
+      n=lx1*ly1*lz1*lelt
+
+c     if (istep.eq.0) then
+c        time=0.
+c        call cfill(t,0.25,n)
+c     endif
+      ifxyo=.true.
+      if (istep.eq.0) then
+c        time=0.
+c        initc(1) = "../snap_6k_6.2kCTU/avgldc0.f00001"
+c        call restart(1)
+c        call opcopy(tmp1,tmp2,tmp3,vx,vy,vz)
+c        call outpost(tmp1,tmp2,tmp3,pr,t,'ttt')
+         initc(1) = "./restart09.fld"
+         call restart(1)
+         call outpost(vx,vy,vz,pr,t,'ttt')
+      endif
+
+c     call gradm1(ud,vd,wd,t)
+
+      eps=1.e-2
+
+      s=0.
+      a=0.
+
+      call avg_all
+
+c      do ie=1,nelt
+c      do ifc=1,2*ldim
+c         if (cbc(ifc,ie,2).eq.'t  ') then
+c            call facind(kx1,kx2,ky1,ky2,kz1,kz2,lx1,ly1,lz1,ifc)
+cc           if (uny(2,1,ifc,ie).gt.(1.-eps)) then
+cc              write(6,*)'ch uny',uny(2,1,ifc,ie)
+c               x1=xm1(kx1,ky1,kz1,ie)
+c               x2=xm1(kx2,ky2,kz2,ie)
+c               y1=ym1(kx1,ky1,kz1,ie)
+c               y2=ym1(kx2,ky2,kz2,ie)
+c               z1=zm1(kx1,ky1,kz1,ie)
+c               z2=zm1(kx2,ky2,kz2,ie)
+c               xa=.5*(x1+x2)
+c               ya=.5*(y1+y2)
+c               za=.5*(z1+z2)
+cc              write(6,*)'check x and y',x1,x2,y1,y2
+c               if (ya.gt.(1.-eps)) then
+c               l=0
+c               do iz=kz1,kz2
+c               do iy=ky1,ky2
+c               do ix=kx1,kx2
+c                  l=l+1
+c                  s=s+area(l,1,ifc,ie)*vd(ix,iy,iz,ie)
+c                  a=a+area(l,1,ifc,ie)
+c               enddo
+c               enddo
+c               enddo
+c               endif
+cc           endif
+c         endif
+c      enddo
+c      enddo
+c
+c      s=glsum(s,1)
+c      a=glsum(a,1)
+c      flx=s/a
+c      if (nio.eq.0) write (6,*) istep,time,s,a,flx,'nus'
+
+      n = lx1*ly1*lz1*nelv
+
+      umax = glamax(vx,n)
+      vmax = glamax(vy,n)
+      wmax = glamax(vz,n)
+c     tmax = glamax(t,n)
+
+      if (nio.eq.0) write(6,1) istep,time,umax,vmax,wmax
+    1 format(i9,1p5e12.4,' vmax')
+
+
+c     if (mod(istep,iostep).eq.0) then
+c          call opsub2(tmp1,tmp2,tmp3,vx,vy,vz)
+c          udiff=sqrt(op_glsc2_wt(tmp1,tmp2,tmp3,tmp1,tmp2,tmp3,bm1)
+c    $           /(volvm1))/(dt*iostep)
+c          if (nio.eq.0) write (6,*) istep,time,udiff,'ioudiff'
+c          call opcopy(tmp1,tmp2,tmp3,vx,vy,vz)
+c          n=lx1*ly1*lz1*nelt
+c          call sub2(tmp4,t,n)
+c          tdiff=sqrt(glsc3(tmp4,tmp4,bm1,n)/(voltm1))/(dt*iostep)
+c          if (nio.eq.0) write (6,*) istep,time,tdiff,'iotdiff'
+c          call copy(tmp4,t,n)
+c     endif
+
+c     n = lx1*ly1*lz1*nelv
+c     if (mod(istep, 10).eq.0) then
+c        e=0.5*op_glsc2_wt(vx,vy,vz,vx,vy,vz,bm1)
+c        et=0.5*glsc3(t,t,bm1,n)
+c        if (nio.eq.0) write (6,*) istep,time,e,et,'energy'
+
+c        call opsub3(t_x,t_y,t_z,vx,vy,vz,vxlag,vylag,vzlag)
+c        udiff=sqrt(op_glsc2_wt(t_x,t_y,t_z,t_x,t_y,t_z,bm1)
+c    $      /(volvm1))/(dt*10)
+c        if (nio.eq.0) write (6,*) istep,time,udiff,'udiff'
+c        n=lx1*ly1*lz1*nelt
+c        call sub3(t_x,t,tlag,n)
+c        tdiff=sqrt(glsc3(t_x,t_x,bm1,n)/(voltm1))/(dt*10)
+c        if (nio.eq.0) write (6,*) istep,time,tdiff,'tdiff'
+c     endif
+
+      if (mod(istep, 20).eq.0) then
+c        call opsub3(t_x,t_y,t_z,vx,vy,vz,tmp1,tmp2,tmp3)
+c        intke = op_glsc2_wt(t_x,t_y,t_z,t_x,t_y,t_z,bm1)
+c        if (nio.eq.0) write (6,*) istep,time,intke,'intke'
+
+         e=0.5*op_glsc2_wt(vx,vy,vz,vx,vy,vz,bm1)
+         if (nio.eq.0) write (6,*) istep,time,e,'energy'
+      endif
+
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine userbc (ix,iy,iz,iside,ieg)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+      ux=0.0
+      uy=0.0
+      uz=0.0
+
+      temp=0.
+
+      eps = 1.e-5
+      y0 = 1.
+
+      if (y.gt.(y0-eps)) ux = (1.-x*x)**2
+      if (y.gt.(y0-eps)) temp = (1.-x*x)**2
+      if (y.gt.(y0-eps)) temp =1.
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine useric (ix,iy,iz,ieg)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'NEKUSE'
+
+      common /ldcpar/ dxmin
+
+      ux=0.0
+      uy=0.0
+      uz=0.0
+      temp=0.0
+
+      eps = 1.e-5
+      y0 = 1.
+
+      if (y.gt.(y0-eps)) ux = (1.-x*x)**2
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine usrdat
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      real xmin(1),xmax(1),ymin(1),ymax(1)
+
+      xmin(1)= 10000.
+      xmax(1)=-10000.
+      ymin(1)= 10000.
+      ymax(1)=-10000.
+
+      one=1.
+      pi=4.*atan(one)
+
+      n1d=nint(sqrt(1.*nelgt))
+
+      do ie=1,nelt
+      do ic=1,4
+         x=xc(ic,ie)
+         y=yc(ic,ie)
+         if (x.lt.xmin(1)) xmin(1)=x
+         if (x.gt.xmax(1)) xmax(1)=x
+         if (y.lt.ymin(1)) ymin(1)=y
+         if (y.gt.ymax(1)) ymax(1)=y
+      enddo
+      enddo
+
+      xmin(1)=glmin(xmin(1),1)
+      xmax(1)=glmax(xmax(1),1)
+
+      ymin(1)=glmin(ymin(1),1)
+      ymax(1)=glmax(ymax(1),1)
+
+      dxi=1./(xmax(1)-xmin(1))
+      dyi=1./(ymax(1)-ymin(1))
+
+      eps=.001
+
+      do ie=1,nelt
+      do ic=1,4
+         x=xc(ic,ie)
+         y=yc(ic,ie)
+         nx=nint(n1d*(x-xmin(1))*dxi)
+         ny=nint(n1d*(y-ymin(1))*dyi)
+         x=-1.*cos(nx*pi/n1d)
+         y=-1.*cos(ny*pi/n1d)
+         xc(ic,ie)=x
+         yc(ic,ie)=y
+      enddo
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine usrdat2
+
+      include 'SIZE'
+      include 'TOTAL'
+
+      call rescale_x(xm1,-1.,1.)
+      call rescale_x(ym1,-1.,1.)
+      
+      call fix_geom
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine usrdat3
+      include 'SIZE'
+      include 'TOTAL'
+
+      return
+      end
+c-----------------------------------------------------------------------

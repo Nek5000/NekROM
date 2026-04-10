@@ -241,6 +241,7 @@ c-----------------------------------------------------------------------
 
       if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
          call dump_bas
+         call dump_cbas
       endif
 
 c     call average_in_xy

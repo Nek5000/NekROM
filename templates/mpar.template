@@ -54,3 +54,7 @@ radius   = 1     # radius of filter for the differentiation filter
 [EI]
 mode    = no  # error-indicator
 eqn     = NS  # equation
+
+[DEIM]
+nbnl = 1 # number of compile-time nonlinear (convection) POD-bases
+dumpnls = no # whether or not do dump the non-linear snapshots
