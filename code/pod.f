@@ -1124,6 +1124,11 @@ c-----------------------------------------------------------------------
             vv = vv + glsc2(t6,t3,n)
          endif
 
+         if (ww.ne.ww .or. abs(ww).le.1.d-14) then
+            if (nio.eq.0) write (6,*) 'zero H10 basis norm', i
+            call exitti('zero H10 basis norm in h10pv2b$',i)
+         endif
+
          coef(i) = vv/ww
          if (nio.eq.0) write (6,1) coef(i),vv,ww
       enddo
@@ -1185,6 +1190,11 @@ c-----------------------------------------------------------------------
             vv=vv+s1*glsc2(t6,t3,n)
             vv=vv+s2*glsc3(t3,wwb(1,i),bm1,n)
             ww=ww+s2*glsc3(wwb(1,i),wwb(1,i),bm1,n)
+         endif
+
+         if (ww.ne.ww .or. abs(ww).le.1.d-14) then
+            if (nio.eq.0) write (6,*) 'zero HLM basis norm', i
+            call exitti('zero HLM basis norm in hlmpv2b$',i)
          endif
 
          coef(i) = vv/ww

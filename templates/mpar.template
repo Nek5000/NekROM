@@ -58,3 +58,4 @@ eqn     = NS  # equation
 [DEIM]
 nbnl = 1 # number of compile-time nonlinear (convection) POD-bases
 dumpnls = no # whether or not do dump the non-linear snapshots
+dumpfine = no # whether or not to dump nonlinear snapshots on the fine grid

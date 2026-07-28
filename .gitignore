@@ -22,6 +22,9 @@ cases
 archive
 examples
 
+# Generated ROM/DEIM operator bundles
+**/ops/
+
 # File types
 
 *log*

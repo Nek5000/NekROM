@@ -519,13 +519,49 @@ c-----------------------------------------------------------------------
 
       ! DEIM
 
+      deimmode='NONE'
+      ifdeim=.false.
+      deim_alpha=1.e-12
+
       nbnl = 0
       call finiparser_getdbl(d_out,'deim:nbnl',ifnd)
       if (ifnd.eq.1) nbnl=min(min(nint(d_out),ns),lbnl)
 
+      call finiparser_getstring(c_out,'deim:mode',ifnd)
+      if (ifnd.eq.1) then
+         call capit(c_out,132)
+         if (index(c_out,'MCLSDEIM').eq.1) then
+            deimmode='MCLSDEIM'
+         else if (index(c_out,'CLSDEIM').eq.1) then
+            deimmode='CLSDEIM'
+         else if (index(c_out,'DEIM').eq.1) then
+            deimmode='DEIM'
+         else if (index(c_out,'OFF').eq.1) then
+            deimmode='NONE'
+         else if (index(c_out,'NONE').eq.1) then
+            deimmode='NONE'
+         else
+            write (6,*) 'invalid option for deim:mode ',c_out
+            ierr=ierr+1
+         endif
+      endif
+
+      ifdeim=deimmode.ne.'NONE'
+      if (ifdeim.and.nbnl.le.0) then
+         write (6,*) 'deim:nbnl must be positive when deim:mode is set'
+         ierr=ierr+1
+      endif
+
+      call finiparser_getdbl(d_out,'deim:alpha',ifnd)
+      if (ifnd.eq.1) deim_alpha=d_out
+
       ifdumpnls = .false.
       call finiparser_getbool(i_out,'deim:dumpnls',ifnd)
       if (ifnd.eq.1) ifdumpnls = i_out
+
+      ifdumpfine = .false.
+      call finiparser_getbool(i_out,'deim:dumpfine',ifnd)
+      if (ifnd.eq.1) ifdumpfine = i_out
 
       if (ierr.eq.0) call finiparser_dump()
 
@@ -548,6 +584,7 @@ c-----------------------------------------------------------------------
       call bcast(cfloc,csize*4)
       call bcast(cftype,csize*4)
       call bcast(regtype,csize*5)
+      call bcast(deimmode,csize*8)
 
       ! integers
 
@@ -571,6 +608,9 @@ c-----------------------------------------------------------------------
       call bcast(iaug,isize)
       call bcast(nbat,isize)
       call bcast(nbnl,isize)
+      call bcast(ndeim_pts,isize)
+      call bcast(ndeim_pts_os,isize)
+      call bcast(ndeim_pts_eval,isize)
 
       ! reals
 
@@ -585,6 +625,7 @@ c-----------------------------------------------------------------------
       call bcast(gy,wdsize)
       call bcast(gz,wdsize)
       call bcast(podrat,wdsize)
+      call bcast(deim_alpha,wdsize)
 
       ! logicals
 
@@ -622,8 +663,10 @@ c-----------------------------------------------------------------------
       call bcast(ifcore,lsize)
       call bcast(ifquad,lsize)
       call bcast(ifedvs,lsize)
+      call bcast(ifdeim,lsize)
 
       call bcast(ifdumpnls,lsize)
+      call bcast(ifdumpfine,lsize)
 
       return
       END

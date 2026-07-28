@@ -654,7 +654,9 @@ c-----------------------------------------------------------------------
          enddo
       endif
 
-      if (ifcp) then
+      if (ifdeim) then
+         call evalc_deim(tmp1(1),u)
+      else if (ifcp) then
          if (ifcore) then 
             call evalc4(tmp1(1),cua,cub,cuc,cp_uw,cul,cuj0,cu0k,u)
          else
@@ -748,6 +750,153 @@ c              tmp2(i)=log(d)
 
          call addcol3(rhs,tmp1(1),tmp2(1),nb)
       endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine evalc_deim(cu,uu)
+
+      ! Compute the DEIM-family convection term for the velocity equation.
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      real cu(nb)
+      real uu(0:nb)
+
+      real fraw(ndeim_max),c_hat(lbnl),bvec(lbnl),tmpb(lbnl)
+      real up,vp,wp,ux,uy,uz,lambda,s1,s2
+
+      integer i,j
+
+      call rzero(cu,nb)
+      call rzero(fraw,ndeim_max)
+      call rzero(c_hat,lbnl)
+      call rzero(bvec,lbnl)
+      call rzero(tmpb,lbnl)
+
+      if (.not.ifdeim) return
+
+      if (ndeim_pts_eval.le.0.or.nbnl.le.0) then
+         call exitti('invalid DEIM setup$',ndeim_pts_eval)
+      endif
+
+      do i=1,ndeim_pts_eval
+         up=0.
+         vp=0.
+         wp=0.
+         ux=0.
+         uy=0.
+         uz=0.
+         do j=1,nb
+            up=up+deim_u_p(i,j)*uu(j)
+            vp=vp+deim_v_p(i,j)*uu(j)
+            if (if3d) then
+               wp=wp+deim_w_p(i,j)*uu(j)
+            endif
+            ux=ux+deim_ux_p(i,j)*uu(j)
+            uy=uy+deim_uy_p(i,j)*uu(j)
+            if (if3d) then
+               uz=uz+deim_uz_p(i,j)*uu(j)
+            endif
+         enddo
+         fraw(i)=(up*ux+vp*uy+wp*uz)*deim_eval_weights(i)
+      enddo
+
+      if (deimmode.eq.'MCLSDEIM') then
+         do i=1,nbnl
+            c_hat(i)=0.
+            do j=1,ndeim_pts_eval
+               c_hat(i)=c_hat(i)+deim_nl_bas_p_eval(j,i)*fraw(j)
+            enddo
+            do j=1,nbnl
+               c_hat(i)=c_hat(i)+deim_alpha*deim_tau(i,j)*deim_mu(j)
+            enddo
+         enddo
+
+         do i=1,nbnl
+            tmpb(i)=0.
+            do j=1,nbnl
+               tmpb(i)=tmpb(i)+deim_A_tau_inv(i,j)*c_hat(j)
+            enddo
+         enddo
+
+         do i=1,nbnl
+            c_hat(i)=tmpb(i)
+         enddo
+
+         do i=1,nbnl
+            bvec(i)=0.
+            do j=1,nb
+               bvec(i)=bvec(i)+deim_proj_mat(j,i)*uu(j)
+            enddo
+         enddo
+
+         do i=1,nbnl
+            tmpb(i)=0.
+            do j=1,nbnl
+               tmpb(i)=tmpb(i)+deim_A_tau_inv(i,j)*bvec(j)
+            enddo
+         enddo
+
+         s1=0.
+         s2=0.
+         do i=1,nbnl
+            s1=s1+bvec(i)*c_hat(i)
+            s2=s2+bvec(i)*tmpb(i)
+         enddo
+
+         if (abs(s2).gt.0.) then
+            lambda=s1/s2
+            do i=1,nbnl
+               c_hat(i)=c_hat(i)-lambda*tmpb(i)
+            enddo
+         endif
+      else
+         do i=1,nbnl
+            do j=1,ndeim_pts_eval
+               c_hat(i)=c_hat(i)+deim_interp_mat(i,j)*fraw(j)
+            enddo
+         enddo
+
+         if (deimmode.eq.'CLSDEIM') then
+            do i=1,nbnl
+               do j=1,nb
+                  bvec(i)=bvec(i)+deim_proj_mat(j,i)*uu(j)
+               enddo
+            enddo
+
+            do i=1,nbnl
+               do j=1,nbnl
+                  tmpb(i)=tmpb(i)+deim_Ainv(i,j)*bvec(j)
+               enddo
+            enddo
+
+            s1=0.
+            s2=0.
+            do i=1,nbnl
+               s1=s1+bvec(i)*c_hat(i)
+               s2=s2+bvec(i)*tmpb(i)
+            enddo
+
+            if (abs(s2).gt.0.) then
+               lambda=s1/s2
+               do i=1,nbnl
+                  c_hat(i)=c_hat(i)-lambda*tmpb(i)
+               enddo
+            endif
+         endif
+      endif
+
+      do i=1,nb
+         do j=1,nbnl
+            cu(i)=cu(i)+deim_proj_mat(i,j)*c_hat(j)
+         enddo
+         do j=0,nb
+            cu(i)=cu(i)+deim_zmc(i,j)*uu(j)
+         enddo
+      enddo
 
       return
       end

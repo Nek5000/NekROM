@@ -28,6 +28,55 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine iread_serial(a,n,fname,wk,nid)
+
+      ! read in integer array
+
+      ! a     := read target array
+      ! n     := number of items
+      ! fname := file name
+      ! wk    := work array
+      ! nid   := id of core
+
+      character*128 fname
+      character*128 fntrunc
+
+      integer a(n),wk(n)
+
+      if (nid.le.0) then
+         call blank(fntrunc,128)
+         len=ltruncr(fname,128)
+         call chcopy(fntrunc,fname,len)
+         call iread_serial_helper(a,n,fntrunc)
+      else
+         do i=1,n
+            a(i)=0
+         enddo
+      endif
+
+      if (nid.ge.0) call igop(a,wk,'+  ',n)
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine iread_serial_helper(a,n,fname)
+
+      ! core integer reading routine
+
+      ! a     := read target array
+      ! n     := number of items
+      ! fname := file name
+
+      integer a(n)
+      character*128 fname
+
+      open (unit=12,file=fname)
+      read (12,*) (a(i),i=1,n)
+      close (unit=12)
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine read_serial_helper(a,n,fname)
 
       ! core reading routine

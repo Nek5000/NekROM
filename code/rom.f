@@ -253,6 +253,8 @@ c     call average_in_y
 
       call setqoi
       call setmisc
+      if (ifdeim.and.(rmode.eq.'ON '.or.rmode.eq.'ONB'.or.
+     $   rmode.eq.'CP ')) call setdeim
 
       if (ifei) then
          call set_sigma
@@ -616,6 +618,136 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine setdeim
+
+      ! load DEIM-family artifacts
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      logical have_mu,have_tau,have_ainv,have_alpha,
+     $        have_w_p,have_uz_p
+
+      integer ndeimwrk
+      parameter (ndeimwrk=ndeim_max*max(lub+1,lbnl))
+
+      real rwk(ndeimwrk)
+      real rtmp(1)
+      integer iwk(ndeimwrk)
+      integer itmp(1)
+
+      if (nio.eq.0) write (6,*) 'inside setdeim'
+
+      if (.not.ifdeim) return
+      if (nbnl.le.0) call exitti('nbnl <= 0$',nbnl)
+
+      call iread_serial(itmp,1,'ops/deim_npts ',iwk,nid)
+      ndeim_pts=itmp(1)
+      call iread_serial(itmp,1,'ops/deim_npts_os ',iwk,nid)
+      ndeim_pts_os=itmp(1)
+      call iread_serial(itmp,1,'ops/deim_npts_eval ',iwk,nid)
+      ndeim_pts_eval=itmp(1)
+
+      if (ndeim_pts.le.0) call exitti('ndeim_pts <= 0$',ndeim_pts)
+      if (ndeim_pts.gt.ndeim_max) then
+         call exitti('ndeim_pts > ldeim$',ndeim_pts)
+      endif
+      if (ndeim_pts_os.gt.ndeim_max) then
+         call exitti('ndeim_pts_os > ldeim$',ndeim_pts_os)
+      endif
+      if (ndeim_pts_eval.le.0) call exitti(
+     $   'ndeim_pts_eval <= 0$',ndeim_pts_eval)
+      if (ndeim_pts_eval.gt.ndeim_max) then
+         call exitti('ndeim_pts_eval > ldeim$',ndeim_pts_eval)
+      endif
+
+      call iread_serial(deim_inds,ndeim_pts,'ops/deim_inds ',iwk,nid)
+      if (ndeim_pts_os.gt.0) then
+         call iread_serial(deim_inds_os,ndeim_pts_os,
+     $      'ops/deim_inds_os ',iwk,nid)
+      endif
+      call iread_serial(deim_eval_inds,ndeim_pts_eval,
+     $   'ops/deim_eval_inds ',iwk,nid)
+
+      call read_serial(deim_eval_weights,ndeim_pts_eval,
+     $   'ops/deim_eval_weights ',rwk,nid)
+      call read_mat_serial(deim_u_p,ndeim_max,lub+1,
+     $   'ops/deim_u_p ',ndeim_pts_eval,nb+1,rwk,nid)
+      call read_mat_serial(deim_v_p,ndeim_max,lub+1,
+     $   'ops/deim_v_p ',ndeim_pts_eval,nb+1,rwk,nid)
+      if (if3d) then
+         inquire (file='ops/deim_w_p',exist=have_w_p)
+         inquire (file='ops/deim_uz_p',exist=have_uz_p)
+         if ((.not.have_w_p).or.(.not.have_uz_p)) then
+            call exitti('missing 3D DEIM artifacts$',1)
+         endif
+         call read_mat_serial(deim_w_p,ndeim_max,lub+1,
+     $      'ops/deim_w_p ',ndeim_pts_eval,nb+1,rwk,nid)
+      else
+         call rzero(deim_w_p,ndeim_max*(lub+1))
+      endif
+      call read_mat_serial(deim_ux_p,ndeim_max,lub+1,
+     $   'ops/deim_ux_p ',ndeim_pts_eval,nb+1,rwk,nid)
+      call read_mat_serial(deim_uy_p,ndeim_max,lub+1,
+     $   'ops/deim_uy_p ',ndeim_pts_eval,nb+1,rwk,nid)
+      if (if3d) then
+         call read_mat_serial(deim_uz_p,ndeim_max,lub+1,
+     $      'ops/deim_uz_p ',ndeim_pts_eval,nb+1,rwk,nid)
+      else
+         call rzero(deim_uz_p,ndeim_max*(lub+1))
+      endif
+      call read_mat_serial(deim_nl_bas_p_eval,ndeim_max,lbnl,
+     $   'ops/deim_nl_bas_p_eval ',ndeim_pts_eval,nbnl,rwk,nid)
+      call read_mat_serial(deim_proj_mat,lub,lbnl,'ops/deim_proj_mat ',
+     $   nb,nbnl,rwk,nid)
+      call read_mat_serial(deim_zmc,lub,lub+1,'ops/deim_zmc ',
+     $   nb,nb+1,rwk,nid)
+      call read_mat_serial(deim_Ainv,lbnl,lbnl,'ops/deim_Ainv ',
+     $   nbnl,nbnl,rwk,nid)
+      call read_mat_serial(deim_interp_mat,lbnl,ndeim_max,
+     $   'ops/deim_interp_mat ',nbnl,ndeim_pts_eval,rwk,nid)
+
+      inquire (file='ops/deim_mu',exist=have_mu)
+      if (have_mu) then
+         call read_serial(deim_mu,nbnl,'ops/deim_mu ',rwk,nid)
+      else
+         call rzero(deim_mu,nbnl)
+      endif
+
+      inquire (file='ops/deim_tau',exist=have_tau)
+      if (have_tau) then
+         call read_serial(deim_tau,nbnl*nbnl,'ops/deim_tau ',rwk,nid)
+      else
+         call rzero(deim_tau,nbnl*nbnl)
+      endif
+
+      inquire (file='ops/deim_A_tau_inv',exist=have_ainv)
+      if (have_ainv) then
+         call read_serial(deim_A_tau_inv,nbnl*nbnl,
+     $      'ops/deim_A_tau_inv ',rwk,nid)
+      else
+         call rzero(deim_A_tau_inv,nbnl*nbnl)
+      endif
+
+      if (deimmode.eq.'MCLSDEIM') then
+         if ((.not.have_mu).or.(.not.have_tau).or.(.not.have_ainv)) then
+            call exitti('missing MCLSDEIM artifacts$',1)
+         endif
+      endif
+
+      inquire (file='ops/deim_alpha',exist=have_alpha)
+      if (have_alpha) then
+         call read_serial(rtmp,1,'ops/deim_alpha ',rwk,nid)
+         deim_alpha=rtmp(1)
+      endif
+
+      call nekgsync
+      if (nio.eq.0) write (6,*) 'deim setup complete'
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine mor_init_params
 
       ! initialize rom parameters before .rea / .par read
@@ -669,6 +801,7 @@ c-----------------------------------------------------------------------
       ifcp=.false.
       ifcore=.true.
       ifquad=.false.
+      ifdeim=.false.
       ifsetbases=.true.
 
       do i=0,ldimt1
@@ -707,6 +840,12 @@ c-----------------------------------------------------------------------
       icopt=0
 
       podrat=0.5
+
+      deimmode='NONE'
+      deim_alpha=1.e-12
+      ndeim_pts=0
+      ndeim_pts_os=0
+      ndeim_pts_eval=0
 
       cfloc='NONE'
       cftype='NONE'
@@ -999,6 +1138,12 @@ c-----------------------------------------------------------------------
          write (6,*) 'mp_ifcp       ',ifcp
          write (6,*) 'mp_ifcore     ',ifcore
          write (6,*) 'mp_ifquad     ',ifquad
+         write (6,*) 'mp_ifdeim     ',ifdeim
+         write (6,*) 'mp_deim_mode  ',deimmode
+         write (6,*) 'mp_deim_alpha ',deim_alpha
+         write (6,*) 'mp_ndeim_pts  ',ndeim_pts
+         write (6,*) 'mp_ndeim_os   ',ndeim_pts_os
+         write (6,*) 'mp_ndeim_eval ',ndeim_pts_eval
          write (6,*) ' '
          do i=0,ldimt1
             write (6,*) 'mp_ifpod(',i,')   ',ifpod(i)

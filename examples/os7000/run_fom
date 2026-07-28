@@ -10,18 +10,17 @@ export MOR_DIR NEK_SOURCE_ROOT
 export NEK_DEPS_LOCAL_SRC="${NEK_DEPS_LOCAL_SRC:-1}"
 export PATH="$MOR_DIR/bin:$NEK_SOURCE_ROOT/bin:$PATH"
 
-np="${1:-1}" # number of processors to use for FOM calculation
-casename="t2d"
-usr_file="${casename}_fom"
-logfile=${casename}.log.$np
+np="${1:-1}"
+casename="u3_t020_n13"
+usr_file="$casename"
+logfile="${casename}.log.${np}"
 
-# generate mesh connectivity information
 genmap << EOF
-t2d
+$casename
 0.1
 EOF
 
-makenek "$usr_file"
+makerom "$usr_file"
 
 echo 'running Nek5000 FOM calculation...'
 if [ "$np" -eq 1 ]; then
@@ -31,8 +30,15 @@ else
     neklmpi "$casename" "$np"
 fi
 
-mkdir -p snaps
-mv *${casename}0.f* "$logfile" snaps
-ls -r snaps/${casename}0.f* > file.list
+snaps_dir="snaps"
+mkdir -p "$snaps_dir"
+mv *${casename}0.f* "$logfile" "$snaps_dir"
+ls -r "$snaps_dir"/${casename}0.f* > file.list
+
+if grep ' egn' "$snaps_dir/$logfile" > fom.egn.dat; then
+    :
+else
+    : > fom.egn.dat
+fi
 
 echo 'done with FOM, exiting...'
