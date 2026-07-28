@@ -19,8 +19,7 @@ data
 runs
 docs
 cases
-archive
-examples
+/examples/
 
 # Generated ROM/DEIM operator bundles
 **/ops/
