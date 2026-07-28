@@ -1,5 +1,5 @@
 [GENERAL]
-mode    = all # (off=offline,on=online,all=both,onb=online with bases,cp)
+mode    = off # (off=offline,on=online,all=both,onb=online with bases,cp)
 field   = vt  # fields to perform the pod-rom (v=vel.,t=temp.,vt=both)
 nb=1
 avginit = 5.0001E+04   # starting time-step of rom averaging
@@ -31,3 +31,8 @@ angle     = -90.   # angle of gravity vector (degrees displacement from x-axis)
 body     = no # body force on the velocity field, set fx,fy,fz in user file
 source   = no # source term on the thermal field, set qq in user file 
 buoyancy = yes # buoyancy term the velocity field, set gx,gy,gz, in userfile
+
+[DEIM]
+nbnl = 20 # number of nonlinear (convection) POD-bases
+dumpnls = yes # whether or not do dump the non-linear snapshots
+mode = clsdeim # embedded DEIM-family runtime path

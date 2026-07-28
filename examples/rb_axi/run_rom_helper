@@ -1,8 +1,37 @@
 #!/bin/bash
+set -euo pipefail
 
-mkdir rom$1
+script_dir=$(cd "$(dirname "$0")" && pwd)
+cd "$script_dir"
+
+MOR_DIR="${MOR_DIR:-$(cd "$script_dir/../.." && pwd)}"
+NEK_SOURCE_ROOT="${NEK_SOURCE_ROOT:-$(cd "$MOR_DIR/../Nek5000" && pwd)}"
+export MOR_DIR NEK_SOURCE_ROOT
+export NEK_DEPS_LOCAL_SRC="${NEK_DEPS_LOCAL_SRC:-1}"
+export PATH="$MOR_DIR/bin:$NEK_SOURCE_ROOT/bin:$PATH"
+
+archive_root="${ARCHIVE_ROOT:-/private/tmp/rb_axi_archive}"
+mkdir -p "$archive_root"
+
+if compgen -G "rb0.f*" > /dev/null; then
+    mv rb0.f* "$archive_root"/
+fi
+
+if [ -d "rom${1}" ]; then
+    mv "rom${1}" "$archive_root/rom${1}_$(date +%s)"
+fi
+
+mkdir -p "rom$1"
+
 echo "$2" > eps
+if [ ! -x nek5000 ]; then
+    makenek rb_rom1
+fi
 nekmpi rb 1
-mv eps rom$1/
-mv rb.log.1 rom$1/logfile
-grep ' nus' rom$1/logfile > rom$1/nus.dat
+mv eps "rom$1"/
+mv rb.log.1 "rom$1"/logfile
+if grep ' nus' "rom$1"/logfile > "rom$1"/nus.dat; then
+    :
+else
+    : > "rom$1"/nus.dat
+fi
