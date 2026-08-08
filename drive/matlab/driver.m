@@ -117,51 +117,61 @@ function results = driver()
 
     %% DEIM & Snapshot Initialization
     if ismember(conv_approach, {'deim', 'clsdeim', 'mclsdeim'})
-        % Use the generated cba* basis directly, or interpolate the ROM basis
-        % onto that grid when the fine-grid DEIM path is enabled.
-        matlab_pod_basis = 0;
-        nl_bas_obj_nr = NekSnaps(fullfile(snaps_path, strcat('cba', casename)));
-        [nl_bas_u_nr, nl_bas_v_nr] = get_snaps(nl_bas_obj_nr, reorder);
-        [x_nl, y_nl] = get_grid(nl_bas_obj_nr, reorder);
-
-        if deim_finegrid
-            x_deim = x_nl;
-            y_deim = y_nl;
-            [pod_u_deim, pod_v_deim] = interp_basis_to_grid(pod_u, pod_v, x_fom, y_fom, x_deim, y_deim);
-        else
-            [nl_bas_u_nr, nl_bas_v_nr] = interp_basis_to_grid(nl_bas_u_nr, nl_bas_v_nr, x_nl, y_nl, x_deim, y_deim);
-        end
-
-        if matlab_pod_basis || strcmp(conv_approach, 'mclsdeim')
-            nl_cname = fullfile(snaps_path, strcat('csn', casename));
-            nl_snaps_obj = NekSnaps(nl_cname);        
-            [nl_snaps_u, nl_snaps_v] = get_snaps(nl_snaps_obj, reorder);
-            if deim_finegrid
-                [nl_snaps_u_deim, nl_snaps_v_deim] = deal(nl_snaps_u, nl_snaps_v);
-            else
-                [nl_snaps_u_deim, nl_snaps_v_deim] = interp_basis_to_grid(nl_snaps_u, nl_snaps_v, x_nl, y_nl, x_deim, y_deim);
+        use_fortran_deim_ops = read_env_bool('NEKROM_DEIM_FROM_OPS', false);
+        if use_fortran_deim_ops
+            nbnl = case_meta.deim_nbnl;
+            if isempty(nbnl) || ~isfinite(nbnl) || nbnl <= 0
+                error(['NEKROM_DEIM_FROM_OPS=1 requires a valid [DEIM] nbnl entry in ' ...
+                       case_meta.case_file, '.']);
             end
+            deim_data = load_deim_artifacts(ops_dir, nb, nbnl);
         else
-            nl_snaps_u = [];
-            nl_snaps_v = [];
-        end
-        
-        if matlab_pod_basis
-            [nl_bas, ~, ~] = get_pod_basis_from_arrays(nl_snaps_u_deim, nl_snaps_v_deim, x_deim, y_deim, ndeim_pts, 0, 0);
-        else
-            nl_bas = [nl_bas_u_nr; nl_bas_v_nr];
-        end
+            % Use the generated cba* basis directly, or interpolate the ROM basis
+            % onto that grid when the fine-grid DEIM path is enabled.
+            matlab_pod_basis = 0;
+            nl_bas_obj_nr = NekSnaps(fullfile(snaps_path, strcat('cba', casename)));
+            [nl_bas_u_nr, nl_bas_v_nr] = get_snaps(nl_bas_obj_nr, reorder);
+            [x_nl, y_nl] = get_grid(nl_bas_obj_nr, reorder);
 
-        deim_data = setup_conv_deim( ...
-            pod_u_deim, pod_v_deim, nl_bas, nl_snaps_u_deim, nl_snaps_v_deim, ...
-            x_deim, y_deim, ndeim_pts, n_os_points, ps_alg, deim_dealias, deim_dealias_quad, deim_alpha);
+            if deim_finegrid
+                x_deim = x_nl;
+                y_deim = y_nl;
+                [pod_u_deim, pod_v_deim] = interp_basis_to_grid(pod_u, pod_v, x_fom, y_fom, x_deim, y_deim);
+            else
+                [nl_bas_u_nr, nl_bas_v_nr] = interp_basis_to_grid(nl_bas_u_nr, nl_bas_v_nr, x_nl, y_nl, x_deim, y_deim);
+            end
 
-        if deim_dealias_quad
-            warning('NekROM:DEIMQuadNoPersist', ...
-                ['NEKROM_DEIM_DEALIAS_QUAD=1 uses an overintegrated MATLAB-only DEIM path. ' ...
-                 'Skipping ops/ persistence because the current Fortran runtime cannot load it.']);
-        else
-            save_deim_artifacts(ops_dir, deim_data);
+            if matlab_pod_basis || strcmp(conv_approach, 'mclsdeim')
+                nl_cname = fullfile(snaps_path, strcat('csn', casename));
+                nl_snaps_obj = NekSnaps(nl_cname);
+                [nl_snaps_u, nl_snaps_v] = get_snaps(nl_snaps_obj, reorder);
+                if deim_finegrid
+                    [nl_snaps_u_deim, nl_snaps_v_deim] = deal(nl_snaps_u, nl_snaps_v);
+                else
+                    [nl_snaps_u_deim, nl_snaps_v_deim] = interp_basis_to_grid(nl_snaps_u, nl_snaps_v, x_nl, y_nl, x_deim, y_deim);
+                end
+            else
+                nl_snaps_u = [];
+                nl_snaps_v = [];
+            end
+
+            if matlab_pod_basis
+                [nl_bas, ~, ~] = get_pod_basis_from_arrays(nl_snaps_u_deim, nl_snaps_v_deim, x_deim, y_deim, ndeim_pts, 0, 0);
+            else
+                nl_bas = [nl_bas_u_nr; nl_bas_v_nr];
+            end
+
+            deim_data = setup_conv_deim( ...
+                pod_u_deim, pod_v_deim, nl_bas, nl_snaps_u_deim, nl_snaps_v_deim, ...
+                x_deim, y_deim, ndeim_pts, n_os_points, ps_alg, deim_dealias, deim_dealias_quad, deim_alpha);
+
+            if deim_dealias_quad
+                warning('NekROM:DEIMQuadNoPersist', ...
+                    ['NEKROM_DEIM_DEALIAS_QUAD=1 uses an overintegrated MATLAB-only DEIM path. ' ...
+                     'Skipping ops/ persistence because the current Fortran runtime cannot load it.']);
+            else
+                save_deim_artifacts(ops_dir, deim_data);
+            end
         end
     end
 

@@ -55,11 +55,15 @@ if importlib.util.find_spec("sphinx_mathjax_offline") is not None:
 
 if importlib.util.find_spec("sphinxcontrib.bibtex") is not None:
     extensions.append("sphinxcontrib.bibtex")
-    tags.add("has_bibtex_ext")
+    sphinx_tags = globals().get("tags")
+    if sphinx_tags is not None:
+        sphinx_tags.add("has_bibtex_ext")
 
 if importlib.util.find_spec("sphinxcontrib.matlab") is not None:
     extensions.append("sphinxcontrib.matlab")
-    tags.add("has_matlab_ext")
+    sphinx_tags = globals().get("tags")
+    if sphinx_tags is not None:
+        sphinx_tags.add("has_matlab_ext")
 
 bibtex_bibfiles = ['references.bib']
 

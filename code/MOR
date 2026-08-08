@@ -4,8 +4,13 @@ c     parameters and common blocks for MOR
 
       common /morgram/ ug(ls,ls),eval(ls),eval2(ls)
 
+      integer lbnl_eff
+c     Use a nonzero compile-time dimension even when lbnl=0.
+c     The extra slot is unused unless nbnl is set > 0 at runtime.
+      parameter (lbnl_eff=lbnl+1)
+
       integer ndeim_max
-      parameter (ndeim_max=3*lbnl)
+      parameter (ndeim_max=3*lbnl_eff)
 
       common /morvisc/ unu(lx1*ly1*lz1*lelm,0:lub),
      $                 tnu(lx1*ly1*lz1*lelm,0:ltb)
@@ -17,7 +22,7 @@ c     parameters and common blocks for MOR
      $                  pb(lx2*ly2*lz2*lelm,0:lpb),
      $                  tb(lx1*ly1*lz1*lelm,0:ltb,ldimt)
 
-      common /mordeimbasis/ uvwbnl(lx1*ly1*lz1*lelm,ldim,lbnl)
+      common /mordeimbasis/ uvwbnl(lx1*ly1*lz1*lelm,ldim,lbnl_eff)
 
       logical ifdumpnls,ifdumpfine,ifdeim
       common /mordeimflags/ ifdumpnls,ifdumpfine,ifdeim
@@ -44,10 +49,11 @@ c     parameters and common blocks for MOR
       common /mordeimup/ deim_u_p,deim_v_p,deim_w_p,deim_ux_p,
      $     deim_uy_p,deim_uz_p
 
-      real deim_nl_bas_p_eval(ndeim_max,lbnl),deim_proj_mat(lub,lbnl),
-     $     deim_zmc(lub,0:lub),deim_Ainv(lbnl,lbnl),
-     $     deim_interp_mat(lbnl,ndeim_max),deim_mu(lbnl),
-     $     deim_tau(lbnl,lbnl),deim_A_tau_inv(lbnl,lbnl)
+      real deim_nl_bas_p_eval(ndeim_max,lbnl_eff),
+     $     deim_proj_mat(lub,lbnl_eff),
+     $     deim_zmc(lub,0:lub),deim_Ainv(lbnl_eff,lbnl_eff),
+     $     deim_interp_mat(lbnl_eff,ndeim_max),deim_mu(lbnl_eff),
+     $     deim_tau(lbnl_eff,lbnl_eff),deim_A_tau_inv(lbnl_eff,lbnl_eff)
       common /mordeimmat/ deim_nl_bas_p_eval,deim_proj_mat,
      $     deim_zmc,deim_Ainv,deim_interp_mat,
      $     deim_mu,deim_tau,deim_A_tau_inv

@@ -765,16 +765,16 @@ c-----------------------------------------------------------------------
       real cu(nb)
       real uu(0:nb)
 
-      real fraw(ndeim_max),c_hat(lbnl),bvec(lbnl),tmpb(lbnl)
+      real fraw(ndeim_max),c_hat(lbnl_eff),bvec(lbnl_eff),tmpb(lbnl_eff)
       real up,vp,wp,ux,uy,uz,lambda,s1,s2
 
       integer i,j
 
       call rzero(cu,nb)
       call rzero(fraw,ndeim_max)
-      call rzero(c_hat,lbnl)
-      call rzero(bvec,lbnl)
-      call rzero(tmpb,lbnl)
+      call rzero(c_hat,lbnl_eff)
+      call rzero(bvec,lbnl_eff)
+      call rzero(tmpb,lbnl_eff)
 
       if (.not.ifdeim) return
 

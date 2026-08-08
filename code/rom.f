@@ -630,7 +630,7 @@ c-----------------------------------------------------------------------
      $        have_w_p,have_uz_p
 
       integer ndeimwrk
-      parameter (ndeimwrk=ndeim_max*max(lub+1,lbnl))
+      parameter (ndeimwrk=ndeim_max*(lub+1+lbnl_eff))
 
       real rwk(ndeimwrk)
       real rtmp(1)
@@ -697,15 +697,15 @@ c-----------------------------------------------------------------------
       else
          call rzero(deim_uz_p,ndeim_max*(lub+1))
       endif
-      call read_mat_serial(deim_nl_bas_p_eval,ndeim_max,lbnl,
+      call read_mat_serial(deim_nl_bas_p_eval,ndeim_max,lbnl_eff,
      $   'ops/deim_nl_bas_p_eval ',ndeim_pts_eval,nbnl,rwk,nid)
-      call read_mat_serial(deim_proj_mat,lub,lbnl,'ops/deim_proj_mat ',
-     $   nb,nbnl,rwk,nid)
+      call read_mat_serial(deim_proj_mat,lub,lbnl_eff,
+     $   'ops/deim_proj_mat ',nb,nbnl,rwk,nid)
       call read_mat_serial(deim_zmc,lub,lub+1,'ops/deim_zmc ',
      $   nb,nb+1,rwk,nid)
-      call read_mat_serial(deim_Ainv,lbnl,lbnl,'ops/deim_Ainv ',
-     $   nbnl,nbnl,rwk,nid)
-      call read_mat_serial(deim_interp_mat,lbnl,ndeim_max,
+      call read_mat_serial(deim_Ainv,lbnl_eff,lbnl_eff,
+     $   'ops/deim_Ainv ',nbnl,nbnl,rwk,nid)
+      call read_mat_serial(deim_interp_mat,lbnl_eff,ndeim_max,
      $   'ops/deim_interp_mat ',nbnl,ndeim_pts_eval,rwk,nid)
 
       inquire (file='ops/deim_mu',exist=have_mu)
@@ -717,15 +717,17 @@ c-----------------------------------------------------------------------
 
       inquire (file='ops/deim_tau',exist=have_tau)
       if (have_tau) then
-         call read_serial(deim_tau,nbnl*nbnl,'ops/deim_tau ',rwk,nid)
+         call read_mat_serial(deim_tau,lbnl_eff,lbnl_eff,
+     $      'ops/deim_tau ',nbnl,nbnl,rwk,nid)
       else
          call rzero(deim_tau,nbnl*nbnl)
       endif
 
       inquire (file='ops/deim_A_tau_inv',exist=have_ainv)
       if (have_ainv) then
-         call read_serial(deim_A_tau_inv,nbnl*nbnl,
-     $      'ops/deim_A_tau_inv ',rwk,nid)
+         call read_mat_serial(deim_A_tau_inv,lbnl_eff,lbnl_eff,
+     $      'ops/deim_A_tau_inv ',
+     $      nbnl,nbnl,rwk,nid)
       else
          call rzero(deim_A_tau_inv,nbnl*nbnl)
       endif

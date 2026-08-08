@@ -10,7 +10,7 @@ export MOR_DIR NEK_SOURCE_ROOT
 export NEK_DEPS_LOCAL_SRC="${NEK_DEPS_LOCAL_SRC:-1}"
 export PATH="$MOR_DIR/bin:$NEK_SOURCE_ROOT/bin:$PATH"
 
-archive_root="${ARCHIVE_ROOT:-/private/tmp/rb_axi_archive}"
+archive_root="${ARCHIVE_ROOT:-${TMPDIR:-/tmp}/rb_axi_archive}"
 mkdir -p "$archive_root"
 
 if compgen -G "rb0.f*" > /dev/null; then

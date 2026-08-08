@@ -56,6 +56,8 @@ mode    = no  # error-indicator
 eqn     = NS  # equation
 
 [DEIM]
-nbnl = 1 # number of compile-time nonlinear (convection) POD-bases
+nbnl = 20 # number of runtime nonlinear (convection) POD bases (<= compile-time lbnl)
 dumpnls = no # whether or not do dump the non-linear snapshots
 dumpfine = no # whether or not to dump nonlinear snapshots on the fine grid
+mode = off # (off, deim, clsdeim, mclsdeim)
+alpha = 1.e-12 # MCLSDEIM regularization strength

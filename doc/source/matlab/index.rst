@@ -10,7 +10,7 @@ MATLAB/Octave Driver
 ====================
 
 The main driver script is `drive/matlab/driver.m`, which loads the basis functions and runs the ROM in MATLAB/Octave using a
-BDF3/EXT3 time-stepper. The older `drive/matlab/old/rom_online_solver.m` file is kept as a reference implementation.
+BDF3/EXT3 time-stepper. The older `drive/matlab/archive/old/rom_online_solver.m` file is kept as a reference implementation.
 
 The driver expects `config.m` to select the case and runtime options, and then uses helper functions from the `io/`,
 `operators/`, and `point_generators/` subdirectories.
@@ -102,7 +102,7 @@ full strict quadrature while preserving dealiased integration behavior. That pat
 
    .. mat:autofunction:: gappy_pod
 
-   The legacy `gpode` implementation lives under `drive/matlab/point_generators/old/gpode/` and is not part of the current
+   The legacy `gpode` implementation lives under `drive/matlab/archive/point_generators/old/gpode/` and is not part of the current
    auto-documented MATLAB API.
 
 .. only:: not has_matlab_ext

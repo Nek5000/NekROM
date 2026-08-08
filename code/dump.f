@@ -77,6 +77,54 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine dump_mat_serial(a,n1,n2,fname,m1,m2,nid)
+
+      ! dump a real matrix (stored in a larger leading-dimension array)
+      ! in column-major order, writing only the active m1-by-m2 block.
+      !
+      ! a     := target matrix (storage n1-by-n2)
+      ! n1,n2 := storage dimensions of a
+      ! fname := file name
+      ! m1,m2 := active dimensions to write
+      ! nid   := processor id
+
+      real a(n1,n2)
+
+      character*128 fname
+      character*128 fntrunc
+
+      if (nid.eq.0) then
+         call blank(fntrunc,128)
+
+         len=ltruncr(fname,128)
+         call chcopy(fntrunc,fname,len)
+
+         call dump_mat_serial_helper(a,n1,n2,fntrunc,m1,m2)
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine dump_mat_serial_helper(a,n1,n2,fname,m1,m2)
+
+      ! helper routine for dump_mat_serial
+
+      real a(n1,n2)
+      character*128 fname
+
+      open (unit=12,file=fname)
+
+      do j=1,m2
+      do i=1,m1
+         write (12,*) a(i,j)
+      enddo
+      enddo
+
+      close (unit=12)
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine dump_global_helper(a,n,fname,wk1,wk2,nid)
 
       ! helper routine to dump_global
@@ -392,6 +440,8 @@ c-----------------------------------------------------------------------
       integer pind(1)
       integer pmat(1,1) 
 
+      if (nbnl.le.0) return
+
       ! Compute convection field for each snapshot and store in snapt
       call evalcflds(snapt,us0,us0,ldim,ns,.false.)
 
@@ -522,15 +572,16 @@ c-----------------------------------------------------------------------
       integer local_best_comp
       integer global_row,offset,best_ip,best_comp,best_inode
       integer iuofs,ivofs,iwofs,iuxofs,iuyofs,iuzofs
-      integer cand_info(3),work_info(3),ipivl(lbnl)
+      integer cand_info(3),work_info(3),ipivl(lbnl_eff)
+      integer irl(lbnl_eff),icl(lbnl_eff)
       integer nrowpack
-      real    amat(lbnl,lbnl),rhs(lbnl),coeff(lbnl)
-      real    sel_rows(lbnl,lbnl)
-      real    loc_rowvals(lbnl),sel_rowvals(lbnl)
-      real    cand_pack(lbnl+1),work_pack(lbnl+1)
+      real    amat(lbnl_eff,lbnl_eff),rhs(lbnl_eff),coeff(lbnl_eff)
+      real    sel_rows(lbnl_eff,lbnl_eff)
+      real    loc_rowvals(lbnl_eff),sel_rowvals(lbnl_eff)
+      real    cand_pack(lbnl_eff+1),work_pack(lbnl_eff+1)
       real    row_pack(6*(lub+1)),row_work(6*(lub+1))
       real    loc_best_val,glob_best_val,rowval
-      real    snapcoef(lbnl),scale,rtmp(1)
+      real    snapcoef(lbnl_eff),scale,rtmp(1)
       real    gx(lt),gy(lt),gz(lt)
       real    uadv(lt,ldim,1),tadv(lt,ldim,1)
       real    cf1(lt,ldim,1),cf2(lt,ldim,1)
@@ -567,23 +618,23 @@ c-----------------------------------------------------------------------
       call izero(deim_inds_os,ndeim_max)
       call izero(deim_eval_inds,ndeim_max)
       call rzero(deim_eval_weights,ndeim_max)
-      call rzero(deim_nl_bas_p_eval,ndeim_max*lbnl)
+      call rzero(deim_nl_bas_p_eval,ndeim_max*lbnl_eff)
       call rzero(deim_u_p,ndeim_max*(lub+1))
       call rzero(deim_v_p,ndeim_max*(lub+1))
       call rzero(deim_w_p,ndeim_max*(lub+1))
       call rzero(deim_ux_p,ndeim_max*(lub+1))
       call rzero(deim_uy_p,ndeim_max*(lub+1))
       call rzero(deim_uz_p,ndeim_max*(lub+1))
-      call rzero(deim_proj_mat,lub*lbnl)
+      call rzero(deim_proj_mat,lub*lbnl_eff)
       call rzero(deim_zmc,lub*(lub+1))
-      call rzero(deim_Ainv,lbnl*lbnl)
-      call rzero(deim_interp_mat,lbnl*ndeim_max)
-      call rzero(sel_rows,lbnl*lbnl)
-      call rzero(coeff,lbnl)
-      call rzero(rhs,lbnl)
-      call rzero(amat,lbnl*lbnl)
-      call rzero(loc_rowvals,lbnl)
-      call rzero(sel_rowvals,lbnl)
+      call rzero(deim_Ainv,lbnl_eff*lbnl_eff)
+      call rzero(deim_interp_mat,lbnl_eff*ndeim_max)
+      call rzero(sel_rows,lbnl_eff*lbnl_eff)
+      call rzero(coeff,lbnl_eff)
+      call rzero(rhs,lbnl_eff)
+      call rzero(amat,lbnl_eff*lbnl_eff)
+      call rzero(loc_rowvals,lbnl_eff)
+      call rzero(sel_rowvals,lbnl_eff)
 
       do k=1,nsel
          best_ip = -1
@@ -591,8 +642,8 @@ c-----------------------------------------------------------------------
          best_inode = 0
 
          if (k.gt.1) then
-            call rzero(amat,lbnl*lbnl)
-            call rzero(rhs,lbnl)
+            call rzero(amat,lbnl_eff*lbnl_eff)
+            call rzero(rhs,lbnl_eff)
             do i=1,k-1
                rhs(i) = sel_rows(k,i)
                do j=1,k-1
@@ -600,14 +651,14 @@ c-----------------------------------------------------------------------
                enddo
             enddo
 
-            call izero(ipivl,lbnl)
-            call dgetrf(k-1,k-1,amat,lbnl,ipivl,info)
+            call izero(ipivl,lbnl_eff)
+            call dgetrf(k-1,k-1,amat,lbnl_eff,ipivl,info)
             if (info.ne.0) call exitti(
      $           'DEIM selector factorization$',info)
-            call dgetrs('N',k-1,1,amat,lbnl,ipivl,rhs,lbnl,info)
+            call dgetrs('N',k-1,1,amat,lbnl_eff,ipivl,rhs,lbnl_eff,info)
             if (info.ne.0) call exitti(
      $           'DEIM selector solve$',info)
-            call rzero(coeff,lbnl)
+            call rzero(coeff,lbnl_eff)
             do i=1,k-1
                coeff(i) = rhs(i)
             enddo
@@ -616,7 +667,7 @@ c-----------------------------------------------------------------------
          loc_best_val = -1.0e30
          local_best_row = 0
          local_best_comp = 0
-         call rzero(loc_rowvals,lbnl)
+         call rzero(loc_rowvals,lbnl_eff)
          local_row = 0
 
          do comp=1,ldim
@@ -743,7 +794,7 @@ c-----------------------------------------------------------------------
       ndeim_pts_eval = nsel
       ndeim_pts_os = 0
 
-      call rzero(amat,lbnl*lbnl)
+      call rzero(amat,lbnl_eff*lbnl_eff)
       do i=1,nsel
          do j=1,nsel
             do k=1,nsel
@@ -752,15 +803,16 @@ c-----------------------------------------------------------------------
          enddo
       enddo
 
-      call rzero(deim_Ainv,lbnl*lbnl)
+      call rzero(deim_Ainv,lbnl_eff*lbnl_eff)
       do i=1,nsel
          deim_Ainv(i,i) = 1.0
       enddo
 
-      call izero(ipivl,lbnl)
-      call dgetrf(nsel,nsel,amat,lbnl,ipivl,info)
+      call izero(ipivl,lbnl_eff)
+      call dgetrf(nsel,nsel,amat,lbnl_eff,ipivl,info)
       if (info.ne.0) call exitti('DEIM inverse factorization$',info)
-      call dgetrs('N',nsel,nsel,amat,lbnl,ipivl,deim_Ainv,lbnl,info)
+      call dgetrs('N',nsel,nsel,amat,lbnl_eff,ipivl,deim_Ainv,lbnl_eff,
+     $   info)
       if (info.ne.0) call exitti('DEIM inverse solve$',info)
 
       do i=1,nsel
@@ -773,7 +825,7 @@ c-----------------------------------------------------------------------
          enddo
       enddo
 
-      call rzero(deim_proj_mat,lub*lbnl)
+      call rzero(deim_proj_mat,lub*lbnl_eff)
       do i=1,nb
          do j=1,nsel
             deim_proj_mat(i,j) = op_glsc2_wt(ub(1,i),vb(1,i),wb(1,i),
@@ -825,37 +877,45 @@ c-----------------------------------------------------------------------
       call idump_serial(deim_eval_inds,nsel,'ops/deim_eval_inds ',nid)
       call dump_serial(deim_eval_weights,nsel,'ops/deim_eval_weights ',
      $   nid)
-      call dump_serial(deim_u_p,nsel*(nb+1),'ops/deim_u_p ',nid)
-      call dump_serial(deim_v_p,nsel*(nb+1),'ops/deim_v_p ',nid)
+      call dump_mat_serial(deim_u_p,ndeim_max,lub+1,
+     $   'ops/deim_u_p ',nsel,nb+1,nid)
+      call dump_mat_serial(deim_v_p,ndeim_max,lub+1,
+     $   'ops/deim_v_p ',nsel,nb+1,nid)
       if (if3d) then
-         call dump_serial(deim_w_p,nsel*(nb+1),'ops/deim_w_p ',nid)
+         call dump_mat_serial(deim_w_p,ndeim_max,lub+1,
+     $      'ops/deim_w_p ',nsel,nb+1,nid)
       endif
-      call dump_serial(deim_ux_p,nsel*(nb+1),'ops/deim_ux_p ',nid)
-      call dump_serial(deim_uy_p,nsel*(nb+1),'ops/deim_uy_p ',nid)
+      call dump_mat_serial(deim_ux_p,ndeim_max,lub+1,
+     $   'ops/deim_ux_p ',nsel,nb+1,nid)
+      call dump_mat_serial(deim_uy_p,ndeim_max,lub+1,
+     $   'ops/deim_uy_p ',nsel,nb+1,nid)
       if (if3d) then
-         call dump_serial(deim_uz_p,nsel*(nb+1),'ops/deim_uz_p ',nid)
+         call dump_mat_serial(deim_uz_p,ndeim_max,lub+1,
+     $      'ops/deim_uz_p ',nsel,nb+1,nid)
       endif
-      call dump_serial(deim_nl_bas_p_eval,nsel*nsel,
-     $   'ops/deim_nl_bas_p_eval ',nid)
-      call dump_serial(deim_proj_mat,nb*nsel,'ops/deim_proj_mat ',nid)
-      call dump_serial(deim_zmc,nb*(nb+1),'ops/deim_zmc ',nid)
-      call dump_serial(deim_Ainv,nsel*nsel,'ops/deim_Ainv ',nid)
-      call dump_serial(deim_interp_mat,nsel*nsel,
-     $   'ops/deim_interp_mat ',nid)
+      call dump_mat_serial(deim_nl_bas_p_eval,ndeim_max,lbnl_eff,
+     $   'ops/deim_nl_bas_p_eval ',nsel,nsel,nid)
+      call dump_mat_serial(deim_proj_mat,lub,lbnl_eff,
+     $   'ops/deim_proj_mat ',nb,nsel,nid)
+      call dump_mat_serial(deim_zmc,lub,lub+1,'ops/deim_zmc ',
+     $   nb,nb+1,nid)
+      call dump_mat_serial(deim_Ainv,lbnl_eff,lbnl_eff,
+     $   'ops/deim_Ainv ',nsel,nsel,nid)
+      call dump_mat_serial(deim_interp_mat,lbnl_eff,ndeim_max,
+     $   'ops/deim_interp_mat ',nsel,nsel,nid)
 
       if (deimmode.eq.'MCLSDEIM') then
-         call rzero(deim_mu,lbnl)
-         call rzero(deim_tau,lbnl*lbnl)
-         call rzero(deim_A_tau_inv,lbnl*lbnl)
-         call rzero(snapcoef,lbnl)
+         call rzero(deim_mu,lbnl_eff)
+         call rzero(deim_tau,lbnl_eff*lbnl_eff)
+         call rzero(deim_A_tau_inv,lbnl_eff*lbnl_eff)
+         call rzero(snapcoef,lbnl_eff)
 
          do isnap=1,ns
             do i=1,nsel
                snapcoef(i)=0.
-               do comp=1,ldim
-                  snapcoef(i)=snapcoef(i)+glsc2(
-     $               uvwbnl(1,comp,i),snapt(1,comp,isnap),nnode_local)
-               enddo
+               snapcoef(i)=op_glsc2_wt(uvwbnl(1,1,i),uvwbnl(1,2,i),
+     $            uvwbnl(1,ldim,i),snapt(1,1,isnap),snapt(1,2,isnap),
+     $            snapt(1,ldim,isnap),bm1)
                deim_mu(i)=deim_mu(i)+snapcoef(i)
             enddo
          enddo
@@ -865,14 +925,13 @@ c-----------------------------------------------------------------------
             call cmult(deim_mu,scale,nsel)
          endif
 
-         call rzero(amat,lbnl*lbnl)
+         call rzero(amat,lbnl_eff*lbnl_eff)
          do isnap=1,ns
             do i=1,nsel
                snapcoef(i)=0.
-               do comp=1,ldim
-                  snapcoef(i)=snapcoef(i)+glsc2(
-     $               uvwbnl(1,comp,i),snapt(1,comp,isnap),nnode_local)
-               enddo
+               snapcoef(i)=op_glsc2_wt(uvwbnl(1,1,i),uvwbnl(1,2,i),
+     $            uvwbnl(1,ldim,i),snapt(1,1,isnap),snapt(1,2,isnap),
+     $            snapt(1,ldim,isnap),bm1)
                snapcoef(i)=snapcoef(i)-deim_mu(i)
             enddo
 
@@ -885,27 +944,25 @@ c-----------------------------------------------------------------------
 
          if (ns.gt.1) then
             scale=1./real(ns-1)
-            call cmult(amat,scale,nsel*nsel)
+            call cmult(amat,scale,lbnl_eff*lbnl_eff)
          else
-            call rzero(amat,nsel*nsel)
+            call rzero(amat,lbnl_eff*lbnl_eff)
          endif
 
          do i=1,nsel
             amat(i,i)=amat(i,i)+1.e-15
          enddo
 
-         call izero(ipivl,lbnl)
-         call dgetrf(nsel,nsel,amat,lbnl,ipivl,info)
-         if (info.ne.0) call exitti(
-     $        'MCLSDEIM tau factorization$',info)
-         call rzero(deim_tau,lbnl*lbnl)
+         call izero(irl,lbnl_eff)
+         call izero(icl,lbnl_eff)
+         call lu(amat,nsel,lbnl_eff,irl,icl)
+         call rzero(deim_tau,lbnl_eff*lbnl_eff)
          do i=1,nsel
             deim_tau(i,i)=1.
          enddo
-         call dgetrs('N',nsel,nsel,amat,lbnl,ipivl,deim_tau,lbnl,info)
-         if (info.ne.0) call exitti('MCLSDEIM tau solve$',info)
+         call solve(deim_tau,amat,nsel,nsel,lbnl_eff,irl,icl)
 
-         call rzero(amat,lbnl*lbnl)
+         call rzero(amat,lbnl_eff*lbnl_eff)
          do i=1,nsel
          do j=1,nsel
             do k=1,nsel
@@ -916,24 +973,22 @@ c-----------------------------------------------------------------------
          enddo
          enddo
 
-         call izero(ipivl,lbnl)
-         call dgetrf(nsel,nsel,amat,lbnl,ipivl,info)
-         if (info.ne.0) call exitti(
-     $        'MCLSDEIM A_tau factorization$',info)
-         call rzero(deim_A_tau_inv,lbnl*lbnl)
+         call izero(irl,lbnl_eff)
+         call izero(icl,lbnl_eff)
+         call lu(amat,nsel,lbnl_eff,irl,icl)
+         call rzero(deim_A_tau_inv,lbnl_eff*lbnl_eff)
          do i=1,nsel
             deim_A_tau_inv(i,i)=1.
          enddo
-         call dgetrs('N',nsel,nsel,amat,lbnl,ipivl,deim_A_tau_inv,
-     $      lbnl,info)
-         if (info.ne.0) call exitti('MCLSDEIM A_tau solve$',info)
+         call solve(deim_A_tau_inv,amat,nsel,nsel,lbnl_eff,irl,icl)
 
          rtmp(1)=deim_alpha
          call dump_serial(rtmp,1,'ops/deim_alpha ',nid)
          call dump_serial(deim_mu,nsel,'ops/deim_mu ',nid)
-         call dump_serial(deim_tau,nsel*nsel,'ops/deim_tau ',nid)
-         call dump_serial(deim_A_tau_inv,nsel*nsel,
-     $      'ops/deim_A_tau_inv ',nid)
+         call dump_mat_serial(deim_tau,lbnl_eff,lbnl_eff,
+     $      'ops/deim_tau ',nsel,nsel,nid)
+         call dump_mat_serial(deim_A_tau_inv,lbnl_eff,lbnl_eff,
+     $      'ops/deim_A_tau_inv ',nsel,nsel,nid)
       endif
 
       if (nid.eq.0) write (6,*) 'DEIM selector complete, points:',nsel

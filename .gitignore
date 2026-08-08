@@ -8,6 +8,7 @@ compiler.out
 mn
 makenek
 SESSION.NAME
+file.list
 notes.txt
 chan2.plt01
 
@@ -19,7 +20,21 @@ data
 runs
 docs
 cases
-/examples/
+/examples/*
+!/examples/phill/
+!/examples/phill/**
+examples/phill/.state
+examples/phill/MOR
+examples/phill/MORDICT
+examples/phill/makefile
+examples/phill/makefile_usr.inc
+examples/phill/test.usr
+examples/phill/obj/
+examples/phill/nek5000
+snaps
+qoi
+__pycache__/
+drive/matlab/output/
 
 # Generated ROM/DEIM operator bundles
 **/ops/
@@ -35,6 +50,7 @@ cases
 *.fld*
 *.nek5000
 *.out
+*.re2
 *.map
 *.ma2
 *.dra

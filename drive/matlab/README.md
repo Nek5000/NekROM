@@ -486,7 +486,7 @@ drive/matlab/
 2. **Disable visualization**: `ifvis = false` for production runs (10× faster)
 3. **Batch mode**: `matlab -batch` avoids GUI overhead
 4. **Use tensor for production**: Precompute with `ftensor`, reuse for many runs
-5. **Profile bottlenecks**: 
+5. **Profile bottlenecks**:
    ```matlab
    profile on
    driver

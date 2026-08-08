@@ -13,7 +13,7 @@ export PATH="$MOR_DIR/bin:$NEK_SOURCE_ROOT/bin:$PATH"
 i="$1"
 eps="$2"
 np="$3"
-archive_root="${ARCHIVE_ROOT:-/private/tmp/rb_axi_archive}"
+archive_root="${ARCHIVE_ROOT:-${TMPDIR:-/tmp}/rb_axi_archive}"
 
 mkdir -p "$archive_root"
 

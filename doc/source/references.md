@@ -3,12 +3,9 @@
 # References
 
 ```{only} has_bibtex_ext
-
-```{bibliography}
-:all:
-```
-
-```
+   ```{bibliography}
+   :all:
+   ```
 
 ```{only} not has_bibtex_ext
 
