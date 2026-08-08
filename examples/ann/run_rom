@@ -1,0 +1,98 @@
+#!/bin/bash
+set -euo pipefail
+
+script_dir=$(cd "$(dirname "$0")" && pwd)
+cd "$script_dir"
+
+MOR_DIR="${MOR_DIR:-$(cd "$script_dir/../.." && pwd)}"
+NEK_SOURCE_ROOT="${NEK_SOURCE_ROOT:-$(cd "$MOR_DIR/../Nek5000" && pwd)}"
+export MOR_DIR NEK_SOURCE_ROOT
+export NEK_DEPS_LOCAL_SRC="${NEK_DEPS_LOCAL_SRC:-1}"
+export PATH="$MOR_DIR/bin:$NEK_SOURCE_ROOT/bin:$PATH"
+
+genmap << EOF
+ann
+0.1
+EOF
+# genmap may generate a binary ann.ma2 alongside ann.map (tool/version dependent).
+# Do not fabricate ann.ma2 by copying ann.map: Nek5000 expects .ma2 to be binary.
+if [ -f ann.map ] && [ -f ann.ma2 ] && cmp -s ann.map ann.ma2; then
+    echo "warning: ann.ma2 is identical to ann.map; removing invalid ann.ma2" >&2
+    rm -f ann.ma2
+fi
+
+np="${1:-1}"
+casename="ann"
+
+# Ensure ROM-vs-FOM comparisons use the FOM snapshot set produced by ./run_fom.
+fom_snaps_dir="snaps"
+rom_snaps_dir="snaps_rom"
+shopt -s nullglob
+fom_snap_files=("$fom_snaps_dir"/*${casename}0.f*)
+shopt -u nullglob
+if ((${#fom_snap_files[@]} == 0)); then
+    echo "error: no FOM snapshots found matching ${fom_snaps_dir}/*${casename}0.f* (run ./run_fom first?)" >&2
+    exit 1
+fi
+
+# Keep ROM snapshot enumeration in sync with snaps/. NekROM reads snapshot names
+# from file.list; stale/missing file.list can lead to wrong training inputs.
+tmp_file_list="$(mktemp "./.${casename}.file.list.XXXXXX")"
+printf '%s\n' "${fom_snap_files[@]}" | LC_ALL=C sort -r > "$tmp_file_list"
+if [ ! -f file.list ] || ! cmp -s "$tmp_file_list" file.list; then
+    mv -f "$tmp_file_list" file.list
+else
+    rm -f "$tmp_file_list"
+fi
+
+# ann_rom.usr reads 'fom_avg.list' via readic(); keep it consistent with the
+# current FOM snapshot set to avoid stale inputs or file-not-found errors.
+tmp_fom_avg_list="$(mktemp "./.${casename}.fom_avg.list.XXXXXX")"
+cat file.list > "$tmp_fom_avg_list"
+echo done >> "$tmp_fom_avg_list"
+if [ ! -f fom_avg.list ] || ! cmp -s "$tmp_fom_avg_list" fom_avg.list; then
+    mv -f "$tmp_fom_avg_list" fom_avg.list
+else
+    rm -f "$tmp_fom_avg_list"
+fi
+
+makerom "${casename}_rom"
+src_logfile="${casename}.log.${np}"
+dst_logfile="${casename}.rom.log.${np}"
+
+echo 'running Nek5000 ROM calculation...'
+if [ "$np" -eq 1 ]; then
+    printf '%s\n%s/\n' "$casename" "$script_dir" > SESSION.NAME
+    ./nek5000 > "$src_logfile"
+else
+    neklmpi "$casename" "$np"
+fi
+
+# Stash ROM output separately so we never overwrite the FOM training snapshots in snaps/.
+mkdir -p "$rom_snaps_dir"
+rom_out_dir="$rom_snaps_dir"
+shopt -s nullglob
+rom_snap_files=(*${casename}0.f*)
+shopt -u nullglob
+need_unique_dir=0
+for snap_file in "${rom_snap_files[@]}"; do
+    if [ -e "$rom_out_dir/$snap_file" ]; then
+        need_unique_dir=1
+        break
+    fi
+done
+if [ -f "$src_logfile" ] && [ -e "$rom_out_dir/$dst_logfile" ]; then
+    need_unique_dir=1
+fi
+if [ "$need_unique_dir" -eq 1 ]; then
+    rom_out_dir="${rom_snaps_dir}/run_$(date +%Y%m%d_%H%M%S)_$$"
+    mkdir -p "$rom_out_dir"
+fi
+if ((${#rom_snap_files[@]} > 0)); then
+    mv "${rom_snap_files[@]}" "$rom_out_dir/"
+fi
+if [ -f "$src_logfile" ]; then
+    mv "$src_logfile" "${rom_out_dir}/${dst_logfile}"
+else
+    echo "warning: logfile '$src_logfile' not found; skipping move to ${rom_out_dir}/" >&2
+fi

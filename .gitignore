@@ -1,6 +1,5 @@
 # Specific files
 
-*nek5000*
 tags
 makefile
 .state
@@ -20,19 +19,10 @@ data
 runs
 docs
 cases
-/examples/*
-!/examples/phill/
-!/examples/phill/**
-examples/phill/.state
-examples/phill/MOR
-examples/phill/MORDICT
-examples/phill/makefile
-examples/phill/makefile_usr.inc
-examples/phill/test.usr
-examples/phill/obj/
-examples/phill/nek5000
-snaps
-qoi
+
+snaps/
+qoi/
+
 __pycache__/
 drive/matlab/output/
 
@@ -41,12 +31,14 @@ drive/matlab/output/
 
 # File types
 
-*log*
+nek5000
+logfile
+*.log*
 *.mp4
 *.tif*
 *.tar.gz
 *.tgz
-*0.f*
+*.f[0-9][0-9][0-9][0-9]*
 *.fld*
 *.nek5000
 *.out
@@ -55,7 +47,6 @@ drive/matlab/output/
 *.ma2
 *.dra
 out.*
-*.png
 *.bbproject*
 
 # Visit
