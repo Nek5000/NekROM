@@ -83,8 +83,8 @@ dt = 5e-4;  % Half the current value
 % Option 2: Switch to more stable method
 conv_approach = conv_approaches{6};  % mclsdeim
 
-% Option 3: Enable dealiasing
-deim_dealias = true;
+% Option 3: Enable dealiasing (experimental)
+deim_dealias_cquad = true;
 ```
 
 ### Too slow

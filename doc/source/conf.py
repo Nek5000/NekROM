@@ -53,19 +53,22 @@ extensions = ['sphinx.ext.autodoc',
 if importlib.util.find_spec("sphinx_mathjax_offline") is not None:
     extensions.append("sphinx_mathjax_offline")
 
-if importlib.util.find_spec("sphinxcontrib.bibtex") is not None:
+has_bibtex_ext = importlib.util.find_spec("sphinxcontrib.bibtex") is not None
+if has_bibtex_ext:
     extensions.append("sphinxcontrib.bibtex")
     sphinx_tags = globals().get("tags")
     if sphinx_tags is not None:
         sphinx_tags.add("has_bibtex_ext")
 
-if importlib.util.find_spec("sphinxcontrib.matlab") is not None:
+has_matlab_ext = importlib.util.find_spec("sphinxcontrib.matlab") is not None
+if has_matlab_ext:
     extensions.append("sphinxcontrib.matlab")
     sphinx_tags = globals().get("tags")
     if sphinx_tags is not None:
         sphinx_tags.add("has_matlab_ext")
 
-bibtex_bibfiles = ['references.bib']
+if has_bibtex_ext:
+    bibtex_bibfiles = ['references.bib']
 
 # Enable some latex in myst markdown
 myst_enable_extensions = ["dollarmath", "amsmath"]
@@ -76,21 +79,22 @@ fortran_src = [os.path.abspath(temp_code_dir)]
 fortran_ext = ["f"]
 
 # MATLAB configuration
-temp_matlab_root = '/tmp/rom_matlab_for_docs/'
-temp_matlab_dir = os.path.join(temp_matlab_root, 'matlab')
-shutil.rmtree(temp_matlab_root, ignore_errors=True)
-os.makedirs(temp_matlab_dir, exist_ok=True)
-for subdir in ['io', 'operators', 'point_generators']:
-    src_dir = os.path.abspath(f"../../drive/matlab/{subdir}")
-    dst_dir = os.path.join(temp_matlab_dir, subdir)
-    os.makedirs(dst_dir, exist_ok=True)
-    for filename in os.listdir(src_dir):
-        if filename.endswith('.m'):
-            shutil.copy2(os.path.join(src_dir, filename), os.path.join(dst_dir, filename))
+if has_matlab_ext:
+    temp_matlab_root = '/tmp/rom_matlab_for_docs/'
+    temp_matlab_dir = os.path.join(temp_matlab_root, 'matlab')
+    shutil.rmtree(temp_matlab_root, ignore_errors=True)
+    os.makedirs(temp_matlab_dir, exist_ok=True)
+    for subdir in ['io', 'operators', 'point_generators']:
+        src_dir = os.path.abspath(f"../../drive/matlab/{subdir}")
+        dst_dir = os.path.join(temp_matlab_dir, subdir)
+        os.makedirs(dst_dir, exist_ok=True)
+        for filename in os.listdir(src_dir):
+            if filename.endswith('.m'):
+                shutil.copy2(os.path.join(src_dir, filename), os.path.join(dst_dir, filename))
 
-matlab_src_dir = os.path.abspath(temp_matlab_root)
-matlab_short_links = True
-matlab_auto_link = "basic"
+    matlab_src_dir = os.path.abspath(temp_matlab_root)
+    matlab_short_links = True
+    matlab_auto_link = "basic"
 
 # General configuration
 templates_path = ['_templates']

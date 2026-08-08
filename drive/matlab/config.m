@@ -149,13 +149,20 @@ if ~isempty(env_conv_approach)
 end
 deim_finegrid = read_env_bool('NEKROM_DEIM_FINEGRID', deim_finegrid);
 deim_dealias = read_env_bool('NEKROM_DEIM_DEALIAS', false);
+deim_dealias_cquad = read_env_bool('NEKROM_DEIM_DEALIAS_CQUAD', false);
 deim_dealias_quad = read_env_bool('NEKROM_DEIM_DEALIAS_QUAD', false);
 if deim_dealias_quad
+    deim_dealias = false;
+    deim_dealias_cquad = false;
+end
+if deim_dealias_cquad
     deim_dealias = false;
 end
 
 if deim_dealias_quad
     deim_dealias_mode = 'quad';
+elseif deim_dealias_cquad
+    deim_dealias_mode = 'cquad';
 elseif deim_dealias
     deim_dealias_mode = 'sample';
 else

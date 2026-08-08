@@ -29,6 +29,7 @@ function run_deim_tests(snaps_path, casename, reorder, ndeim_pts, n_os_points, p
     addpath(fullfile(driver_dir, 'point_generators'));
 
     deim_dealias = false;
+    deim_dealias_cquad = false;
     deim_dealias_quad = false;
     if nargin == 0
         config;
@@ -90,7 +91,7 @@ function run_deim_tests(snaps_path, casename, reorder, ndeim_pts, n_os_points, p
 
             rom_data = setup_conv_deim( ...
                 pod_u_grid, pod_v_grid, nl_bas_grid, snaps_u, snaps_v, ...
-                x_grid, y_grid, ndeim_pts, n_os_points, ps_alg, deim_dealias, deim_dealias_quad, deim_alpha);
+                x_grid, y_grid, ndeim_pts, n_os_points, ps_alg, deim_dealias, deim_dealias_quad, deim_alpha, deim_dealias_cquad);
 
             assert(size(rom_data.inds, 1) == ndeim_pts, 'Incorrect DEIM point count.');
             assert(numel(unique(rom_data.inds)) == ndeim_pts, 'DEIM points must be unique.');
@@ -108,6 +109,12 @@ function run_deim_tests(snaps_path, casename, reorder, ndeim_pts, n_os_points, p
                 assert(size(rom_data.eval_u_p, 1) == size(rom_data.eval_weights, 1), 'Quadrature evaluation rows must match weights.');
                 assert(size(rom_data.eval_u_p, 1) == size(rom_data.nl_bas_p_eval, 1), 'Quadrature basis rows must match evaluation rows.');
                 assert(all(rom_data.eval_weights > 0), 'Quadrature weights must be positive.');
+            elseif deim_dealias_cquad
+                assert(isfield(rom_data, 'use_compressed_quadrature') && rom_data.use_compressed_quadrature, ...
+                    'Compressed quadrature path was not enabled.');
+                assert(size(rom_data.eval_u_p, 1) == size(rom_data.eval_weights, 1), 'CQuad evaluation rows must match weights.');
+                assert(size(rom_data.eval_u_p, 1) == size(rom_data.nl_bas_p_eval, 1), 'CQuad basis rows must match evaluation rows.');
+                assert(all(rom_data.eval_weights > 0), 'CQuad weights must be positive.');
             elseif deim_dealias
                 expected_pts = ndeim_pts + n_os_points;
                 assert(rom_data.use_oversampled_points, 'Oversampled DEIM path was not enabled.');

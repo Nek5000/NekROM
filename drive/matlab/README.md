@@ -189,8 +189,13 @@ ps_alg = ps_algs{1};         % 1=sopt, 2=gpode, 3=gappy_pod, 4=gnat
 % Stability options
 deim_finegrid = false;       % Interpolate POD to fine grid
 deim_dealias = false;        % Use oversampled DEIM points
+deim_dealias_cquad = false;  % EXPERIMENTAL: compressed quadrature on a 3/2 grid (not persisted unless opted in)
 deim_dealias_quad = false;   % Use full 3/2-rule quadrature (MATLAB-only; not saved to ops/)
 ```
+
+**Future research**: structure-preserving hyper-reduction that enforces a skew-adjoint convection operator in the physical $L^2$ energy inner product (so the online nonlinearity does near-zero kinetic-energy work), rather than relying on sampling stability heuristics alone.
+
+**Note on `deim_dealias_cquad`**: this mode is experimental. By default, the driver keeps its operators in memory and does not overwrite `ops/deim_*`. To persist anyway, set `NEKROM_DEIM_DEALIAS_CQUAD_PERSIST=1`.
 
 **Point selection algorithm recommendations**:
 - `gpode` (QDEIM): Best default - fast, stable, adaptive
@@ -217,11 +222,17 @@ export NEKROM_CONV_APPROACH=clsdeim
 export NEKROM_NSTEPS=10000
 export NEKROM_IOSTEP=200
 export NEKROM_DEIM_FINEGRID=1
+export NEKROM_DEIM_DEALIAS_CQUAD=1
+export NEKROM_DEIM_CQUAD_MULT=3
+export NEKROM_DEIM_DEALIAS_CQUAD_PERSIST=0
 export NEKROM_IFVORT=0
 export NEKROM_IFWRITE=1
 export NEKROM_IFVIS=0
 export NEKROM_IFPLOT=1
 export NEKROM_IF_RUN_TESTS=0
+export NEKROM_CONV_ENFORCE_SKEW_ADJOINT=1
+export NEKROM_CONV_SKEW_INNER=l2
+export NEKROM_CONV_SKEW_APPLY=deim
 
 matlab -batch "driver"
 ```
@@ -340,7 +351,7 @@ This generates files in `ops/`:
 1. Reduce timestep: `dt = 5e-4` (half current value)
 2. Increase ROM modes: `nb = 30` (more accuracy)
 3. Switch to more stable convection: `conv_approach = 'mclsdeim'`
-4. Enable dealiasing: `deim_dealias = true` or `deim_dealias_quad = true`
+4. Enable dealiasing: `deim_dealias_cquad = true` (recommended), `deim_dealias = true`, or `deim_dealias_quad = true`
 5. Add stabilization: `ifleray = true` or `ifefr = true` in config
 
 ### "optim package not found" (Octave)

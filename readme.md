@@ -63,9 +63,13 @@ The `deim` runtime option selects sampled DEIM, which is the cheapest online pat
 
 For stricter quadrature, the MATLAB driver also supports `NEKROM_DEIM_DEALIAS_QUAD=1`, which forces a 3/2-grid quadrature path for the DEIM-family convection evaluation. That path is stable, but its runtime cost is much closer to a fully dealiased ROM evaluation than to sampled DEIM. It is MATLAB-driver only and is kept in memory rather than being written back into the Fortran-loaded `ops/` bundle.
 
-If you need a cheap dealiased online convection operator today, the tensor-based operators remain the supported option in the current codebase.
+For a cheaper dealiased DEIM-family path, the MATLAB/Octave driver supports `NEKROM_DEIM_DEALIAS_CQUAD=1`, which builds a compressed quadrature rule on the 3/2 grid (positive weights on a small point set). This path is compatible with `ops/` persistence and keeps the online cost closer to sampled DEIM, but it is still an approximation and may need tuning (`NEKROM_DEIM_CQUAD_MULT`, `NEKROM_DEIM_CQUAD_NPTS`) for demanding cases.
+
+If you need a cheap dealiased online convection operator and do not want additional tuning knobs, the tensor-based operators remain the supported option in the current codebase.
 
 The main future direction for a cheaper stable DEIM path is a compressed quadrature layer, such as ECSW-style sampling. That would choose both a reduced set of points on the overintegrated grid and corresponding quadrature weights, so the online path stays closer to sampled DEIM while retaining dealiased integration behavior. This is not implemented yet.
+
+Another research direction is structure-preserving hyper-reduction: enforce (or learn) a reduced convection operator that is skew-adjoint in the physical $L^2$ energy inner product (so it produces near-zero kinetic-energy work online), even after sampling/hyper-reduction. This typically requires split/skew forms and constraints at the operator level rather than only post-hoc coefficient corrections.
 
 # Contribution
 

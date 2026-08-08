@@ -55,6 +55,19 @@ function results = driver()
 
     % Load simulation parameters
     config;
+    enforce_skew_adjoint = read_env_bool('NEKROM_CONV_ENFORCE_SKEW_ADJOINT', false);
+    skew_inner = getenv('NEKROM_CONV_SKEW_INNER');
+    if isempty(skew_inner)
+        skew_inner = 'l2';
+    else
+        skew_inner = lower(strtrim(skew_inner));
+    end
+    skew_apply = getenv('NEKROM_CONV_SKEW_APPLY');
+    if isempty(skew_apply)
+        skew_apply = 'deim';
+    else
+        skew_apply = lower(strtrim(skew_apply));
+    end
 
     % Validate case directory and required files exist
     if ~exist(case_path, 'dir')
@@ -115,10 +128,35 @@ function results = driver()
     basepath = fullfile(casedir, 'fields', casename);
     if ~exist(fullfile(casedir, 'fields'), 'dir'), mkdir(fullfile(casedir, 'fields')); end
 
-    %% DEIM & Snapshot Initialization
-    if ismember(conv_approach, {'deim', 'clsdeim', 'mclsdeim'})
-        use_fortran_deim_ops = read_env_bool('NEKROM_DEIM_FROM_OPS', false);
-        if use_fortran_deim_ops
+	    % Load FOM Operators.
+	    [au_full, bu_full, cu_full, u0_full, uk_full, mb, ns] = load_full_ops(ops_dir);
+
+	    if nb ~= mb
+	        error('Configured nb (%d) does not match ops/nb (%d).', nb, mb);
+	    end
+	    if ~isempty(case_meta.ns) && ns ~= case_meta.ns
+	        error('Configured ns (%d) does not match ops/ns (%d).', case_meta.ns, ns);
+	    end
+
+	    required_cols = nb + 1;
+	    if size(pod_u, 2) < required_cols || size(pod_v, 2) < required_cols
+	        error(['POD basis does not contain enough modes for nb=%d.\n' ...
+	               'Expected at least %d columns (for 2:nb+1 indexing), but got pod_u=%d, pod_v=%d.\n' ...
+	               'Regenerate the offline basis or reduce nb in config.m.'], ...
+	               nb, required_cols, size(pod_u, 2), size(pod_v, 2));
+	    end
+
+	    Me = get_Me(x_fom, y_fom);
+	    % Reduced L2 inner product matrix for energy/skew enforcement.
+	    % This matches the kinetic energy calculation based on Me on the ROM grid.
+	    Me_stack = [Me; Me];
+	    phi_energy = [pod_u(:, 2:nb+1); pod_v(:, 2:nb+1)];
+	    b_l2 = phi_energy' * bsxfun(@times, Me_stack, phi_energy);
+
+	    %% DEIM Initialization
+	    if ismember(conv_approach, {'deim', 'clsdeim', 'mclsdeim'})
+	        use_fortran_deim_ops = read_env_bool('NEKROM_DEIM_FROM_OPS', false);
+	        if use_fortran_deim_ops
             nbnl = case_meta.deim_nbnl;
             if isempty(nbnl) || ~isfinite(nbnl) || nbnl <= 0
                 error(['NEKROM_DEIM_FROM_OPS=1 requires a valid [DEIM] nbnl entry in ' ...
@@ -163,27 +201,28 @@ function results = driver()
 
             deim_data = setup_conv_deim( ...
                 pod_u_deim, pod_v_deim, nl_bas, nl_snaps_u_deim, nl_snaps_v_deim, ...
-                x_deim, y_deim, ndeim_pts, n_os_points, ps_alg, deim_dealias, deim_dealias_quad, deim_alpha);
+                x_deim, y_deim, ndeim_pts, n_os_points, ps_alg, deim_dealias, deim_dealias_quad, deim_alpha, deim_dealias_cquad);
 
             if deim_dealias_quad
                 warning('NekROM:DEIMQuadNoPersist', ...
                     ['NEKROM_DEIM_DEALIAS_QUAD=1 uses an overintegrated MATLAB-only DEIM path. ' ...
                      'Skipping ops/ persistence because the current Fortran runtime cannot load it.']);
+            elseif deim_dealias_cquad
+                allow_persist = read_env_bool('NEKROM_DEIM_DEALIAS_CQUAD_PERSIST', false);
+                if allow_persist
+                    warning('NekROM:DEIMCQuadPersist', ...
+                        ['NEKROM_DEIM_DEALIAS_CQUAD=1 is experimental and may destabilize some cases. ' ...
+                         'Persisting DEIM artifacts to ops/ because NEKROM_DEIM_DEALIAS_CQUAD_PERSIST=1 was set.']);
+                    save_deim_artifacts(ops_dir, deim_data);
+                else
+                    warning('NekROM:DEIMCQuadNoPersist', ...
+                        ['NEKROM_DEIM_DEALIAS_CQUAD=1 is experimental and may destabilize some cases. ' ...
+                         'Skipping ops/ persistence. Set NEKROM_DEIM_DEALIAS_CQUAD_PERSIST=1 to override.']);
+                end
             else
                 save_deim_artifacts(ops_dir, deim_data);
             end
         end
-    end
-
-    % Load FOM Operators
-    [au_full, bu_full, cu_full, u0_full, uk_full, mb, ns] = load_full_ops(ops_dir);
-    Me = get_Me(x_fom, y_fom);
-
-    if nb ~= mb
-        error('Configured nb (%d) does not match ops/nb (%d).', nb, mb);
-    end
-    if ~isempty(case_meta.ns) && ns ~= case_meta.ns
-        error('Configured ns (%d) does not match ops/ns (%d).', case_meta.ns, ns);
     end
 
     % Call validation tests
@@ -270,6 +309,33 @@ function results = driver()
                 c_coef = conv_deim(u(:,1), deim_data, conv_approach);
             otherwise
                 error(['Unrecognized conv_approach: ', conv_approach]);
+        end
+
+        if enforce_skew_adjoint
+            % Minimal skew-adjoint correction: enforce <u, c(u)>_B = 0 by projection.
+            % Default uses the reduced L2 inner product (matches kinetic energy);
+            % set NEKROM_CONV_SKEW_INNER=ips to use the POD inner product (bu).
+            apply = false;
+            if strcmp(skew_apply, 'all')
+                apply = true;
+            elseif strcmp(skew_apply, 'deim')
+                apply = strcmp(conv_approach, 'deim');
+            elseif strcmp(skew_apply, 'deim_family')
+                apply = ismember(conv_approach, {'deim', 'clsdeim', 'mclsdeim'});
+            else
+                error('Invalid NEKROM_CONV_SKEW_APPLY: "%s" (use "deim", "deim_family", or "all").', skew_apply);
+            end
+
+            if apply
+                if strcmp(skew_inner, 'ips')
+                    b_skew = bu;
+                elseif strcmp(skew_inner, 'l2')
+                    b_skew = b_l2;
+                else
+                    error('Invalid NEKROM_CONV_SKEW_INNER: "%s" (use "l2" or "ips").', skew_inner);
+                end
+                [c_coef, ~] = enforce_conv_energy_zero_work(c_coef, u(2:end, 1), b_skew);
+            end
         end
 
         ext(:,1) = -c_coef - nu * a0;
@@ -372,8 +438,12 @@ function results = driver()
     results.conv_approach = conv_approach;
     results.deim_finegrid = deim_finegrid;
     results.deim_dealias = deim_dealias;
+    results.deim_dealias_cquad = deim_dealias_cquad;
     results.deim_dealias_quad = deim_dealias_quad;
     results.deim_dealias_mode = deim_dealias_mode;
+    results.enforce_skew_adjoint = enforce_skew_adjoint;
+    results.skew_inner = skew_inner;
+    results.skew_apply = skew_apply;
     results.completed = completed;
     results.nan_detected = nan_detected;
     results.aborted_step = aborted_step;

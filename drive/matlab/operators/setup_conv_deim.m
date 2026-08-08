@@ -1,4 +1,4 @@
-function rom_data = setup_conv_deim(pod_u, pod_v, nl_bas, nl_snaps_u, nl_snaps_v, x, y, ndeim_pts, n_os_points, ps_alg, use_oversampled_points, use_full_quadrature, deim_alpha)
+function rom_data = setup_conv_deim(pod_u, pod_v, nl_bas, nl_snaps_u, nl_snaps_v, x, y, ndeim_pts, n_os_points, ps_alg, use_oversampled_points, use_full_quadrature, deim_alpha, use_compressed_quadrature)
     % SETUP_ROM_CONVECTION Precomputes matrices for DEIM, CLS-DEIM, and MCLS-DEIM
     %
     % Requires NekToolKit functions: zwgll, deriv_mat, deriv_geo, grad, interp_mat
@@ -12,6 +12,15 @@ function rom_data = setup_conv_deim(pod_u, pod_v, nl_bas, nl_snaps_u, nl_snaps_v
     end
     if nargin < 13 || isempty(deim_alpha)
         deim_alpha = 1e-12;
+    end
+    if nargin < 14 || isempty(use_compressed_quadrature)
+        use_compressed_quadrature = false;
+    end
+
+    if use_full_quadrature && use_compressed_quadrature
+        warning('setup_conv_deim:QuadratureModeConflict', ...
+            'Both full and compressed quadrature requested; using full quadrature.');
+        use_compressed_quadrature = false;
     end
     
     nL = numel(x);
@@ -69,6 +78,7 @@ function rom_data = setup_conv_deim(pod_u, pod_v, nl_bas, nl_snaps_u, nl_snaps_v
 
     rom_data.use_oversampled_points = logical(use_oversampled_points);
     rom_data.use_full_quadrature = logical(use_full_quadrature);
+    rom_data.use_compressed_quadrature = logical(use_compressed_quadrature);
     rom_data.inds = inds_primary;
     rom_data.inds_os = inds;
     rom_data.eval_inds = inds_eval;
@@ -127,7 +137,7 @@ function rom_data = setup_conv_deim(pod_u, pod_v, nl_bas, nl_snaps_u, nl_snaps_v
         rom_data.A_tau_inv = gram_tau \ eye(size(gram_tau));
     end
 
-    if use_full_quadrature
+    if use_full_quadrature || use_compressed_quadrature
         nxq = ceil(1.5 * nx1);
         [zi_q, w_q] = zwgll(nxq-1);
         interp_q = interp_mat(zi_q, zi);
@@ -149,23 +159,14 @@ function rom_data = setup_conv_deim(pod_u, pod_v, nl_bas, nl_snaps_u, nl_snaps_v
         Me_q = reshape(jac_q .* reshape(w_q * w_q', nxq, nxq, 1), nL_q, 1);
         sqrt_Me_q = sqrt(Me_q);
         sqrt_Me_stack = [sqrt_Me_q; sqrt_Me_q];
+        Me_stack = sqrt_Me_stack .^ 2;
         Me_pod_q = [Me_q .* pod_u_q(:, 2:end); Me_q .* pod_v_q(:, 2:end)];
 
         [nl_bas_u, nl_bas_v] = split_stacked_basis(nl_bas, nL);
         [nl_bas_u_q, nl_bas_v_q] = interp_basis_to_grid(nl_bas_u, nl_bas_v, x, y, x_q, y_q);
         nl_bas_q = [nl_bas_u_q; nl_bas_v_q];
-        nl_bas_q_w = bsxfun(@times, sqrt_Me_stack, nl_bas_q);
 
-        rom_data.use_full_quadrature = true;
-        rom_data.eval_inds = (1:size(nl_bas_q_w, 1))';
-        rom_data.sample_count = size(nl_bas_q_w, 1);
-        rom_data.eval_weights = sqrt_Me_stack;
-        rom_data.eval_u_p = [pod_u_q; pod_u_q];
-        rom_data.eval_v_p = [pod_v_q; pod_v_q];
-        rom_data.eval_ux_p = [ux_q; vx_q];
-        rom_data.eval_uy_p = [uy_q; vy_q];
-        rom_data.nl_bas_p_eval = nl_bas_q_w;
-
+        % Dealiased projection operators (offline cost only).
         rom_data.proj_mat = Me_pod_q' * nl_bas_q;
 
         c2 = Me_pod_q' * ([pod_u_q; pod_u_q] .* [ux_q(:,1); vx_q(:,1)] + ...
@@ -175,20 +176,95 @@ function rom_data = setup_conv_deim(pod_u, pod_v, nl_bas, nl_snaps_u, nl_snaps_v
         rom_data.zmc = c2 + c3;
         rom_data.zmc(:,1) = rom_data.zmc(:,1) / 2;
 
-        gram_q = nl_bas_q_w' * nl_bas_q_w;
-        rom_data.Ainv = gram_q \ eye(size(gram_q));
-        rom_data.interp_mat = rom_data.Ainv * nl_bas_q_w';
+        if use_full_quadrature
+            nl_bas_q_w = bsxfun(@times, sqrt_Me_stack, nl_bas_q);
+
+            rom_data.use_full_quadrature = true;
+            rom_data.use_compressed_quadrature = false;
+            rom_data.eval_inds = (1:size(nl_bas_q_w, 1))';
+            rom_data.sample_count = size(nl_bas_q_w, 1);
+            rom_data.eval_weights = sqrt_Me_stack;
+            rom_data.eval_u_p = [pod_u_q; pod_u_q];
+            rom_data.eval_v_p = [pod_v_q; pod_v_q];
+            rom_data.eval_ux_p = [ux_q; vx_q];
+            rom_data.eval_uy_p = [uy_q; vy_q];
+            rom_data.nl_bas_p_eval = nl_bas_q_w;
+
+            gram_q = nl_bas_q_w' * nl_bas_q_w;
+            rom_data.Ainv = gram_q \ eye(size(gram_q));
+            rom_data.interp_mat = rom_data.Ainv * nl_bas_q_w';
+        else
+            % Compressed quadrature on the overintegrated grid:
+            % choose a small weighted point set so the online path stays close
+            % to sampled DEIM while approximating the dealiased mass inner product.
+            rom_data.use_full_quadrature = false;
+            rom_data.use_compressed_quadrature = true;
+
+            % Default: keep the point budget within the Fortran runtime limit
+            % ndeim_max = 3*lbnl_eff, and lbnl_eff matches nbnl at runtime.
+            nbnl = size(nl_bas_q, 2);
+            cquad_mult = 3;
+            env_mult = getenv('NEKROM_DEIM_CQUAD_MULT');
+            if ~isempty(env_mult)
+                tmp = str2double(env_mult);
+                if isfinite(tmp) && tmp > 0
+                    cquad_mult = tmp;
+                end
+            end
+            cquad_npts = ceil(cquad_mult * nbnl);
+            env_npts = getenv('NEKROM_DEIM_CQUAD_NPTS');
+            if ~isempty(env_npts)
+                tmp = str2double(env_npts);
+                if isfinite(tmp) && tmp > 0
+                    cquad_npts = round(tmp);
+                end
+            end
+            cquad_npts = max(cquad_npts, nbnl);
+            cquad_npts = min(cquad_npts, 3 * nbnl);
+            cquad_npts = min(cquad_npts, size(nl_bas_q, 1));
+
+            [cquad_inds, cquad_wts, cquad_info] = compressed_quadrature(nl_bas_q, Me_stack, cquad_npts, []);
+            if numel(cquad_inds) < nbnl
+                error('setup_conv_deim:CQuadTooFewPoints', ...
+                    'Compressed quadrature produced only %d points; need at least %d.', ...
+                    numel(cquad_inds), nbnl);
+            end
+
+            rom_data.cquad_info = cquad_info;
+            rom_data.eval_inds = cquad_inds(:);
+            rom_data.sample_count = numel(rom_data.eval_inds);
+            rom_data.eval_weights = sqrt(cquad_wts(:));
+
+            % Store only sampled rows (avoid materializing 2*nL_q stacks).
+            rom_data.eval_u_p = stack_select(pod_u_q, pod_u_q, rom_data.eval_inds, nL_q);
+            rom_data.eval_v_p = stack_select(pod_v_q, pod_v_q, rom_data.eval_inds, nL_q);
+            rom_data.eval_ux_p = stack_select(ux_q, vx_q, rom_data.eval_inds, nL_q);
+            rom_data.eval_uy_p = stack_select(uy_q, vy_q, rom_data.eval_inds, nL_q);
+            rom_data.nl_bas_p_eval = bsxfun(@times, rom_data.eval_weights, nl_bas_q(rom_data.eval_inds, :));
+
+            gram_cq = rom_data.nl_bas_p_eval' * rom_data.nl_bas_p_eval;
+            rom_data.Ainv = gram_cq \ eye(size(gram_cq));
+            rom_data.interp_mat = rom_data.Ainv * rom_data.nl_bas_p_eval';
+        end
 
         if ~isempty(nl_snaps_u) && ~isempty(nl_snaps_v)
+            % MCLS statistics are built against the dealiased (full) quadrature norm.
             [nl_snaps_u_q, nl_snaps_v_q] = interp_basis_to_grid(nl_snaps_u, nl_snaps_v, x, y, x_q, y_q);
             snap_q = [nl_snaps_u_q; nl_snaps_v_q];
             snap_q_w = bsxfun(@times, sqrt_Me_stack, snap_q);
-            nl_snapshot_proj = nl_bas_q_w' * snap_q_w;
+            nl_bas_q_w_full = bsxfun(@times, sqrt_Me_stack, nl_bas_q);
+            nl_snapshot_proj = nl_bas_q_w_full' * snap_q_w;
             rom_data.mu = mean(nl_snapshot_proj, 2);
             rom_data.tau = (cov(nl_snapshot_proj') + 1e-15 * eye(size(nl_bas_q, 2))) \ eye(size(nl_bas_q, 2));
             rom_data.alpha = deim_alpha;
-            gram_tau_q = nl_bas_q_w' * nl_bas_q_w + rom_data.alpha * rom_data.tau;
-            rom_data.A_tau_inv = gram_tau_q \ eye(size(gram_tau_q));
+
+            if rom_data.use_full_quadrature
+                gram_base = nl_bas_q_w_full' * nl_bas_q_w_full;
+            else
+                gram_base = rom_data.nl_bas_p_eval' * rom_data.nl_bas_p_eval;
+            end
+            gram_tau = gram_base + rom_data.alpha * rom_data.tau;
+            rom_data.A_tau_inv = gram_tau \ eye(size(gram_tau));
         end
     end
 end
@@ -196,4 +272,17 @@ end
 function [u_half, v_half] = split_stacked_basis(stacked_basis, nL)
     u_half = stacked_basis(1:nL, :);
     v_half = stacked_basis(nL+1:end, :);
+end
+
+function out = stack_select(first_half, second_half, inds, nL)
+    inds = inds(:);
+    out = zeros(numel(inds), size(first_half, 2));
+    mask_first = inds <= nL;
+    if any(mask_first)
+        out(mask_first, :) = first_half(inds(mask_first), :);
+    end
+    mask_second = ~mask_first;
+    if any(mask_second)
+        out(mask_second, :) = second_half(inds(mask_second) - nL, :);
+    end
 end
