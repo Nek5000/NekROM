@@ -563,6 +563,10 @@ c-----------------------------------------------------------------------
       call finiparser_getbool(i_out,'deim:dumpfine',ifnd)
       if (ifnd.eq.1) ifdumpfine = i_out
 
+      ifdeimshare = .false.
+      call finiparser_getbool(i_out,'deim:shared_points',ifnd)
+      if (ifnd.eq.1) ifdeimshare = i_out
+
       if (ierr.eq.0) call finiparser_dump()
 
       return
@@ -667,6 +671,7 @@ c-----------------------------------------------------------------------
 
       call bcast(ifdumpnls,lsize)
       call bcast(ifdumpfine,lsize)
+      call bcast(ifdeimshare,lsize)
 
       return
       END

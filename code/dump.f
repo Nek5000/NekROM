@@ -642,6 +642,7 @@ c-----------------------------------------------------------------------
       real    uadv(lt,ldim,1),tadv(lt,ldim,1)
       real    cf1(lt,ldim,1),cf2(lt,ldim,1)
       integer itmp(1)
+      integer node_used(lt)
 
       if (.not.ifdeim) return
       if (nbnl.le.0) return
@@ -691,6 +692,7 @@ c-----------------------------------------------------------------------
       call rzero(amat,lbnl_eff*lbnl_eff)
       call rzero(loc_rowvals,lbnl_eff)
       call rzero(sel_rowvals,lbnl_eff)
+      call izero(node_used,nnode_local)
 
       do k=1,nsel
          best_ip = -1
@@ -729,11 +731,15 @@ c-----------------------------------------------------------------------
          do comp=1,ldim
             do inode=1,nnode_local
                local_row = local_row + 1
-               rowval = uvwbnl(inode,comp,k)
-               do j=1,k-1
-                  rowval = rowval - uvwbnl(inode,comp,j)*coeff(j)
-               enddo
-               rowval = abs(rowval)
+               if (ifdeimshare.and.node_used(inode).ne.0) then
+                  rowval = -1.0e30
+               else
+                  rowval = uvwbnl(inode,comp,k)
+                  do j=1,k-1
+                     rowval = rowval - uvwbnl(inode,comp,j)*coeff(j)
+                  enddo
+                  rowval = abs(rowval)
+               endif
 
                if (rowval.gt.loc_best_val) then
                   loc_best_val = rowval
@@ -844,6 +850,7 @@ c-----------------------------------------------------------------------
          enddo
 
          if (nid.eq.0) write (6,*) 'DEIM selector step',k,'row',global_row
+         if (ifdeimshare.and.nid.eq.best_ip) node_used(best_inode)=1
       enddo
 
       ndeim_pts = nsel
@@ -1064,7 +1071,7 @@ c-----------------------------------------------------------------------
       parameter (lt=lx1*ly1*lz1*lelt)
 
       integer i,j,k,ip,inode,info,nsel,isnap
-      integer nnode_local,local_row,local_best_row
+      integer nnode_local,nstack_local,local_row,local_best_row
       integer global_row,offset,best_ip,best_inode
       integer iuofs,ivofs,iwofs,itxofs,ityofs,itzofs
       integer cand_info(2),work_info(2),ipivl(lbnl_eff)
@@ -1098,6 +1105,7 @@ c-----------------------------------------------------------------------
       endif
 
       nnode_local = lx1*ly1*lz1*nelv
+      nstack_local = ldim*nnode_local
 
       iuofs = 1
       ivofs = 1 + (nb+1)
@@ -1132,6 +1140,71 @@ c-----------------------------------------------------------------------
       call rzero(rhs,lbnl_eff)
       call rzero(amat,lbnl_eff*lbnl_eff)
       call rzero(loc_rowvals,lbnl_eff)
+
+      if (ifdeimshare) then
+         if (.not.ifrom(1)) call exitti(
+     $      'shared TDEIM requires velocity ROM$',1)
+         if (ndeim_pts.lt.nsel) call exitti(
+     $      'shared TDEIM needs ndeim_pts >= nsel$',ndeim_pts)
+         if (nid.eq.0) write (6,*) 'TDEIM points: sharing from DEIM'
+
+         do k=1,nsel
+            ! Map flattened velocity DEIM row index -> global node index
+            global_row = deim_inds(k)
+            best_ip = (global_row-1)/nstack_local
+            local_row = global_row - best_ip*nstack_local
+            best_inode = local_row - ((local_row-1)/nnode_local)
+     $                  *nnode_local
+            global_row = best_ip*nnode_local + best_inode
+
+            tdeim_inds(k) = global_row
+            tdeim_eval_inds(k) = global_row
+            tdeim_eval_weights(k) = 1.0
+
+            call rzero(cand_pack,nsel)
+            if (nid.eq.best_ip) then
+               do i=1,nsel
+                  cand_pack(i) = tbnl(best_inode,i)
+               enddo
+            endif
+            call gop(cand_pack,work_pack,'+  ',nsel)
+            do i=1,nsel
+               sel_rows(i,k) = cand_pack(i)
+               tdeim_nl_bas_p_eval(k,i) = cand_pack(i)
+            enddo
+
+            call rzero(row_pack,6*(lb+1))
+            if (nid.eq.best_ip) then
+               do j=0,nb
+                  row_pack(iuofs+j) = ub(best_inode,j)
+                  row_pack(ivofs+j) = vb(best_inode,j)
+                  if (if3d) row_pack(iwofs+j) = wb(best_inode,j)
+               enddo
+
+               do j=0,nb
+                  call gradm1(gx,gy,gz,tb(1,j,1))
+                  row_pack(itxofs+j) = gx(best_inode)
+                  row_pack(ityofs+j) = gy(best_inode)
+                  if (if3d) row_pack(itzofs+j) = gz(best_inode)
+               enddo
+            endif
+
+            call gop(row_pack,row_work,'+  ',nrowpack)
+            do j=0,nb
+               tdeim_u_p(k,j) = row_pack(iuofs+j)
+               tdeim_v_p(k,j) = row_pack(ivofs+j)
+               if (if3d) tdeim_w_p(k,j) = row_pack(iwofs+j)
+               tdeim_tx_p(k,j) = row_pack(itxofs+j)
+               tdeim_ty_p(k,j) = row_pack(ityofs+j)
+               if (if3d) tdeim_tz_p(k,j) = row_pack(itzofs+j)
+            enddo
+
+            if (nid.eq.0) write (6,*) 'TDEIM shared step',k,
+     $         'node',global_row
+         enddo
+
+         goto 1234
+      endif
 
       do k=1,nsel
          best_ip = -1
@@ -1252,6 +1325,7 @@ c-----------------------------------------------------------------------
          if (nid.eq.0) write (6,*) 'TDEIM selector step',k,'row',global_row
       enddo
 
+ 1234 continue
       tdeim_pts = nsel
       tdeim_pts_eval = nsel
       tdeim_pts_os = 0

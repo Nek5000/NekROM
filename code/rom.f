@@ -919,6 +919,7 @@ c-----------------------------------------------------------------------
 	      ifquad=.false.
 	      ifdeim=.false.
 	      iftdeim=.false.
+              ifdeimshare=.false.
 	      ifsetbases=.true.
 
 	      ndeim_pts=0
