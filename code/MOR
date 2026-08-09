@@ -23,12 +23,16 @@ c     The extra slot is unused unless nbnl is set > 0 at runtime.
      $                  tb(lx1*ly1*lz1*lelm,0:ltb,ldimt)
 
       common /mordeimbasis/ uvwbnl(lx1*ly1*lz1*lelm,ldim,lbnl_eff)
+      common /mordeimbasis_t/ tbnl(lx1*ly1*lz1*lelm,lbnl_eff)
 
-      logical ifdumpnls,ifdumpfine,ifdeim
-      common /mordeimflags/ ifdumpnls,ifdumpfine,ifdeim
+      logical ifdumpnls,ifdumpfine,ifdeim,iftdeim
+      common /mordeimflags/ ifdumpnls,ifdumpfine,ifdeim,iftdeim
 
       integer ndeim_pts,ndeim_pts_os,ndeim_pts_eval
       common /mordeimpar/ ndeim_pts,ndeim_pts_os,ndeim_pts_eval
+
+      integer tdeim_pts,tdeim_pts_os,tdeim_pts_eval
+      common /mortdeimpar/ tdeim_pts,tdeim_pts_os,tdeim_pts_eval
 
       character*8 deimmode
       common /mordeimchar/ deimmode
@@ -49,6 +53,20 @@ c     The extra slot is unused unless nbnl is set > 0 at runtime.
       common /mordeimup/ deim_u_p,deim_v_p,deim_w_p,deim_ux_p,
      $     deim_uy_p,deim_uz_p
 
+      real tdeim_eval_weights(ndeim_max)
+      common /mortdeimwts/ tdeim_eval_weights
+
+      integer tdeim_inds(ndeim_max),tdeim_inds_os(ndeim_max),
+     $        tdeim_eval_inds(ndeim_max)
+      common /mortdeimind/ tdeim_inds,tdeim_inds_os,tdeim_eval_inds
+
+      real tdeim_u_p(ndeim_max,0:lub),tdeim_v_p(ndeim_max,0:lub),
+     $     tdeim_w_p(ndeim_max,0:lub),
+     $     tdeim_tx_p(ndeim_max,0:ltb),tdeim_ty_p(ndeim_max,0:ltb),
+     $     tdeim_tz_p(ndeim_max,0:ltb)
+      common /mortdeimup/ tdeim_u_p,tdeim_v_p,tdeim_w_p,
+     $     tdeim_tx_p,tdeim_ty_p,tdeim_tz_p
+
       real deim_nl_bas_p_eval(ndeim_max,lbnl_eff),
      $     deim_proj_mat(lub,lbnl_eff),
      $     deim_zmc(lub,0:lub),deim_Ainv(lbnl_eff,lbnl_eff),
@@ -57,6 +75,16 @@ c     The extra slot is unused unless nbnl is set > 0 at runtime.
       common /mordeimmat/ deim_nl_bas_p_eval,deim_proj_mat,
      $     deim_zmc,deim_Ainv,deim_interp_mat,
      $     deim_mu,deim_tau,deim_A_tau_inv
+
+      real tdeim_nl_bas_p_eval(ndeim_max,lbnl_eff),
+     $     tdeim_proj_mat(ltb,lbnl_eff),
+     $     tdeim_zmc(ltb,0:ltb),tdeim_Ainv(lbnl_eff,lbnl_eff),
+     $     tdeim_interp_mat(lbnl_eff,ndeim_max),tdeim_mu(lbnl_eff),
+     $     tdeim_tau(lbnl_eff,lbnl_eff),
+     $     tdeim_A_tau_inv(lbnl_eff,lbnl_eff)
+      common /mortdeimmat/ tdeim_nl_bas_p_eval,tdeim_proj_mat,
+     $     tdeim_zmc,tdeim_Ainv,tdeim_interp_mat,
+     $     tdeim_mu,tdeim_tau,tdeim_A_tau_inv
 
       common /moric/ uic(lx1*ly1*lz1*lelm),
      $               vic(lx1*ly1*lz1*lelm),
@@ -73,6 +101,7 @@ c     The extra slot is unused unless nbnl is set > 0 at runtime.
       common /mortsnap/ ts0(lx1*ly1*lz1*lelm,lst,ldimt)
 
       common /morsnaptmp/ snapt(lx1*ly1*lz1*lelm,ldim,lsu)
+      common /morsnaptmp_t/ tsnapt(lx1*ly1*lz1*lelm,1,lsu)
 
       common /morforce/ fx(lx1*ly1*lz1*lelm),
      $                  fy(lx1*ly1*lz1*lelm),

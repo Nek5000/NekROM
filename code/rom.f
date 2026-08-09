@@ -239,10 +239,11 @@ c-----------------------------------------------------------------------
       if (ifsetbases) call setbases
       call rom_userbases
 
-      if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
-         call dump_bas
-         call dump_cbas
-      endif
+	      if (rmode.eq.'ALL'.or.rmode.eq.'OFF'.or.rmode.eq.'AEQ') then
+	         call dump_bas
+	         call dump_cbas
+	         call dump_tcbas
+	      endif
 
 c     call average_in_xy
 c     call average_in_y
@@ -628,9 +629,11 @@ c-----------------------------------------------------------------------
 
       logical have_mu,have_tau,have_ainv,have_alpha,
      $        have_w_p,have_uz_p
+      logical have_tdeim,have_t_mu,have_t_tau,have_t_ainv,
+     $        have_t_w_p,have_t_tz_p
 
       integer ndeimwrk
-      parameter (ndeimwrk=ndeim_max*(lub+1+lbnl_eff))
+      parameter (ndeimwrk=ndeim_max*(lb+1+lbnl_eff))
 
       real rwk(ndeimwrk)
       real rtmp(1)
@@ -641,6 +644,8 @@ c-----------------------------------------------------------------------
 
       if (.not.ifdeim) return
       if (nbnl.le.0) call exitti('nbnl <= 0$',nbnl)
+
+      iftdeim=.false.
 
       call iread_serial(itmp,1,'ops/deim_npts ',iwk,nid)
       ndeim_pts=itmp(1)
@@ -744,6 +749,106 @@ c-----------------------------------------------------------------------
          deim_alpha=rtmp(1)
       endif
 
+      if (ifrom(1).and.ifrom(2)) then
+         inquire (file='ops/tdeim_npts',exist=have_tdeim)
+         if (have_tdeim) then
+            iftdeim=.true.
+
+            call iread_serial(itmp,1,'ops/tdeim_npts ',iwk,nid)
+            tdeim_pts=itmp(1)
+            call iread_serial(itmp,1,'ops/tdeim_npts_os ',iwk,nid)
+            tdeim_pts_os=itmp(1)
+            call iread_serial(itmp,1,'ops/tdeim_npts_eval ',iwk,nid)
+            tdeim_pts_eval=itmp(1)
+
+            if (tdeim_pts.le.0) call exitti('tdeim_pts <= 0$',tdeim_pts)
+            if (tdeim_pts.gt.ndeim_max) then
+               call exitti('tdeim_pts > ldeim$',tdeim_pts)
+            endif
+            if (tdeim_pts_os.gt.ndeim_max) then
+               call exitti('tdeim_pts_os > ldeim$',tdeim_pts_os)
+            endif
+            if (tdeim_pts_eval.le.0) call exitti(
+     $         'tdeim_pts_eval <= 0$',tdeim_pts_eval)
+            if (tdeim_pts_eval.gt.ndeim_max) then
+               call exitti('tdeim_pts_eval > ldeim$',tdeim_pts_eval)
+            endif
+
+            call iread_serial(tdeim_inds,tdeim_pts,'ops/tdeim_inds ',
+     $         iwk,nid)
+            if (tdeim_pts_os.gt.0) then
+               call iread_serial(tdeim_inds_os,tdeim_pts_os,
+     $            'ops/tdeim_inds_os ',iwk,nid)
+            endif
+            call iread_serial(tdeim_eval_inds,tdeim_pts_eval,
+     $         'ops/tdeim_eval_inds ',iwk,nid)
+
+            call read_serial(tdeim_eval_weights,tdeim_pts_eval,
+     $         'ops/tdeim_eval_weights ',rwk,nid)
+            call read_mat_serial(tdeim_u_p,ndeim_max,lub+1,
+     $         'ops/tdeim_u_p ',tdeim_pts_eval,nb+1,rwk,nid)
+            call read_mat_serial(tdeim_v_p,ndeim_max,lub+1,
+     $         'ops/tdeim_v_p ',tdeim_pts_eval,nb+1,rwk,nid)
+            if (if3d) then
+               inquire (file='ops/tdeim_w_p',exist=have_t_w_p)
+               inquire (file='ops/tdeim_tz_p',exist=have_t_tz_p)
+               if ((.not.have_t_w_p).or.(.not.have_t_tz_p)) then
+                  call exitti('missing 3D TDEIM artifacts$',1)
+               endif
+               call read_mat_serial(tdeim_w_p,ndeim_max,lub+1,
+     $            'ops/tdeim_w_p ',tdeim_pts_eval,nb+1,rwk,nid)
+               call read_mat_serial(tdeim_tz_p,ndeim_max,ltb+1,
+     $            'ops/tdeim_tz_p ',tdeim_pts_eval,nb+1,rwk,nid)
+            else
+               call rzero(tdeim_w_p,ndeim_max*(lub+1))
+               call rzero(tdeim_tz_p,ndeim_max*(ltb+1))
+            endif
+            call read_mat_serial(tdeim_tx_p,ndeim_max,ltb+1,
+     $         'ops/tdeim_tx_p ',tdeim_pts_eval,nb+1,rwk,nid)
+            call read_mat_serial(tdeim_ty_p,ndeim_max,ltb+1,
+     $         'ops/tdeim_ty_p ',tdeim_pts_eval,nb+1,rwk,nid)
+
+            call read_mat_serial(tdeim_nl_bas_p_eval,ndeim_max,lbnl_eff,
+     $         'ops/tdeim_nl_bas_p_eval ',tdeim_pts_eval,nbnl,rwk,nid)
+            call read_mat_serial(tdeim_proj_mat,ltb,lbnl_eff,
+     $         'ops/tdeim_proj_mat ',nb,nbnl,rwk,nid)
+            call read_mat_serial(tdeim_Ainv,lbnl_eff,lbnl_eff,
+     $         'ops/tdeim_Ainv ',nbnl,nbnl,rwk,nid)
+            call read_mat_serial(tdeim_interp_mat,lbnl_eff,ndeim_max,
+     $         'ops/tdeim_interp_mat ',nbnl,tdeim_pts_eval,rwk,nid)
+
+            inquire (file='ops/tdeim_mu',exist=have_t_mu)
+            if (have_t_mu) then
+               call read_serial(tdeim_mu,nbnl,'ops/tdeim_mu ',rwk,nid)
+            else
+               call rzero(tdeim_mu,nbnl)
+            endif
+
+            inquire (file='ops/tdeim_tau',exist=have_t_tau)
+            if (have_t_tau) then
+               call read_mat_serial(tdeim_tau,lbnl_eff,lbnl_eff,
+     $            'ops/tdeim_tau ',nbnl,nbnl,rwk,nid)
+            else
+               call rzero(tdeim_tau,nbnl*nbnl)
+            endif
+
+            inquire (file='ops/tdeim_A_tau_inv',exist=have_t_ainv)
+            if (have_t_ainv) then
+               call read_mat_serial(tdeim_A_tau_inv,lbnl_eff,lbnl_eff,
+     $            'ops/tdeim_A_tau_inv ',nbnl,nbnl,rwk,nid)
+            else
+               call rzero(tdeim_A_tau_inv,nbnl*nbnl)
+            endif
+
+            if (deimmode.eq.'MCLSDEIM') then
+               if ((.not.have_t_mu).or.(.not.have_t_tau).or.
+     $             (.not.have_t_ainv)) then
+                  call exitti('missing MCLS TDEIM artifacts$',1)
+               endif
+            endif
+         endif
+      endif
+
       call nekgsync
       if (nio.eq.0) write (6,*) 'deim setup complete'
 
@@ -800,11 +905,19 @@ c-----------------------------------------------------------------------
       ifsub0=.true.
       ifcomb=.false.
       ifpb=.true.
-      ifcp=.false.
-      ifcore=.true.
-      ifquad=.false.
-      ifdeim=.false.
-      ifsetbases=.true.
+	      ifcp=.false.
+	      ifcore=.true.
+	      ifquad=.false.
+	      ifdeim=.false.
+	      iftdeim=.false.
+	      ifsetbases=.true.
+
+	      ndeim_pts=0
+	      ndeim_pts_os=0
+	      ndeim_pts_eval=0
+	      tdeim_pts=0
+	      tdeim_pts_os=0
+	      tdeim_pts_eval=0
 
       do i=0,ldimt1
          ifpod(i)=.false.

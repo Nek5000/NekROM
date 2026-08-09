@@ -590,16 +590,19 @@ c-----------------------------------------------------------------------
          rhs(i)=rhs(i)+s*at0(1+i)
       enddo
 
-      if (ifadvc(2)) then
-         if (ifcp) then
-            if (ifcore) then
-               call evalc4(tmp(1),cta,ctb,ctc,cp_tw,ctl,ctj0,ct0k,ut)
-            else
-               call evalc3(tmp(1),cta,ctb,ctc,cp_tw,ut)
-            endif
-         else
-            call evalc(tmp(1),ctmp,ctl,u,ut)
-         endif
+	      if (ifadvc(2)) then
+	         if (ifdeim.and.iftdeim) then
+	            call evalc_tdeim(tmp(1),u,ut)
+	         else if (ifcp) then
+	            if (ifcore) then
+	               call evalc4(tmp(1),cta,ctb,ctc,cp_tw,ctl,ctj0,
+     $                    ct0k,ut)
+	            else
+	               call evalc3(tmp(1),cta,ctb,ctc,cp_tw,ut)
+	            endif
+	         else
+	            call evalc(tmp(1),ctmp,ctl,u,ut)
+	         endif
 c        call add2(tmp(1),st0(1),nb)
          call shift(ctr,tmp(1),nb,3)
 
@@ -901,6 +904,152 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine evalc_tdeim(cu,uu,tt)
+
+      ! Compute the DEIM-family convection term for the temperature equation:
+      !    cu ~= Pi { u · grad(t) } in coefficient space.
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      real cu(nb)
+      real uu(0:nb)
+      real tt(0:nb)
+
+      real fraw(ndeim_max),c_hat(lbnl_eff),bvec(lbnl_eff),tmpb(lbnl_eff)
+      real up,vp,wp,tx,ty,tz,lambda,s1,s2
+
+      integer i,j
+
+      call rzero(cu,nb)
+      call rzero(fraw,ndeim_max)
+      call rzero(c_hat,lbnl_eff)
+      call rzero(bvec,lbnl_eff)
+      call rzero(tmpb,lbnl_eff)
+
+      if (.not.ifdeim) return
+      if (.not.iftdeim) return
+
+      if (tdeim_pts_eval.le.0.or.nbnl.le.0) then
+         call exitti('invalid TDEIM setup$',tdeim_pts_eval)
+      endif
+
+      do i=1,tdeim_pts_eval
+         up=0.
+         vp=0.
+         wp=0.
+         tx=0.
+         ty=0.
+         tz=0.
+         do j=0,nb
+            up=up+tdeim_u_p(i,j)*uu(j)
+            vp=vp+tdeim_v_p(i,j)*uu(j)
+            if (if3d) then
+               wp=wp+tdeim_w_p(i,j)*uu(j)
+            endif
+            tx=tx+tdeim_tx_p(i,j)*tt(j)
+            ty=ty+tdeim_ty_p(i,j)*tt(j)
+            if (if3d) then
+               tz=tz+tdeim_tz_p(i,j)*tt(j)
+            endif
+         enddo
+         fraw(i)=(up*tx+vp*ty+wp*tz)*tdeim_eval_weights(i)
+      enddo
+
+      if (deimmode.eq.'MCLSDEIM') then
+         do i=1,nbnl
+            c_hat(i)=0.
+            do j=1,tdeim_pts_eval
+               c_hat(i)=c_hat(i)+tdeim_nl_bas_p_eval(j,i)*fraw(j)
+            enddo
+            do j=1,nbnl
+               c_hat(i)=c_hat(i)+deim_alpha*tdeim_tau(i,j)*tdeim_mu(j)
+            enddo
+         enddo
+
+         do i=1,nbnl
+            tmpb(i)=0.
+            do j=1,nbnl
+               tmpb(i)=tmpb(i)+tdeim_A_tau_inv(i,j)*c_hat(j)
+            enddo
+         enddo
+         do i=1,nbnl
+            c_hat(i)=tmpb(i)
+         enddo
+
+         do i=1,nbnl
+            bvec(i)=0.
+            do j=1,nb
+               bvec(i)=bvec(i)+tdeim_proj_mat(j,i)*tt(j)
+            enddo
+         enddo
+
+         do i=1,nbnl
+            tmpb(i)=0.
+            do j=1,nbnl
+               tmpb(i)=tmpb(i)+tdeim_A_tau_inv(i,j)*bvec(j)
+            enddo
+         enddo
+
+         s1=0.
+         s2=0.
+         do i=1,nbnl
+            s1=s1+bvec(i)*c_hat(i)
+            s2=s2+bvec(i)*tmpb(i)
+         enddo
+
+         if (abs(s2).gt.0.) then
+            lambda=s1/s2
+            do i=1,nbnl
+               c_hat(i)=c_hat(i)-lambda*tmpb(i)
+            enddo
+         endif
+      else
+         do i=1,nbnl
+            do j=1,tdeim_pts_eval
+               c_hat(i)=c_hat(i)+tdeim_interp_mat(i,j)*fraw(j)
+            enddo
+         enddo
+
+         if (deimmode.eq.'CLSDEIM') then
+            do i=1,nbnl
+               do j=1,nb
+                  bvec(i)=bvec(i)+tdeim_proj_mat(j,i)*tt(j)
+               enddo
+            enddo
+
+            do i=1,nbnl
+               do j=1,nbnl
+                  tmpb(i)=tmpb(i)+tdeim_Ainv(i,j)*bvec(j)
+               enddo
+            enddo
+
+            s1=0.
+            s2=0.
+            do i=1,nbnl
+               s1=s1+bvec(i)*c_hat(i)
+               s2=s2+bvec(i)*tmpb(i)
+            enddo
+
+            if (abs(s2).gt.0.) then
+               lambda=s1/s2
+               do i=1,nbnl
+                  c_hat(i)=c_hat(i)-lambda*tmpb(i)
+               enddo
+            endif
+         endif
+      endif
+
+      do i=1,nb
+         do j=1,nbnl
+            cu(i)=cu(i)+tdeim_proj_mat(i,j)*c_hat(j)
+         enddo
+      enddo
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine setuavg(s1,s2,t1)
 
       ! set average quantities involving velocity coefficients
@@ -1166,8 +1315,12 @@ c-----------------------------------------------------------------------
          s=-1.0/ad_pe
          call cmult(t2(1),s,nb)
 
-         call evalc2(t3(1),ctmp,ctl,t1,t4)
-         call sub2(t2(1),t3(1),nb)
+	         if (ifdeim.and.iftdeim) then
+	            call evalc_tdeim(t3(1),t1,t4)
+	         else
+	            call evalc2(t3(1),ctmp,ctl,t1,t4)
+	         endif
+	         call sub2(t2(1),t3(1),nb)
 
          call mxm(btinv,nb,t2(1),nb,ff(nb+1),1)
       endif

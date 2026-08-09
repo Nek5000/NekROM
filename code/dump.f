@@ -553,6 +553,62 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine dump_tcbas
+      ! Calculates and dumps the POD basis of the thermal convection snapshots
+      !
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      logical iftmp,iftmp2
+      integer istep0
+
+      real uadv(lt,ldim,1),tadv(lt,1,1),cf(lt,1,1)
+
+      if (.not.ifrom(2)) return
+      if (nbnl.le.0) return
+
+      nv=lx1*ly1*lz1*nelv
+
+      ! Compute thermal convection field for each snapshot and store in tsnapt
+      do is=1,ns
+         call opcopy(uadv(1,1,1),uadv(1,2,1),uadv(1,ldim,1),
+     $               us0(1,1,is),us0(1,2,is),us0(1,ldim,is))
+         call copy(tadv(1,1,1),ts0(1,is,1),nv)
+         call evalcflds(cf,uadv,tadv,1,1,.false.)
+         call copy(tsnapt(1,1,is),cf(1,1,1),nv)
+      enddo
+
+      iftmp=ifxyo
+      iftmp2=ifpo
+      ttmp=time
+      istep0=istep
+
+      ifpo=.false.
+
+      call pod(tbnl,eval2,ug,tsnapt,1,ips,nbnl,ns,ifpb,
+     $         'ops/gtc ',nbat)
+
+      ! B-normalize the POD basis
+      do i=1,nbnl
+         p=sip(tbnl(1,i),tbnl(1,i))
+         if (p.le.0.) call exitti('invalid thermal conv basis norm$',i)
+         s=1./sqrt(p)
+         call cmult(tbnl(1,i),s,nv)
+      enddo
+
+      if (ifdeim) call dump_tdeim_inds
+
+      istep=istep0
+      time=ttmp
+      ifxyo=iftmp
+      ifpo=iftmp2
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine dump_deim_inds
       ! Select a greedy DEIM point set from the nonlinear POD basis and
       ! emit the operator bundle consumed by the embedded DEIM runtime.
@@ -992,6 +1048,370 @@ c-----------------------------------------------------------------------
       endif
 
       if (nid.eq.0) write (6,*) 'DEIM selector complete, points:',nsel
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine dump_tdeim_inds
+      ! Select a greedy DEIM point set from the thermal convection POD basis
+      ! and emit the operator bundle consumed by evalc_tdeim.
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'MOR'
+
+      integer lt
+      parameter (lt=lx1*ly1*lz1*lelt)
+
+      integer i,j,k,ip,inode,info,nsel,isnap
+      integer nnode_local,local_row,local_best_row
+      integer global_row,offset,best_ip,best_inode
+      integer iuofs,ivofs,iwofs,itxofs,ityofs,itzofs
+      integer cand_info(2),work_info(2),ipivl(lbnl_eff)
+      integer irl(lbnl_eff),icl(lbnl_eff)
+      integer nrowpack
+      real    amat(lbnl_eff,lbnl_eff),rhs(lbnl_eff),coeff(lbnl_eff)
+      real    sel_rows(lbnl_eff,lbnl_eff)
+      real    loc_rowvals(lbnl_eff)
+      real    cand_pack(lbnl_eff+1),work_pack(lbnl_eff+1)
+      real    row_pack(6*(lb+1)),row_work(6*(lb+1))
+      real    loc_best_val,glob_best_val,rowval
+      real    snapcoef(lbnl_eff),scale,rtmp(1)
+      real    gx(lt),gy(lt),gz(lt)
+      integer itmp(1)
+
+      if (.not.ifdeim) return
+      if (nbnl.le.0) return
+      if (.not.ifrom(2)) return
+
+      nsel = min(nbnl,lbnl)
+      if (nsel.gt.ndeim_max) call exitti('ndeim_max too small$',nsel)
+
+      if (if3d) then
+         nrowpack = 6*(nb+1)
+      else
+         nrowpack = 4*(nb+1)
+      endif
+      if (nrowpack.gt.6*(lb+1)) then
+         call exitti('thermal row pack too small$',nb)
+      endif
+
+      nnode_local = lx1*ly1*lz1*nelv
+
+      iuofs = 1
+      ivofs = 1 + (nb+1)
+      if (if3d) then
+         iwofs = 1 + 2*(nb+1)
+         itxofs = 1 + 3*(nb+1)
+         ityofs = 1 + 4*(nb+1)
+         itzofs = 1 + 5*(nb+1)
+      else
+         itxofs = 1 + 2*(nb+1)
+         ityofs = 1 + 3*(nb+1)
+      endif
+
+      call izero(tdeim_inds,ndeim_max)
+      call izero(tdeim_inds_os,ndeim_max)
+      call izero(tdeim_eval_inds,ndeim_max)
+      call rzero(tdeim_eval_weights,ndeim_max)
+      call rzero(tdeim_nl_bas_p_eval,ndeim_max*lbnl_eff)
+      call rzero(tdeim_u_p,ndeim_max*(lub+1))
+      call rzero(tdeim_v_p,ndeim_max*(lub+1))
+      call rzero(tdeim_w_p,ndeim_max*(lub+1))
+      call rzero(tdeim_tx_p,ndeim_max*(ltb+1))
+      call rzero(tdeim_ty_p,ndeim_max*(ltb+1))
+      call rzero(tdeim_tz_p,ndeim_max*(ltb+1))
+      call rzero(tdeim_proj_mat,ltb*lbnl_eff)
+      call rzero(tdeim_zmc,ltb*(ltb+1))
+      call rzero(tdeim_Ainv,lbnl_eff*lbnl_eff)
+      call rzero(tdeim_interp_mat,lbnl_eff*ndeim_max)
+      call rzero(sel_rows,lbnl_eff*lbnl_eff)
+      call rzero(coeff,lbnl_eff)
+      call rzero(rhs,lbnl_eff)
+      call rzero(amat,lbnl_eff*lbnl_eff)
+      call rzero(loc_rowvals,lbnl_eff)
+
+      do k=1,nsel
+         best_ip = -1
+         best_inode = 0
+
+         if (k.gt.1) then
+            call rzero(amat,lbnl_eff*lbnl_eff)
+            call rzero(rhs,lbnl_eff)
+            do i=1,k-1
+               rhs(i) = sel_rows(k,i)
+               do j=1,k-1
+                  amat(i,j) = sel_rows(j,i)
+               enddo
+            enddo
+
+            call izero(ipivl,lbnl_eff)
+            call dgetrf(k-1,k-1,amat,lbnl_eff,ipivl,info)
+            if (info.ne.0) call exitti(
+     $           'TDEIM selector factorization$',info)
+            call dgetrs('N',k-1,1,amat,lbnl_eff,ipivl,rhs,lbnl_eff,info)
+            if (info.ne.0) call exitti(
+     $           'TDEIM selector solve$',info)
+            call rzero(coeff,lbnl_eff)
+            do i=1,k-1
+               coeff(i) = rhs(i)
+            enddo
+         endif
+
+         loc_best_val = -1.0e30
+         local_best_row = 0
+         call rzero(loc_rowvals,lbnl_eff)
+         local_row = 0
+
+         do inode=1,nnode_local
+            local_row = local_row + 1
+            rowval = tbnl(inode,k)
+            do j=1,k-1
+               rowval = rowval - tbnl(inode,j)*coeff(j)
+            enddo
+            rowval = abs(rowval)
+
+            if (rowval.gt.loc_best_val) then
+               loc_best_val = rowval
+               local_best_row = local_row
+               do i=1,nsel
+                  loc_rowvals(i) = tbnl(inode,i)
+               enddo
+            endif
+         enddo
+
+         cand_pack(1) = loc_best_val
+         do i=1,nsel
+            cand_pack(i+1) = loc_rowvals(i)
+         enddo
+         cand_info(1) = local_best_row
+         cand_info(2) = nnode_local
+
+         glob_best_val = -1.0e30
+         global_row = 0
+         offset = 0
+
+         do ip=0,np-1
+            if (nid.ne.ip) then
+               call rzero(cand_pack,nsel+1)
+               call izero(cand_info,2)
+            endif
+
+            call gop(cand_pack,work_pack,'+  ',nsel+1)
+            call igop(cand_info,work_info,'+  ',2)
+
+            if (cand_pack(1).gt.glob_best_val) then
+               glob_best_val = cand_pack(1)
+               global_row = offset + cand_info(1)
+               best_ip = ip
+               best_inode = cand_info(1)
+               do i=1,nsel
+                  sel_rows(i,k) = cand_pack(i+1)
+               enddo
+            endif
+
+            offset = offset + cand_info(2)
+         enddo
+
+         tdeim_inds(k) = global_row
+         tdeim_eval_inds(k) = global_row
+         tdeim_eval_weights(k) = 1.0
+         do i=1,nsel
+            tdeim_nl_bas_p_eval(k,i) = sel_rows(i,k)
+         enddo
+
+         call rzero(row_pack,6*(lb+1))
+         if (nid.eq.best_ip) then
+            do j=0,nb
+               row_pack(iuofs+j) = ub(best_inode,j)
+               row_pack(ivofs+j) = vb(best_inode,j)
+               if (if3d) row_pack(iwofs+j) = wb(best_inode,j)
+            enddo
+
+            do j=0,nb
+               call gradm1(gx,gy,gz,tb(1,j,1))
+               row_pack(itxofs+j) = gx(best_inode)
+               row_pack(ityofs+j) = gy(best_inode)
+               if (if3d) row_pack(itzofs+j) = gz(best_inode)
+            enddo
+         endif
+
+         call gop(row_pack,row_work,'+  ',nrowpack)
+
+         do j=0,nb
+            tdeim_u_p(k,j) = row_pack(iuofs+j)
+            tdeim_v_p(k,j) = row_pack(ivofs+j)
+            if (if3d) tdeim_w_p(k,j) = row_pack(iwofs+j)
+            tdeim_tx_p(k,j) = row_pack(itxofs+j)
+            tdeim_ty_p(k,j) = row_pack(ityofs+j)
+            if (if3d) tdeim_tz_p(k,j) = row_pack(itzofs+j)
+         enddo
+
+         if (nid.eq.0) write (6,*) 'TDEIM selector step',k,'row',global_row
+      enddo
+
+      tdeim_pts = nsel
+      tdeim_pts_eval = nsel
+      tdeim_pts_os = 0
+
+      call rzero(amat,lbnl_eff*lbnl_eff)
+      do i=1,nsel
+         do j=1,nsel
+            do k=1,nsel
+               amat(i,j) = amat(i,j) + sel_rows(i,k)*sel_rows(j,k)
+            enddo
+         enddo
+      enddo
+
+      call rzero(tdeim_Ainv,lbnl_eff*lbnl_eff)
+      do i=1,nsel
+         tdeim_Ainv(i,i) = 1.0
+      enddo
+
+      call izero(ipivl,lbnl_eff)
+      call dgetrf(nsel,nsel,amat,lbnl_eff,ipivl,info)
+      if (info.ne.0) call exitti('TDEIM inverse factorization$',info)
+      call dgetrs('N',nsel,nsel,amat,lbnl_eff,ipivl,tdeim_Ainv,lbnl_eff,
+     $   info)
+      if (info.ne.0) call exitti('TDEIM inverse solve$',info)
+
+      do i=1,nsel
+         do j=1,nsel
+            tdeim_interp_mat(i,j) = 0.0
+            do k=1,nsel
+               tdeim_interp_mat(i,j) =
+     $            tdeim_interp_mat(i,j) + tdeim_Ainv(i,k)*sel_rows(k,j)
+            enddo
+         enddo
+      enddo
+
+      call rzero(tdeim_proj_mat,ltb*lbnl_eff)
+      do i=1,nb
+         do j=1,nsel
+            tdeim_proj_mat(i,j) = sip(tb(1,i,1),tbnl(1,j))
+         enddo
+      enddo
+
+      call rzero(tdeim_eval_weights,ndeim_max)
+      do i=1,nsel
+         tdeim_eval_weights(i) = 1.0
+      enddo
+
+      itmp(1) = tdeim_pts
+      call idump_serial(itmp,1,'ops/tdeim_npts ',nid)
+      itmp(1) = tdeim_pts_os
+      call idump_serial(itmp,1,'ops/tdeim_npts_os ',nid)
+      itmp(1) = tdeim_pts_eval
+      call idump_serial(itmp,1,'ops/tdeim_npts_eval ',nid)
+      call idump_serial(tdeim_inds,nsel,'ops/tdeim_inds ',nid)
+      call idump_serial(tdeim_eval_inds,nsel,'ops/tdeim_eval_inds ',nid)
+      call dump_serial(tdeim_eval_weights,nsel,
+     $   'ops/tdeim_eval_weights ',nid)
+      call dump_mat_serial(tdeim_u_p,ndeim_max,lub+1,
+     $   'ops/tdeim_u_p ',nsel,nb+1,nid)
+      call dump_mat_serial(tdeim_v_p,ndeim_max,lub+1,
+     $   'ops/tdeim_v_p ',nsel,nb+1,nid)
+      if (if3d) then
+         call dump_mat_serial(tdeim_w_p,ndeim_max,lub+1,
+     $      'ops/tdeim_w_p ',nsel,nb+1,nid)
+      endif
+      call dump_mat_serial(tdeim_tx_p,ndeim_max,ltb+1,
+     $   'ops/tdeim_tx_p ',nsel,nb+1,nid)
+      call dump_mat_serial(tdeim_ty_p,ndeim_max,ltb+1,
+     $   'ops/tdeim_ty_p ',nsel,nb+1,nid)
+      if (if3d) then
+         call dump_mat_serial(tdeim_tz_p,ndeim_max,ltb+1,
+     $      'ops/tdeim_tz_p ',nsel,nb+1,nid)
+      endif
+      call dump_mat_serial(tdeim_nl_bas_p_eval,ndeim_max,lbnl_eff,
+     $   'ops/tdeim_nl_bas_p_eval ',nsel,nsel,nid)
+      call dump_mat_serial(tdeim_proj_mat,ltb,lbnl_eff,
+     $   'ops/tdeim_proj_mat ',nb,nsel,nid)
+      call dump_mat_serial(tdeim_Ainv,lbnl_eff,lbnl_eff,
+     $   'ops/tdeim_Ainv ',nsel,nsel,nid)
+      call dump_mat_serial(tdeim_interp_mat,lbnl_eff,ndeim_max,
+     $   'ops/tdeim_interp_mat ',nsel,nsel,nid)
+
+      if (deimmode.eq.'MCLSDEIM') then
+         call rzero(tdeim_mu,lbnl_eff)
+         call rzero(tdeim_tau,lbnl_eff*lbnl_eff)
+         call rzero(tdeim_A_tau_inv,lbnl_eff*lbnl_eff)
+         call rzero(snapcoef,lbnl_eff)
+
+         do isnap=1,ns
+            do i=1,nsel
+               snapcoef(i) = sip(tbnl(1,i),tsnapt(1,1,isnap))
+               tdeim_mu(i) = tdeim_mu(i) + snapcoef(i)
+            enddo
+         enddo
+
+         if (ns.gt.0) then
+            scale=1./real(ns)
+            call cmult(tdeim_mu,scale,nsel)
+         endif
+
+         call rzero(amat,lbnl_eff*lbnl_eff)
+         do isnap=1,ns
+            do i=1,nsel
+               snapcoef(i) = sip(tbnl(1,i),tsnapt(1,1,isnap))
+               snapcoef(i) = snapcoef(i) - tdeim_mu(i)
+            enddo
+
+            do i=1,nsel
+            do j=1,nsel
+               amat(i,j)=amat(i,j)+snapcoef(i)*snapcoef(j)
+            enddo
+            enddo
+         enddo
+
+         if (ns.gt.1) then
+            scale=1./real(ns-1)
+            call cmult(amat,scale,lbnl_eff*lbnl_eff)
+         else
+            call rzero(amat,lbnl_eff*lbnl_eff)
+         endif
+
+         do i=1,nsel
+            amat(i,i)=amat(i,i)+1.e-15
+         enddo
+
+         call izero(irl,lbnl_eff)
+         call izero(icl,lbnl_eff)
+         call lu(amat,nsel,lbnl_eff,irl,icl)
+         call rzero(tdeim_tau,lbnl_eff*lbnl_eff)
+         do i=1,nsel
+            tdeim_tau(i,i)=1.
+         enddo
+         call solve(tdeim_tau,amat,nsel,nsel,lbnl_eff,irl,icl)
+
+         call rzero(amat,lbnl_eff*lbnl_eff)
+         do i=1,nsel
+         do j=1,nsel
+            do k=1,nsel
+               amat(i,j)=amat(i,j)+tdeim_nl_bas_p_eval(k,i)
+     $            *tdeim_nl_bas_p_eval(k,j)
+            enddo
+            amat(i,j)=amat(i,j)+deim_alpha*tdeim_tau(i,j)
+         enddo
+         enddo
+
+         call izero(irl,lbnl_eff)
+         call izero(icl,lbnl_eff)
+         call lu(amat,nsel,lbnl_eff,irl,icl)
+         call rzero(tdeim_A_tau_inv,lbnl_eff*lbnl_eff)
+         do i=1,nsel
+            tdeim_A_tau_inv(i,i)=1.
+         enddo
+         call solve(tdeim_A_tau_inv,amat,nsel,nsel,lbnl_eff,irl,icl)
+
+         call dump_serial(tdeim_mu,nsel,'ops/tdeim_mu ',nid)
+         call dump_mat_serial(tdeim_tau,lbnl_eff,lbnl_eff,
+     $      'ops/tdeim_tau ',nsel,nsel,nid)
+         call dump_mat_serial(tdeim_A_tau_inv,lbnl_eff,lbnl_eff,
+     $      'ops/tdeim_A_tau_inv ',nsel,nsel,nid)
+      endif
+
+      if (nid.eq.0) write (6,*) 'TDEIM selector complete, points:',nsel
 
       return
       end
