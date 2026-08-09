@@ -4,12 +4,37 @@ set -euo pipefail
 script_dir=$(cd "$(dirname "$0")" && pwd)
 cd "$script_dir"
 
+usage() {
+  cat <<'EOF'
+Usage: ./run_rom [--tdeim|--no-tdeim]
+
+  --tdeim     Enable thermal DEIM (sets MOR_DISABLE_TDEIM=0 for this run)
+  --no-tdeim  Disable thermal DEIM (sets MOR_DISABLE_TDEIM=1 for this run)
+EOF
+}
+
+enable_tdeim=""
+while [[ $# -gt 0 ]]; do
+  case "$1" in
+    --tdeim) enable_tdeim="yes"; shift ;;
+    --no-tdeim) enable_tdeim="no"; shift ;;
+    -h|--help) usage; exit 0 ;;
+    *) echo "run_rom: unknown arg: $1" >&2; usage >&2; exit 2 ;;
+  esac
+done
+
 MOR_DIR="${MOR_DIR:-$(cd "$script_dir/../.." && pwd)}"
 NEK_SOURCE_ROOT="${NEK_SOURCE_ROOT:-$(cd "$MOR_DIR/../Nek5000" && pwd)}"
 export MOR_DIR NEK_SOURCE_ROOT
 export NEK_DEPS_LOCAL_SRC="${NEK_DEPS_LOCAL_SRC:-1}"
 export PATH="$MOR_DIR/bin:$NEK_SOURCE_ROOT/bin:$PATH"
-export MOR_DISABLE_TDEIM="${MOR_DISABLE_TDEIM:-1}"
+if [[ "$enable_tdeim" == "yes" ]]; then
+  export MOR_DISABLE_TDEIM=0
+elif [[ "$enable_tdeim" == "no" ]]; then
+  export MOR_DISABLE_TDEIM=1
+else
+  export MOR_DISABLE_TDEIM="${MOR_DISABLE_TDEIM:-1}"
+fi
 
 echo "run_rom: start"
 

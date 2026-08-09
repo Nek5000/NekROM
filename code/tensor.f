@@ -210,7 +210,7 @@ c-----------------------------------------------------------------------
 
       call izero(rank_list,2*ltr)
       if (nid.eq.0) then
-         do i=1,10
+         do i=1,min(ltr,10)
             ii = i*10
             rank_list(1,i) = mod(i,np) ! destination processor
             rank_list(2,i) = ii         ! return location

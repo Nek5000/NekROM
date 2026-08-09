@@ -610,11 +610,17 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine dump_deim_inds
-      ! Select a greedy DEIM point set from the nonlinear POD basis and
-      ! emit the operator bundle consumed by the embedded DEIM runtime.
-      ! The selection itself stays deterministic: each rank contributes a
-      ! local residual maximizer in rank order, and the global maximizer is
-      ! retained for the next greedy step.
+      ! Select DEIM points from the nonlinear POD basis and emit the
+      ! operator bundle consumed by the embedded DEIM runtime.
+      !
+      ! This uses a QR-with-column-pivoting style selection ("QDEIM"):
+      ! iteratively pick the row whose nonlinear-basis row vector has the
+      ! largest residual norm after orthogonal projection onto the span of
+      ! previously selected rows (in coefficient space).
+      !
+      ! The selection stays deterministic: each rank contributes a local
+      ! maximizer in rank order, and the global maximizer is retained for
+      ! the next step.
 
       include 'SIZE'
       include 'TOTAL'
@@ -631,17 +637,21 @@ c-----------------------------------------------------------------------
       integer cand_info(3),work_info(3),ipivl(lbnl_eff)
       integer irl(lbnl_eff),icl(lbnl_eff)
       integer nrowpack
-      real    amat(lbnl_eff,lbnl_eff),rhs(lbnl_eff),coeff(lbnl_eff)
+      real    amat(lbnl_eff,lbnl_eff),rhs(lbnl_eff)
+      real    coeff(lbnl_eff)
       real    sel_rows(lbnl_eff,lbnl_eff)
-      real    loc_rowvals(lbnl_eff),sel_rowvals(lbnl_eff)
-      real    cand_pack(lbnl_eff+1),work_pack(lbnl_eff+1)
+      real    loc_rowvals(lbnl_eff),loc_resid(lbnl_eff)
+      real    best_rowvals(lbnl_eff),best_resid(lbnl_eff)
+      real    qrows(lbnl_eff,lbnl_eff)
+      real    cand_pack(2*lbnl_eff+1),work_pack(2*lbnl_eff+1)
       real    row_pack(6*(lub+1)),row_work(6*(lub+1))
-      real    loc_best_val,glob_best_val,rowval
+      real    loc_best_val,glob_best_val,rowval,proj,nrm
       real    snapcoef(lbnl_eff),scale,rtmp(1)
       real    gx(lt),gy(lt),gz(lt)
       real    uadv(lt,ldim,1),tadv(lt,ldim,1)
       real    cf1(lt,ldim,1),cf2(lt,ldim,1)
       integer itmp(1)
+      logical chosen(ldim*lt)
 
       if (.not.ifdeim) return
       if (nbnl.le.0) return
@@ -690,57 +700,58 @@ c-----------------------------------------------------------------------
       call rzero(rhs,lbnl_eff)
       call rzero(amat,lbnl_eff*lbnl_eff)
       call rzero(loc_rowvals,lbnl_eff)
-      call rzero(sel_rowvals,lbnl_eff)
+      call rzero(loc_resid,lbnl_eff)
+      call rzero(best_rowvals,lbnl_eff)
+      call rzero(best_resid,lbnl_eff)
+      call rzero(qrows,lbnl_eff*lbnl_eff)
+      do i=1,nstack_local
+         chosen(i) = .false.
+      enddo
 
       do k=1,nsel
          best_ip = -1
          best_comp = 0
          best_inode = 0
 
-         if (k.gt.1) then
-            call rzero(amat,lbnl_eff*lbnl_eff)
-            call rzero(rhs,lbnl_eff)
-            do i=1,k-1
-               rhs(i) = sel_rows(k,i)
-               do j=1,k-1
-                  amat(i,j) = sel_rows(j,i)
-               enddo
-            enddo
-
-            call izero(ipivl,lbnl_eff)
-            call dgetrf(k-1,k-1,amat,lbnl_eff,ipivl,info)
-            if (info.ne.0) call exitti(
-     $           'DEIM selector factorization$',info)
-            call dgetrs('N',k-1,1,amat,lbnl_eff,ipivl,rhs,lbnl_eff,info)
-            if (info.ne.0) call exitti(
-     $           'DEIM selector solve$',info)
-            call rzero(coeff,lbnl_eff)
-            do i=1,k-1
-               coeff(i) = rhs(i)
-            enddo
-         endif
-
          loc_best_val = -1.0e30
          local_best_row = 0
          local_best_comp = 0
-         call rzero(loc_rowvals,lbnl_eff)
+         call rzero(best_rowvals,lbnl_eff)
+         call rzero(best_resid,lbnl_eff)
          local_row = 0
 
          do comp=1,ldim
             do inode=1,nnode_local
                local_row = local_row + 1
-               rowval = uvwbnl(inode,comp,k)
-               do j=1,k-1
-                  rowval = rowval - uvwbnl(inode,comp,j)*coeff(j)
+               if (chosen(local_row)) cycle
+
+               do i=1,nsel
+                  loc_rowvals(i) = uvwbnl(inode,comp,i)
+                  loc_resid(i) = loc_rowvals(i)
                enddo
-               rowval = abs(rowval)
+
+               do j=1,k-1
+                  proj = 0.0
+                  do i=1,nsel
+                     proj = proj + qrows(i,j)*loc_rowvals(i)
+                  enddo
+                  do i=1,nsel
+                     loc_resid(i) = loc_resid(i) - qrows(i,j)*proj
+                  enddo
+               enddo
+
+               rowval = 0.0
+               do i=1,nsel
+                  rowval = rowval + loc_resid(i)*loc_resid(i)
+               enddo
 
                if (rowval.gt.loc_best_val) then
                   loc_best_val = rowval
                   local_best_row = local_row
                   local_best_comp = comp
                   do i=1,nsel
-                     loc_rowvals(i) = uvwbnl(inode,comp,i)
+                     best_rowvals(i) = loc_rowvals(i)
+                     best_resid(i) = loc_resid(i)
                   enddo
                endif
             enddo
@@ -748,7 +759,8 @@ c-----------------------------------------------------------------------
 
          cand_pack(1) = loc_best_val
          do i=1,nsel
-            cand_pack(i+1) = loc_rowvals(i)
+            cand_pack(i+1) = best_rowvals(i)
+            cand_pack(i+1+nsel) = best_resid(i)
          enddo
          cand_info(1) = local_best_row
          cand_info(2) = nstack_local
@@ -760,11 +772,11 @@ c-----------------------------------------------------------------------
 
          do ip=0,np-1
             if (nid.ne.ip) then
-               call rzero(cand_pack,nsel+1)
+               call rzero(cand_pack,1+2*nsel)
                call izero(cand_info,3)
             endif
 
-            call gop(cand_pack,work_pack,'+  ',nsel+1)
+            call gop(cand_pack,work_pack,'+  ',1+2*nsel)
             call igop(cand_info,work_info,'+  ',3)
 
             if (cand_pack(1).gt.glob_best_val) then
@@ -775,7 +787,16 @@ c-----------------------------------------------------------------------
                best_inode = cand_info(1) - (cand_info(3)-1)*nnode_local
                do i=1,nsel
                   sel_rows(i,k) = cand_pack(i+1)
+                  loc_resid(i) = cand_pack(i+1+nsel)
                enddo
+               nrm = sqrt(max(glob_best_val,0.0))
+               if (nrm.le.0.0) then
+                  call exitti('QDEIM failed (zero resid)$',k)
+               endif
+               do i=1,nsel
+                  qrows(i,k) = loc_resid(i)/nrm
+               enddo
+               local_best_row = cand_info(1)
             endif
 
             offset = offset + cand_info(2)
@@ -787,6 +808,7 @@ c-----------------------------------------------------------------------
          do i=1,nsel
             deim_nl_bas_p_eval(k,i) = sel_rows(i,k)
          enddo
+         if (nid.eq.best_ip) chosen(local_best_row) = .true.
 
          call rzero(row_pack,6*(lub+1))
          if (nid.eq.best_ip) then
@@ -843,7 +865,7 @@ c-----------------------------------------------------------------------
             endif
          enddo
 
-         if (nid.eq.0) write (6,*) 'DEIM selector step',k,'row',global_row
+         if (nid.eq.0) write (6,*) 'QDEIM',k,global_row
       enddo
 
       ndeim_pts = nsel
@@ -1053,8 +1075,11 @@ c-----------------------------------------------------------------------
       end
 c-----------------------------------------------------------------------
       subroutine dump_tdeim_inds
-      ! Select a greedy DEIM point set from the thermal convection POD basis
-      ! and emit the operator bundle consumed by evalc_tdeim.
+      ! Select TDEIM points from the thermal convection POD basis and emit
+      ! the operator bundle consumed by evalc_tdeim.
+      !
+      ! This uses the same QDEIM-style pivoting as dump_deim_inds, but on the
+      ! scalar thermal convection basis.
 
       include 'SIZE'
       include 'TOTAL'
@@ -1070,16 +1095,20 @@ c-----------------------------------------------------------------------
       integer cand_info(2),work_info(2),ipivl(lbnl_eff)
       integer irl(lbnl_eff),icl(lbnl_eff)
       integer nrowpack
-      real    amat(lbnl_eff,lbnl_eff),rhs(lbnl_eff),coeff(lbnl_eff)
+      real    amat(lbnl_eff,lbnl_eff),rhs(lbnl_eff)
+      real    coeff(lbnl_eff)
       real    sel_rows(lbnl_eff,lbnl_eff)
-      real    loc_rowvals(lbnl_eff)
-      real    cand_pack(lbnl_eff+1),work_pack(lbnl_eff+1)
+      real    loc_rowvals(lbnl_eff),loc_resid(lbnl_eff)
+      real    best_rowvals(lbnl_eff),best_resid(lbnl_eff)
+      real    qrows(lbnl_eff,lbnl_eff)
+      real    cand_pack(2*lbnl_eff+1),work_pack(2*lbnl_eff+1)
       real    row_pack(6*(lb+1)),row_work(6*(lb+1))
-      real    loc_best_val,glob_best_val,rowval
+      real    loc_best_val,glob_best_val,rowval,proj,nrm
       real    snapcoef(lbnl_eff),scale,rtmp(1)
       real    gx(lt),gy(lt),gz(lt)
       real    uadv(lt,ldim,1),tadv(lt,1,1),cf(lt,1,1)
       integer itmp(1)
+      logical chosen(lt)
 
       if (.not.ifdeim) return
       if (nbnl.le.0) return
@@ -1132,58 +1161,61 @@ c-----------------------------------------------------------------------
       call rzero(rhs,lbnl_eff)
       call rzero(amat,lbnl_eff*lbnl_eff)
       call rzero(loc_rowvals,lbnl_eff)
+      call rzero(loc_resid,lbnl_eff)
+      call rzero(best_rowvals,lbnl_eff)
+      call rzero(best_resid,lbnl_eff)
+      call rzero(qrows,lbnl_eff*lbnl_eff)
+      do i=1,nnode_local
+         chosen(i) = .false.
+      enddo
       do k=1,nsel
          best_ip = -1
          best_inode = 0
 
-         if (k.gt.1) then
-            call rzero(amat,lbnl_eff*lbnl_eff)
-            call rzero(rhs,lbnl_eff)
-            do i=1,k-1
-               rhs(i) = sel_rows(k,i)
-               do j=1,k-1
-                  amat(i,j) = sel_rows(j,i)
-               enddo
-            enddo
-
-            call izero(ipivl,lbnl_eff)
-            call dgetrf(k-1,k-1,amat,lbnl_eff,ipivl,info)
-            if (info.ne.0) call exitti(
-     $           'TDEIM selector factorization$',info)
-            call dgetrs('N',k-1,1,amat,lbnl_eff,ipivl,rhs,lbnl_eff,info)
-            if (info.ne.0) call exitti(
-     $           'TDEIM selector solve$',info)
-            call rzero(coeff,lbnl_eff)
-            do i=1,k-1
-               coeff(i) = rhs(i)
-            enddo
-         endif
-
          loc_best_val = -1.0e30
          local_best_row = 0
-         call rzero(loc_rowvals,lbnl_eff)
+         call rzero(best_rowvals,lbnl_eff)
+         call rzero(best_resid,lbnl_eff)
          local_row = 0
 
          do inode=1,nnode_local
             local_row = local_row + 1
-            rowval = tbnl(inode,k)
-            do j=1,k-1
-               rowval = rowval - tbnl(inode,j)*coeff(j)
+            if (chosen(local_row)) cycle
+
+            do i=1,nsel
+               loc_rowvals(i) = tbnl(inode,i)
+               loc_resid(i) = loc_rowvals(i)
             enddo
-            rowval = abs(rowval)
+
+            do j=1,k-1
+               proj = 0.0
+               do i=1,nsel
+                  proj = proj + qrows(i,j)*loc_rowvals(i)
+               enddo
+               do i=1,nsel
+                  loc_resid(i) = loc_resid(i) - qrows(i,j)*proj
+               enddo
+            enddo
+
+            rowval = 0.0
+            do i=1,nsel
+               rowval = rowval + loc_resid(i)*loc_resid(i)
+            enddo
 
             if (rowval.gt.loc_best_val) then
                loc_best_val = rowval
                local_best_row = local_row
                do i=1,nsel
-                  loc_rowvals(i) = tbnl(inode,i)
+                  best_rowvals(i) = loc_rowvals(i)
+                  best_resid(i) = loc_resid(i)
                enddo
             endif
          enddo
 
          cand_pack(1) = loc_best_val
          do i=1,nsel
-            cand_pack(i+1) = loc_rowvals(i)
+            cand_pack(i+1) = best_rowvals(i)
+            cand_pack(i+1+nsel) = best_resid(i)
          enddo
          cand_info(1) = local_best_row
          cand_info(2) = nnode_local
@@ -1194,11 +1226,11 @@ c-----------------------------------------------------------------------
 
          do ip=0,np-1
             if (nid.ne.ip) then
-               call rzero(cand_pack,nsel+1)
+               call rzero(cand_pack,1+2*nsel)
                call izero(cand_info,2)
             endif
 
-            call gop(cand_pack,work_pack,'+  ',nsel+1)
+            call gop(cand_pack,work_pack,'+  ',1+2*nsel)
             call igop(cand_info,work_info,'+  ',2)
 
             if (cand_pack(1).gt.glob_best_val) then
@@ -1208,7 +1240,16 @@ c-----------------------------------------------------------------------
                best_inode = cand_info(1)
                do i=1,nsel
                   sel_rows(i,k) = cand_pack(i+1)
+                  loc_resid(i) = cand_pack(i+1+nsel)
                enddo
+               nrm = sqrt(max(glob_best_val,0.0))
+               if (nrm.le.0.0) then
+                  call exitti('QDEIM TDEIM failed (zero resid)$',k)
+               endif
+               do i=1,nsel
+                  qrows(i,k) = loc_resid(i)/nrm
+               enddo
+               local_best_row = cand_info(1)
             endif
 
             offset = offset + cand_info(2)
@@ -1220,6 +1261,7 @@ c-----------------------------------------------------------------------
          do i=1,nsel
             tdeim_nl_bas_p_eval(k,i) = sel_rows(i,k)
          enddo
+         if (nid.eq.best_ip) chosen(local_best_row) = .true.
 
          call rzero(row_pack,6*(lb+1))
          if (nid.eq.best_ip) then
@@ -1248,7 +1290,7 @@ c-----------------------------------------------------------------------
             if (if3d) tdeim_tz_p(k,j) = row_pack(itzofs+j)
          enddo
 
-         if (nid.eq.0) write (6,*) 'TDEIM selector step',k,'row',global_row
+         if (nid.eq.0) write (6,*) 'QDEIM TDEIM',k,global_row
       enddo
 
  1234 continue

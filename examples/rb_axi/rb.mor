@@ -3,6 +3,9 @@ mode = on
 field = vt
 nb = 40
 ns = 24
+# Note: this case is sensitive to thermal DEIM (TDEIM). If you enable TDEIM
+# (e.g. `MOR_DISABLE_TDEIM=0` when `ops/tdeim_*` is present), consider using
+# `decoupled = yes` to clamp coefficients to the training ranges.
 decoupled = no
 
 [pod]
