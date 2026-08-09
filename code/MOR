@@ -29,6 +29,9 @@ c     The extra slot is unused unless nbnl is set > 0 at runtime.
       common /mordeimflags/ ifdumpnls,ifdumpfine,ifdeim,iftdeim,
      $                      ifdeimshare
 
+      integer tdeim_share_n
+      common /mortdeimshare/ tdeim_share_n
+
       integer ndeim_pts,ndeim_pts_os,ndeim_pts_eval
       common /mordeimpar/ ndeim_pts,ndeim_pts_os,ndeim_pts_eval
 

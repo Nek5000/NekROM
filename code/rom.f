@@ -920,6 +920,7 @@ c-----------------------------------------------------------------------
 	      ifdeim=.false.
 	      iftdeim=.false.
               ifdeimshare=.false.
+              tdeim_share_n=0
 	      ifsetbases=.true.
 
 	      ndeim_pts=0

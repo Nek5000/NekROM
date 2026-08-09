@@ -1087,6 +1087,7 @@ c-----------------------------------------------------------------------
       real    gx(lt),gy(lt),gz(lt)
       real    uadv(lt,ldim,1),tadv(lt,1,1),cf(lt,1,1)
       integer itmp(1)
+      integer node_used(lt),nshare,kstart
 
       if (.not.ifdeim) return
       if (nbnl.le.0) return
@@ -1140,15 +1141,23 @@ c-----------------------------------------------------------------------
       call rzero(rhs,lbnl_eff)
       call rzero(amat,lbnl_eff*lbnl_eff)
       call rzero(loc_rowvals,lbnl_eff)
+      call izero(node_used,nnode_local)
+
+      nshare = 0
+      kstart = 1
 
       if (ifdeimshare) then
          if (.not.ifrom(1)) call exitti(
      $      'shared TDEIM requires velocity ROM$',1)
          if (ndeim_pts.lt.nsel) call exitti(
      $      'shared TDEIM needs ndeim_pts >= nsel$',ndeim_pts)
-         if (nid.eq.0) write (6,*) 'TDEIM points: sharing from DEIM'
+         nshare = tdeim_share_n
+         if (nshare.le.0) nshare = nsel
+         nshare = min(max(nshare,0),nsel)
+         if (nid.eq.0) write (6,*) 'TDEIM points: sharing from DEIM,',
+     $      'nshare=',nshare,'nsel=',nsel
 
-         do k=1,nsel
+         do k=1,nshare
             ! Map flattened velocity DEIM row index -> global node index
             global_row = deim_inds(k)
             best_ip = (global_row-1)/nstack_local
@@ -1187,6 +1196,7 @@ c-----------------------------------------------------------------------
                   row_pack(ityofs+j) = gy(best_inode)
                   if (if3d) row_pack(itzofs+j) = gz(best_inode)
                enddo
+               node_used(best_inode) = 1
             endif
 
             call gop(row_pack,row_work,'+  ',nrowpack)
@@ -1199,14 +1209,15 @@ c-----------------------------------------------------------------------
                if (if3d) tdeim_tz_p(k,j) = row_pack(itzofs+j)
             enddo
 
-            if (nid.eq.0) write (6,*) 'TDEIM shared step',k,
+            if (nid.eq.0) write (6,*) 'TDEIM shared seed',k,
      $         'node',global_row
          enddo
 
-         goto 1234
+         if (nshare.ge.nsel) goto 1234
+         kstart = nshare + 1
       endif
 
-      do k=1,nsel
+      do k=kstart,nsel
          best_ip = -1
          best_inode = 0
 
@@ -1240,11 +1251,15 @@ c-----------------------------------------------------------------------
 
          do inode=1,nnode_local
             local_row = local_row + 1
-            rowval = tbnl(inode,k)
-            do j=1,k-1
-               rowval = rowval - tbnl(inode,j)*coeff(j)
-            enddo
-            rowval = abs(rowval)
+            if (node_used(inode).ne.0) then
+               rowval = -1.0e30
+            else
+               rowval = tbnl(inode,k)
+               do j=1,k-1
+                  rowval = rowval - tbnl(inode,j)*coeff(j)
+               enddo
+               rowval = abs(rowval)
+            endif
 
             if (rowval.gt.loc_best_val) then
                loc_best_val = rowval
@@ -1309,6 +1324,7 @@ c-----------------------------------------------------------------------
                row_pack(ityofs+j) = gy(best_inode)
                if (if3d) row_pack(itzofs+j) = gz(best_inode)
             enddo
+            node_used(best_inode) = 1
          endif
 
          call gop(row_pack,row_work,'+  ',nrowpack)
