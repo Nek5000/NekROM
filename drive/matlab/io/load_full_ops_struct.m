@@ -72,19 +72,19 @@ function ops = load_full_ops_struct(ops_dir, varargin)
         % Optional buoyancy coupling operators.
         ops.has_buoyancy = false;
         if exist(fullfile(ops_dir, 'buxt'), 'file')
-            ops.buxt = read_real_matrix(fullfile(ops_dir, 'buxt'), nb + 1, nb + 1);
+            ops.buxt = read_buoyancy_matrix(fullfile(ops_dir, 'buxt'), nb);
             ops.has_buoyancy = true;
         end
         if exist(fullfile(ops_dir, 'buyt'), 'file')
-            ops.buyt = read_real_matrix(fullfile(ops_dir, 'buyt'), nb + 1, nb + 1);
+            ops.buyt = read_buoyancy_matrix(fullfile(ops_dir, 'buyt'), nb);
             ops.has_buoyancy = true;
         end
         if exist(fullfile(ops_dir, 'buzt'), 'file')
-            ops.buzt = read_real_matrix(fullfile(ops_dir, 'buzt'), nb + 1, nb + 1);
+            ops.buzt = read_buoyancy_matrix(fullfile(ops_dir, 'buzt'), nb);
             ops.has_buoyancy = true;
         end
         if exist(fullfile(ops_dir, 'but'), 'file')
-            ops.but = read_real_matrix(fullfile(ops_dir, 'but'), nb + 1, nb + 1);
+            ops.but = read_buoyancy_matrix(fullfile(ops_dir, 'but'), nb);
             ops.has_buoyancy = true;
         end
     else
@@ -129,3 +129,30 @@ function ten = read_real_tensor(path, n1, n2, n3)
     ten = reshape(data(1:expected), [n1, n2, n3]);
 end
 
+function mat = read_buoyancy_matrix(path, nb)
+    % Buoyancy coupling operators may be stored as:
+    % - (nb+1)x(nb+1) (full-space)
+    % - nb x (nb+1) (dynamic velocity modes only, consistent with cu's first dimension)
+    data = dlmread(path);
+    count = numel(data);
+    full_count = (nb + 1) * (nb + 1);
+    dyn_count = nb * (nb + 1);
+
+    if count < min(full_count, dyn_count)
+        error('load_full_ops_struct:ShortBuoyancyMatrix', ...
+            'Expected %d or %d entries in %s, got %d.', full_count, dyn_count, path, count);
+    end
+
+    if count >= full_count
+        mat = reshape(data(1:full_count), [nb + 1, nb + 1]);
+        return;
+    end
+
+    if count >= dyn_count
+        mat = reshape(data(1:dyn_count), [nb, nb + 1]);
+        return;
+    end
+
+    error('load_full_ops_struct:BadBuoyancyMatrix', ...
+        'Unable to parse buoyancy operator %s with nb=%d (got %d entries).', path, nb, count);
+end

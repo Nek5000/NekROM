@@ -477,13 +477,25 @@ function results = driver()
 	            buoy_term = zeros(nb, 1);
 	            tvec = t(:, 1);
 	            if isfield(ops, 'buxt')
-	                buoy_term = buoy_term - gx * (ops.buxt(2:end, :) * tvec);
+	                buxt = ops.buxt;
+	                if size(buxt, 1) == nb + 1
+	                    buxt = buxt(2:end, :);
+	                end
+	                buoy_term = buoy_term - gx * (buxt * tvec);
 	            end
 	            if isfield(ops, 'buyt')
-	                buoy_term = buoy_term - gy * (ops.buyt(2:end, :) * tvec);
+	                buyt = ops.buyt;
+	                if size(buyt, 1) == nb + 1
+	                    buyt = buyt(2:end, :);
+	                end
+	                buoy_term = buoy_term - gy * (buyt * tvec);
 	            end
 	            if isfield(ops, 'buzt')
-	                buoy_term = buoy_term - gz * (ops.buzt(2:end, :) * tvec);
+	                buzt = ops.buzt;
+	                if size(buzt, 1) == nb + 1
+	                    buzt = buzt(2:end, :);
+	                end
+	                buoy_term = buoy_term - gz * (buzt * tvec);
 	            end
 	            ext(:,1) = ext(:,1) + buoy_term;
 	        end
