@@ -58,8 +58,6 @@ eqn     = NS  # equation
 [DEIM]
 nbnl = 20 # number of runtime nonlinear (convection) POD bases (<= compile-time lbnl)
 dumpnls = no # whether or not do dump the non-linear snapshots
-shared_points = no # reuse velocity DEIM points for thermal DEIM
-shared_n = 0 # number of shared points to use (0 -> all when shared_points=yes)
 dumpfine = no # whether or not to dump nonlinear snapshots on the fine grid
 mode = off # (off, deim, clsdeim, mclsdeim)
 alpha = 1.e-12 # MCLSDEIM regularization strength

@@ -25,12 +25,8 @@ c     The extra slot is unused unless nbnl is set > 0 at runtime.
       common /mordeimbasis/ uvwbnl(lx1*ly1*lz1*lelm,ldim,lbnl_eff)
       common /mordeimbasis_t/ tbnl(lx1*ly1*lz1*lelm,lbnl_eff)
 
-      logical ifdumpnls,ifdumpfine,ifdeim,iftdeim,ifdeimshare
-      common /mordeimflags/ ifdumpnls,ifdumpfine,ifdeim,iftdeim,
-     $                      ifdeimshare
-
-      integer tdeim_share_n
-      common /mortdeimshare/ tdeim_share_n
+      logical ifdumpnls,ifdumpfine,ifdeim,iftdeim
+      common /mordeimflags/ ifdumpnls,ifdumpfine,ifdeim,iftdeim
 
       integer ndeim_pts,ndeim_pts_os,ndeim_pts_eval
       common /mordeimpar/ ndeim_pts,ndeim_pts_os,ndeim_pts_eval
