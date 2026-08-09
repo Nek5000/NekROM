@@ -30,7 +30,7 @@
 
 %% Case Selections 
 % Use Cell Arrays {} instead of String Arrays [] for Octave compatibility
-cases = {'ldc', 'cyl', 'shear', 't2d', 'os7000'};
+cases = {'ldc', 'cyl', 'shear', 't2d', 'os7000', 'ann', 'rb_axi', 'cylbig_abm'};
 thiscase = cases{3}; % Use curly braces {} to extract string from cell
 env_case = getenv('NEKROM_CASE');
 if ~isempty(env_case)
@@ -75,6 +75,28 @@ switch thiscase
         iostep = 50;
         nu     = 1/7500;
         nb     = 1;
+    case 'ann'
+        case_path = '../../examples/ann/';
+        nsteps = 2000;
+        dt     = 1.0e-02;
+        iostep = 100;
+        nu     = 1.0;
+        nb     = 1;
+    case 'rb_axi'
+        case_path = '../../examples/rb_axi/';
+        nsteps = 2000;
+        dt     = 4.0e-04;
+        iostep = 100;
+        nu     = 10.0; % Prandtl in this example
+        nb     = 40;
+    case 'cylbig_abm'
+        case_path = '../../examples/cylbig_abm/';
+        casename  = 'cyl';
+        nsteps = 2000;
+        dt     = 4.0e-03;
+        iostep = 100;
+        nu     = 0.01;
+        nb     = 21;
     otherwise
         % Octave error() uses standard formatting
         error(['Unhandled case name: ', thiscase]);
@@ -105,6 +127,14 @@ ifwrite = read_env_bool('NEKROM_IFWRITE', true);
 ifvis   = read_env_bool('NEKROM_IFVIS', false);
 if_run_tests = read_env_bool('NEKROM_IF_RUN_TESTS', true);
 ifplot  = read_env_bool('NEKROM_IFPLOT', true);
+
+% Thermal diffusion coefficient (used only when the case includes temperature ops).
+% This corresponds to the Laplacian prefactor in the temperature equation.
+kappa = 1.0;
+env_kappa = getenv('NEKROM_KAPPA');
+if ~isempty(env_kappa)
+    kappa = str2double(env_kappa);
+end
 
 %% ROM Stabilization Strategies
 ifcopt  = false;

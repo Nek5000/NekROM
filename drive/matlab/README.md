@@ -6,9 +6,10 @@ Fast, interactive reduced-order model (ROM) driver for testing and prototyping. 
 
 - **Multiple ROM approaches**: FOM pseudo-ROM, precomputed tensor, runtime tensor, DEIM, CLS-DEIM, MCLS-DEIM
 - **Octave compatible**: Works with free/open-source GNU Octave
+- **Thermo-fluid support**: Advances coupled velocity + temperature ROMs when `ops/{at,bt,ct,t0,tk}` is present; optional TDEIM via `ops/tdeim_*`
 - **Comprehensive diagnostics**: Energy/momentum conservation tracking, NaN detection, stability metrics
 - **Automated testing**: Unit tests for DEIM operators, stability comparison tools
-- **5 example cases**: Lid-driven cavity, cylinder flow, shear layer, Taylor-Green vortex, Orr-Sommerfeld/Poiseuille
+- **Example cases**: Lid-driven cavity, cylinder flow, shear layer, Taylor-Green vortex, Orr-Sommerfeld/Poiseuille (plus thermo cases like `ann`, `rb_axi`, `cylbig_abm`)
 
 ## Quick Start
 
@@ -72,8 +73,8 @@ Results appear in `output/shear_YYYY-MM-DD-HH-MM-SS/`
 
 Edit `config.m` line 7:
 ```matlab
-cases = {'ldc', 'cyl', 'shear', 't2d', 'os7000'};
-thiscase = cases{3};  % Change index: 1=ldc, 2=cyl, 3=shear, 4=t2d, 5=os7000
+cases = {'ldc', 'cyl', 'shear', 't2d', 'os7000', 'ann', 'rb_axi', 'cylbig_abm'};
+thiscase = cases{3};  % Change index
 ```
 
 Or use environment variables:
@@ -157,6 +158,16 @@ iostep = 100;        % Output frequency (every N steps)
 nb = 20;             % Number of POD modes (excluding mean)
 nu = 1/1000;         % Kinematic viscosity
 ```
+
+### Thermo-Fluid Settings
+```matlab
+kappa = 1.0;  % thermal diffusion coefficient (temperature Laplacian prefactor)
+```
+Environment overrides:
+- `NEKROM_KAPPA` (thermal diffusion coefficient)
+- `NEKROM_TDEIM_FROM_OPS=1` (use `ops/tdeim_*` when present)
+- `MOR_DISABLE_TDEIM=1` (disable TDEIM even if `ops/tdeim_*` exists)
+- `NEKROM_GX`, `NEKROM_GY`, `NEKROM_GZ` (gravity vector for buoyancy when `ops/buxt` etc exist)
 
 ### POD Inner Product
 The MATLAB validation helpers read the offline `ops/ips` tag and support the same POD inner products as the Fortran path: `L2`, `H10`, and `HLM`.

@@ -21,6 +21,16 @@ function rom_data = load_deim_artifacts(ops_dir, nb, nbnl)
     ndeim_pts_os = read_int_scalar(fullfile(ops_dir, 'deim_npts_os'));
     ndeim_pts_eval = read_int_scalar(fullfile(ops_dir, 'deim_npts_eval'));
 
+    % Fortran may clamp the requested nbnl to an internal maximum and will
+    % then write ops/deim_* with the *effective* nbnl. The effective size
+    % is consistent with ndeim_pts.
+    nbnl_eff = min(nbnl, ndeim_pts);
+    if nbnl_eff ~= nbnl
+        warning('load_deim_artifacts:ClampedNbnl', ...
+            'Requested nbnl=%d but ops/deim_npts=%d; using nbnl_eff=%d for ops/deim_* loading.', ...
+            nbnl, ndeim_pts, nbnl_eff);
+    end
+
     rom_data = struct();
     rom_data.inds = read_int_vector(fullfile(ops_dir, 'deim_inds'), ndeim_pts);
     rom_data.inds_os = read_int_vector_optional(fullfile(ops_dir, 'deim_inds_os'), ndeim_pts_os);
@@ -40,11 +50,11 @@ function rom_data = load_deim_artifacts(ops_dir, nb, nbnl)
     rom_data.uy_p = rom_data.eval_uy_p;
 
     % DEIM mapping operators.
-    rom_data.nl_bas_p_eval = read_real_matrix(fullfile(ops_dir, 'deim_nl_bas_p_eval'), ndeim_pts_eval, nbnl);
-    rom_data.proj_mat = read_real_matrix(fullfile(ops_dir, 'deim_proj_mat'), nb, nbnl);
+    rom_data.nl_bas_p_eval = read_real_matrix(fullfile(ops_dir, 'deim_nl_bas_p_eval'), ndeim_pts_eval, nbnl_eff);
+    rom_data.proj_mat = read_real_matrix(fullfile(ops_dir, 'deim_proj_mat'), nb, nbnl_eff);
     rom_data.zmc = read_real_matrix(fullfile(ops_dir, 'deim_zmc'), nb, nb + 1);
-    rom_data.Ainv = read_real_matrix(fullfile(ops_dir, 'deim_Ainv'), nbnl, nbnl);
-    rom_data.interp_mat = read_real_matrix(fullfile(ops_dir, 'deim_interp_mat'), nbnl, ndeim_pts_eval);
+    rom_data.Ainv = read_real_matrix(fullfile(ops_dir, 'deim_Ainv'), nbnl_eff, nbnl_eff);
+    rom_data.interp_mat = read_real_matrix(fullfile(ops_dir, 'deim_interp_mat'), nbnl_eff, ndeim_pts_eval);
 
     % Optional MCLSDEIM artifacts.
     mu_path = fullfile(ops_dir, 'deim_mu');
@@ -53,13 +63,13 @@ function rom_data = load_deim_artifacts(ops_dir, nb, nbnl)
     alpha_path = fullfile(ops_dir, 'deim_alpha');
 
     if exist(mu_path, 'file')
-        rom_data.mu = read_real_vector(mu_path, nbnl);
+        rom_data.mu = read_real_vector(mu_path, nbnl_eff);
     end
     if exist(tau_path, 'file')
-        rom_data.tau = read_real_matrix(tau_path, nbnl, nbnl);
+        rom_data.tau = read_real_matrix(tau_path, nbnl_eff, nbnl_eff);
     end
     if exist(a_tau_inv_path, 'file')
-        rom_data.A_tau_inv = read_real_matrix(a_tau_inv_path, nbnl, nbnl);
+        rom_data.A_tau_inv = read_real_matrix(a_tau_inv_path, nbnl_eff, nbnl_eff);
     end
     if exist(alpha_path, 'file')
         rom_data.alpha = read_real_scalar(alpha_path);

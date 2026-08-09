@@ -33,6 +33,8 @@ function case_meta = load_case_metadata(case_path, casename)
     case_meta.deim_alpha = [];
     case_meta.deim_dumpnls = [];
     case_meta.deim_dumpfine = [];
+    case_meta.field = '';
+    case_meta.buoyancy = struct('gx', [], 'gy', [], 'gz', [], 'magnitude', [], 'angle', []);
 
     mor_meta = parse_mor_file(case_meta.case_file);
 
@@ -63,6 +65,12 @@ function case_meta = load_case_metadata(case_path, casename)
     if isfield(mor_meta, 'deim_dumpfine') && ~isempty(mor_meta.deim_dumpfine)
         case_meta.deim_dumpfine = mor_meta.deim_dumpfine;
     end
+    if isfield(mor_meta, 'field') && ~isempty(mor_meta.field)
+        case_meta.field = mor_meta.field;
+    end
+    if isfield(mor_meta, 'buoyancy') && ~isempty(mor_meta.buoyancy)
+        case_meta.buoyancy = merge_buoyancy(case_meta.buoyancy, mor_meta.buoyancy);
+    end
 
     ops_nb_file = fullfile(case_meta.ops_dir, 'nb');
     if exist(ops_nb_file, 'file')
@@ -90,6 +98,15 @@ function case_meta = load_case_metadata(case_path, casename)
         case_meta.pod_mode0 = 'avg';
     end
     case_meta.subtract_mean = strcmp(case_meta.pod_mode0, 'avg');
+
+    if isempty(case_meta.field)
+        case_meta.field = '';
+    else
+        case_meta.field = lower(strtrim(case_meta.field));
+    end
+
+    % Finalize buoyancy vector if magnitude/angle were provided.
+    case_meta.buoyancy = finalize_buoyancy(case_meta.buoyancy);
 
     if isempty(case_meta.conv_approach)
         case_meta.conv_approach = '';
@@ -177,6 +194,8 @@ function meta = parse_mor_file(mor_file)
         full_key = [current_section ':' key];
 
         switch full_key
+            case 'general:field'
+                meta.field = lower(strtrim(value));
             case 'general:nb'
                 parsed_value = parse_numeric_value(value);
                 if ~isempty(parsed_value)
@@ -222,8 +241,80 @@ function meta = parse_mor_file(mor_file)
                 if ~isempty(parsed_value)
                     meta.deim_dumpfine = parsed_value;
                 end
+            case 'buoyancy:magnitude'
+                if ~isfield(meta, 'buoyancy') || isempty(meta.buoyancy)
+                    meta.buoyancy = struct('gx', [], 'gy', [], 'gz', [], 'magnitude', [], 'angle', []);
+                end
+                parsed_value = parse_numeric_value(value);
+                if ~isempty(parsed_value)
+                    meta.buoyancy.magnitude = parsed_value;
+                end
+            case 'buoyancy:angle'
+                if ~isfield(meta, 'buoyancy') || isempty(meta.buoyancy)
+                    meta.buoyancy = struct('gx', [], 'gy', [], 'gz', [], 'magnitude', [], 'angle', []);
+                end
+                parsed_value = parse_numeric_value(value);
+                if ~isempty(parsed_value)
+                    meta.buoyancy.angle = parsed_value;
+                end
+            case 'buoyancy:gx'
+                if ~isfield(meta, 'buoyancy') || isempty(meta.buoyancy)
+                    meta.buoyancy = struct('gx', [], 'gy', [], 'gz', [], 'magnitude', [], 'angle', []);
+                end
+                parsed_value = parse_numeric_value(value);
+                if ~isempty(parsed_value)
+                    meta.buoyancy.gx = parsed_value;
+                end
+            case 'buoyancy:gy'
+                if ~isfield(meta, 'buoyancy') || isempty(meta.buoyancy)
+                    meta.buoyancy = struct('gx', [], 'gy', [], 'gz', [], 'magnitude', [], 'angle', []);
+                end
+                parsed_value = parse_numeric_value(value);
+                if ~isempty(parsed_value)
+                    meta.buoyancy.gy = parsed_value;
+                end
+            case 'buoyancy:gz'
+                if ~isfield(meta, 'buoyancy') || isempty(meta.buoyancy)
+                    meta.buoyancy = struct('gx', [], 'gy', [], 'gz', [], 'magnitude', [], 'angle', []);
+                end
+                parsed_value = parse_numeric_value(value);
+                if ~isempty(parsed_value)
+                    meta.buoyancy.gz = parsed_value;
+                end
         end
     end
+end
+
+function out = merge_buoyancy(a, b)
+    out = a;
+    fields = {'gx', 'gy', 'gz', 'magnitude', 'angle'};
+    for i = 1:numel(fields)
+        f = fields{i};
+        if isfield(b, f) && ~isempty(b.(f))
+            out.(f) = b.(f);
+        end
+    end
+end
+
+function buoy = finalize_buoyancy(buoy)
+    if ~isfield(buoy, 'gx'), buoy.gx = []; end
+    if ~isfield(buoy, 'gy'), buoy.gy = []; end
+    if ~isfield(buoy, 'gz'), buoy.gz = []; end
+    if ~isfield(buoy, 'magnitude'), buoy.magnitude = []; end
+    if ~isfield(buoy, 'angle'), buoy.angle = []; end
+
+    if isempty(buoy.gx) && isempty(buoy.gy) && ~isempty(buoy.magnitude) && ~isempty(buoy.angle)
+        % 2D convenience: angle is degrees displacement from x-axis.
+        buoy.gx = buoy.magnitude * cosd(buoy.angle);
+        buoy.gy = buoy.magnitude * sind(buoy.angle);
+        if isempty(buoy.gz)
+            buoy.gz = 0.0;
+        end
+    end
+
+    if isempty(buoy.gx), buoy.gx = 0.0; end
+    if isempty(buoy.gy), buoy.gy = 0.0; end
+    if isempty(buoy.gz), buoy.gz = 0.0; end
 end
 
 function line = strip_inline_comment(line)

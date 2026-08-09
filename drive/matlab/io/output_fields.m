@@ -5,7 +5,10 @@ function output_fields(basepath, data, ifvort, ifwrite, ifvis)
     % 1. Vorticity Calculation
     if ifvort
         % Corrected: Passing both u and v components to calculate vorticity
-        data.t = lcurl(reshape(data.u, sz), reshape(data.v, sz), data.x, data.y);
+        vort = lcurl(reshape(data.u, sz), reshape(data.v, sz), data.x, data.y);
+        % Store vorticity as the first passive scalar (S1) to avoid clobbering
+        % the temperature field in thermo-fluid cases.
+        data.s1 = vort;
     end
 
     % 2. Visualization
@@ -13,7 +16,7 @@ function output_fields(basepath, data, ifvort, ifwrite, ifvis)
         hold off;
         if ifvort
             % Use the computed vorticity field
-            patch_plot(data.x, data.y, data.t, [], 'PlotType', 'surface');
+            patch_plot(data.x, data.y, data.s1, [], 'PlotType', 'surface');
         else
             % Magnitude calculation: sqrt(u^2 + v^2) is standard for "velocity magnitude"
             % We reshape to the grid size 'sz' for the plot

@@ -39,8 +39,11 @@ function out_coef = conv_deim(ucoef, rom_data, method)
             % Constrained Least Squares
             c_hat = rom_data.interp_mat * f_p;
             b = rom_data.proj_mat' * ucoef(2:end);
-            lambda = (b' * c_hat) / (b' * rom_data.Ainv * b);
-            c_hat = c_hat - lambda * (rom_data.Ainv * b);
+            denom = (b' * (rom_data.Ainv * b));
+            if abs(denom) > 0
+                lambda = (b' * c_hat) / denom;
+                c_hat = c_hat - lambda * (rom_data.Ainv * b);
+            end
 
         case 'mclsdeim'
             % Modified Constrained LS (Regularized with Snapshot Stats)
@@ -49,8 +52,11 @@ function out_coef = conv_deim(ucoef, rom_data, method)
             
             % Enforce Linear Constraint
             b = rom_data.proj_mat' * ucoef(2:end);
-            lambda = (b' * c_hat) / (b' * rom_data.A_tau_inv * b);
-            c_hat = c_hat - lambda * (rom_data.A_tau_inv * b);
+            denom = (b' * (rom_data.A_tau_inv * b));
+            if abs(denom) > 0
+                lambda = (b' * c_hat) / denom;
+                c_hat = c_hat - lambda * (rom_data.A_tau_inv * b);
+            end
             
         otherwise
             error('Invalid method. Use "deim", "clsdeim", or "mclsdeim".');

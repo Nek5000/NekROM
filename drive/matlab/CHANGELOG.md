@@ -2,6 +2,20 @@
 
 All notable changes to the MATLAB/Octave driver are documented here.
 
+## [Unreleased] - 2026-08-09
+
+### Added
+- Thermo-fluid support in `drive/matlab/driver.m` (velocity + temperature) using `ops/{at,bt,ct,t0,tk}`.
+- TDEIM support (loads `ops/tdeim_*` and evaluates `u·grad(T)` via `drive/matlab/operators/conv_tdeim.m`).
+- Robust snapshot discovery for mixed layouts via `drive/matlab/io/resolve_snapshot_prefix.m` and `drive/matlab/io/resolve_case_session_prefix.m`.
+- `NEKROM_KAPPA` (thermal diffusion coefficient) in `drive/matlab/config.m`.
+- `NEKROM_TDEIM_FROM_OPS` (toggle using `ops/tdeim_*` instead of tensor fallback).
+- Buoyancy overrides via `NEKROM_GX`, `NEKROM_GY`, `NEKROM_GZ` (when `ops/buxt|buyt|buzt` is present).
+
+### Fixed
+- CLSDEIM/MCLSDEIM divide-by-zero when the constraint vector is zero (now matches Fortran’s `if (abs(denom) > 0)` guard) in `drive/matlab/operators/conv_deim.m` and `drive/matlab/operators/conv_tdeim.m`.
+- Vorticity output no longer overwrites the temperature field: vorticity is written as passive scalar `S1` in `drive/matlab/io/output_fields.m`.
+
 ## [Unreleased] - 2026-06-30
 
 ### Added
