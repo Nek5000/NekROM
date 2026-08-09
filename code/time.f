@@ -1138,7 +1138,11 @@ c-----------------------------------------------------------------------
          s=-1.0/ad_re
          call cmult(t2(1),s,nb)
 
-         call evalc2(t3(1),ctmp,cul,t1,t1)
+         if (ifdeim) then
+            call evalc_deim(t3(1),t1)
+         else
+            call evalc2(t3(1),ctmp,cul,t1,t1)
+         endif
          call sub2(t2(1),t3(1),nb)
 
          if (ifbuoy) then

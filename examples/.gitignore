@@ -16,6 +16,9 @@ makefile
 makefile_usr.inc
 test.usr
 LMOR
+!ann/LMOR
+!rb_axi/LMOR
+!cylbig_abm/LMOR
 MOR
 MORDICT
 

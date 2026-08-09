@@ -2,6 +2,7 @@
 mode = all
 field = vt
 nb = 21
+ns = 200
 
 [POD]
 type = l2
@@ -12,3 +13,10 @@ augment = 2
 freq = 25
 drag = yes
 nu = 6
+
+[DEIM]
+nbnl = 20
+dumpnls = no
+dumpfine = no
+mode = mclsdeim
+alpha = 1.e-12
