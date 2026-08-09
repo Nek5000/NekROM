@@ -71,11 +71,12 @@ fi
 # Stash ROM output separately so we never overwrite the FOM training snapshots in snaps/.
 mkdir -p "$rom_snaps_dir"
 rom_out_dir="$rom_snaps_dir"
+rom_snap_files=()
 shopt -s nullglob
 rom_snap_files=(*${casename}0.f*)
 shopt -u nullglob
 need_unique_dir=0
-for snap_file in "${rom_snap_files[@]}"; do
+for snap_file in "${rom_snap_files[@]-}"; do
     if [ -e "$rom_out_dir/$snap_file" ]; then
         need_unique_dir=1
         break
