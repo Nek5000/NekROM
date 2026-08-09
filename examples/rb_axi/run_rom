@@ -9,6 +9,7 @@ NEK_SOURCE_ROOT="${NEK_SOURCE_ROOT:-$(cd "$MOR_DIR/../Nek5000" && pwd)}"
 export MOR_DIR NEK_SOURCE_ROOT
 export NEK_DEPS_LOCAL_SRC="${NEK_DEPS_LOCAL_SRC:-1}"
 export PATH="$MOR_DIR/bin:$NEK_SOURCE_ROOT/bin:$PATH"
+export MOR_DISABLE_TDEIM="${MOR_DISABLE_TDEIM:-1}"
 
 echo "run_rom: start"
 

@@ -631,6 +631,9 @@ c-----------------------------------------------------------------------
      $        have_w_p,have_uz_p
       logical have_tdeim,have_t_mu,have_t_tau,have_t_ainv,
      $        have_t_w_p,have_t_tz_p,have_t_zmc_u,have_t_zmc_t
+      logical disable_tdeim
+      character*32 tdeim_disable
+      integer tdeim_disable_len,tdeim_disable_stat
 
       integer ndeimwrk
       parameter (ndeimwrk=ndeim_max*(lb+1+lbnl_eff))
@@ -752,14 +755,35 @@ c-----------------------------------------------------------------------
       if (ifrom(1).and.ifrom(2)) then
          inquire (file='ops/tdeim_npts',exist=have_tdeim)
          if (have_tdeim) then
-            iftdeim=.true.
+            disable_tdeim = .false.
+            tdeim_disable = ' '
+            tdeim_disable_len = 0
+            tdeim_disable_stat = 1
+            call get_environment_variable('MOR_DISABLE_TDEIM',
+     $         tdeim_disable,tdeim_disable_len,tdeim_disable_stat)
+            if (tdeim_disable_stat.eq.0.and.tdeim_disable_len.gt.0) then
+               if (tdeim_disable(1:1).ne.'0'.and.
+     $             tdeim_disable(1:1).ne.'f'.and.
+     $             tdeim_disable(1:1).ne.'F'.and.
+     $             tdeim_disable(1:1).ne.'n'.and.
+     $             tdeim_disable(1:1).ne.'N') then
+                  disable_tdeim = .true.
+               endif
+            endif
 
-            call iread_serial(itmp,1,'ops/tdeim_npts ',iwk,nid)
-            tdeim_pts=itmp(1)
-            call iread_serial(itmp,1,'ops/tdeim_npts_os ',iwk,nid)
-            tdeim_pts_os=itmp(1)
-            call iread_serial(itmp,1,'ops/tdeim_npts_eval ',iwk,nid)
-            tdeim_pts_eval=itmp(1)
+            if (disable_tdeim) then
+               iftdeim=.false.
+               if (nio.eq.0) write (6,*) 'TDEIM disabled via ',
+     $            'MOR_DISABLE_TDEIM'
+            else
+               iftdeim=.true.
+
+               call iread_serial(itmp,1,'ops/tdeim_npts ',iwk,nid)
+               tdeim_pts=itmp(1)
+               call iread_serial(itmp,1,'ops/tdeim_npts_os ',iwk,nid)
+               tdeim_pts_os=itmp(1)
+               call iread_serial(itmp,1,'ops/tdeim_npts_eval ',iwk,nid)
+               tdeim_pts_eval=itmp(1)
 
             if (tdeim_pts.le.0) call exitti('tdeim_pts <= 0$',tdeim_pts)
             if (tdeim_pts.gt.ndeim_max) then
@@ -854,6 +878,7 @@ c-----------------------------------------------------------------------
      $             (.not.have_t_ainv)) then
                   call exitti('missing MCLS TDEIM artifacts$',1)
                endif
+            endif
             endif
          endif
       endif
