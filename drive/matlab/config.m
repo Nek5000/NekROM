@@ -84,6 +84,7 @@ switch thiscase
         nb     = 1;
     case 'rb_axi'
         case_path = '../../examples/rb_axi/';
+        casename  = 'rb';
         nsteps = 2000;
         dt     = 4.0e-04;
         iostep = 100;

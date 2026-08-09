@@ -76,8 +76,12 @@ function results = driver()
     end
 
     if ~exist(snaps_path, 'dir')
-        error(['Snapshots directory not found: ', snaps_path, ...
-               '\nRun offline phase first: cd ', case_path, ' && makerom ', casename]);
+        % Some NekROM examples keep snapshots/bases in the case root or under
+        % snaps_rom/ instead of snaps/. We discover snapshots via helper
+        % functions later; don't hard-require snaps/ here.
+        warning('NekROM:MissingSnapsDir', ...
+            ['Snapshots directory not found: %s\n' ...
+             'Proceeding with snapshot discovery in case root/snaps_rom/.'], snaps_path);
     end
 
     % Check for POD basis snapshots (support both snaps/ and case root layouts).
