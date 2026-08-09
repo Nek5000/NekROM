@@ -83,6 +83,12 @@ export NEKROM_CASE=cyl
 matlab -batch "driver"
 ```
 
+To point the driver at a case directory outside `examples/` (for example, a staged offline build that already contains `ops/` and snapshots), set:
+```bash
+export NEKROM_CASE_PATH=/path/to/case_dir/
+matlab -batch "driver"
+```
+
 ### Case Descriptions
 
 | Case | Description | Re/Ra | ROM modes | Challenge |

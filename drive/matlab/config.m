@@ -103,6 +103,16 @@ switch thiscase
         error(['Unhandled case name: ', thiscase]);
 end
 
+% Allow running directly from an external case directory (e.g., a staged offline build)
+% without copying ops/ and snapshots into the tracked examples/ tree.
+env_case_path = getenv('NEKROM_CASE_PATH');
+if ~isempty(env_case_path)
+    case_path = strtrim(env_case_path);
+    if ~isempty(case_path) && case_path(end) ~= filesep
+        case_path = [case_path, filesep];
+    end
+end
+
 case_meta = load_case_metadata(case_path, casename);
 if ~isempty(case_meta.nb)
     nb = case_meta.nb;
