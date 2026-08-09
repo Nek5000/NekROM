@@ -108,6 +108,23 @@ function results = driver()
                strjoin(missing_ops, '\n  '));
     end
 
+    % The current MATLAB/Octave driver advances velocity only. Thermo-fluid cases
+    % (temperature equation, buoyancy coupling, and thermal DEIM/TDEIM) are handled
+    % by the Fortran runtime, not by this driver.
+    thermal_ops = {'at', 'bt', 'ct', 't0', 'tk', 'tdeim_npts'};
+    has_thermal_ops = false;
+    for i = 1:length(thermal_ops)
+        if exist(fullfile(ops_dir, thermal_ops{i}), 'file')
+            has_thermal_ops = true;
+            break;
+        end
+    end
+    if has_thermal_ops
+        error(['This case appears to include a temperature equation (found ops/{at,bt,ct,t0,...}).\n' ...
+               'The MATLAB driver currently supports velocity-only ROMs.\n' ...
+               'Run the thermo ROM with the Fortran runtime (e.g., from the case dir: `./run_rom`).']);
+    end
+
     %% ROM Setup & Basis Generation
     reorder = 1; 
     cname = fullfile(snaps_path, strcat('bas', casename));
