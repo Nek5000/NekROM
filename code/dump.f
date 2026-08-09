@@ -1078,6 +1078,7 @@ c-----------------------------------------------------------------------
       real    loc_best_val,glob_best_val,rowval
       real    snapcoef(lbnl_eff),scale,rtmp(1)
       real    gx(lt),gy(lt),gz(lt)
+      real    uadv(lt,ldim,1),tadv(lt,1,1),cf(lt,1,1)
       integer itmp(1)
 
       if (.not.ifdeim) return
@@ -1122,7 +1123,8 @@ c-----------------------------------------------------------------------
       call rzero(tdeim_ty_p,ndeim_max*(ltb+1))
       call rzero(tdeim_tz_p,ndeim_max*(ltb+1))
       call rzero(tdeim_proj_mat,ltb*lbnl_eff)
-      call rzero(tdeim_zmc,ltb*(ltb+1))
+      call rzero(tdeim_zmc_u,ltb*(lub+1))
+      call rzero(tdeim_zmc_t,ltb*(ltb+1))
       call rzero(tdeim_Ainv,lbnl_eff*lbnl_eff)
       call rzero(tdeim_interp_mat,lbnl_eff*ndeim_max)
       call rzero(sel_rows,lbnl_eff*lbnl_eff)
@@ -1292,6 +1294,37 @@ c-----------------------------------------------------------------------
          enddo
       enddo
 
+      ! Exact constant/linear mode-0 coupling for u · grad(T):
+      !   (u0 · grad T0) + (u' · grad T0) + (u0 · grad T')
+      nt = lx1*ly1*lz1*nelt
+
+      do k=0,nb
+         call opcopy(uadv(1,1,1),uadv(1,2,1),uadv(1,ldim,1),
+     $               ub(1,k),vb(1,k),wb(1,k))
+         call copy(tadv(1,1,1),tb(1,0,1),nt)
+         call rzero(cf(1,1,1),nt)
+         call evalcflds(cf,uadv,tadv,1,1,.false.)
+         do i=1,nb
+            tdeim_zmc_u(i,k) = sip(tb(1,i,1),cf(1,1,1))
+         enddo
+      enddo
+
+      do k=0,nb
+         call opcopy(uadv(1,1,1),uadv(1,2,1),uadv(1,ldim,1),
+     $               ub(1,0),vb(1,0),wb(1,0))
+         call copy(tadv(1,1,1),tb(1,k,1),nt)
+         call rzero(cf(1,1,1),nt)
+         call evalcflds(cf,uadv,tadv,1,1,.false.)
+         do i=1,nb
+            tdeim_zmc_t(i,k) = sip(tb(1,i,1),cf(1,1,1))
+         enddo
+      enddo
+
+      ! Avoid double counting (u0 · grad T0): keep it in zmc_u(:,0) only.
+      do i=1,nb
+         tdeim_zmc_t(i,0) = 0.0
+      enddo
+
       call rzero(tdeim_eval_weights,ndeim_max)
       do i=1,nsel
          tdeim_eval_weights(i) = 1.0
@@ -1327,6 +1360,10 @@ c-----------------------------------------------------------------------
      $   'ops/tdeim_nl_bas_p_eval ',nsel,nsel,nid)
       call dump_mat_serial(tdeim_proj_mat,ltb,lbnl_eff,
      $   'ops/tdeim_proj_mat ',nb,nsel,nid)
+      call dump_mat_serial(tdeim_zmc_u,ltb,lub+1,
+     $   'ops/tdeim_zmc_u ',nb,nb+1,nid)
+      call dump_mat_serial(tdeim_zmc_t,ltb,ltb+1,
+     $   'ops/tdeim_zmc_t ',nb,nb+1,nid)
       call dump_mat_serial(tdeim_Ainv,lbnl_eff,lbnl_eff,
      $   'ops/tdeim_Ainv ',nsel,nsel,nid)
       call dump_mat_serial(tdeim_interp_mat,lbnl_eff,ndeim_max,

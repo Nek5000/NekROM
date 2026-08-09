@@ -942,7 +942,7 @@ c-----------------------------------------------------------------------
          tx=0.
          ty=0.
          tz=0.
-         do j=0,nb
+         do j=1,nb
             up=up+tdeim_u_p(i,j)*uu(j)
             vp=vp+tdeim_v_p(i,j)*uu(j)
             if (if3d) then
@@ -1044,6 +1044,15 @@ c-----------------------------------------------------------------------
       do i=1,nb
          do j=1,nbnl
             cu(i)=cu(i)+tdeim_proj_mat(i,j)*c_hat(j)
+         enddo
+      enddo
+
+      ! Add exact constant/linear mode-0 coupling terms:
+      ! (u0 · grad T0) + (u' · grad T0) + (u0 · grad T')
+      do i=1,nb
+         do j=0,nb
+            cu(i)=cu(i)+tdeim_zmc_u(i,j)*uu(j)
+            cu(i)=cu(i)+tdeim_zmc_t(i,j)*tt(j)
          enddo
       enddo
 

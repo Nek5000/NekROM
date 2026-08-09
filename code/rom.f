@@ -630,7 +630,7 @@ c-----------------------------------------------------------------------
       logical have_mu,have_tau,have_ainv,have_alpha,
      $        have_w_p,have_uz_p
       logical have_tdeim,have_t_mu,have_t_tau,have_t_ainv,
-     $        have_t_w_p,have_t_tz_p
+     $        have_t_w_p,have_t_tz_p,have_t_zmc_u,have_t_zmc_t
 
       integer ndeimwrk
       parameter (ndeimwrk=ndeim_max*(lb+1+lbnl_eff))
@@ -812,6 +812,15 @@ c-----------------------------------------------------------------------
      $         'ops/tdeim_nl_bas_p_eval ',tdeim_pts_eval,nbnl,rwk,nid)
             call read_mat_serial(tdeim_proj_mat,ltb,lbnl_eff,
      $         'ops/tdeim_proj_mat ',nb,nbnl,rwk,nid)
+            inquire (file='ops/tdeim_zmc_u',exist=have_t_zmc_u)
+            inquire (file='ops/tdeim_zmc_t',exist=have_t_zmc_t)
+            if ((.not.have_t_zmc_u).or.(.not.have_t_zmc_t)) then
+               call exitti('missing TDEIM zmc artifacts$',1)
+            endif
+            call read_mat_serial(tdeim_zmc_u,ltb,lub+1,
+     $         'ops/tdeim_zmc_u ',nb,nb+1,rwk,nid)
+            call read_mat_serial(tdeim_zmc_t,ltb,ltb+1,
+     $         'ops/tdeim_zmc_t ',nb,nb+1,rwk,nid)
             call read_mat_serial(tdeim_Ainv,lbnl_eff,lbnl_eff,
      $         'ops/tdeim_Ainv ',nbnl,nbnl,rwk,nid)
             call read_mat_serial(tdeim_interp_mat,lbnl_eff,ndeim_max,

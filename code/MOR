@@ -78,12 +78,13 @@ c     The extra slot is unused unless nbnl is set > 0 at runtime.
 
       real tdeim_nl_bas_p_eval(ndeim_max,lbnl_eff),
      $     tdeim_proj_mat(ltb,lbnl_eff),
-     $     tdeim_zmc(ltb,0:ltb),tdeim_Ainv(lbnl_eff,lbnl_eff),
+     $     tdeim_zmc_u(ltb,0:lub),tdeim_zmc_t(ltb,0:ltb),
+     $     tdeim_Ainv(lbnl_eff,lbnl_eff),
      $     tdeim_interp_mat(lbnl_eff,ndeim_max),tdeim_mu(lbnl_eff),
      $     tdeim_tau(lbnl_eff,lbnl_eff),
      $     tdeim_A_tau_inv(lbnl_eff,lbnl_eff)
       common /mortdeimmat/ tdeim_nl_bas_p_eval,tdeim_proj_mat,
-     $     tdeim_zmc,tdeim_Ainv,tdeim_interp_mat,
+     $     tdeim_zmc_u,tdeim_zmc_t,tdeim_Ainv,tdeim_interp_mat,
      $     tdeim_mu,tdeim_tau,tdeim_A_tau_inv
 
       common /moric/ uic(lx1*ly1*lz1*lelm),
