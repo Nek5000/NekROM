@@ -54,7 +54,7 @@ function save_deim_artifacts(out_dir, rom_data)
     if isfield(rom_data, 'A_tau_inv')
         write_real_matrix(fullfile(out_dir, 'deim_A_tau_inv'), rom_data.A_tau_inv);
     end
-    if isfield(rom_data, 'alpha')
+    if isfield(rom_data, 'alpha') && ~isempty(rom_data.alpha)
         write_real_scalar(fullfile(out_dir, 'deim_alpha'), rom_data.alpha);
     end
 end
@@ -65,13 +65,6 @@ function value = pick_field(struct_data, primary_name, fallback_name)
     else
         value = struct_data.(fallback_name);
     end
-end
-
-function write_real_scalar(path, value)
-    fid = fopen(path, 'w');
-    assert(fid >= 0, 'Failed to open %s for writing.', path);
-    fprintf(fid, '%24.15e\n', value);
-    fclose(fid);
 end
 
 function write_real_vector(path, value)
@@ -85,6 +78,13 @@ function write_real_matrix(path, value)
     fid = fopen(path, 'w');
     assert(fid >= 0, 'Failed to open %s for writing.', path);
     fprintf(fid, '%24.15e\n', value(:));
+    fclose(fid);
+end
+
+function write_real_scalar(path, value)
+    fid = fopen(path, 'w');
+    assert(fid >= 0, 'Failed to open %s for writing.', path);
+    fprintf(fid, '%24.15e\n', value);
     fclose(fid);
 end
 

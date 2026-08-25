@@ -127,8 +127,19 @@ function run_deim_tests(snaps_path, casename, reorder, ndeim_pts, n_os_points, p
             if strcmp(method, 'mclsdeim')
                 assert(isfield(rom_data, 'mu') && isfield(rom_data, 'tau') && isfield(rom_data, 'A_tau_inv'), ...
                     'MCLS-DEIM statistics are missing.');
+                assert_deim_alpha_matches(rom_data.alpha, deim_alpha, ...
+                    'MCLS-DEIM alpha is missing or incorrect.');
                 assert(size(rom_data.A_tau_inv, 1) == size(rom_data.A_tau_inv, 2), ...
                     'A_tau_inv must be square.');
+
+                if ~isfield(rom_data, 'use_full_quadrature') || ~rom_data.use_full_quadrature
+                    tmp_ops_dir = [tempname, '_deim_ops'];
+                    cleanup_ops = onCleanup(@() cleanup_tmp_ops_dir(tmp_ops_dir));
+                    save_deim_artifacts(tmp_ops_dir, rom_data);
+                    loaded_rom_data = load_deim_artifacts(tmp_ops_dir, rom_nb, size(rom_data.nl_bas_p_eval, 2));
+                    assert_deim_alpha_matches(loaded_rom_data.alpha, deim_alpha, ...
+                        'Saved MCLS-DEIM alpha was not restored by the loader.');
+                end
             end
 
             if size(rom_data.proj_mat, 2) >= 1 && norm(rom_data.proj_mat(:, 1)) > 0
@@ -140,9 +151,33 @@ function run_deim_tests(snaps_path, casename, reorder, ndeim_pts, n_os_points, p
             assert(numel(out) == rom_nb, 'Unexpected DEIM output size.');
             assert(all(isfinite(out)), 'DEIM output contains non-finite values.');
 
+            if strcmp(method, 'mclsdeim') && (~isfield(rom_data, 'use_full_quadrature') || ~rom_data.use_full_quadrature)
+                loaded_out = conv_deim(test_ucoef, loaded_rom_data, method);
+                assert(numel(loaded_out) == rom_nb, 'Unexpected loaded DEIM output size.');
+                assert(all(isfinite(loaded_out)), 'Loaded DEIM output contains non-finite values.');
+            end
+
             fprintf('PASS: %s on %s grid\n', method, grid_name);
         end
     end
 
     fprintf('DEIM sanity checks complete.\n');
+end
+
+function cleanup_tmp_ops_dir(tmp_ops_dir)
+    if exist(tmp_ops_dir, 'dir')
+        rmdir(tmp_ops_dir, 's');
+    end
+end
+
+function assert_deim_alpha_matches(actual_alpha, expected_alpha, failure_message)
+    assert(~isempty(actual_alpha), failure_message);
+
+    if expected_alpha == 0
+        assert(abs(actual_alpha) <= 10 * eps(1), failure_message);
+        return;
+    end
+
+    tol = 1e-12 * abs(expected_alpha);
+    assert(abs(actual_alpha - expected_alpha) <= tol, failure_message);
 end

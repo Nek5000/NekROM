@@ -47,11 +47,15 @@ function rom_data = load_deim_artifacts(ops_dir, nb, nbnl)
     rom_data.interp_mat = read_real_matrix(fullfile(ops_dir, 'deim_interp_mat'), nbnl, ndeim_pts_eval);
 
     % Optional MCLSDEIM artifacts.
+    alpha_path = fullfile(ops_dir, 'deim_alpha');
     mu_path = fullfile(ops_dir, 'deim_mu');
     tau_path = fullfile(ops_dir, 'deim_tau');
     a_tau_inv_path = fullfile(ops_dir, 'deim_A_tau_inv');
-    alpha_path = fullfile(ops_dir, 'deim_alpha');
 
+    rom_data.alpha = [];
+    if exist(alpha_path, 'file')
+        rom_data.alpha = read_real_scalar(alpha_path);
+    end
     if exist(mu_path, 'file')
         rom_data.mu = read_real_vector(mu_path, nbnl);
     end
@@ -61,15 +65,12 @@ function rom_data = load_deim_artifacts(ops_dir, nb, nbnl)
     if exist(a_tau_inv_path, 'file')
         rom_data.A_tau_inv = read_real_matrix(a_tau_inv_path, nbnl, nbnl);
     end
-    if exist(alpha_path, 'file')
-        rom_data.alpha = read_real_scalar(alpha_path);
-    end
 end
 
 function value = read_real_scalar(path)
     data = dlmread(path);
     if isempty(data)
-        error('load_deim_artifacts:EmptyFile', 'Empty scalar file: %s', path);
+        error('load_deim_artifacts:EmptyFile', 'Empty real scalar file: %s', path);
     end
     value = data(1);
 end

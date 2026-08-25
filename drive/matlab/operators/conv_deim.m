@@ -44,6 +44,14 @@ function out_coef = conv_deim(ucoef, rom_data, method)
 
         case 'mclsdeim'
             % Modified Constrained LS (Regularized with Snapshot Stats)
+            if ~isfield(rom_data, 'alpha') || isempty(rom_data.alpha)
+                error('conv_deim:MissingAlpha', ...
+                    'MCLSDEIM requires rom_data.alpha from the saved artifact bundle.');
+            end
+            if ~isfield(rom_data, 'tau') || ~isfield(rom_data, 'mu') || ~isfield(rom_data, 'A_tau_inv')
+                error('conv_deim:MissingMclsArtifacts', ...
+                    'MCLSDEIM requires rom_data.mu, rom_data.tau, and rom_data.A_tau_inv.');
+            end
             rhs = (rom_data.nl_bas_p_eval' * f_p) + (rom_data.alpha * rom_data.tau * rom_data.mu);
             c_hat = rom_data.A_tau_inv * rhs;
             
