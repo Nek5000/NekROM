@@ -1,4 +1,4 @@
-function [out_coef, T_mat] = conv_tensor(ucoef, pod_u, pod_v, x, y)
+function [out_coef, T_mat] = conv_tensor_dealiased(ucoef, pod_u, pod_v, x, y)
     % Optimized De-aliased Convection Tensor for NekROM [N, N, E]
     
     persistent tensor nb n_test

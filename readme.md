@@ -1,6 +1,6 @@
 # NekROM - Model Order Reduction Framework for Nek5000
 
-This package include tools to help apply model-order reduction (MOR) to data produced by [Nek5000](https://github.com/Nek5000/Nek5000) to generate reduced-order models (ROM). The generated ROMs can be run either in the Fortran driver embedded inside the Nek5000 userchk subroutine or can be run separately by provided driver scripts in Matlab, Python, and Julia. Users can also provide their own drivers which read the ROM operators and QOI factors from the `ops/` and `qoi/` directories.
+This package includes tools for applying model-order reduction (MOR) to data produced by [Nek5000](https://github.com/Nek5000/Nek5000) and for generating reduced-order models (ROMs). The generated ROMs can run either in the Fortran driver embedded inside the Nek5000 `userchk` subroutine or through the provided MATLAB and Julia driver scripts. Users can also provide their own drivers that read the ROM operators and quantities of interest (QOI) factors from the `ops/` and `qoi/` directories.
 
 # Documentation
 
@@ -19,7 +19,7 @@ Required files in NekROM case directory:
 
 - Nek5000 case files e.g., .rea, .map, SIZE
 - \$caserom.usr, .usr file specific for NekROM cases (see `$MOR_DIR/examples`)
-- LMOR,      specifies compile-time parameters
+- LMOR, specifies compile-time parameters
 - $case.mor, specifies run-time parameters
 - file.list, contains list of paths to the snapshots (relative path)
 
@@ -35,25 +35,47 @@ Compile-time parameters (for setting memory allocation size) can be found in `LM
 
 - `ls`, maximum number of snapshots
 - `lb`, maximum number of total modes
+- `lbnl`, compile-time ceiling for runtime nonlinear POD bases; the active count is `nbnl`, and `lbnl` must stay at least 1 so DEIM storage has a compile-time extent
+
+The authoritative compile-time template is `templates/LMOR.template`.
 
 run-time parameters can be found in `$case.mor`.
 
-- [general], header for general parameters
+- [GENERAL], header for general parameters
     - `mode`, off = offline, on = online, all = offline + online
     - `field`, v = velocity, t = temperature, vt = velocity + temperature
     - `nb`, number of POD modes (must be less than lb, default == lb)
-- [pod], header for pod parameters
+- [POD], header for pod parameters
     - `type`, l2 = $L^2$ POD modes, h10, $H^1_0$ POD modes
     - `mode0`, avg = average 0th mode, state = user-defined in ub,vb,wb,tb
     - `augment`, 0 = no ABM, 1 = 0th interactions, 2 = diagonals, 3 = 1 + 2
-- [qoi], header for qoi parameters
+- [QOI], header for qoi parameters
     - `freq`, frequency of QOI dump, if <1 freq=iostep
     - `drag`, drag based on OBJ data
 
+Additional runtime options are documented in `templates/mpar.template`, including `avginit`, `rktol`, `nplay`, `combined`, `ratio`, `copt`, `leray`, `tneubc`, `gravity`, `forcing`, `filter`, `ei`, and `deim`.
+
+The shipped example cases under `examples/` provide case-specific setup notes and run scripts. The cylinder example is the shortest end-to-end workflow; `examples/rb_axi` shows the parametric sweep pattern.
+
+## DEIM Stability and Dealiasing
+
+The `deim` runtime option selects sampled DEIM, which is the cheapest online path but can still become unstable on demanding cases. `clsdeim` and `mclsdeim` use constrained or oversampled point selection and are more robust in practice.
+The Fortran selector also accepts `deim:n_os_points` in the `.mor` file to request extra oversampled evaluation points when generating `ops/deim_*` artifacts. The saved `deim_npts_os` header now stores that extra count, while `deim_npts_eval` stores the total evaluation-set size.
+
+For stricter quadrature, the MATLAB driver also supports `NEKROM_DEIM_DEALIAS_QUAD=1`, which forces a 3/2-grid quadrature path for the DEIM-family convection evaluation. That path is stable, but its runtime cost is much closer to a fully dealiased ROM evaluation than to sampled DEIM. It is MATLAB-driver only and is kept in memory rather than being written back into the Fortran-loaded `ops/` bundle.
+
+For a cheaper dealiased DEIM-family path, the MATLAB/Octave driver supports `NEKROM_DEIM_DEALIAS_CQUAD=1`, which builds a compressed quadrature rule on the 3/2 grid (positive weights on a small point set). This path is compatible with `ops/` persistence and keeps the online cost closer to sampled DEIM, but it is still an approximation and may need tuning (`NEKROM_DEIM_CQUAD_MULT`, `NEKROM_DEIM_CQUAD_NPTS`) for demanding cases.
+
+If you need a cheap dealiased online convection operator and do not want additional tuning knobs, the tensor-based operators remain the supported option in the current codebase.
+
+The main future direction for a cheaper stable DEIM path is a compressed quadrature layer, such as ECSW-style sampling. That would choose both a reduced set of points on the overintegrated grid and corresponding quadrature weights, so the online path stays closer to sampled DEIM while retaining dealiased integration behavior. This is not implemented yet.
+
+Another research direction is structure-preserving hyper-reduction: enforce (or learn) a reduced convection operator that is skew-adjoint in the physical $L^2$ energy inner product (so it produces near-zero kinetic-energy work online), even after sampling/hyper-reduction. This typically requires split/skew forms and constraints at the operator level rather than only post-hoc coefficient corrections.
+
 # Contribution
 
-Our procedure for updating the code is exclusively through pull requests (no pushing). Please submit issues and PR to [https://github.com/Nek5000/NekROM](https://github.com/Nek5000/NekROM). PRs should be the smallest coherent change to the code-base. Issue titles should describe the issue e.g., 'Error in x', 'Missing x', etc. PR titles should describe the modification made e.g., 'Fixed x', 'Improved x, etc. See the documentation for the coding style of this project when contributing.
+Our procedure for updating the code is exclusively through pull requests (no pushing). Please submit issues and PR to [https://github.com/Nek5000/NekROM](https://github.com/Nek5000/NekROM). PRs should be the smallest coherent change to the code-base. Issue titles should describe the issue, for example `Error in x` or `Missing x`. PR titles should describe the modification made, for example `Fixed x` or `Improved x`. See the documentation for the coding style of this project when contributing.
 
 # Parameter File Support
 
-In addition to the .rea support for setting internal parameters, .mor files are supported for [par](https://nek5000.github.io/NekDoc/user_files.html)-like dictionary. The possible key/values are described in templates/mpar.template.
+In addition to `.rea` support for setting internal parameters, `.mor` files are supported as a [par](https://nek5000.github.io/NekDoc/user_files.html)-like dictionary. The possible key/value pairs are described in `templates/mpar.template`.

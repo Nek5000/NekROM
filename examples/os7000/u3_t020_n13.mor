@@ -2,7 +2,15 @@
 mode = all
 field = v
 nb=1
+ns=100
 
 [POD]
 type = l2
 mode0 = state
+
+[DEIM]
+nbnl = 20
+dumpnls = yes
+dumpfine = yes
+mode = mclsdeim
+alpha = 1.0e-12

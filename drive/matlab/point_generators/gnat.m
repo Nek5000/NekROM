@@ -1,6 +1,6 @@
 %% --- Optimized Implementation ---
 % Fed libROM implementation into Gemini
-function [phi] = gnat_optimized(Q, m_used, nsr)
+function [phi] = gnat(Q, m_used, nsr)
     [n, total_m] = size(Q);
     m = min(m_used, total_m);
     ns = iif(nsr > 0, nsr, m);

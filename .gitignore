@@ -1,6 +1,5 @@
 # Specific files
 
-*nek5000*
 tags
 makefile
 .state
@@ -8,6 +7,7 @@ compiler.out
 mn
 makenek
 SESSION.NAME
+file.list
 notes.txt
 chan2.plt01
 
@@ -19,25 +19,34 @@ data
 runs
 docs
 cases
-archive
-examples
+
+snaps/
+qoi/
+
+__pycache__/
+drive/matlab/output/
+
+# Generated ROM/DEIM operator bundles
+**/ops/
 
 # File types
 
-*log*
+nek5000
+logfile
+*.log*
 *.mp4
 *.tif*
 *.tar.gz
 *.tgz
-*0.f*
+*.f[0-9][0-9][0-9][0-9]*
 *.fld*
 *.nek5000
 *.out
+*.re2
 *.map
 *.ma2
 *.dra
 out.*
-*.png
 *.bbproject*
 
 # Visit
