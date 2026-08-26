@@ -137,6 +137,12 @@ function run_deim_tests(snaps_path, casename, reorder, ndeim_pts, n_os_points, p
                     cleanup_ops = onCleanup(@() cleanup_tmp_ops_dir(tmp_ops_dir));
                     save_deim_artifacts(tmp_ops_dir, rom_data);
                     loaded_rom_data = load_deim_artifacts(tmp_ops_dir, rom_nb, size(rom_data.nl_bas_p_eval, 2));
+                    assert(isequal(loaded_rom_data.eval_inds, rom_data.eval_inds), ...
+                        'Saved DEIM evaluation indices were not restored by the loader.');
+                    if numel(rom_data.inds_os) > numel(rom_data.inds)
+                        assert(isequal(loaded_rom_data.inds_os, rom_data.inds_os), ...
+                            'Saved oversampled DEIM indices were not restored by the loader.');
+                    end
                     assert_deim_alpha_matches(loaded_rom_data.alpha, deim_alpha, ...
                         'Saved MCLS-DEIM alpha was not restored by the loader.');
                 end

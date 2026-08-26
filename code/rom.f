@@ -714,6 +714,7 @@ c-----------------------------------------------------------------------
       deimmode='NONE'
       deim_alpha=1.e-12
       ndeim_pts=0
+      ndeim_pts_os_req=0
       ndeim_pts_os=0
       ndeim_pts_eval=0
 
@@ -1012,6 +1013,7 @@ c-----------------------------------------------------------------------
          write (6,*) 'mp_deim_mode  ',deimmode
          write (6,*) 'mp_deim_alpha ',deim_alpha
          write (6,*) 'mp_ndeim_pts  ',ndeim_pts
+         write (6,*) 'mp_ndeim_osreq',ndeim_pts_os_req
          write (6,*) 'mp_ndeim_os   ',ndeim_pts_os
          write (6,*) 'mp_ndeim_eval ',ndeim_pts_eval
          write (6,*) ' '

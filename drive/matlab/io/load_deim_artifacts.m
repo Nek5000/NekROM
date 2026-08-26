@@ -20,10 +20,28 @@ function rom_data = load_deim_artifacts(ops_dir, nb, nbnl)
     ndeim_pts = read_int_scalar(fullfile(ops_dir, 'deim_npts'));
     ndeim_pts_os = read_int_scalar(fullfile(ops_dir, 'deim_npts_os'));
     ndeim_pts_eval = read_int_scalar(fullfile(ops_dir, 'deim_npts_eval'));
+    if ndeim_pts_eval < ndeim_pts
+        error('load_deim_artifacts:InvalidCounts', ...
+            'Total evaluation count %d is smaller than base count %d.', ...
+            ndeim_pts_eval, ndeim_pts);
+    end
+    if ndeim_pts_os < 0
+        error('load_deim_artifacts:InvalidCounts', ...
+            'Oversample count %d must be non-negative.', ndeim_pts_os);
+    end
 
     rom_data = struct();
     rom_data.inds = read_int_vector(fullfile(ops_dir, 'deim_inds'), ndeim_pts);
-    rom_data.inds_os = read_int_vector_optional(fullfile(ops_dir, 'deim_inds_os'), ndeim_pts_os);
+    inds_os_path = fullfile(ops_dir, 'deim_inds_os');
+    if ndeim_pts_os > 0
+        if ~exist(inds_os_path, 'file')
+            error('load_deim_artifacts:MissingFile', ...
+                'Expected oversampled index file %s.', inds_os_path);
+        end
+        rom_data.inds_os = read_int_vector(inds_os_path, ndeim_pts + ndeim_pts_os);
+    else
+        rom_data.inds_os = zeros(0, 1);
+    end
     rom_data.eval_inds = read_int_vector(fullfile(ops_dir, 'deim_eval_inds'), ndeim_pts_eval);
     rom_data.eval_weights = read_real_vector(fullfile(ops_dir, 'deim_eval_weights'), ndeim_pts_eval);
 

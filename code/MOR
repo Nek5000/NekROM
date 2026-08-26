@@ -4,7 +4,7 @@ c     parameters and common blocks for MOR
 
       common /morgram/ ug(ls,ls),eval(ls),eval2(ls)
 
-      c     lbnl is the compile-time ceiling; nbnl is the runtime active count.
+c     lbnl is the compile-time ceiling; nbnl is the runtime active count.
       integer ndeim_max
       parameter (ndeim_max=3*lbnl)
 
@@ -23,8 +23,9 @@ c     parameters and common blocks for MOR
       logical ifdumpnls,ifdumpfine,ifdeim
       common /mordeimflags/ ifdumpnls,ifdumpfine,ifdeim
 
-      integer ndeim_pts,ndeim_pts_os,ndeim_pts_eval
-      common /mordeimpar/ ndeim_pts,ndeim_pts_os,ndeim_pts_eval
+      integer ndeim_pts,ndeim_pts_os_req,ndeim_pts_os,ndeim_pts_eval
+      common /mordeimpar/ ndeim_pts,ndeim_pts_os_req,
+     $     ndeim_pts_os,ndeim_pts_eval
 
       character*8 deimmode
       common /mordeimchar/ deimmode

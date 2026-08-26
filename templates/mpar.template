@@ -57,6 +57,7 @@ eqn     = NS  # equation
 
 [DEIM]
 nbnl = 20 # runtime nonlinear (convection) POD bases; capped by compile-time lbnl
+n_os_points = 0 # extra oversampled DEIM points for the offline selector
 dumpnls = no # whether or not do dump the non-linear snapshots
 dumpfine = no # whether or not to dump nonlinear snapshots on the fine grid
 mode = off # (off, deim, clsdeim, mclsdeim)

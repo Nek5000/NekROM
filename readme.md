@@ -60,6 +60,7 @@ The shipped example cases under `examples/` provide case-specific setup notes an
 ## DEIM Stability and Dealiasing
 
 The `deim` runtime option selects sampled DEIM, which is the cheapest online path but can still become unstable on demanding cases. `clsdeim` and `mclsdeim` use constrained or oversampled point selection and are more robust in practice.
+The Fortran selector also accepts `deim:n_os_points` in the `.mor` file to request extra oversampled evaluation points when generating `ops/deim_*` artifacts. The saved `deim_npts_os` header now stores that extra count, while `deim_npts_eval` stores the total evaluation-set size.
 
 For stricter quadrature, the MATLAB driver also supports `NEKROM_DEIM_DEALIAS_QUAD=1`, which forces a 3/2-grid quadrature path for the DEIM-family convection evaluation. That path is stable, but its runtime cost is much closer to a fully dealiased ROM evaluation than to sampled DEIM. It is MATLAB-driver only and is kept in memory rather than being written back into the Fortran-loaded `ops/` bundle.
 

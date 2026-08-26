@@ -10,33 +10,37 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
-      integer i,j,k,ip,comp,inode,info,nsel,isnap
+      integer i,j,k,ip,comp,inode,info,nsel,nsel_eval,isnap,l
       integer nnode_local,nstack_local,local_row,local_best_row
-      integer local_best_comp
+      integer local_best_comp,selected_count,matdim,nrepeat,rep,repmax
       integer global_row,offset,best_ip,best_comp,best_inode
       integer cand_info(3),work_info(3),ipivl(lbnl)
-      integer irl(lbnl),icl(lbnl)
+      integer selected_ip(ndeim_max),selected_comp(ndeim_max)
+      integer selected_inode(ndeim_max)
       real    amat(lbnl,lbnl),rhs(lbnl),coeff(lbnl)
-      real    sel_rows(lbnl,lbnl)
+      real    sel_rows(lbnl,ndeim_max)
       real    loc_rowvals(lbnl)
       real    cand_pack(lbnl+1),work_pack(lbnl+1)
       real    loc_best_val,glob_best_val,rowval
+      logical is_selected
       integer itmp(1)
 
       if (.not.ifdeim) return
       if (nbnl.le.0) return
 
       nsel = nbnl
+      nsel_eval = nsel + max(0,ndeim_pts_os_req)
       if (nsel.gt.lbnl) call exitti('nbnl > lbnl$',nsel)
-      if (nsel.gt.ndeim_max) call exitti('ndeim_max too small$',nsel)
+      if (nsel_eval.gt.ndeim_max) call exitti('ndeim_max too small$',
+     $   nsel_eval)
       nnode_local = lx1*ly1*lz1*nelv
       nstack_local = ldim*nnode_local
 
       call izero(deim_inds,nsel)
-      call izero(deim_inds_os,nsel)
-      call izero(deim_eval_inds,nsel)
-      call rzero(deim_eval_weights,nsel)
-      call rzero(deim_nl_bas_p_eval,ndeim_max*nsel)
+      call izero(deim_inds_os,nsel_eval)
+      call izero(deim_eval_inds,nsel_eval)
+      call rzero(deim_eval_weights,nsel_eval)
+      call rzero(deim_nl_bas_p_eval,ndeim_max*nsel_eval)
       call rzero(deim_u_p,ndeim_max*(nb+1))
       call rzero(deim_v_p,ndeim_max*(nb+1))
       call rzero(deim_w_p,ndeim_max*(nb+1))
@@ -44,118 +48,200 @@ c-----------------------------------------------------------------------
       call rzero(deim_uy_p,ndeim_max*(nb+1))
       call rzero(deim_uz_p,ndeim_max*(nb+1))
       call rzero(deim_Ainv,lbnl*nsel)
-      call rzero(deim_interp_mat,lbnl*nsel)
-      call rzero(sel_rows,lbnl*nsel)
+      call rzero(deim_interp_mat,lbnl*nsel_eval)
+      call rzero(sel_rows,lbnl*nsel_eval)
       call rzero(coeff,nsel)
       call rzero(rhs,nsel)
       call rzero(amat,lbnl*nsel)
       call rzero(loc_rowvals,nsel)
+      call izero(selected_ip,nsel_eval)
+      call izero(selected_comp,nsel_eval)
+      call izero(selected_inode,nsel_eval)
 
+      if (nsel.gt.1) then
+         nrepeat = (nsel_eval - 2)/(nsel - 1) + 1
+      else
+         nrepeat = nsel_eval
+      endif
+
+      selected_count = 0
       do k=1,nsel
-         best_ip = -1
-         best_comp = 0
-         best_inode = 0
-
-         if (k.gt.1) then
-            call rzero(amat,lbnl*(k-1))
-            call rzero(rhs,k-1)
-            do i=1,k-1
-               rhs(i) = sel_rows(k,i)
-               do j=1,k-1
-                  amat(i,j) = sel_rows(j,i)
-               enddo
-            enddo
-
-            call izero(ipivl,nsel)
-            call dgetrf(k-1,k-1,amat,lbnl,ipivl,info)
-            if (info.ne.0) call exitti(
-     $           'DEIM selector factorization$',info)
-            call dgetrs('N',k-1,1,amat,lbnl,ipivl,rhs,lbnl,info)
-            if (info.ne.0) call exitti(
-     $           'DEIM selector solve$',info)
-            call rzero(coeff,k-1)
-            do i=1,k-1
-               coeff(i) = rhs(i)
-            enddo
+         if (k.eq.1) then
+            repmax = 1
+            if (nsel.eq.1) repmax = nrepeat
+         else
+            repmax = nrepeat
          endif
 
-         loc_best_val = -1.0e30
-         local_best_row = 0
-         local_best_comp = 0
-         call rzero(loc_rowvals,nsel)
-         local_row = 0
+         do rep=1,repmax
+            if (selected_count.ge.nsel_eval) goto 100
 
-         do comp=1,ldim
-            do inode=1,nnode_local
-               local_row = local_row + 1
-               rowval = uvwbnl(inode,comp,k)
-               do j=1,k-1
-                  rowval = rowval - uvwbnl(inode,comp,j)*coeff(j)
-               enddo
-               rowval = abs(rowval)
+            best_ip = -1
+            best_comp = 0
+            best_inode = 0
 
-               if (rowval.gt.loc_best_val) then
-                  loc_best_val = rowval
-                  local_best_row = local_row
-                  local_best_comp = comp
-                  do i=1,nsel
-                     loc_rowvals(i) = uvwbnl(inode,comp,i)
+            if (k.gt.1) then
+               matdim = k - 1
+               if (selected_count.eq.matdim) then
+                  call rzero(amat,lbnl*matdim)
+                  call rzero(rhs,matdim)
+                  do i=1,matdim
+                     rhs(i) = sel_rows(k,i)
+                     do j=1,matdim
+                        amat(i,j) = sel_rows(j,i)
+                     enddo
+                  enddo
+
+                  call izero(ipivl,lbnl)
+                  call dgetrf(matdim,matdim,amat,lbnl,ipivl,info)
+                  if (info.ne.0) call exitti(
+     $                 'DEIM selector factorization$',info)
+                  call dgetrs('N',matdim,1,amat,lbnl,ipivl,rhs,lbnl,info)
+                  if (info.ne.0) call exitti(
+     $                 'DEIM selector solve$',info)
+                  call rzero(coeff,matdim)
+                  do i=1,matdim
+                     coeff(i) = rhs(i)
+                  enddo
+               else
+                  call rzero(amat,lbnl*matdim)
+                  call rzero(rhs,matdim)
+                  do i=1,matdim
+                     do j=1,selected_count
+                        rhs(i) = rhs(i) + sel_rows(i,j)*sel_rows(k,j)
+                        do l=1,matdim
+                           amat(i,l) = amat(i,l)
+     $                        + sel_rows(i,j)*sel_rows(l,j)
+                        enddo
+                     enddo
+                  enddo
+
+                  call izero(ipivl,lbnl)
+                  call dgetrf(matdim,matdim,amat,lbnl,ipivl,info)
+                  if (info.ne.0) call exitti(
+     $                 'DEIM selector factorization$',info)
+                  call dgetrs('N',matdim,1,amat,lbnl,ipivl,rhs,lbnl,info)
+                  if (info.ne.0) call exitti(
+     $                 'DEIM selector solve$',info)
+                  call rzero(coeff,matdim)
+                  do i=1,matdim
+                     coeff(i) = rhs(i)
                   enddo
                endif
-            enddo
-         enddo
-
-         cand_pack(1) = loc_best_val
-         do i=1,nsel
-            cand_pack(i+1) = loc_rowvals(i)
-         enddo
-         cand_info(1) = local_best_row
-         cand_info(2) = nstack_local
-         cand_info(3) = local_best_comp
-
-         glob_best_val = -1.0e30
-         global_row = 0
-         offset = 0
-
-         do ip=0,np-1
-            if (nid.ne.ip) then
-               call rzero(cand_pack,nsel+1)
-               call izero(cand_info,3)
             endif
 
-            call gop(cand_pack,work_pack,'+  ',nsel+1)
-            call igop(cand_info,work_info,'+  ',3)
+            loc_best_val = -1.0e30
+            local_best_row = 0
+            local_best_comp = 0
+            call rzero(loc_rowvals,nsel)
+            local_row = 0
 
-            if (cand_pack(1).gt.glob_best_val) then
-               glob_best_val = cand_pack(1)
-               global_row = offset + cand_info(1)
-               best_ip = ip
-               best_comp = cand_info(3)
-               best_inode = cand_info(1) - (cand_info(3)-1)*nnode_local
-               do i=1,nsel
-                  sel_rows(i,k) = cand_pack(i+1)
+            do comp=1,ldim
+               do inode=1,nnode_local
+                  local_row = local_row + 1
+                  is_selected = .false.
+                  do i=1,selected_count
+                     if (selected_ip(i).eq.nid.and.
+     $                   selected_comp(i).eq.comp.and.
+     $                   selected_inode(i).eq.inode) then
+                        is_selected = .true.
+                        goto 50
+                     endif
+                  enddo
+   50              continue
+
+                  if (.not.is_selected) then
+                     rowval = uvwbnl(inode,comp,k)
+                     do j=1,k-1
+                        rowval = rowval - uvwbnl(inode,comp,j)*coeff(j)
+                     enddo
+                     rowval = abs(rowval)
+
+                     if (rowval.gt.loc_best_val) then
+                        loc_best_val = rowval
+                        local_best_row = local_row
+                        local_best_comp = comp
+                        do i=1,nsel
+                           loc_rowvals(i) = uvwbnl(inode,comp,i)
+                        enddo
+                     endif
+                  endif
                enddo
+            enddo
+
+            cand_pack(1) = loc_best_val
+            do i=1,nsel
+               cand_pack(i+1) = loc_rowvals(i)
+            enddo
+            cand_info(1) = local_best_row
+            cand_info(2) = nstack_local
+            cand_info(3) = local_best_comp
+
+            glob_best_val = -1.0e30
+            global_row = 0
+            offset = 0
+
+            do ip=0,np-1
+               if (nid.ne.ip) then
+                  call rzero(cand_pack,nsel+1)
+                  call izero(cand_info,3)
+               endif
+
+               call gop(cand_pack,work_pack,'+  ',nsel+1)
+               call igop(cand_info,work_info,'+  ',3)
+
+               if (cand_pack(1).gt.glob_best_val) then
+                  glob_best_val = cand_pack(1)
+                  global_row = offset + cand_info(1)
+                  best_ip = ip
+                  best_comp = cand_info(3)
+                  best_inode = cand_info(1) - (cand_info(3)-1)*nnode_local
+                  do i=1,nsel
+                     sel_rows(i,selected_count+1) = cand_pack(i+1)
+                  enddo
+               endif
+
+               offset = offset + cand_info(2)
+            enddo
+
+            if (glob_best_val.lt.-1.0e29) then
+               call exitti('DEIM selector exhausted$',selected_count)
             endif
 
-            offset = offset + cand_info(2)
-         enddo
+            selected_count = selected_count + 1
+            selected_ip(selected_count) = best_ip
+            selected_comp(selected_count) = best_comp
+            selected_inode(selected_count) = best_inode
 
-         deim_inds(k) = global_row
-         deim_eval_inds(k) = global_row
-         deim_eval_weights(k) = 1.0
-         do i=1,nsel
-            deim_nl_bas_p_eval(k,i) = sel_rows(i,k)
-         enddo
+            if (selected_count.le.nsel) then
+               deim_inds(selected_count) = global_row
+            endif
+            deim_inds_os(selected_count) = global_row
+            deim_eval_inds(selected_count) = global_row
+            deim_eval_weights(selected_count) = 1.0
+            do i=1,nsel
+               deim_nl_bas_p_eval(selected_count,i)
+     $            = sel_rows(i,selected_count)
+            enddo
 
-         call deim_pack_selected_row(k,global_row,best_ip,best_comp,
-     $      best_inode)
+            call deim_pack_selected_row(selected_count,global_row,best_ip,
+     $         best_comp,best_inode)
+         enddo
       enddo
 
-      ndeim_pts = nsel
-      ndeim_pts_eval = nsel
-      ndeim_pts_os = 0
+ 100  continue
 
-      call deim_build_operator_mats(nsel,sel_rows)
+      if (selected_count.lt.nsel) call exitti('DEIM selector short$',
+     $   selected_count)
+      if (selected_count.gt.nsel_eval) then
+         call exitti('DEIM selector overran$',selected_count)
+      endif
+
+      ndeim_pts = nsel
+      ndeim_pts_eval = selected_count
+      ndeim_pts_os = max(0,ndeim_pts_eval-ndeim_pts)
+
+      call deim_build_operator_mats(nsel,ndeim_pts_eval,sel_rows)
 
       call rzero(deim_eval_weights,ndeim_pts_eval)
       do i=1,ndeim_pts_eval
@@ -169,27 +255,33 @@ c-----------------------------------------------------------------------
       itmp(1) = ndeim_pts_eval
       call idump_serial(itmp,1,'ops/deim_npts_eval ',nid)
       call idump_serial(deim_inds,nsel,'ops/deim_inds ',nid)
-      call idump_serial(deim_eval_inds,nsel,'ops/deim_eval_inds ',nid)
-      call dump_serial(deim_eval_weights,nsel,'ops/deim_eval_weights ',
+      if (ndeim_pts_os.gt.0) then
+         call idump_serial(deim_inds_os,ndeim_pts_eval,
+     $      'ops/deim_inds_os ',nid)
+      endif
+      call idump_serial(deim_eval_inds,ndeim_pts_eval,
+     $   'ops/deim_eval_inds ',nid)
+      call dump_serial(deim_eval_weights,ndeim_pts_eval,
+     $   'ops/deim_eval_weights ',
      $   nid)
       call dump_mat_serial(deim_u_p,ndeim_max,lub+1,
-     $   'ops/deim_u_p ',nsel,nb+1,nid)
+     $   'ops/deim_u_p ',ndeim_pts_eval,nb+1,nid)
       call dump_mat_serial(deim_v_p,ndeim_max,lub+1,
-     $   'ops/deim_v_p ',nsel,nb+1,nid)
+     $   'ops/deim_v_p ',ndeim_pts_eval,nb+1,nid)
       if (if3d) then
          call dump_mat_serial(deim_w_p,ndeim_max,lub+1,
-     $      'ops/deim_w_p ',nsel,nb+1,nid)
+     $      'ops/deim_w_p ',ndeim_pts_eval,nb+1,nid)
       endif
       call dump_mat_serial(deim_ux_p,ndeim_max,lub+1,
-     $   'ops/deim_ux_p ',nsel,nb+1,nid)
+     $   'ops/deim_ux_p ',ndeim_pts_eval,nb+1,nid)
       call dump_mat_serial(deim_uy_p,ndeim_max,lub+1,
-     $   'ops/deim_uy_p ',nsel,nb+1,nid)
+     $   'ops/deim_uy_p ',ndeim_pts_eval,nb+1,nid)
       if (if3d) then
          call dump_mat_serial(deim_uz_p,ndeim_max,lub+1,
-     $      'ops/deim_uz_p ',nsel,nb+1,nid)
+     $      'ops/deim_uz_p ',ndeim_pts_eval,nb+1,nid)
       endif
       call dump_mat_serial(deim_nl_bas_p_eval,ndeim_max,lbnl,
-     $   'ops/deim_nl_bas_p_eval ',nsel,nsel,nid)
+     $   'ops/deim_nl_bas_p_eval ',ndeim_pts_eval,nsel,nid)
       call dump_mat_serial(deim_proj_mat,lub,lbnl,
      $   'ops/deim_proj_mat ',nb,nsel,nid)
       call dump_mat_serial(deim_zmc,lub,lub+1,'ops/deim_zmc ',
@@ -197,13 +289,14 @@ c-----------------------------------------------------------------------
       call dump_mat_serial(deim_Ainv,lbnl,lbnl,
      $   'ops/deim_Ainv ',nsel,nsel,nid)
       call dump_mat_serial(deim_interp_mat,lbnl,ndeim_max,
-     $   'ops/deim_interp_mat ',nsel,nsel,nid)
+     $   'ops/deim_interp_mat ',nsel,ndeim_pts_eval,nid)
 
       if (deimmode.eq.'MCLSDEIM') then
-         call deim_build_mclsdeim_stats(nsel)
+         call deim_build_mclsdeim_stats(nsel,ndeim_pts_eval)
       endif
 
-      if (nid.eq.0) write (6,*) 'DEIM selector complete, points:',nsel
+      if (nid.eq.0) write (6,*) 'DEIM selector complete, points:',
+     $   nsel,' eval points:',ndeim_pts_eval
 
       return
       end
@@ -298,24 +391,27 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine deim_build_operator_mats(nsel,sel_rows)
+      subroutine deim_build_operator_mats(nsel,nrows,sel_rows)
 
       ! Build the sampled DEIM operator matrices for later online use.
+      ! The normal-equation solve below reduces to a square inverse when
+      ! ndeim_pts_eval == nsel, and to a left pseudoinverse when the
+      ! evaluation set is oversampled.
 
       include 'SIZE'
       include 'TOTAL'
       include 'MOR'
 
-      integer nsel
+      integer nsel,nrows
       integer i,j,k,info,nnode_local,ipivl(lbnl)
       integer lt
       parameter (lt=lx1*ly1*lz1*lelt)
-      real    sel_rows(lbnl,lbnl)
+      real    sel_rows(lbnl,ndeim_max)
       real    amat(lbnl,lbnl)
       real    uadv(lt,ldim,1),tadv(lt,ldim,1)
       real    cf1(lt,ldim,1),cf2(lt,ldim,1)
 
-      if (nsel.le.0) return
+      if (nsel.le.0.or.nrows.le.0) return
 
       nnode_local = lx1*ly1*lz1*nelv
 
@@ -327,7 +423,7 @@ c-----------------------------------------------------------------------
       call rzero(amat,lbnl*nsel)
       do i=1,nsel
          do j=1,nsel
-            do k=1,nsel
+            do k=1,nrows
                amat(i,j) = amat(i,j) + sel_rows(i,k)*sel_rows(j,k)
             enddo
          enddo
@@ -340,9 +436,9 @@ c-----------------------------------------------------------------------
      $   info)
       if (info.ne.0) call exitti('DEIM inverse solve$',info)
 
-      call rzero(deim_interp_mat,lbnl*nsel)
+      call rzero(deim_interp_mat,lbnl*ndeim_max)
       do i=1,nsel
-         do j=1,nsel
+         do j=1,nrows
             do k=1,nsel
                deim_interp_mat(i,j) =
      $            deim_interp_mat(i,j) + deim_Ainv(i,k)*sel_rows(k,j)
@@ -391,7 +487,7 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine deim_build_mclsdeim_stats(nsel)
+      subroutine deim_build_mclsdeim_stats(nsel,nrows)
 
       ! Build the extra statistics required by MCLSDEIM.
 
@@ -399,11 +495,11 @@ c-----------------------------------------------------------------------
       include 'TOTAL'
       include 'MOR'
 
-      integer nsel
+      integer nsel,nrows
       integer i,j,k,isnap,irl(lbnl),icl(lbnl)
       real    amat(lbnl,lbnl),snapcoef(lbnl),scale
 
-      if (nsel.le.0) return
+      if (nsel.le.0.or.nrows.le.0) return
 
       call rzero(deim_mu,nsel)
       call rzero(deim_tau,lbnl*nsel)
@@ -465,7 +561,7 @@ c-----------------------------------------------------------------------
       call rzero(amat,lbnl*nsel)
       do i=1,nsel
       do j=1,nsel
-         do k=1,nsel
+         do k=1,nrows
             amat(i,j)=amat(i,j)+deim_nl_bas_p_eval(k,i)
      $         *deim_nl_bas_p_eval(k,j)
          enddo
@@ -552,6 +648,16 @@ c-----------------------------------------------------------------------
       if (ndeim_pts_eval.gt.ndeim_max) then
          call exitti('ndeim_pts_eval > ldeim$',ndeim_pts_eval)
       endif
+      if (ndeim_pts_eval.lt.ndeim_pts) then
+         call exitti('ndeim_pts_eval < ndeim_pts$',ndeim_pts_eval)
+      endif
+      if (ndeim_pts_os.lt.0) then
+         call exitti('ndeim_pts_os < 0$',ndeim_pts_os)
+      endif
+      if (ndeim_pts+ndeim_pts_os.gt.ndeim_max) then
+         call exitti('ndeim_pts + ndeim_pts_os > ldeim$',
+     $      ndeim_pts+ndeim_pts_os)
+      endif
 
       return
       end
@@ -570,7 +676,7 @@ c-----------------------------------------------------------------------
 
       call iread_serial(deim_inds,ndeim_pts,'ops/deim_inds ',iwk,nid)
       if (ndeim_pts_os.gt.0) then
-         call iread_serial(deim_inds_os,ndeim_pts_os,
+         call iread_serial(deim_inds_os,ndeim_pts+ndeim_pts_os,
      $      'ops/deim_inds_os ',iwk,nid)
       endif
       call iread_serial(deim_eval_inds,ndeim_pts_eval,

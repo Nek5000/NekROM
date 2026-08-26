@@ -552,6 +552,10 @@ c-----------------------------------------------------------------------
          ierr=ierr+1
       endif
 
+      ndeim_pts_os_req = 0
+      call finiparser_getdbl(d_out,'deim:n_os_points',ifnd)
+      if (ifnd.eq.1) ndeim_pts_os_req = max(0,nint(d_out))
+
       call finiparser_getdbl(d_out,'deim:alpha',ifnd)
       if (ifnd.eq.1) deim_alpha=d_out
 
@@ -609,7 +613,7 @@ c-----------------------------------------------------------------------
       call bcast(nbat,isize)
       call bcast(nbnl,isize)
       call bcast(ndeim_pts,isize)
-      call bcast(ndeim_pts_os,isize)
+      call bcast(ndeim_pts_os_req,isize)
       call bcast(ndeim_pts_eval,isize)
 
       ! reals

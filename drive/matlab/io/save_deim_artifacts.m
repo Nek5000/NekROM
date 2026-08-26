@@ -11,13 +11,26 @@ function save_deim_artifacts(out_dir, rom_data)
              'Fortran format. Keep this path in memory or save it to a separate diagnostic location.']);
     end
 
-    write_int_scalar(fullfile(out_dir, 'deim_npts'), numel(rom_data.inds));
-    write_int_scalar(fullfile(out_dir, 'deim_npts_os'), numel(rom_data.inds_os));
-    write_int_scalar(fullfile(out_dir, 'deim_npts_eval'), numel(rom_data.eval_inds));
+    ndeim_pts = numel(rom_data.inds);
+    eval_inds = pick_field(rom_data, 'eval_inds', 'inds_os');
+    ndeim_pts_eval = numel(eval_inds);
+
+    if isfield(rom_data, 'inds_os') && ~isempty(rom_data.inds_os)
+        inds_os = rom_data.inds_os(:);
+    else
+        inds_os = eval_inds(:);
+    end
+    ndeim_pts_os = max(0, numel(inds_os) - ndeim_pts);
+
+    write_int_scalar(fullfile(out_dir, 'deim_npts'), ndeim_pts);
+    write_int_scalar(fullfile(out_dir, 'deim_npts_os'), ndeim_pts_os);
+    write_int_scalar(fullfile(out_dir, 'deim_npts_eval'), ndeim_pts_eval);
 
     write_int_vector(fullfile(out_dir, 'deim_inds'), rom_data.inds);
-    write_int_vector(fullfile(out_dir, 'deim_inds_os'), rom_data.inds_os);
-    write_int_vector(fullfile(out_dir, 'deim_eval_inds'), rom_data.eval_inds);
+    if ndeim_pts_os > 0
+        write_int_vector(fullfile(out_dir, 'deim_inds_os'), inds_os);
+    end
+    write_int_vector(fullfile(out_dir, 'deim_eval_inds'), eval_inds);
 
     write_real_vector(fullfile(out_dir, 'deim_eval_weights'), rom_data.eval_weights);
 
