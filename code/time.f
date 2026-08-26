@@ -754,13 +754,6 @@ c              tmp2(i)=log(d)
       return
       end
 c-----------------------------------------------------------------------
-      subroutine evalc_deim(cu,uu)
-
-      call evalc_deim_impl(cu,uu)
-
-      return
-      end
-c-----------------------------------------------------------------------
       subroutine setuavg(s1,s2,t1)
 
       ! set average quantities involving velocity coefficients

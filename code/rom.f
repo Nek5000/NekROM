@@ -618,13 +618,6 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine setdeim
-
-      call setdeim_impl
-
-      return
-      end
-c-----------------------------------------------------------------------
       subroutine mor_init_params
 
       ! initialize rom parameters before .rea / .par read

@@ -56,7 +56,7 @@ mode    = no  # error-indicator
 eqn     = NS  # equation
 
 [DEIM]
-nbnl = 20 # number of runtime nonlinear (convection) POD bases (<= compile-time lbnl)
+nbnl = 20 # runtime nonlinear (convection) POD bases; capped by compile-time lbnl
 dumpnls = no # whether or not do dump the non-linear snapshots
 dumpfine = no # whether or not to dump nonlinear snapshots on the fine grid
 mode = off # (off, deim, clsdeim, mclsdeim)

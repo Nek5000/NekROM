@@ -200,8 +200,8 @@ function rom_data = setup_conv_deim(pod_u, pod_v, nl_bas, nl_snaps_u, nl_snaps_v
             rom_data.use_full_quadrature = false;
             rom_data.use_compressed_quadrature = true;
 
-            % Default: keep the point budget within the Fortran runtime limit
-            % ndeim_max = 3*lbnl_eff, and lbnl_eff matches nbnl at runtime.
+            % Default: keep the point budget within the Fortran runtime limit.
+            % ndeim_max = 3*lbnl, and nbnl is the runtime active count.
             nbnl = size(nl_bas_q, 2);
             cquad_mult = 3;
             env_mult = getenv('NEKROM_DEIM_CQUAD_MULT');

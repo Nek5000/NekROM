@@ -35,7 +35,7 @@ Compile-time parameters (for setting memory allocation size) can be found in `LM
 
 - `ls`, maximum number of snapshots
 - `lb`, maximum number of total modes
-- `lbnl`, maximum number of runtime nonlinear POD bases, including the zeroth mode
+- `lbnl`, compile-time ceiling for runtime nonlinear POD bases; the active count is `nbnl`, and `lbnl` must stay at least 1 so DEIM storage has a compile-time extent
 
 The authoritative compile-time template is `templates/LMOR.template`.
 

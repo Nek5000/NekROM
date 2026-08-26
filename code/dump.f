@@ -553,12 +553,6 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
-      subroutine dump_deim_inds
-      call dump_deim_inds_impl
-
-      return
-      end
-c-----------------------------------------------------------------------
       subroutine dump_misc
       ! Dump miscellaneous items
       include 'SIZE'
