@@ -119,7 +119,12 @@ function test_installation()
     else
         % Running in MATLAB
         v = ver('MATLAB');
-        fprintf('[PASS] (MATLAB %s)\n', v.Release);
+        if exist('fmincon', 'file') == 2
+            fprintf('[PASS] (MATLAB %s with Optimization Toolbox)\n', v.Release);
+        else
+            fprintf('[WARN] (MATLAB %s without Optimization Toolbox)\n', v.Release);
+            fprintf('       Install the toolbox if you want ifcopt=true\n');
+        end
         pass_count = pass_count + 1;
     end
 

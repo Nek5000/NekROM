@@ -15,6 +15,18 @@ BDF3/EXT3 time-stepper. The older `drive/matlab/archive/old/rom_online_solver.m`
 The driver expects `config.m` to select the case and runtime options, and then uses helper functions from the `io/`,
 `operators/`, and `point_generators/` subdirectories.
 
+Requirements
+------------
+
+The active driver is supported in both MATLAB and GNU Octave:
+
+* Tested on MATLAB R2020a or later
+* Tested on GNU Octave 6.0 or later
+* NekToolKit on the path
+
+If `ifcopt = true`, MATLAB requires the Optimization Toolbox and GNU Octave requires the `optim` package.
+For Octave, `optim` may also pull in `struct` and `statistics` as package dependencies.
+
 The DEIM-family runtime exposes the `NEKROM_DEIM_FINEGRID`, `NEKROM_DEIM_DEALIAS`, and `NEKROM_DEIM_DEALIAS_QUAD`
 environment variables through `config.m`. `deim` is the cheapest sampled path; `clsdeim` and `mclsdeim` improve robustness
 with constrained or oversampled point selection; and `NEKROM_DEIM_DEALIAS_QUAD=1` forces strict 3/2-grid quadrature for

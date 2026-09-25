@@ -21,17 +21,22 @@ function check_dependencies()
     fprintf('Environment:\n');
     if exist('OCTAVE_VERSION', 'builtin')
         fprintf('  ✓ Running on GNU Octave %s\n', OCTAVE_VERSION);
-        % Check for optim package (needed for ifcopt)
-        try
-            pkg('list', 'optim');
+        if octave_package_installed('optim')
             fprintf('  ✓ Octave optim package installed\n');
-        catch
-            fprintf('  ⚠ Octave optim package not found (needed for ifcopt=true)\n');
+        else
+            fprintf('  ⚠ Octave optim package not found (needed only for ifcopt=true)\n');
             fprintf('    Install with: pkg install -forge optim\n');
             optional_missing = true;
         end
     else
         fprintf('  ✓ Running on MATLAB %s\n', version);
+        if exist('fmincon', 'file') == 2
+            fprintf('  ✓ fmincon available (Optimization Toolbox)\n');
+        else
+            fprintf('  ⚠ fmincon not available (needed only for ifcopt=true)\n');
+            fprintf('    Install MATLAB Optimization Toolbox if you want constrained optimization.\n');
+            optional_missing = true;
+        end
     end
     fprintf('\n');
 
@@ -48,7 +53,7 @@ function check_dependencies()
             critical_missing = true;
         else
             % Check if it's from NekToolKit
-            if contains(fpath, 'NekToolKit')
+            if ~isempty(strfind(fpath, 'NekToolKit'))
                 fprintf('  ✓ %s (from NekToolKit)\n', fname);
             else
                 fprintf('  ✓ %s (found at: %s)\n', fname, fpath);
@@ -110,11 +115,23 @@ function check_dependencies()
     end
 
     % Parallel Computing Toolbox
-    if exist('parfor', 'builtin')
-        fprintf('  ✓ parfor available (optional parallelization)\n');
-    else
-        fprintf('  ⚠ parfor not available (no parallel computing)\n');
+    if exist('OCTAVE_VERSION', 'builtin')
+        fprintf('  ⚠ parfor not available (Octave does not provide Parallel Computing Toolbox)\n');
         optional_missing = true;
+    else
+        has_parallel_toolbox = false;
+        try
+            has_parallel_toolbox = license('test', 'Distrib_Computing_Toolbox') || exist('parpool', 'file') == 2;
+        catch
+            has_parallel_toolbox = false;
+        end
+
+        if has_parallel_toolbox
+            fprintf('  ✓ parfor available (Parallel Computing Toolbox)\n');
+        else
+            fprintf('  ⚠ parfor not available (Parallel Computing Toolbox not installed)\n');
+            optional_missing = true;
+        end
     end
     fprintf('\n');
 
@@ -131,4 +148,30 @@ function check_dependencies()
         fprintf('✗ Critical dependencies missing. Cannot proceed.\n');
     end
     fprintf('\n');
+end
+
+function tf = octave_package_installed(pkg_name)
+    tf = false;
+
+    try
+        packages = pkg('list');
+    catch
+        return;
+    end
+
+    if isempty(packages)
+        return;
+    end
+
+    if isstruct(packages)
+        packages = {packages};
+    end
+
+    for i = 1:numel(packages)
+        pkg_info = packages{i};
+        if isstruct(pkg_info) && isfield(pkg_info, 'name') && strcmp(pkg_info.name, pkg_name)
+            tf = true;
+            return;
+        end
+    end
 end

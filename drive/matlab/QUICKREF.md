@@ -10,6 +10,15 @@ matlab -batch "driver"              # MATLAB
 octave --eval "driver"              # Octave
 ```
 
+## Runtime Requirements
+
+| Runtime | Base support | `ifcopt=true` support |
+|---------|--------------|-----------------------|
+| MATLAB | Tested baseline | Requires Optimization Toolbox / `fmincon` |
+| Octave | Tested baseline | Requires `optim` package |
+
+If Octave asks for package dependencies while installing `optim`, install those packages too and rerun `check_dependencies()`.
+
 ## Change Case
 
 **Method 1: Edit config.m**
@@ -73,6 +82,15 @@ cd ../../examples/shear
 makerom shear           # Run offline phase
 cd ../../drive/matlab
 matlab -batch "driver"
+```
+
+### "Optimization Toolbox required" / "optim package not found"
+```matlab
+% MATLAB: install Optimization Toolbox, or disable constrained solve
+ifcopt = false;
+
+% Octave: install optim package
+pkg install -forge optim
 ```
 
 ### NaN detected during run

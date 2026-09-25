@@ -9,16 +9,6 @@ function results = driver()
     driver_dir = fileparts(mfilename('fullpath'));
     cd(driver_dir);
 
-    % --- OCTAVE COMPATIBILITY LAYER ---
-    if (exist('OCTAVE_VERSION', 'builtin') ~= 0)
-        try
-            pkg load optim;
-        catch
-            warning('Octave ''optim'' package not found. Optimization features (ifcopt) will fail.');
-        end
-    end
-    % ----------------------------------
-
     % Setup paths relative to the driver location.
     addpath(fullfile(driver_dir, 'point_generators'));
     addpath(fullfile(driver_dir, 'io'));
@@ -55,6 +45,19 @@ function results = driver()
 
     % Load simulation parameters
     config;
+    if ifcopt
+        if (exist('OCTAVE_VERSION', 'builtin') ~= 0)
+            if octave_package_installed('optim')
+                pkg load optim;
+            else
+                error(['Octave ''optim'' package is required when ifcopt=true.\n' ...
+                       'Install it with: pkg install -forge optim']);
+            end
+        elseif exist('fmincon', 'file') ~= 2
+            error(['MATLAB Optimization Toolbox is required when ifcopt=true.\n' ...
+                   'Install the toolbox or set ifcopt=false in config.m.']);
+        end
+    end
     enforce_skew_adjoint = read_env_bool('NEKROM_CONV_ENFORCE_SKEW_ADJOINT', false);
     skew_inner = getenv('NEKROM_CONV_SKEW_INNER');
     if isempty(skew_inner)
@@ -533,4 +536,30 @@ function F = rom_residual(x, a, b, diff, betas, dt, ito, rhs)
     h = b * betas(1, ito) / dt + a * diff;
     F1 = h * x - rhs;
     F = norm(F1);
+end
+
+function tf = octave_package_installed(pkg_name)
+    tf = false;
+
+    try
+        packages = pkg('list');
+    catch
+        return;
+    end
+
+    if isempty(packages)
+        return;
+    end
+
+    if isstruct(packages)
+        packages = {packages};
+    end
+
+    for i = 1:numel(packages)
+        pkg_info = packages{i};
+        if isstruct(pkg_info) && isfield(pkg_info, 'name') && strcmp(pkg_info.name, pkg_name)
+            tf = true;
+            return;
+        end
+    end
 end

@@ -10,16 +10,31 @@ Fast, interactive reduced-order model (ROM) driver for testing and prototyping. 
 - **Automated testing**: Unit tests for DEIM operators, stability comparison tools
 - **5 example cases**: Lid-driven cavity, cylinder flow, shear layer, Taylor-Green vortex, Orr-Sommerfeld/Poiseuille
 
+## Compatibility
+
+| Runtime | Supported | Notes |
+|---------|-----------|-------|
+| MATLAB R2020a+ | Yes | Tested baseline; `ifcopt=true` requires Optimization Toolbox |
+| GNU Octave 6.0+ | Yes | Tested baseline; `ifcopt=true` requires the `optim` package |
+
+The active driver path is validated in both runtimes with `check_dependencies()` and `test_installation()`.
+
 ## Quick Start
 
 ### Prerequisites
 
 **Required:**
-- **MATLAB** (R2020a or later) or **Octave** (6.0 or later)
+- **MATLAB** (tested on R2020a or later) or **Octave** (tested on 6.0 or later)
 - **NekToolKit** - Spectral element utilities library **(MANDATORY)**
   - Repository: https://github.com/kent0/NekToolKit
   - Used for: Snapshot reading, quadrature nodes/weights, derivative operators, gradient computation
   - Driver will fail immediately if NekToolKit functions are not available
+
+**Optional solver support:**
+- **MATLAB Optimization Toolbox** - Required only if `ifcopt=true`
+- **Octave `optim` package** - Required only if `ifcopt=true`
+  - Octave Forge usually installs transitive dependencies such as `struct` and `statistics` automatically
+  - If your Octave package manager reports missing package dependencies, install those packages too
 
 **Installation:**
 ```bash
@@ -365,6 +380,19 @@ octave
 
 Only needed if `ifcopt = true` (constrained optimization for ROM solve).
 
+If Octave reports missing transitive dependencies when installing `optim`, install the missing packages with `pkg install -forge <name>` and rerun `check_dependencies()`.
+
+### "Optimization Toolbox required" (MATLAB)
+**Cause**: `ifcopt = true` was enabled, but MATLAB does not have the Optimization Toolbox installed.
+
+**Solution**:
+```matlab
+% Disable constrained optimization
+ifcopt = false;
+```
+
+Or install the MATLAB Optimization Toolbox and rerun `check_dependencies()`.
+
 ### Slow Execution
 **Causes**:
 - Real-time visualization enabled: Set `ifvis = false`
@@ -488,8 +516,9 @@ drive/matlab/
 **Optional**:
 - `pagemtimes` (MATLAB R2020b+): 2-3× faster tensor assembly
 - `exportgraphics` (MATLAB R2020a+): Better PDF output (fallback: `print`)
-- Parallel Computing Toolbox: Multi-core offline phase (marginal speedup)
-- Octave `optim` package: Required only if `ifcopt=true` (constrained optimization)
+- Parallel Computing Toolbox (MATLAB only): Multi-core offline phase
+- MATLAB Optimization Toolbox: Required only if `ifcopt=true`
+- Octave `optim` package: Required only if `ifcopt=true`
 
 ## Performance Tips
 
