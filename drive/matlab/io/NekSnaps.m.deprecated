@@ -1,0 +1,167 @@
+classdef NekSnaps
+    % NekSnaps reads Nek5000/NekROM snapshot files written by write_field().
+    %
+    % The MATLAB driver only needs the loaded field structs in flds{...}, but
+    % we also retain the file list and a few header values for debugging.
+
+    properties
+        prefix = ''
+        files = {}
+        flds = {}
+    end
+
+    methods
+        function obj = NekSnaps(prefix)
+            if nargin == 0
+                return;
+            end
+
+            obj.prefix = char(prefix);
+            [obj.files, obj.flds] = NekSnaps.load_files(char(prefix));
+        end
+    end
+
+    methods(Static, Access = private)
+        function [files, flds] = load_files(prefix)
+            d = dir([prefix, '0.f*']);
+            if isempty(d)
+                error('NekSnaps:NoFiles', 'No snapshot files found for prefix %s', prefix);
+            end
+            base_dir = fileparts(prefix);
+            if isempty(base_dir)
+                base_dir = pwd;
+            end
+
+            names = {d.name};
+            steps = zeros(numel(names), 1);
+
+            for i = 1:numel(names)
+                tok = regexp(names{i}, '\.f(\d+)$', 'tokens', 'once');
+                if isempty(tok)
+                    error('NekSnaps:BadName', 'Unrecognized snapshot name: %s', names{i});
+                end
+                steps(i) = str2double(tok{1});
+            end
+
+            [~, order] = sort(steps);
+            d = d(order);
+
+            files = cell(numel(d), 1);
+            flds = cell(numel(d), 1);
+
+            for i = 1:numel(d)
+                files{i} = fullfile(base_dir, d(i).name);
+                flds{i} = NekSnaps.read_field(files{i});
+            end
+        end
+
+        function fld = read_field(filename)
+            [fid, msg] = fopen(filename, 'r', 'ieee-le');
+            if fid < 0
+                error('NekSnaps:OpenFailed', '%s', msg);
+            end
+
+            cleanup = onCleanup(@() fclose(fid));
+            header = fread(fid, 132, '*char')';
+            tag = fread(fid, 1, 'float32');
+
+            if abs(tag - 6.54321) > 1e-4
+                fclose(fid);
+                [fid, msg] = fopen(filename, 'r', 'ieee-be');
+                if fid < 0
+                    error('NekSnaps:OpenFailed', '%s', msg);
+                end
+                cleanup = onCleanup(@() fclose(fid));
+                header = fread(fid, 132, '*char')';
+                tag = fread(fid, 1, 'float32');
+                if abs(tag - 6.54321) > 1e-4
+                    error('NekSnaps:BadEndian', 'Could not decode endian tag for %s', filename);
+                end
+            end
+
+            hdr = strtrim(header);
+            hdr = regexprep(hdr, '^#std\s*', '');
+            vals = textscan(hdr, '%d %d %d %d %d %d %f %d %d %d %s %f %s', 1);
+
+            wdsize = vals{1};
+            nx = vals{2};
+            ny = vals{3};
+            nz = vals{4};
+            nelt = vals{5};
+            nelgt = vals{6}; %#ok<NASGU>
+            time = vals{7};
+            istep = vals{8};
+            fidnum = vals{9}; %#ok<NASGU>
+            nfileoo = vals{10}; %#ok<NASGU>
+            rdcode = upper(strtrim(vals{11}{1}));
+            p0th = vals{12}; %#ok<NASGU>
+            ifpress = strtrim(vals{13}{1}); %#ok<NASGU>
+
+            if wdsize == 8
+                precision = 'double';
+            else
+                precision = 'single';
+            end
+
+            nxyz = nx * ny * nz;
+            if nz > 1
+                shape = [nx, ny, nz, nelt];
+                ndim = 3;
+            else
+                shape = [nx, ny, nelt];
+                ndim = 2;
+            end
+
+            inde = fread(fid, nelt, 'int32');
+
+            fld = struct();
+            fld.file = filename;
+            fld.time = time;
+            fld.istep = istep;
+            fld.rdcode = rdcode;
+            fld.inde = inde;
+
+            if ~isempty(strfind(rdcode, 'X'))
+                raw = fread(fid, nxyz * ndim * nelt, precision);
+                raw = reshape(raw, [nxyz, ndim, nelt]);
+                fld.x = reshape(raw(:, 1, :), shape);
+                fld.y = reshape(raw(:, 2, :), shape);
+                if ndim == 3
+                    fld.z = reshape(raw(:, 3, :), shape);
+                end
+            end
+
+            if ~isempty(strfind(rdcode, 'U'))
+                raw = fread(fid, nxyz * ndim * nelt, precision);
+                raw = reshape(raw, [nxyz, ndim, nelt]);
+                fld.u = reshape(raw(:, 1, :), shape);
+                fld.v = reshape(raw(:, 2, :), shape);
+                if ndim == 3
+                    fld.w = reshape(raw(:, 3, :), shape);
+                end
+            end
+
+            if ~isempty(strfind(rdcode, 'P'))
+                raw = fread(fid, nxyz * nelt, precision);
+                fld.p = reshape(raw, [shape(1:end-1), nelt]);
+            end
+
+            if ~isempty(strfind(rdcode, 'T'))
+                raw = fread(fid, nxyz * nelt, precision);
+                fld.t = reshape(raw, [shape(1:end-1), nelt]);
+            end
+
+            sc_match = regexp(rdcode, 'S(\d+)', 'tokens', 'once');
+            npsc = 0;
+            if ~isempty(sc_match)
+                npsc = str2double(sc_match{1});
+            end
+            for s = 1:npsc
+                raw = fread(fid, nxyz * nelt, precision);
+                fld.(sprintf('s%d', s)) = reshape(raw, [shape(1:end-1), nelt]);
+            end
+
+            clear cleanup;
+        end
+    end
+end

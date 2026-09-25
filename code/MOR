@@ -4,6 +4,10 @@ c     parameters and common blocks for MOR
 
       common /morgram/ ug(ls,ls),eval(ls),eval2(ls)
 
+c     lbnl is the compile-time ceiling; nbnl is the runtime active count.
+      integer ndeim_max
+      parameter (ndeim_max=3*lbnl)
+
       common /morvisc/ unu(lx1*ly1*lz1*lelm,0:lub),
      $                 tnu(lx1*ly1*lz1*lelm,0:ltb)
 
@@ -16,8 +20,40 @@ c     parameters and common blocks for MOR
 
       common /mordeimbasis/ uvwbnl(lx1*ly1*lz1*lelm,ldim,lbnl)
 
-      logical ifdumpnls
-      common /mordeimflags/ ifdumpnls
+      logical ifdumpnls,ifdumpfine,ifdeim
+      common /mordeimflags/ ifdumpnls,ifdumpfine,ifdeim
+
+      integer ndeim_pts,ndeim_pts_os_req,ndeim_pts_os,ndeim_pts_eval
+      common /mordeimpar/ ndeim_pts,ndeim_pts_os_req,
+     $     ndeim_pts_os,ndeim_pts_eval
+
+      character*8 deimmode
+      common /mordeimchar/ deimmode
+
+      real deim_alpha
+      common /mordeimalpha/ deim_alpha
+
+      integer deim_inds(ndeim_max),deim_inds_os(ndeim_max),
+     $        deim_eval_inds(ndeim_max)
+      common /mordeimind/ deim_inds,deim_inds_os,deim_eval_inds
+
+      real deim_eval_weights(ndeim_max)
+      common /mordeimwts/ deim_eval_weights
+
+      real deim_u_p(ndeim_max,0:lub),deim_v_p(ndeim_max,0:lub),
+     $     deim_w_p(ndeim_max,0:lub),deim_ux_p(ndeim_max,0:lub),
+     $     deim_uy_p(ndeim_max,0:lub),deim_uz_p(ndeim_max,0:lub)
+      common /mordeimup/ deim_u_p,deim_v_p,deim_w_p,deim_ux_p,
+     $     deim_uy_p,deim_uz_p
+
+      real deim_nl_bas_p_eval(ndeim_max,lbnl),
+     $     deim_proj_mat(lub,lbnl),
+     $     deim_zmc(lub,0:lub),deim_Ainv(lbnl,lbnl),
+     $     deim_interp_mat(lbnl,ndeim_max),deim_mu(lbnl),
+     $     deim_tau(lbnl,lbnl),deim_A_tau_inv(lbnl,lbnl)
+      common /mordeimmat/ deim_nl_bas_p_eval,deim_proj_mat,
+     $     deim_zmc,deim_Ainv,deim_interp_mat,
+     $     deim_mu,deim_tau,deim_A_tau_inv
 
       common /moric/ uic(lx1*ly1*lz1*lelm),
      $               vic(lx1*ly1*lz1*lelm),

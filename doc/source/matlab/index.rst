@@ -9,84 +9,114 @@
 MATLAB/Octave Driver
 ====================
 
-The main driver script is `drive/matlab/rom_online_solver.m`, which loads the basis functions 
-and runs the ROM in MATLAB/Octave using a BDF3/EXT3 time-stepper. Supporting
-functions are defined in separate files and documented below.
+The main driver script is `drive/matlab/driver.m`, which loads the basis functions and runs the ROM in MATLAB/Octave using a
+BDF3/EXT3 time-stepper. The older `drive/matlab/archive/old/rom_online_solver.m` file is kept as a reference implementation.
 
-.. _matlab_convection_operators_section_tag:
+The driver expects `config.m` to select the case and runtime options, and then uses helper functions from the `io/`,
+`operators/`, and `point_generators/` subdirectories.
 
-Plotting
---------
+Requirements
+------------
 
-The Matlab/Octave driver uses NekToolKit for plotting of 2D fields. To enable this,
-clone the NekToolKit repository and either append it to the `MATLABPATH` environment
-variable (for MATLAB) or call `addpath` within `octaverc` (for Octave).
+The active driver is supported in both MATLAB and GNU Octave:
 
-.. code-block:: shell
+* Tested on MATLAB R2020a or later
+* Tested on GNU Octave 6.0 or later
+* NekToolKit on the path
 
-   git clone https://github.com/kent0/NekToolKit
-   export MATLABPATH=$(pwd)/NekToolKit/matlab
+If `ifcopt = true`, MATLAB requires the Optimization Toolbox and GNU Octave requires the `optim` package.
+For Octave, `optim` may also pull in `struct` and `statistics` as package dependencies.
 
+The DEIM-family runtime exposes the `NEKROM_DEIM_FINEGRID`, `NEKROM_DEIM_DEALIAS`, and `NEKROM_DEIM_DEALIAS_QUAD`
+environment variables through `config.m`. `deim` is the cheapest sampled path; `clsdeim` and `mclsdeim` improve robustness
+with constrained or oversampled point selection; and `NEKROM_DEIM_DEALIAS_QUAD=1` forces strict 3/2-grid quadrature for
+the DEIM-family convection evaluation. That strict-quadrature path is stable, but its cost is much closer to a
+fully dealiased ROM evaluation than to sampled DEIM. The tensor operators remain the current low-cost dealiased option.
 
-Operators
---------------------
+A natural future extension is compressed quadrature or ECSW-style sampling on the overintegrated grid. In that setting, the
+offline stage would select both the active quadrature points and their weights, which could keep the online cost lower than
+full strict quadrature while preserving dealiased integration behavior. That path is not implemented in the current code.
 
-.. mat:automodule:: matlab.operators
+.. only:: has_matlab_ext
 
-.. mat:autofunction:: conv_deim
+   .. _matlab_convection_operators_section_tag:
 
-.. mat:autofunction:: conv_fom
+   Plotting
+   --------
 
-.. mat:autofunction:: conv_tensor_dense
+   The MATLAB/Octave driver uses NekToolKit for plotting 2D fields. To enable plotting,
+   clone the NekToolKit repository and either append it to the `MATLABPATH` environment
+   variable for MATLAB or call `addpath` from `octaverc` for Octave.
 
-.. mat:autofunction:: conv_tensor
+   .. code-block:: shell
 
-.. mat:autofunction:: conv_tensor_sparse
+      git clone https://github.com/kent0/NekToolKit
+      export MATLABPATH=$(pwd)/NekToolKit/matlab
 
-.. mat:autofunction:: gen_Au
+   Operators
+   --------------------
 
-.. mat:autofunction:: get_Me
+   .. mat:automodule:: matlab.operators
 
-.. mat:autofunction:: lgrad
+   .. mat:autofunction:: conv_deim
 
-.. mat:autofunction:: lcurl
+   .. mat:autofunction:: conv_fom
 
-.. _matlab_operators_section_tag:
+   .. mat:autofunction:: conv_tensor_dense
 
-Input and Output
-----------------
+   .. mat:autofunction:: conv_tensor
 
-.. mat:automodule:: matlab.io
+   .. mat:autofunction:: conv_tensor_sparse
 
-.. mat:autofunction:: get_grid
+   .. mat:autofunction:: gen_Au
 
-.. mat:autofunction:: get_pod_basis_from_arrays
+   .. mat:autofunction:: get_Me
 
-.. mat:autofunction:: get_pod_basis
+   .. mat:autofunction:: lgrad
 
-.. mat:autofunction:: get_r_dim_ops
+   .. mat:autofunction:: lcurl
 
-.. mat:autofunction:: get_snaps
+   .. _matlab_operators_section_tag:
 
-.. mat:autofunction:: get_sort_order
+   Input and Output
+   ----------------
 
-.. mat:autofunction:: load_full_ops
+   .. mat:automodule:: matlab.io
 
-.. mat:autofunction:: output_fields
+   .. mat:autofunction:: get_grid
 
-.. mat:autofunction:: write_field
+   .. mat:autofunction:: get_pod_basis_from_arrays
 
-.. _matlab_point_generator_section_tag:
+   .. mat:autofunction:: get_pod_basis
 
-DEIM Point Generators
----------------------
+   .. mat:autofunction:: get_r_dim_ops
 
-.. mat:automodule:: matlab.point_generators
+   .. mat:autofunction:: get_snaps
 
-.. mat:autofunction:: s_opt
+   .. mat:autofunction:: get_sort_order
 
-.. mat:autofunction:: gpode
+   .. mat:autofunction:: load_full_ops
 
-.. mat:autofunction:: gnat
+   .. mat:autofunction:: output_fields
 
-.. mat:autofunction:: gappy_pod
+   .. mat:autofunction:: write_field
+
+   .. _matlab_point_generator_section_tag:
+
+   DEIM Point Generators
+   ---------------------
+
+   .. mat:automodule:: matlab.point_generators
+
+   .. mat:autofunction:: s_opt
+
+   .. mat:autofunction:: gnat
+
+   .. mat:autofunction:: gappy_pod
+
+   The legacy `gpode` implementation lives under `drive/matlab/archive/point_generators/old/gpode/` and is not part of the current
+   auto-documented MATLAB API.
+
+.. only:: not has_matlab_ext
+
+   The MATLAB domain extension is not installed in this build, so the API reference is omitted.

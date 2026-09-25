@@ -2,6 +2,7 @@
 mode = on
 field = vt
 nb = 40
+ns = 24
 decoupled = no
 
 [pod]

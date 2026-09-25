@@ -1,10 +1,13 @@
-.. NekROM documentation master file, created by
-   sphinx-quickstart on Tue Feb 25 21:01:14 2025.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
-
 Welcome to NekROM's documentation!
 ==================================
+
+NekROM is a model-order reduction framework for Nek5000. This documentation covers the
+end-to-end workflow for building reduced-order models, the shipped example cases, and the
+driver and API references for the Fortran, MATLAB/Octave, and Julia implementations.
+
+Start with the quickstart if you want the shortest path from a Nek5000 case to a ROM run.
+Use the examples and API sections when you need case-specific details or function-level
+reference material.
 
 .. toctree::
    :maxdepth: 2
@@ -21,6 +24,8 @@ Welcome to NekROM's documentation!
   :caption: Guides:
 
   quickstart
+
+  examples
 
   conventions
 
@@ -55,4 +60,3 @@ Indices and tables
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-

@@ -77,6 +77,54 @@ c-----------------------------------------------------------------------
       return
       end
 c-----------------------------------------------------------------------
+      subroutine dump_mat_serial(a,n1,n2,fname,m1,m2,nid)
+
+      ! dump a real matrix (stored in a larger leading-dimension array)
+      ! in column-major order, writing only the active m1-by-m2 block.
+      !
+      ! a     := target matrix (storage n1-by-n2)
+      ! n1,n2 := storage dimensions of a
+      ! fname := file name
+      ! m1,m2 := active dimensions to write
+      ! nid   := processor id
+
+      real a(n1,n2)
+
+      character*128 fname
+      character*128 fntrunc
+
+      if (nid.eq.0) then
+         call blank(fntrunc,128)
+
+         len=ltruncr(fname,128)
+         call chcopy(fntrunc,fname,len)
+
+         call dump_mat_serial_helper(a,n1,n2,fntrunc,m1,m2)
+      endif
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine dump_mat_serial_helper(a,n1,n2,fname,m1,m2)
+
+      ! helper routine for dump_mat_serial
+
+      real a(n1,n2)
+      character*128 fname
+
+      open (unit=12,file=fname)
+
+      do j=1,m2
+      do i=1,m1
+         write (12,*) a(i,j)
+      enddo
+      enddo
+
+      close (unit=12)
+
+      return
+      end
+c-----------------------------------------------------------------------
       subroutine dump_global_helper(a,n,fname,wk1,wk2,nid)
 
       ! helper routine to dump_global
@@ -383,9 +431,16 @@ c-----------------------------------------------------------------------
       include 'MOR'
 
       logical iftmp,iftmp2
+      integer istep0
+      parameter (ltd=lxd*lyd*lzd)
+      common /romfine/ xfine(ltd,lelt),yfine(ltd,lelt),zfine(ltd,lelt),
+     $                 ufine1(ltd,lelt),ufine2(ltd,lelt),
+     $                 ufine3(ltd,lelt)
 
       integer pind(1)
       integer pmat(1,1) 
+
+      if (nbnl.le.0) return
 
       ! Compute convection field for each snapshot and store in snapt
       call evalcflds(snapt,us0,us0,ldim,ns,.false.)
@@ -394,14 +449,18 @@ c-----------------------------------------------------------------------
       iftmp2=ifpo
 
       ifpo=.false.
+      ttmp=time
+      istep0=istep
 
       ! Dump the convection snapshots if enabled
-      if(ifdumpnls) then
-        do i=1,ns
-          ifxyo=(i.eq.1)
-          call outpost(snapt(1,1,i),snapt(1,2,i),snapt(1,ldim,i),
+      if (ifdumpnls .and. .not.ifdumpfine) then
+         do i=1,ns
+            time=i
+            istep=i
+            ifxyo=(i.eq.1)
+            call outpost(snapt(1,1,i),snapt(1,2,i),snapt(1,ldim,i),
      $                 pr,t,'csn')
-        enddo
+         enddo
       endif
 
       call pod(uvwbnl,eval2,ug,snapt,ldim,ips,nbnl,ns,ifpb,
@@ -416,14 +475,77 @@ c-----------------------------------------------------------------------
         call opcmult(uvwbnl(1,1,i),uvwbnl(1,2,i),uvwbnl(1,ldim,i),s)
       enddo
 
+      if (ifdeim) call dump_deim_inds
+
+      if (ifdumpfine) then
+         call intp_rstd_all(xfine,xm1,nelv)
+         call intp_rstd_all(yfine,ym1,nelv)
+         if (if3d) then
+            call intp_rstd_all(zfine,zm1,nelv)
+         else
+            call rzero(zfine(1,1),ltd*nelv)
+         endif
+
+         if (ifdumpnls) then
+            do i=1,ns
+               time=i
+               istep=i
+               ifxyo=(i.eq.1)
+               call convect_new(snapt(1,1,i),us0(1,1,i),.false.,
+     $                          us0(1,1,i),us0(1,2,i),us0(1,ldim,i),
+     $                          .false.)
+               call copy(ufine1(1,1),ufine(1,1),ltd*nelv)
+
+               call convect_new(snapt(1,2,i),us0(1,2,i),.false.,
+     $                          us0(1,1,i),us0(1,2,i),us0(1,ldim,i),
+     $                          .false.)
+               call copy(ufine2(1,1),ufine(1,1),ltd*nelv)
+
+               if (if3d) then
+                  call convect_new(snapt(1,ldim,i),us0(1,ldim,i),
+     $                             .false.,us0(1,1,i),us0(1,2,i),
+     $                             us0(1,ldim,i),.false.)
+                  call copy(ufine3(1,1),ufine(1,1),ltd*nelv)
+               else
+                  call rzero(ufine3(1,1),ltd*nelv)
+               endif
+
+               call dump_fine_vecfile('csn',xfine,yfine,zfine,
+     $            ufine1,ufine2,ufine3,ifxyo)
+            enddo
+         endif
+      endif
+
       ! Dump the convection basis
-      do i=1,nbnl
-         ! The temperature field isn't correct, but doesn't matter right now 
-         ! since temperature and pressure are not supported.
-         ifxyo=(i.eq.1)
-         call outpost2(uvwbnl(1,1,i),uvwbnl(1,2,i),uvwbnl(1,ldim,i),
-     $                pb(1,0),tb(1,0,1),ldimt,'cba')
-      enddo
+      if (ifdumpfine) then
+         do i=1,nbnl
+            time=i
+            istep=i
+            ifxyo=(i.eq.1)
+            call intp_rstd_all(ufine1,uvwbnl(1,1,i),nelv)
+            call intp_rstd_all(ufine2,uvwbnl(1,2,i),nelv)
+            if (if3d) then
+               call intp_rstd_all(ufine3,uvwbnl(1,ldim,i),nelv)
+            else
+               call rzero(ufine3(1,1),ltd*nelv)
+            endif
+            call dump_fine_vecfile('cba',xfine,yfine,zfine,
+     $         ufine1,ufine2,ufine3,ifxyo)
+         enddo
+      else
+         do i=1,nbnl
+            time=i
+            istep=i
+            ! The temperature field isn't correct, but doesn't matter right now
+            ! since temperature and pressure are not supported.
+            ifxyo=(i.eq.1)
+            call outpost2(uvwbnl(1,1,i),uvwbnl(1,2,i),uvwbnl(1,ldim,i),
+     $                   pb(1,0),tb(1,0,1),ldimt,'cba')
+         enddo
+      endif
+
+      istep=istep0
+      time=ttmp
 
       ifxyo=iftmp
       ifpo=iftmp2
@@ -522,6 +644,197 @@ c-----------------------------------------------------------------------
       ifxyo=iftmp
       ifpo=iftmp2
 
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine dump_fine_vecfile(prefix,x,y,z,u,v,w,ifcoord)
+
+      include 'SIZE'
+      include 'TOTAL'
+      include 'RESTART'
+
+      character*3 prefix
+      logical ifcoord
+
+      real x(1),y(1),z(1),u(1),v(1),w(1)
+
+      integer ierr,nout,nxo0,nyo0,nzo0
+
+      call blank(rdcode1,10)
+      if (ifcoord) then
+         rdcode1(1)='X'
+         rdcode1(2)='U'
+      else
+         rdcode1(1)='U'
+      endif
+
+      nxo0=nxo
+      nyo0=nyo
+      nzo0=nzo
+
+      nxo=lxd
+      nyo=lyd
+      nzo=lzd
+
+      ierr=0
+      if (nid.eq.pid0) call mfo_open_files(prefix,ierr)
+      call err_chk(ierr,'Error opening file in dump_fine_vecfile. $')
+
+      call mfo_write_hdr(rdcode1)
+
+      nout=nelt
+      if (ifcoord) then
+         call mfo_outv_fine(x,y,z,nout,lxd,lyd,lzd)
+      endif
+      call mfo_outv_fine(u,v,w,nout,lxd,lyd,lzd)
+
+      if (nid.eq.pid0) then
+      if (ifmpiio) then
+            call byte_close_mpi(ifh_mbyte,ierr)
+         else
+            call byte_close(ierr)
+         endif
+      endif
+      call err_chk(ierr,'Error closing file in dump_fine_vecfile. $')
+
+      nxo=nxo0
+      nyo=nyo0
+      nzo=nzo0
+
+      return
+      end
+c-----------------------------------------------------------------------
+      subroutine mfo_outv_fine(u,v,w,nel,mx,my,mz)   ! output a vector field
+
+      include 'SIZE'
+      include 'INPUT'
+      include 'RESTART'
+
+      real u(mx*my*mz,1),v(mx*my*mz,1),w(mx*my*mz,1)
+
+      common /SCRNF/ u4(2+lxd*lxd*lzd*6*lelt)
+      real*4         u4
+      real*8         u8(1+lxd*lxd*lzd*3*lelt)
+      equivalence    (u4,u8)
+
+      integer e
+      integer cnt
+
+      call nekgsync() ! clear outstanding message queues.
+      if(mx.gt.lxd .or. my.gt.lyd .or. mz.gt.lzd) then
+        if(nid.eq.0) write(6,*) 'ABORT: fine output buffer too small'
+        call exitt
+      endif
+
+      nxyz  = mx*my*mz
+      lrecv = 8 + 8*(lelt*nxyz*ldim)   ! recv buffer size (u4)
+      lsend = 8 + wdsizo*(nel*nxyz*ldim)
+      idum  = 1
+      ierr  = 0
+
+      if (nid.eq.pid0) then
+         cnt = 0
+         j = 0
+         if (wdsizo.eq.4) then             ! 32-bit output
+             do iel = 1,nel
+               if(out_mask(iel).ne.0) then
+                 call copyx4   (u4(j+1),u(1,iel),nxyz)
+                 j = j + nxyz
+                 call copyx4   (u4(j+1),v(1,iel),nxyz)
+                 j = j + nxyz
+                 if(if3d) then
+                   call copyx4 (u4(j+1),w(1,iel),nxyz)
+                   j = j + nxyz
+                 endif
+                 cnt = cnt + 1
+               endif
+             enddo
+         else
+             do iel = 1,nel
+               if(out_mask(iel).ne.0) then
+                 call copy     (u8(j+1),u(1,iel),nxyz)
+                 j = j + nxyz
+                 call copy     (u8(j+1),v(1,iel),nxyz)
+                 j = j + nxyz
+                 if(if3d) then
+                   call copy   (u8(j+1),w(1,iel),nxyz)
+                   j = j + nxyz
+                 endif
+                 cnt = cnt + 1
+               endif
+             enddo
+         endif
+         nout = wdsizo/4 * ldim*cnt * nxyz
+         if(ierr.eq.0) then
+           if(ifmpiio) then
+             call byte_write_mpi(u4,nout,-1,ifh_mbyte,ierr)
+           else
+             call byte_write(u4,nout,ierr)          ! u4 :=: u8
+           endif
+         endif
+
+         ! write out the data of my childs
+         do k=pid0+1,pid1
+            mtype = k
+            call csend(mtype,idum,4,k,0)           ! handshake
+            call crecv(mtype,u4,lrecv)
+            nout = wdsizo/4 * ldim*nxyz * u8(1)
+
+            if (wdsizo.eq.4.and.ierr.eq.0) then
+               if(ifmpiio) then
+                 call byte_write_mpi(u4(3),nout,-1,ifh_mbyte,ierr)
+               else
+                 call byte_write(u4(3),nout,ierr)
+               endif
+            elseif(ierr.eq.0) then
+               if(ifmpiio) then
+                 call byte_write_mpi(u8(2),nout,-1,ifh_mbyte,ierr)
+               else
+                 call byte_write(u8(2),nout,ierr)
+               endif
+            endif
+         enddo
+      else
+         cnt = 0
+         if (wdsizo.eq.4) then             ! 32-bit output
+             j = 2
+             do iel = 1,nel
+               if(out_mask(iel).ne.0) then
+                 call copyx4   (u4(j+1),u(1,iel),nxyz)
+                 j = j + nxyz
+                 call copyx4   (u4(j+1),v(1,iel),nxyz)
+                 j = j + nxyz
+                 if(if3d) then
+                   call copyx4 (u4(j+1),w(1,iel),nxyz)
+                   j = j + nxyz
+                 endif
+                 cnt = cnt + 1
+               endif
+             enddo
+         else
+             j = 1
+             do iel = 1,nel
+               if(out_mask(iel).ne.0) then
+                 call copy     (u8(j+1),u(1,iel),nxyz)
+                 j = j + nxyz
+                 call copy     (u8(j+1),v(1,iel),nxyz)
+                 j = j + nxyz
+                 if(if3d) then
+                   call copy   (u8(j+1),w(1,iel),nxyz)
+                   j = j + nxyz
+                 endif
+                 cnt = cnt + 1
+               endif
+             enddo
+         endif
+         u8(1) = cnt
+
+         mtype = nid
+         call crecv(mtype,idum,4)            ! hand-shake
+         call csend(mtype,u4,lsend,pid0,0)     ! u4 :=: u8
+      endif
+
+      call err_chk(ierr,'Error writing data in mfo_outv_fine. $')
       return
       end
 c-----------------------------------------------------------------------

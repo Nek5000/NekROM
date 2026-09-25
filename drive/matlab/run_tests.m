@@ -1,18 +1,46 @@
-function run_tests(snaps_path, casename, nb, reorder, pod_u, pod_v, au_full, bu_full)
+function run_tests(snaps_path, casename, nb, reorder, pod_u, pod_v, au_full, bu_full, inner_product, varargin)
 % RUN_TESTS Code to generate the basis functions in Matlab to validate Fortran output
 %
 % This ensures MATLAB and NekROM outputs align properly.
 
     fprintf('--- Running Validation Tests ---\n');
 
-    subtract_mean = 1;
+    subtract_mean = true;
     conserve_momentum = 0;
-    inner_product = 'H10';
     method = "snapshots";
+
+    if nargin < 9 || isempty(inner_product)
+        inner_product = 'H10';
+    end
+    inner_product = upper(strtrim(inner_product));
 
     % Load Snapshots
     snaps_obj = NekSnaps(fullfile(snaps_path, casename)); 
-    [pod_ml, ~, ~] = get_pod_basis(snaps_obj, nb, reorder, subtract_mean, conserve_momentum, method, inner_product);
+    if strcmp(inner_product, 'HLM')
+        if numel(varargin) == 2
+            hlm_re = varargin{1};
+            hlm_dt = varargin{2};
+            hlm_beta1 = 11/6;
+        elseif numel(varargin) >= 3
+            subtract_mean = logical(varargin{1});
+            hlm_re = varargin{2};
+            hlm_dt = varargin{3};
+            hlm_beta1 = 11/6;
+            if numel(varargin) >= 4 && ~isempty(varargin{4})
+                hlm_beta1 = varargin{4};
+            end
+        else
+            error('run_tests:HLMRequiresParams', ...
+                'HLM validation requires subtract_mean, Reynolds number, and dt arguments.');
+        end
+        [pod_ml, ~, ~] = get_pod_basis(snaps_obj, nb, reorder, subtract_mean, conserve_momentum, ...
+            method, inner_product, hlm_re, hlm_dt, hlm_beta1);
+    else
+        if numel(varargin) >= 1 && ~isempty(varargin{1})
+            subtract_mean = logical(varargin{1});
+        end
+        [pod_ml, ~, ~] = get_pod_basis(snaps_obj, nb, reorder, subtract_mean, conserve_momentum, method, inner_product);
+    end
 
     pod_u_ml = pod_ml(1:size(pod_ml,1)/2, 1:nb+1);
     pod_v_ml = pod_ml(size(pod_ml,1)/2 + 1:end, 1:nb+1);

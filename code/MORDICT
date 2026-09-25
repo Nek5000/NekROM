@@ -4,7 +4,7 @@ c     Note: Keys have to be in capital letters
 c
       integer MORDICT_NKEYS
 
-      parameter (MORDICT_NKEYS = 67)
+      parameter (MORDICT_NKEYS = 71)
 
       character*132 mordictkey(MORDICT_NKEYS)
       data
@@ -75,3 +75,7 @@ c
      &  mordictkey(65) / 'DEIM' /
      &  mordictkey(66) / 'DEIM:NBNL' /
      &  mordictkey(67) / 'DEIM:DUMPNLS' /
+     &  mordictkey(68) / 'DEIM:DUMPFINE' /
+     &  mordictkey(69) / 'DEIM:MODE' /
+     &  mordictkey(70) / 'DEIM:ALPHA' /
+     &  mordictkey(71) / 'DEIM:N_OS_POINTS' /
