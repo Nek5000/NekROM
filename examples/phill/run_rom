@@ -1,0 +1,37 @@
+#!/bin/bash
+set -euo pipefail
+
+script_dir=$(cd "$(dirname "$0")" && pwd)
+cd "$script_dir"
+
+MOR_DIR="${MOR_DIR:-$(cd "$script_dir/../.." && pwd)}"
+NEK_SOURCE_ROOT="${NEK_SOURCE_ROOT:-$(cd "$MOR_DIR/../Nek5000" && pwd)}"
+export MOR_DIR NEK_SOURCE_ROOT
+export NEK_DEPS_LOCAL_SRC="${NEK_DEPS_LOCAL_SRC:-1}"
+export PATH="$MOR_DIR/bin:$NEK_SOURCE_ROOT/bin:$NEK_SOURCE_ROOT/tools/bin:$PATH"
+
+casename="phill"
+lpmin="$(awk 'match($0,/parameter *\\(lpmin=([0-9]+)/,a){print a[1]; exit}' SIZE)"
+lpmin="${lpmin:-1}"
+np="${1:-$lpmin}" # number of MPI ranks to use for the ROM (see SIZE lpmin)
+if [ "$np" -lt "$lpmin" ]; then
+    echo "ERROR: ${casename} requires np >= ${lpmin} (from SIZE lpmin)."
+    echo "Run: ./run_rom ${lpmin}"
+    exit 2
+fi
+makerom "${casename}_rom"
+if [ "$np" -eq 1 ]; then
+    printf '%s\n%s/\n' "$casename" "$script_dir" > SESSION.NAME
+    ./nek5000 > "${casename}.log.${np}"
+else
+    neklmpi "$casename" "$np"
+fi
+
+logfile=${casename}.log.${np}
+
+snaps_dir="snaps"
+mkdir -p "$snaps_dir"
+if compgen -G "*${casename}0.f*" > /dev/null; then
+    mv *${casename}0.f* "$snaps_dir"
+fi
+mv "$logfile" "$snaps_dir"

@@ -654,7 +654,9 @@ c-----------------------------------------------------------------------
          enddo
       endif
 
-      if (ifcp) then
+      if (ifdeim) then
+         call evalc_deim(tmp1(1),u)
+      else if (ifcp) then
          if (ifcore) then 
             call evalc4(tmp1(1),cua,cub,cuc,cp_uw,cul,cuj0,cu0k,u)
          else

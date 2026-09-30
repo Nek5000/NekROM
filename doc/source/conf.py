@@ -1,4 +1,5 @@
 import os
+import importlib.util
 import shutil
 
 # Configuration file for the Sphinx documentation builder.
@@ -45,14 +46,29 @@ extensions = ['sphinx.ext.autodoc',
               'sphinxfortran.fortran_domain',
               'sphinxfortran.fortran_autodoc', 
               'sphinx.ext.mathjax', 
-              'sphinx-mathjax-offline',
               'myst_parser',
-              'sphinxcontrib.bibtex',
               'sphinx.ext.napoleon',
-              'sphinxcontrib.matlab',
              ]
 
-bibtex_bibfiles = ['references.bib']
+if importlib.util.find_spec("sphinx_mathjax_offline") is not None:
+    extensions.append("sphinx_mathjax_offline")
+
+has_bibtex_ext = importlib.util.find_spec("sphinxcontrib.bibtex") is not None
+if has_bibtex_ext:
+    extensions.append("sphinxcontrib.bibtex")
+    sphinx_tags = globals().get("tags")
+    if sphinx_tags is not None:
+        sphinx_tags.add("has_bibtex_ext")
+
+has_matlab_ext = importlib.util.find_spec("sphinxcontrib.matlab") is not None
+if has_matlab_ext:
+    extensions.append("sphinxcontrib.matlab")
+    sphinx_tags = globals().get("tags")
+    if sphinx_tags is not None:
+        sphinx_tags.add("has_matlab_ext")
+
+if has_bibtex_ext:
+    bibtex_bibfiles = ['references.bib']
 
 # Enable some latex in myst markdown
 myst_enable_extensions = ["dollarmath", "amsmath"]
@@ -63,9 +79,22 @@ fortran_src = [os.path.abspath(temp_code_dir)]
 fortran_ext = ["f"]
 
 # MATLAB configuration
-matlab_src_dir = os.path.abspath("../../drive/")
-matlab_short_links = True
-matlab_auto_link = "basic"
+if has_matlab_ext:
+    temp_matlab_root = '/tmp/rom_matlab_for_docs/'
+    temp_matlab_dir = os.path.join(temp_matlab_root, 'matlab')
+    shutil.rmtree(temp_matlab_root, ignore_errors=True)
+    os.makedirs(temp_matlab_dir, exist_ok=True)
+    for subdir in ['io', 'operators', 'point_generators']:
+        src_dir = os.path.abspath(f"../../drive/matlab/{subdir}")
+        dst_dir = os.path.join(temp_matlab_dir, subdir)
+        os.makedirs(dst_dir, exist_ok=True)
+        for filename in os.listdir(src_dir):
+            if filename.endswith('.m'):
+                shutil.copy2(os.path.join(src_dir, filename), os.path.join(dst_dir, filename))
+
+    matlab_src_dir = os.path.abspath(temp_matlab_root)
+    matlab_short_links = True
+    matlab_auto_link = "basic"
 
 # General configuration
 templates_path = ['_templates']
@@ -75,23 +104,23 @@ language = 'en'
 # -- Options for HTML output -------------------------------------------------
 # https://www.sphinx-doc.org/en/master/usage/configuration.html#options-for-html-output
 
-html_theme = "sphinx_book_theme"#'sphinx_rtd_theme'#'alabaster'
-html_static_path = ['_static']
 html_title = "NekROM Documentation"
+html_static_path = ['_static'] if os.path.isdir('_static') else []
 
-# Options for sphinx_book_theme
-html_theme_options = {
-    "repository_url": "https://github.com/Nek5000/NekROM",
-    "path_to_docs": "doc/source/",
-    "repository_branch": "master",
-    "use_repository_button": True,
-    "use_issues_button": True,
-    "use_download_button": True,
-    "use_fullscreen_button": True,
-    "use_source_button": True,
-    "home_page_in_toc": True,
-    "use_edit_page_button": True,
-}
+if importlib.util.find_spec("sphinx_book_theme") is not None:
+    html_theme = "sphinx_book_theme"
+    html_theme_options = {
+        "repository_url": "https://github.com/Nek5000/NekROM",
+        "path_to_docs": "doc/source/",
+        "repository_branch": "master",
+        "use_repository_button": True,
+        "use_issues_button": True,
+        "use_download_button": True,
+        "use_fullscreen_button": True,
+        "use_source_button": True,
+        "home_page_in_toc": True,
+        "use_edit_page_button": True,
+    }
 
 # For rtd theme
 #html_context = {

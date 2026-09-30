@@ -5,7 +5,7 @@
 % Stabilizing discrete empirical interpolation via randomized and deterministic oversampling
 % by Peherstorfer et. al
 % (this is the GPOD+E algorithm, essentially qdeim with oversampling.)
-function p = qdeim_adaptive(U, m, tol)
+function p = qdeim(U, m, tol)
     [n_samples, n_vars] = size(U);
     p = zeros(m, 1);
     mask = true(n_samples, 1); 
