@@ -6,7 +6,7 @@
 
 #### Set Up a Conda Environment (Optional)
 
-You may use an existing Conda environment, but we recommend creating and activate a new environment:
+You may use an existing Conda environment, but we recommend creating and activating a new one:
 ```sh
 conda create -n nekrom-docs
 conda activate nekrom-docs
@@ -18,6 +18,10 @@ conda install pip
 pip install sphinx sphinx-fortran six sphinx-mathjax-offline sphinx-book-theme myst-parser sphinxcontrib-bibtex sphinxcontrib-matlabdomain "numpy>=2.2.5"
 ```
 
+If `make html` fails with `Could not import extension sphinxfortran.fortran_domain`, the active environment
+is missing the `sphinx-fortran` package. Re-run the install command above inside the same environment that
+will execute `make html`.
+
 ### 2. Build the NekROM Documentation
 Clone NekROM and build the HTML documentation:
 ```sh
@@ -26,10 +30,12 @@ cd NekROM/doc
 make html
 ```
 
+The generated HTML lives in `NekROM/doc/build/html`.
+
 ### 3. View the Documentation
-To view the generated documentation, navigate to the build directory and open `index.html` in your browser:
+To view the generated documentation, open `build/html/index.html` in your browser:
 ```sh
-cd NekROM/doc/build
+cd NekROM/doc/build/html
 open index.html
 ```
 

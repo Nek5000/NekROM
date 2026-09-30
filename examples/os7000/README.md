@@ -20,3 +20,20 @@ plot 't.e' u 1:8 w l
 ## ROM: TS waves in plane Poiseuille flow.
 
 The usr file for the ROM, u3\_t020\_n13\_rom.usr, mimics the FOM user file. In particular the rom_userchk subroutine is only a slight modification of the FOM userchk subroutine to accomodate variable name conflicts and to evaluate the inner-products using the ROM coefficients.
+
+## Running
+
+From this directory:
+
+```bash
+./run_fom [np]
+./run_rom [np]
+```
+
+`run_fom` builds `u3_t020_n13`, runs the full-order model, archives field
+snapshots under `snaps/`, writes `file.list`, and extracts the growth-rate
+history to `fom.egn.dat`.
+
+`run_rom` expects the FOM snapshots to exist, rebuilds `file.list`, builds
+`u3_t020_n13_rom`, runs the ROM path, archives generated fields and the ROM log
+under `snaps/`, and extracts `rom.egn.dat`.

@@ -5,7 +5,7 @@
 ## Running the flow past a cylinder example
 
 In its most straightforward workflow, using NekROM requires running a full-order model simulation to generate solution snapshots
-and then executing NekROM targeting these snapshots to generate POD bases and run the reduced-order simulation. Here we illustrate
+and then executing NekROM against those snapshots to generate POD bases and run the reduced-order simulation. Here we illustrate
 the process with the 2D flow past a cylinder example.
 
 1. Clone NekROM and Nek5000
@@ -60,7 +60,7 @@ See below for more details.
 visnek romcyl
 ```
 
-Open the resulting `romcyl.nek5000` file with Visit or Paraview to visualize the ROM output
+Open the resulting `romcyl.nek5000` file with VisIt or ParaView to visualize the ROM output.
 
 ### Understanding the run scripts
 
@@ -68,17 +68,17 @@ The `run_fom` and `run_rom` scripts automate several tasks in the NekROM workflo
 are encouraged to write similar run scripts for their own cases.
 
 The `run_fom` script,
-shown below, builds the Nek5000 case for the FOM, gnerates the mesh, and runs the Nek5000 simulation.
+shown below, builds the Nek5000 case for the FOM, generates the mesh, and runs the Nek5000 simulation.
 After the simulation completes, the script copies the output snapshots to the `snaps` directory
 and creates `file.list` to tell NekROM which snapshots to use. Finally, the script
-extracts some drag and lift data from the log file. The details of the computation of the drag in the ROM can be found in {cite:p}`K2022`.
+extracts some drag and lift data from the log file. The details of the computation of the drag in the ROM are described in Kento Kaneko's 2022 thesis.
 
 ```{literalinclude} ../../examples/cyl/run_fom
 :language: shell
 ```
 
 The `run_rom` script builds the `cyl_rom` case, executes the ROM with Nek5000, and extracts the
-data lift and drag data from the log file of the ROM simulation.
+lift and drag data from the log file of the ROM simulation.
 
 ```{literalinclude} ../../examples/cyl/run_rom
 :language: shell
@@ -103,7 +103,7 @@ Executing NekROM generates several different kinds of files.
 `lapcyl0.*`: Laplace operator operating on a field (specific to the cylinder case)
 
 `tmncyl0.*`: $<u'T'>$ RMS field where $u'$ and $T'$ are the fluctuated velocity and temperature.
-The first tmn is calculated from the snaphots. The second is reconstructed from the reduced basis functions.
+The first `tmn` is calculated from the snapshots. The second is reconstructed from the reduced basis functions.
 
 `rom.dragx.dat`: Data file containing the drag in the $x$ direction at output time steps
 
@@ -158,11 +158,19 @@ parameter (lres_t=((2*lb+lb**2)-1)*lei+1) ! size of residual storage for temp
 :language: text
 ```
 
-`cyl_rom.usr`: User specified functions for NekROM case. This is similar to the Nek5000 `cyl_fom.usr` file, but
-also has several NekROM specific functions. Additionally, `param(170) = -1` is added to `userchk` in this
-file to tell NekROM to read from `cyl.mor` rather than the FOM `cyl.rea` file. NekROM specific functions
-include the following: `rom_userchk`, `rom_userbases`, `rom_userfop`, and `rom_userrhs`.
+`cyl_rom.usr`: User-specified functions for the NekROM case. This is similar to the Nek5000 `cyl_fom.usr` file, but
+also has several NekROM-specific functions. Additionally, `param(170) = -1` is added to `userchk` in this
+file to tell NekROM to read from `cyl.mor` rather than the FOM `cyl.rea` file. The NekROM-specific functions
+include `rom_userchk`, `rom_userbases`, `rom_userfop`, and `rom_userrhs`.
 
 ### Running parametrically
 
-TODO
+The quickstart above shows the shortest single-case workflow. For parameter sweeps, the shipped example under `examples/rb_axi`
+shows the pattern that NekROM currently supports:
+
+1. Prepare one FOM directory per parameter value, each with its own snapshots and output directory.
+2. Use the helper scripts to run the FOM at the end points of the parameter interval.
+3. Build the ROM from the endpoint snapshot bases and combine them into the interpolation basis.
+4. Re-run the ROM helper across the parameter range.
+
+The case-specific README in `examples/rb_axi/readme.md` documents the exact directory structure and scripts used for that workflow.
